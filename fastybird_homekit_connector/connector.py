@@ -43,7 +43,6 @@ from pyhap.accessory import Bridge  # type: ignore[import]
 from pyhap.accessory_driver import AccessoryDriver  # type: ignore[import]
 
 # Library libs
-from fastybird_homekit_connector import __connector_version__
 from fastybird_homekit_connector.entities import HomeKitDeviceEntity
 from fastybird_homekit_connector.logger import Logger
 
@@ -85,7 +84,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
         self.__bridge = Bridge(driver=self.__driver, display_name="Bridge")
         self.__bridge.set_info_service(
-            firmware_revision=__connector_version__,
+            firmware_revision="0.0.1",
             manufacturer="FastyBird",
             model="rPI gateway",
             serial_number=connector_id.__str__(),
