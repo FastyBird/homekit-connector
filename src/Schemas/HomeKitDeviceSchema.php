@@ -16,8 +16,8 @@
 namespace FastyBird\HomeKitConnector\Schemas;
 
 use FastyBird\DevicesModule\Schemas as DevicesModuleSchemas;
-use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\HomeKitConnector\Entities;
+use FastyBird\Metadata\Types as MetadataTypes;
 
 /**
  * HomeKit connector entity schema
