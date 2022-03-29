@@ -39,8 +39,8 @@ from fastybird_devices_module.entities.device import (
 )
 from fastybird_metadata.types import ControlAction
 from kink import inject
-from pyhap.accessory import Bridge
-from pyhap.accessory_driver import AccessoryDriver
+from pyhap.accessory import Bridge  # type: ignore[import]
+from pyhap.accessory_driver import AccessoryDriver  # type: ignore[import]
 
 # Library libs
 from fastybird_homekit_connector import __connector_version__
@@ -58,8 +58,6 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
-
-    __stopped: bool = False
 
     __connector_id: uuid.UUID
 
@@ -182,8 +180,6 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
         self.__logger.info("Connector has been started")
 
-        self.__stopped = False
-
     # -----------------------------------------------------------------------------
 
     def stop(self) -> None:
@@ -192,13 +188,11 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
         self.__logger.info("Connector has been stopped")
 
-        self.__stopped = True
-
     # -----------------------------------------------------------------------------
 
     def has_unfinished_tasks(self) -> bool:
         """Check if connector has some unfinished task"""
-        return self.__driver.loop.is_running()
+        return bool(self.__driver.loop.is_running())
 
     # -----------------------------------------------------------------------------
 
