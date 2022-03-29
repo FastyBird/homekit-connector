@@ -1,0 +1,87 @@
+{
+  "name" : "fastybird/homekit-connector",
+  "type" : "connector",
+  "description" : "FastyBird IoT connector for HomeKit devices",
+  "keywords" : [
+    "fastybird",
+    "fb",
+    "iot",
+    "homekit",
+    "apple",
+    "connector"
+  ],
+
+  "homepage" : "https://www.fastybird.com",
+
+  "license" : "Apache-2.0",
+
+  "authors" : [
+    {
+      "name" : "FastyBird s.r.o.",
+      "email" : "code@fastybird.com",
+      "homepage" : "https://www.fastybird.com"
+    },
+    {
+      "name" : "Adam Kadlec",
+      "email" : "adam.kadlec@fastybird.com"
+    }
+  ],
+
+  "support" : {
+    "email" : "code@fastybird.com",
+    "issues" : "https://github.com/FastyBird/homekit-connector/issues",
+    "source" : "https://github.com/FastyBird/homekit-connector"
+  },
+
+  "prefer-stable" : true,
+
+  "minimum-stability" : "stable",
+
+  "require" : {
+    "php": ">=7.4.0|>=8.0.0",
+    "cweagans/composer-patches": "^1.7",
+    "fastybird/devices-module": "^0.44",
+    "fastybird/json-api": "^0.9",
+    "fastybird/metadata": "^0.49"
+  },
+
+  "require-dev" : {
+    "contributte/translation" : "^0.9",
+    "mockery/mockery" : "^1.4",
+    "ninjify/nunjuck" : "^0.3",
+    "ninjify/qa" : "^0.13",
+    "pds/skeleton": "^1.0",
+    "phpstan/extension-installer" : "^1.1",
+    "phpstan/phpstan" : "^0.12",
+    "phpstan/phpstan-deprecation-rules" : "^0.12",
+    "phpstan/phpstan-doctrine" : "^0.12",
+    "phpstan/phpstan-nette" : "^0.12",
+    "tracy/tracy": "^2.9"
+  },
+
+  "autoload" : {
+    "psr-4" : {
+      "FastyBird\\HomeKitConnector\\" : "src/"
+    }
+  },
+
+  "autoload-dev" : {
+    "psr-4" : {
+      "Tests\\Cases\\" : "tests/cases",
+      "Tests\\Fixtures\\" : "tests/fixtures",
+      "Tests\\Tools\\" : "tests/tools"
+    }
+  },
+
+  "config" : {
+    "sort-packages" : true
+  },
+
+  "extra" : {
+    "patches" : {
+      "nettrine/orm" : {
+        "Enable connection overrides" : "patches/nettrine.orm.mangerRegistry.diff"
+      }
+    }
+  }
+}

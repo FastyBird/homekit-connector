@@ -1,0 +1,104 @@
+#
+# Connector DI configuration
+#
+# @license      More in LICENSE.md
+# @copyright    https://www.fastybird.com
+# @author       Adam Kadlec <adam.kadlec@fastybird.com>
+# @package      FastyBird:HomeKitConnector!
+# @subpackage   config
+# @since        0.1.0
+#
+# @date         28.03.22
+
+php:
+    date.timezone: Europe/Prague
+
+extensions:
+    contributteTranslation              : Contributte\Translation\DI\TranslationExtension
+    nettrineAnnotations                 : Nettrine\Annotations\DI\AnnotationsExtension
+    nettrineCache                       : Nettrine\Cache\DI\CacheExtension
+    nettrineDbal                        : Nettrine\DBAL\DI\DbalExtension
+    nettrineOrm                         : Nettrine\ORM\DI\OrmExtension
+    nettrineOrmAnnotations              : Nettrine\ORM\DI\OrmAnnotationsExtension
+    nettrineOrmConsole                  : Nettrine\ORM\DI\OrmConsoleExtension
+    nettrineOrmCache                    : Nettrine\ORM\DI\OrmCacheExtension
+    ipubDoctrineConsistence             : IPub\DoctrineConsistence\DI\DoctrineConsistenceExtension
+    ipubDoctrineCrud                    : IPub\DoctrineCrud\DI\DoctrineCrudExtension
+    ipubDoctrineTimestampable           : IPub\DoctrineTimestampable\DI\DoctrineTimestampableExtension
+    ipubDoctrineDynamicDiscriminatorMap : IPub\DoctrineDynamicDiscriminatorMap\DI\DoctrineDynamicDiscriminatorMapExtension
+    fbDateTimeFactory                   : FastyBird\DateTimeFactory\DI\DateTimeFactoryExtension
+    fbExchange                          : FastyBird\Exchange\DI\ExchangeExtension
+    fbJsonApi                           : FastyBird\JsonApi\DI\JsonApiExtension
+    fbSimpleAuth                        : FastyBird\SimpleAuth\DI\SimpleAuthExtension
+    fbSocketServerFactory               : FastyBird\SocketServerFactory\DI\SocketServerFactoryExtension
+    fbWebServer                         : FastyBird\WebServer\DI\WebServerExtension(%consoleMode%)
+    fbDevicesModule                      : FastyBird\DevicesModule\DI\DevicesModuleExtension
+
+services:
+    - {factory: Symfony\Component\Console\Application}
+
+contributteTranslation:
+    locales:
+        default: en_US
+        fallback: [en_US, en]
+    localeResolvers: []
+    dirs:
+        - %appDir%/../vendor/fastybird/json-api/src/Translations
+        - %appDir%/../vendor/fastybird/devices-module/src/Translations
+
+nettrineDbal:
+    connection:
+        serverVersion: 5.7
+        host: 127.0.0.1
+        port: 3306
+        driver: pdo_mysql
+        memory: false
+        dbname: testdb
+        user: root
+        password: root
+        charset: utf8
+        wrapperClass: \Tests\Tools\ConnectionWrapper
+
+        types:
+            uuid_binary:
+                class: Ramsey\Uuid\Doctrine\UuidBinaryType
+                commented: false
+            utcdatetime:
+                class: IPub\DoctrineTimestampable\Types\UTCDateTime
+                commented: false
+
+        typesMapping:
+            uuid_binary: binary
+
+nettrineAnnotations:
+    debug: %debugMode%
+    ignore:
+        - writable
+        - required
+        - module
+        - author
+        - subpackage
+        - package
+        - phpcsSuppress
+
+nettrineOrm:
+    configuration:
+        proxyDir: %tempDir%/cache/doctrine.proxies
+
+nettrineOrmAnnotations:
+    mapping: []
+
+fbSimpleAuth:
+    token:
+        issuer: com.fastybird.auth-module
+        signature: 'g3xHbkELpMD9LRqW4WmJkHL7kz2bdNYAQJyEuFVzR3k='
+    enable:
+        middleware: true
+        doctrine:
+            mapping: true
+    services:
+        identity: true
+
+fbJsonApi:
+    meta:
+        copyright: FastyBird s.r.o
