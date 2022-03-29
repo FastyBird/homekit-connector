@@ -1,0 +1,12 @@
+# Folders - recursive
+*.expected
+*.actual
+
+# Folders
+/tmp
+
+# Files
+/*.log
+/*.html
+
+__pycache__

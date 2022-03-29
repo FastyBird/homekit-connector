@@ -1,0 +1,16 @@
+ src/ManagerRegistry.php | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/ManagerRegistry.php b/src/ManagerRegistry.php
+index e6af312..19e73a2 100644
+--- a/src/ManagerRegistry.php
++++ b/src/ManagerRegistry.php
+@@ -18,7 +18,7 @@ class ManagerRegistry extends AbstractManagerRegistry
+
+ 	public function __construct(Connection $connection, EntityManagerInterface $em, Container $container)
+ 	{
+-		$defaultConnection = $container->findByType(get_class($connection))[0];
++		$defaultConnection = $container->findByType(Connection::class)[0];
+ 		$defaultManager = $container->findByType(get_class($em))[0];
+
+ 		$connections = ['default' => $defaultConnection];
