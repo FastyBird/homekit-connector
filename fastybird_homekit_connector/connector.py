@@ -21,6 +21,7 @@ HomeKit connector module
 # Python base dependencies
 import logging
 import uuid
+from asyncio import AbstractEventLoop
 from os import path
 from typing import Dict, Optional, Union
 
@@ -29,7 +30,7 @@ from fastybird_devices_module.connectors.connector import IConnector
 from fastybird_devices_module.entities.channel import (
     ChannelControlEntity,
     ChannelEntity,
-    ChannelPropertyEntity,
+    ChannelPropertyEntity, ChannelDynamicPropertyEntity,
 )
 from fastybird_devices_module.entities.connector import ConnectorControlEntity
 from fastybird_devices_module.entities.device import (
@@ -37,7 +38,9 @@ from fastybird_devices_module.entities.device import (
     DeviceEntity,
     DevicePropertyEntity,
 )
-from fastybird_metadata.types import ControlAction
+from fastybird_devices_module.repositories.device import DevicesRepository
+from fastybird_devices_module.repositories.state import ChannelPropertiesStatesRepository
+from fastybird_metadata.types import ControlAction, SwitchPayload
 from kink import inject
 from pyhap.accessory import Bridge  # type: ignore[import]
 from pyhap.accessory_driver import AccessoryDriver  # type: ignore[import]
@@ -45,9 +48,15 @@ from pyhap.accessory_driver import AccessoryDriver  # type: ignore[import]
 # Library libs
 from fastybird_homekit_connector.entities import HomeKitDeviceEntity
 from fastybird_homekit_connector.logger import Logger
+from fastybird_homekit_connector.registry.model import AccessoriesRegistry, ServicesRegistry, CharacteristicsRegistry
 
 
-@inject(alias=IConnector)
+@inject(
+    alias=IConnector,
+    bind={
+        "loop": AbstractEventLoop,
+    }
+)
 class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,too-many-instance-attributes
     """
     HomeKit connector service
@@ -60,8 +69,18 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     __connector_id: uuid.UUID
 
+    __accessories_registry: AccessoriesRegistry
+    __services_registry: ServicesRegistry
+    __characteristics_registry: CharacteristicsRegistry
+
     __driver: AccessoryDriver  # type: ignore[no-any-unimported]
     __bridge: Bridge  # type: ignore[no-any-unimported]
+
+    __devices_repository: DevicesRepository
+
+    __channel_property_state_repository: ChannelPropertiesStatesRepository
+
+    __loop: Optional[AbstractEventLoop] = None
 
     __logger: Union[Logger, logging.Logger]
 
@@ -70,16 +89,34 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
     def __init__(  # pylint: disable=too-many-arguments
         self,
         connector_id: uuid.UUID,
+        devices_repository: DevicesRepository,
+        accessories_registry: AccessoriesRegistry,
+        services_registry: ServicesRegistry,
+        characteristics_registry: CharacteristicsRegistry,
+        channel_property_state_repository: ChannelPropertiesStatesRepository,
         logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
+        loop: Optional[AbstractEventLoop] = None,
     ) -> None:
         self.__connector_id = connector_id
+
+        self.__devices_repository = devices_repository
+
+        self.__accessories_registry = accessories_registry
+        self.__services_registry = services_registry
+        self.__characteristics_registry = characteristics_registry
+
+        self.__channel_property_state_repository = channel_property_state_repository
+
+        self.__loop = loop
 
         # Start the accessory on port 51826 & save the accessory.state to our custom path
         self.__driver = AccessoryDriver(
             port=51826,
             persist_file=(
-                "/var/miniserver-gateway/miniserver_gateway/config/homekit.accessory.state".replace("/", path.sep)
+                "/var/miniserver-gateway/miniserver_gateway/homekit.accessory.state".replace("/", path.sep)
             ),
+            loop=self.__loop,
+            pincode=bytearray(str("426-42-409").encode("ascii")),
         )
 
         self.__bridge = Bridge(driver=self.__driver, display_name="Bridge")
@@ -105,11 +142,22 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     def initialize(self, settings: Optional[Dict] = None) -> None:
         """Set connector to initial state"""
+        for device in self.__devices_repository.get_all_by_connector(connector_id=self.__connector_id):
+            self.initialize_device(device=device)
 
     # -----------------------------------------------------------------------------
 
     def initialize_device(self, device: HomeKitDeviceEntity) -> None:
         """Initialize device in connector registry"""
+        self.__accessories_registry.append(
+            accessory_id=device.id,
+            accessory_enabled=device.enabled,
+            accessory_name=device.name if device.name is not None else device.identifier,
+            driver=self.__driver,
+        )
+
+        for channel in device.channels:
+            self.initialize_device_channel(device=device, channel=channel)
 
     # -----------------------------------------------------------------------------
 
@@ -128,6 +176,11 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     # -----------------------------------------------------------------------------
 
+    def notify_device_property(self, device: DeviceEntity, device_property: DevicePropertyEntity) -> None:
+        """Notify device property was reported to connector"""
+
+    # -----------------------------------------------------------------------------
+
     def remove_device_property(self, device: DeviceEntity, property_id: uuid.UUID) -> None:
         """Remove device from connector registry"""
 
@@ -140,6 +193,14 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     def initialize_device_channel(self, device: DeviceEntity, channel: ChannelEntity) -> None:
         """Initialize device channel aka registers group in connector registry"""
+        self.__services_registry.append(
+            accessory_id=device.id,
+            service_id=channel.id,
+            service_identifier=channel.identifier,
+        )
+
+        for channel_property in channel.properties:
+            self.initialize_device_channel_property(channel=channel, channel_property=channel_property)
 
     # -----------------------------------------------------------------------------
 
@@ -159,6 +220,33 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         channel_property: ChannelPropertyEntity,
     ) -> None:
         """Initialize device channel property aka input or output register in connector registry"""
+        self.__characteristics_registry.append(
+            service_id=channel.id,
+            characteristic_id=channel_property.id,
+            characteristic_identifier=channel_property.identifier,
+            characteristic_data_type=channel_property.data_type,
+            characteristic_format=channel_property.format,
+            characteristic_number_of_decimals=channel_property.number_of_decimals,
+            characteristic_queryable=channel_property.queryable,
+            characteristic_settable=channel_property.settable,
+        )
+
+    # -----------------------------------------------------------------------------
+
+    def notify_device_channel_property(
+        self,
+        channel: ChannelEntity,
+        channel_property: ChannelPropertyEntity,
+    ) -> None:
+        """Notify device channel property was reported to connector"""
+        if isinstance(channel_property, ChannelDynamicPropertyEntity):
+            char = self.__characteristics_registry.get_by_id(characteristic_id=channel_property.id)
+
+            if char is not None:
+                state = self.__channel_property_state_repository.get_by_id(property_id=channel_property.id)
+
+                if state is not None:
+                    char.actual_value = state.actual_value
 
     # -----------------------------------------------------------------------------
 
@@ -174,10 +262,22 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     def start(self) -> None:
         """Start connector services"""
+        for accessory in self.__accessories_registry:
+            for service in self.__services_registry.get_all_by_accessory(accessory_id=accessory.id):
+                for characteristic in self.__characteristics_registry.get_all_for_service(service_id=service.id):
+                    service.add_characteristic(characteristic)
+
+                accessory.add_service(service)
+
+            self.__bridge.add_accessory(acc=accessory)
+
         self.__driver.add_job(self.__driver.async_start())
-        self.__driver.loop.run_forever()
+
+        if self.__loop is None:
+            self.__driver.loop.run_forever()
 
         self.__logger.info("Connector has been started")
+        print(self.__driver.state.pincode.decode())
 
     # -----------------------------------------------------------------------------
 
