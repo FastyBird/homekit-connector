@@ -29,8 +29,10 @@ from typing import Dict, Optional, Union
 from fastybird_devices_module.connectors.connector import IConnector
 from fastybird_devices_module.entities.channel import (
     ChannelControlEntity,
+    ChannelDynamicPropertyEntity,
     ChannelEntity,
-    ChannelPropertyEntity, ChannelDynamicPropertyEntity,
+    ChannelMappedPropertyEntity,
+    ChannelPropertyEntity,
 )
 from fastybird_devices_module.entities.connector import ConnectorControlEntity
 from fastybird_devices_module.entities.device import (
@@ -39,8 +41,11 @@ from fastybird_devices_module.entities.device import (
     DevicePropertyEntity,
 )
 from fastybird_devices_module.repositories.device import DevicesRepository
-from fastybird_devices_module.repositories.state import ChannelPropertiesStatesRepository
-from fastybird_metadata.types import ControlAction, SwitchPayload
+from fastybird_devices_module.repositories.state import (
+    ChannelPropertiesStatesRepository,
+)
+from fastybird_metadata.helpers import normalize_value
+from fastybird_metadata.types import ControlAction
 from kink import inject
 from pyhap.accessory import Bridge  # type: ignore[import]
 from pyhap.accessory_driver import AccessoryDriver  # type: ignore[import]
@@ -48,14 +53,19 @@ from pyhap.accessory_driver import AccessoryDriver  # type: ignore[import]
 # Library libs
 from fastybird_homekit_connector.entities import HomeKitDeviceEntity
 from fastybird_homekit_connector.logger import Logger
-from fastybird_homekit_connector.registry.model import AccessoriesRegistry, ServicesRegistry, CharacteristicsRegistry
+from fastybird_homekit_connector.registry.model import (
+    AccessoriesRegistry,
+    CharacteristicsRegistry,
+    ServicesRegistry,
+)
+from fastybird_homekit_connector.transformers import DataTransformHelpers
 
 
 @inject(
     alias=IConnector,
     bind={
         "loop": AbstractEventLoop,
-    }
+    },
 )
 class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,too-many-instance-attributes
     """
@@ -112,9 +122,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         # Start the accessory on port 51826 & save the accessory.state to our custom path
         self.__driver = AccessoryDriver(
             port=51826,
-            persist_file=(
-                "/var/miniserver-gateway/miniserver_gateway/homekit.accessory.state".replace("/", path.sep)
-            ),
+            persist_file=("/var/miniserver-gateway/miniserver_gateway/homekit.accessory.state".replace("/", path.sep)),
             loop=self.__loop,
             pincode=bytearray(str("426-42-409").encode("ascii")),
         )
@@ -239,14 +247,30 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         channel_property: ChannelPropertyEntity,
     ) -> None:
         """Notify device channel property was reported to connector"""
-        if isinstance(channel_property, ChannelDynamicPropertyEntity):
+        if isinstance(channel_property, ChannelMappedPropertyEntity) and isinstance(
+            channel_property.parent, ChannelDynamicPropertyEntity
+        ):
             char = self.__characteristics_registry.get_by_id(characteristic_id=channel_property.id)
 
-            if char is not None:
-                state = self.__channel_property_state_repository.get_by_id(property_id=channel_property.id)
+            if char is None:
+                return
 
-                if state is not None:
-                    char.actual_value = state.actual_value
+            state = self.__channel_property_state_repository.get_by_id(property_id=channel_property.id)
+
+            if state is None:
+                return
+
+            value_to_write = normalize_value(
+                data_type=channel_property.data_type,
+                value=state.actual_value,
+                value_format=channel_property.format,
+            )
+
+            char.actual_value = DataTransformHelpers.transform_from_connector(
+                data_type=channel_property.data_type,
+                value_format=channel_property.format,
+                value=value_to_write
+            )
 
     # -----------------------------------------------------------------------------
 

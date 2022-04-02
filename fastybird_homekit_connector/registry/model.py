@@ -21,7 +21,7 @@ HomeKit connector registry module models
 # Python base dependencies
 import json
 import uuid
-from typing import Dict, Optional, List, Union, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
 from fastybird_metadata.types import DataType
@@ -32,7 +32,12 @@ from pyhap.util import hap_type_to_uuid
 
 # Library libs
 from fastybird_homekit_connector.exceptions import InvalidStateException
-from fastybird_homekit_connector.registry.records import AccessoryRecord, ServiceRecord, CharacteristicRecord
+from fastybird_homekit_connector.registry.records import (
+    AccessoryRecord,
+    CharacteristicRecord,
+    ServiceRecord,
+)
+from fastybird_homekit_connector.types import HAPDataType
 
 
 def read_definition_file(path):
@@ -374,7 +379,9 @@ class CharacteristicsRegistry:
 
     # -----------------------------------------------------------------------------
 
-    def get_by_identifier(self, service_id: uuid.UUID, characteristic_identifier: int) -> Optional[CharacteristicRecord]:
+    def get_by_identifier(
+        self, service_id: uuid.UUID, characteristic_identifier: int
+    ) -> Optional[CharacteristicRecord]:
         """Find characteristic in registry by given unique shelly identifier and service unique identifier"""
         items = self.__items.copy()
 
@@ -399,7 +406,7 @@ class CharacteristicsRegistry:
 
     # -----------------------------------------------------------------------------
 
-    def append(
+    def append(  # pylint: disable=too-many-arguments
         self,
         service_id: uuid.UUID,
         characteristic_id: uuid.UUID,
@@ -426,6 +433,11 @@ class CharacteristicsRegistry:
         if "UUID" not in characteristic_config or not isinstance(characteristic_config, dict):
             raise KeyError(f"Could not load service: {characteristic_name}")
 
+        hap_data_type: Optional[HAPDataType] = None
+
+        if "Format" in characteristic_config and HAPDataType.has_value(characteristic_config.get("Format")):
+            hap_data_type = HAPDataType(characteristic_config.get("Format"))
+
         characteristic_record: CharacteristicRecord = CharacteristicRecord(
             service_id=service_id,
             characteristic_id=characteristic_id,
@@ -438,6 +450,7 @@ class CharacteristicsRegistry:
             characteristic_number_of_decimals=characteristic_number_of_decimals,
             characteristic_queryable=characteristic_queryable,
             characteristic_settable=characteristic_settable,
+            characteristic_hap_data_type=hap_data_type,
         )
 
         self.__items[characteristic_record.id.__str__()] = characteristic_record

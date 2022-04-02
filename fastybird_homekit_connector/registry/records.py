@@ -21,15 +21,18 @@ HomeKit connector registry module records
 # Python base dependencies
 import uuid
 from datetime import datetime
-from typing import Dict, Union, Optional, Tuple, List
+from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
 from fastybird_metadata.helpers import normalize_value
-from fastybird_metadata.types import SwitchPayload, ButtonPayload, DataType
+from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 from pyhap.accessory import Accessory
 from pyhap.accessory_driver import AccessoryDriver
 from pyhap.characteristic import Characteristic
 from pyhap.service import Service
+
+from fastybird_homekit_connector.transformers import DataTransformHelpers
+from fastybird_homekit_connector.types import HAPDataType
 
 
 class AccessoryRecord(Accessory):
@@ -113,7 +116,7 @@ class ServiceRecord(Service):
 
     # -----------------------------------------------------------------------------
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         accessory_id: uuid.UUID,
         service_id: uuid.UUID,
@@ -157,7 +160,7 @@ class ServiceRecord(Service):
         return self.display_name
 
 
-class CharacteristicRecord(Characteristic):
+class CharacteristicRecord(Characteristic):  # pylint: disable=too-many-instance-attributes
     """
     HomeKit accessory service characteristic record
 
@@ -182,12 +185,14 @@ class CharacteristicRecord(Characteristic):
     __queryable: bool = False
     __settable: bool = False
 
-    __actual_value: Union[str, int, float, bool, SwitchPayload, None] = None
+    __actual_value: Union[str, int, float, bool, None] = None
     __expected_value: Union[str, int, float, bool, None] = None
+
+    __hap_data_type: Optional[HAPDataType] = None
 
     # -----------------------------------------------------------------------------
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         service_id: uuid.UUID,
         characteristic_type_id: uuid.UUID,
@@ -205,6 +210,7 @@ class CharacteristicRecord(Characteristic):
         characteristic_number_of_decimals: Optional[int] = None,
         characteristic_queryable: bool = False,
         characteristic_settable: bool = False,
+        characteristic_hap_data_type: Optional[HAPDataType] = None
     ) -> None:
         super().__init__(
             type_id=characteristic_type_id,
@@ -223,8 +229,11 @@ class CharacteristicRecord(Characteristic):
         self.__queryable = characteristic_queryable
         self.__settable = characteristic_settable
 
+        self.__hap_data_type = characteristic_hap_data_type
+        print(characteristic_hap_data_type)
+
         self.setter_callback = self.__set_value_callback
-        self.getter_callback = self.__get_value_callback
+        # self.getter_callback = self.__get_value_callback
 
     # -----------------------------------------------------------------------------
 
@@ -264,6 +273,13 @@ class CharacteristicRecord(Characteristic):
     # -----------------------------------------------------------------------------
 
     @property
+    def hap_data_type(self) -> HAPDataType:
+        """Characteristic HAP value data type"""
+        return self.__hap_data_type
+
+    # -----------------------------------------------------------------------------
+
+    @property
     def format(
         self,
     ) -> Union[
@@ -299,25 +315,26 @@ class CharacteristicRecord(Characteristic):
     # -----------------------------------------------------------------------------
 
     @property
-    def actual_value(self) -> Union[int, float, str, bool, datetime, ButtonPayload, SwitchPayload, None]:
+    def actual_value(self) -> Union[str, int, float, bool, None]:
         """Characteristic actual value"""
-        return normalize_value(data_type=self.data_type, value=self.__actual_value, value_format=self.format)
+        return self.__actual_value
 
     # -----------------------------------------------------------------------------
 
     @actual_value.setter
-    def actual_value(self, value: Union[str, int, float, bool, SwitchPayload, None]) -> None:
+    def actual_value(self, value: Union[str, int, float, bool, None]) -> None:
         """Set Characteristic actual value"""
         if self.actual_value != value:
             self.__actual_value = value
 
             # Set value only for settable characteristic
             if self.settable:
-                if value == SwitchPayload.ON.value:
-                    self.set_value(value=True)
-
-                if value == SwitchPayload.OFF.value:
-                    self.set_value(value=False)
+                self.set_value(
+                    value=DataTransformHelpers.transform_to_accessory(
+                        data_type=self.hap_data_type,
+                        value=self.actual_value,
+                    ),
+                )
 
         if self.actual_value == self.expected_value:
             self.expected_value = None
@@ -325,9 +342,9 @@ class CharacteristicRecord(Characteristic):
     # -----------------------------------------------------------------------------
 
     @property
-    def expected_value(self) -> Union[int, float, str, bool, datetime, ButtonPayload, SwitchPayload, None]:
+    def expected_value(self) -> Union[str, int, float, bool, None]:
         """Characteristic expected value"""
-        return normalize_value(data_type=self.data_type, value=self.__expected_value, value_format=self.format)
+        return self.__expected_value
 
     # -----------------------------------------------------------------------------
 

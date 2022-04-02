@@ -18,5 +18,44 @@
 HomeKit connector types
 """
 
+# Python base dependencies
+from enum import unique
+
+# Library dependencies
+from fastybird_metadata.enum import ExtendedEnum
+from pyhap.characteristic import HAP_FORMAT_BOOL, HAP_FORMAT_INT, HAP_FORMAT_FLOAT, HAP_FORMAT_STRING, HAP_FORMAT_ARRAY, \
+    HAP_FORMAT_DICTIONARY, HAP_FORMAT_UINT8, HAP_FORMAT_UINT16, HAP_FORMAT_UINT32, HAP_FORMAT_UINT64, HAP_FORMAT_DATA, \
+    HAP_FORMAT_TLV8
+
 CONNECTOR_NAME: str = "homekit"
 DEVICE_NAME: str = "homekit"
+
+
+@unique
+class HAPDataType(ExtendedEnum):
+    """
+    HAP data type
+
+    @package        FastyBird:HomeKitConnector!
+    @module         types
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+    BOOLEAN: str = HAP_FORMAT_BOOL
+    INT: str = HAP_FORMAT_INT
+    FLOAT: str = HAP_FORMAT_FLOAT
+    STRING: str = HAP_FORMAT_STRING
+    ARRAY: str = HAP_FORMAT_ARRAY
+    DICTIONARY: str = HAP_FORMAT_DICTIONARY
+    UINT8: str = HAP_FORMAT_UINT8
+    UINT16: str = HAP_FORMAT_UINT16
+    UINT32: str = HAP_FORMAT_UINT32
+    UINT64: str = HAP_FORMAT_UINT64
+    DATA: str = HAP_FORMAT_DATA
+    TLV8: str = HAP_FORMAT_TLV8
+
+    # -----------------------------------------------------------------------------
+
+    def __hash__(self) -> int:
+        return hash(self._name_)  # pylint: disable=no-member

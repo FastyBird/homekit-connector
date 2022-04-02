@@ -30,7 +30,11 @@ from kink import di
 from fastybird_homekit_connector.connector import HomeKitConnector
 from fastybird_homekit_connector.entities import HomeKitConnectorEntity
 from fastybird_homekit_connector.logger import Logger
-from fastybird_homekit_connector.registry.model import CharacteristicsRegistry, ServicesRegistry, AccessoriesRegistry
+from fastybird_homekit_connector.registry.model import (
+    AccessoriesRegistry,
+    CharacteristicsRegistry,
+    ServicesRegistry,
+)
 
 
 def create_connector(
