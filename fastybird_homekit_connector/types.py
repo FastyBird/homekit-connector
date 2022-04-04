@@ -23,7 +23,7 @@ from enum import unique
 
 # Library dependencies
 from fastybird_metadata.enum import ExtendedEnum
-from pyhap.characteristic import (  # type: ignore[import]
+from pyhap.characteristic import (
     HAP_FORMAT_ARRAY,
     HAP_FORMAT_BOOL,
     HAP_FORMAT_DATA,
