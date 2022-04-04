@@ -25,10 +25,12 @@ import logging
 
 # Library dependencies
 from kink import di
+from whistle import EventDispatcher
 
 # Library libs
 from fastybird_homekit_connector.connector import HomeKitConnector
 from fastybird_homekit_connector.entities import HomeKitConnectorEntity
+from fastybird_homekit_connector.events.listeners import EventsListener
 from fastybird_homekit_connector.logger import Logger
 from fastybird_homekit_connector.registry.model import (
     AccessoriesRegistry,
@@ -51,20 +53,34 @@ def create_connector(
     else:
         connector_logger = logger
 
+    di[EventDispatcher] = EventDispatcher()
+    di["homekit-connector_events-dispatcher"] = di[EventDispatcher]
+
     # Registers
-    di[CharacteristicsRegistry] = CharacteristicsRegistry()
+    di[CharacteristicsRegistry] = CharacteristicsRegistry(  # type: ignore[call-arg]
+        event_dispatcher=di[EventDispatcher],
+    )
     di["homekit-connector_characteristics-registry"] = di[CharacteristicsRegistry]
     di[ServicesRegistry] = ServicesRegistry(characteristics_registry=di[CharacteristicsRegistry])
     di["homekit-connector_services-registry"] = di[ServicesRegistry]
     di[AccessoriesRegistry] = AccessoriesRegistry(services_registry=di[ServicesRegistry])
     di["homekit-connector_accessories-registry"] = di[AccessoriesRegistry]
 
+    # Inner events system
+    di[EventsListener] = EventsListener(  # type: ignore[call-arg]
+        characteristics_registry=di[CharacteristicsRegistry],
+        event_dispatcher=di[EventDispatcher],
+        logger=connector_logger,
+    )
+    di["homekit-connector_events-listener"] = di[EventsListener]
+
     # Main connector service
-    connector_service = HomeKitConnector(
+    connector_service = HomeKitConnector(  # type: ignore[call-arg]
         connector_id=connector.id,
         accessories_registry=di[AccessoriesRegistry],
         services_registry=di[ServicesRegistry],
         characteristics_registry=di[CharacteristicsRegistry],
+        events_listener=di[EventsListener],
         logger=connector_logger,
     )
     di[HomeKitConnector] = connector_service

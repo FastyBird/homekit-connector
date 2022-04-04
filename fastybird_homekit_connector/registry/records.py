@@ -21,21 +21,39 @@ HomeKit connector registry module records
 # Python base dependencies
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 # Library dependencies
 from fastybird_metadata.helpers import normalize_value
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
-from pyhap.accessory import Accessory
 from pyhap.accessory_driver import AccessoryDriver
-from pyhap.characteristic import Characteristic
-from pyhap.service import Service
+from pyhap.const import (
+    CATEGORY_OTHER,
+    HAP_PERMISSION_READ,
+    HAP_REPR_AID,
+    HAP_REPR_CHARS,
+    HAP_REPR_FORMAT,
+    HAP_REPR_IID,
+    HAP_REPR_MAX_LEN,
+    HAP_REPR_PERM,
+    HAP_REPR_PRIMARY,
+    HAP_REPR_SERVICES,
+    HAP_REPR_TYPE,
+    HAP_REPR_VALID_VALUES,
+    HAP_REPR_VALUE,
+)
+from pyhap.iid_manager import IIDManager
+from pyhap.util import uuid_to_hap_type  # type: ignore[import]
+from whistle import EventDispatcher
 
+# Library libs
+from fastybird_homekit_connector.events.events import CharacteristicCommandEvent
+from fastybird_homekit_connector.exceptions import InvalidStateException
 from fastybird_homekit_connector.transformers import DataTransformHelpers
 from fastybird_homekit_connector.types import HAPDataType
 
 
-class AccessoryRecord(Accessory):
+class AccessoryRecord:
     """
     HomeKit accessory record
 
@@ -45,9 +63,17 @@ class AccessoryRecord(Accessory):
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
 
+    setter_callback = None  # To keep it compatible
+
+    services: Set["ServiceRecord"] = set()
+
     __id: uuid.UUID
 
     __enabled: bool = False
+
+    __hap_driver: AccessoryDriver
+    __hap_iid_manager: IIDManager
+    __hap_name: str
 
     # -----------------------------------------------------------------------------
 
@@ -58,17 +84,43 @@ class AccessoryRecord(Accessory):
         accessory_enabled: bool,
         driver: AccessoryDriver,
     ) -> None:
-        super().__init__(driver=driver, display_name=accessory_name, aid=accessory_id.int)
-
         self.__id = accessory_id
         self.__enabled = accessory_enabled
 
-        self.set_info_service(
-            firmware_revision="0.0.1",
-            manufacturer="FastyBird",
-            model="Custom model",
-            serial_number=accessory_id.__str__(),
-        )
+        self.__hap_driver = driver
+        self.__hap_iid_manager = IIDManager()
+        self.__hap_name = accessory_name
+
+        self.services = set()
+
+        # Define accessory basic information
+        info_service = self.__hap_driver.loader.get_service("AccessoryInformation")
+
+        info_service.configure_char("Identify", value=False)
+        info_service.configure_char("Manufacturer", value="FastyBird")
+        info_service.configure_char("Model", value="Custom model")
+        info_service.configure_char("Name", value=self.__hap_name)
+        info_service.configure_char("FirmwareRevision", value="0.0.1")
+        info_service.configure_char("SerialNumber", value=accessory_id.__str__())
+
+        self.iid_manager.assign(info_service)
+
+        self.services.add(info_service)
+
+        info_service.broker = self
+
+        for char in info_service.characteristics:
+            self.iid_manager.assign(char)
+
+            char.broker = self
+
+    # -----------------------------------------------------------------------------
+
+    def __repr__(self) -> str:
+        """Return the representation of the accessory"""
+        services = [service.name for service in self.services]
+
+        return f"<accessory display_name='{self.__hap_name}' services={services}>"
 
     # -----------------------------------------------------------------------------
 
@@ -94,12 +146,101 @@ class AccessoryRecord(Accessory):
     # -----------------------------------------------------------------------------
 
     @property
-    def available_test(self) -> bool:
-        """Accessory is available flag"""
+    def category(self) -> int:
+        """Accessory HAP category group"""
+        return CATEGORY_OTHER
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def available(self) -> bool:
+        """Accessory HAP availability flag"""
         return self.__enabled
 
+    # -----------------------------------------------------------------------------
 
-class ServiceRecord(Service):
+    @property
+    def iid_manager(self) -> IIDManager:
+        """Accessory HAP services&characteristics manager"""
+        return self.__hap_iid_manager
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def aid(self) -> int:
+        """Accessory HAP unique identifier"""
+        return self.id.__int__()
+
+    # -----------------------------------------------------------------------------
+
+    def add_service(self, service: "ServiceRecord") -> None:
+        """Add the given service to this Accessory"""
+        self.iid_manager.assign(service)
+
+        self.services.add(service)
+
+        service.accessory = self
+
+        for char in service.characteristics:
+            self.iid_manager.assign(char)
+
+            char.accessory = self
+
+    # -----------------------------------------------------------------------------
+
+    def get_characteristic(self, aid: int, iid: int) -> Optional["CharacteristicRecord"]:
+        """Get the characteristic for the given IID"""
+        if aid != self.aid:
+            return None
+
+        char = self.iid_manager.get_obj(iid)
+
+        if isinstance(char, CharacteristicRecord):
+            return char
+
+        return None
+
+    # -----------------------------------------------------------------------------
+
+    def publish(
+        self,
+        value: Union[str, int, float, bool, None],
+        sender: "CharacteristicRecord",
+        sender_client_address: Optional[Tuple[str, int]] = None,
+        immediate: bool = False,
+    ) -> None:
+        """Send characteristic value to clients"""
+        self.__hap_driver.publish(
+            data={
+                HAP_REPR_AID: self.aid,
+                HAP_REPR_IID: self.iid_manager.get_iid(sender),
+                HAP_REPR_VALUE: value,
+            },
+            sender_client_addr=sender_client_address,
+            immediate=immediate,
+        )
+
+    # -----------------------------------------------------------------------------
+
+    async def run(self) -> None:
+        """Called when the Accessory should start doing its thing"""
+
+    # -----------------------------------------------------------------------------
+
+    async def stop(self) -> None:
+        """Called when the Accessory should stop what is doing and clean up any resources"""
+
+    # -----------------------------------------------------------------------------
+
+    def to_HAP(self) -> Dict:  # pylint: disable=invalid-name
+        """HAP service representation builder of this Accessory"""
+        return {
+            HAP_REPR_AID: self.aid,
+            HAP_REPR_SERVICES: [service.to_HAP() for service in self.services],
+        }
+
+
+class ServiceRecord:  # pylint: disable=too-many-instance-attributes
     """
     HomeKit accessory service record
 
@@ -109,10 +250,20 @@ class ServiceRecord(Service):
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
 
+    setter_callback = None  # To keep it compatible
+
+    characteristics: Set["CharacteristicRecord"] = set()
+
     __accessory_id: uuid.UUID
 
     __id: uuid.UUID
     __identifier: str
+
+    __hap_type_id: uuid.UUID
+    __hap_name: str
+    __hap_is_primary: Optional[bool] = None
+
+    __hap_accessory: Optional[AccessoryRecord] = None
 
     # -----------------------------------------------------------------------------
 
@@ -124,12 +275,25 @@ class ServiceRecord(Service):
         service_name: str,
         service_type_id: uuid.UUID,
     ) -> None:
-        super().__init__(type_id=service_type_id, display_name=service_name)
-
         self.__accessory_id = accessory_id
 
         self.__id = service_id
         self.__identifier = service_identifier
+
+        self.__hap_type_id = service_type_id
+        self.__hap_name = service_name
+        self.__hap_is_primary = None
+        self.__hap_accessory = None
+
+        self.characteristics = set()
+
+    # -----------------------------------------------------------------------------
+
+    def __repr__(self) -> str:
+        """Return the representation of the service"""
+        characteristics = {char.name: char.actual_value for char in self.characteristics}
+
+        return f"<service display_name={self.name} chars={characteristics}>"
 
     # -----------------------------------------------------------------------------
 
@@ -157,10 +321,51 @@ class ServiceRecord(Service):
     @property
     def name(self) -> str:
         """Service unique homekit name"""
-        return self.display_name
+        return self.__hap_name
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def accessory(self) -> AccessoryRecord:
+        """Characteristic HAP accessory"""
+        if self.__hap_accessory is None:
+            raise InvalidStateException("Accessory is not assigned to service")
+
+        return self.__hap_accessory
+
+    # -----------------------------------------------------------------------------
+
+    @accessory.setter
+    def accessory(self, accessory: AccessoryRecord) -> None:
+        """Characteristic HAP accessory setter"""
+        self.__hap_accessory = accessory
+
+    # -----------------------------------------------------------------------------
+
+    def add_characteristic(self, char: "CharacteristicRecord") -> None:
+        """Add the given characteristic to Service"""
+        if not any(char.type_id == original_char.type_id for original_char in self.characteristics):
+            char.service = self
+
+            self.characteristics.add(char)
+
+    # -----------------------------------------------------------------------------
+
+    def to_HAP(self) -> Dict:  # pylint: disable=invalid-name
+        """HAP service representation builder of this Service"""
+        hap = {
+            HAP_REPR_IID: self.accessory.iid_manager.get_iid(self),
+            HAP_REPR_TYPE: uuid_to_hap_type(self.__hap_type_id),
+            HAP_REPR_CHARS: [c.to_HAP() for c in self.characteristics],
+        }
+
+        if self.__hap_is_primary is not None:
+            hap[HAP_REPR_PRIMARY] = self.__hap_is_primary
+
+        return hap
 
 
-class CharacteristicRecord(Characteristic):  # pylint: disable=too-many-instance-attributes
+class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-many-public-methods
     """
     HomeKit accessory service characteristic record
 
@@ -169,6 +374,8 @@ class CharacteristicRecord(Characteristic):  # pylint: disable=too-many-instance
 
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
+
+    __event_dispatcher: EventDispatcher
 
     __service_id: uuid.UUID
 
@@ -185,18 +392,46 @@ class CharacteristicRecord(Characteristic):  # pylint: disable=too-many-instance
     __queryable: bool = False
     __settable: bool = False
 
-    __actual_value: Union[str, int, float, bool, None] = None
-    __expected_value: Union[str, int, float, bool, None] = None
+    __actual_value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None] = None
+    __expected_value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None] = None
 
-    __hap_data_type: Optional[HAPDataType] = None
+    __hap_type_id: uuid.UUID
+    __hap_properties: Dict
+    __hap_name: str
+    __hap_data_type: HAPDataType
+    __hap_valid_values: Optional[Dict[str, int]] = None
+    __hap_max_length: int
+    __hap_min_value: Optional[float] = None
+    __hap_max_value: Optional[float] = None
+    __hap_min_step: Optional[float] = None
+    __hap_permissions: List[str] = []
+    __hap_unit: Optional[str] = None
+
+    __hap_accessory: Optional[AccessoryRecord] = None
+    __hap_service: Optional[ServiceRecord] = None
+
+    PROP_FORMAT: str = "Format"
+    PROP_MAX_VALUE: str = "maxValue"
+    PROP_MIN_STEP: str = "minStep"
+    PROP_MIN_VALUE: str = "minValue"
+    PROP_PERMISSIONS: str = "Permissions"
+    PROP_UNIT: str = "unit"
+    PROP_VALID_VALUES: str = "ValidValues"
+    PROP_MAX_LEN: str = "maxLen"
+
+    DEFAULT_MAX_LENGTH = 64
+    ABSOLUTE_MAX_LENGTH = 256
+
+    __BUTTON = uuid.UUID("00000126-0000-1000-8000-0026BB765291")
+    __PROGRAMMABLE_SWITCH = uuid.UUID("00000073-0000-1000-8000-0026BB765291")
 
     # -----------------------------------------------------------------------------
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments,too-many-locals
         self,
+        event_dispatcher: EventDispatcher,
         service_id: uuid.UUID,
         characteristic_type_id: uuid.UUID,
-        characteristic_properties: Dict,
         characteristic_id: uuid.UUID,
         characteristic_identifier: str,
         characteristic_name: str,
@@ -210,13 +445,16 @@ class CharacteristicRecord(Characteristic):  # pylint: disable=too-many-instance
         characteristic_number_of_decimals: Optional[int] = None,
         characteristic_queryable: bool = False,
         characteristic_settable: bool = False,
-        characteristic_hap_data_type: Optional[HAPDataType] = None
+        characteristic_hap_data_type: Optional[HAPDataType] = None,
+        characteristic_hap_valid_values: Optional[Dict[str, int]] = None,
+        characteristic_hap_max_length: Optional[int] = None,
+        characteristic_hap_min_value: Optional[float] = None,
+        characteristic_hap_max_value: Optional[float] = None,
+        characteristic_hap_min_step: Optional[float] = None,
+        characteristic_hap_permissions: Optional[List[str]] = None,
+        characteristic_hap_unit: Optional[str] = None,
     ) -> None:
-        super().__init__(
-            type_id=characteristic_type_id,
-            display_name=characteristic_name,
-            properties=characteristic_properties,
-        )
+        self.__event_dispatcher = event_dispatcher
 
         self.__service_id = service_id
 
@@ -229,11 +467,52 @@ class CharacteristicRecord(Characteristic):  # pylint: disable=too-many-instance
         self.__queryable = characteristic_queryable
         self.__settable = characteristic_settable
 
-        self.__hap_data_type = characteristic_hap_data_type
-        print(characteristic_hap_data_type)
+        self.__hap_type_id = characteristic_type_id
+        self.__hap_name = characteristic_name
+        self.__hap_data_type = (
+            characteristic_hap_data_type if characteristic_hap_data_type is not None else HAPDataType.STRING
+        )
+        self.__hap_valid_values = characteristic_hap_valid_values
+        self.__hap_max_length = (
+            characteristic_hap_max_length if characteristic_hap_max_length is not None else self.DEFAULT_MAX_LENGTH
+        )
+        self.__hap_min_value = characteristic_hap_min_value
+        self.__hap_max_value = characteristic_hap_max_value
+        self.__hap_min_step = characteristic_hap_min_step
+        self.__hap_permissions = characteristic_hap_permissions if characteristic_hap_permissions is not None else []
+        self.__hap_unit = characteristic_hap_unit
 
-        self.setter_callback = self.__set_value_callback
-        # self.getter_callback = self.__get_value_callback
+    # -----------------------------------------------------------------------------
+
+    def __repr__(self) -> str:
+        """Return the representation of the characteristic"""
+        properties: Dict = {
+            self.PROP_PERMISSIONS: self.__hap_permissions,
+            self.PROP_FORMAT: self.__hap_data_type.value,
+        }
+
+        if self.__hap_valid_values is not None:
+            properties[self.PROP_VALID_VALUES] = self.__hap_valid_values
+
+        if self.__hap_min_step is not None:
+            properties[self.PROP_MIN_STEP] = self.__hap_min_step
+
+        if self.__hap_min_value is not None:
+            properties[self.PROP_MIN_VALUE] = self.__hap_min_value
+
+        if self.__hap_max_value is not None:
+            properties[self.PROP_MAX_VALUE] = self.__hap_max_value
+
+        if self.__hap_unit is not None:
+            properties[self.PROP_UNIT] = self.__hap_unit
+
+        if self.expected_value is not None:
+            value = self.__value_to_accessory(value=self.expected_value)
+
+        else:
+            value = self.__value_to_accessory(value=self.actual_value)
+
+        return f"<characteristic display_name={self.name} value={value} properties={properties}>"
 
     # -----------------------------------------------------------------------------
 
@@ -261,7 +540,7 @@ class CharacteristicRecord(Characteristic):  # pylint: disable=too-many-instance
     @property
     def name(self) -> str:
         """Characteristic unique homekit name"""
-        return self.display_name
+        return self.__hap_name
 
     # -----------------------------------------------------------------------------
 
@@ -269,13 +548,6 @@ class CharacteristicRecord(Characteristic):  # pylint: disable=too-many-instance
     def data_type(self) -> DataType:
         """Characteristic value data type"""
         return self.__data_type
-
-    # -----------------------------------------------------------------------------
-
-    @property
-    def hap_data_type(self) -> HAPDataType:
-        """Characteristic HAP value data type"""
-        return self.__hap_data_type
 
     # -----------------------------------------------------------------------------
 
@@ -315,26 +587,20 @@ class CharacteristicRecord(Characteristic):  # pylint: disable=too-many-instance
     # -----------------------------------------------------------------------------
 
     @property
-    def actual_value(self) -> Union[str, int, float, bool, None]:
+    def actual_value(self) -> Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None]:
         """Characteristic actual value"""
         return self.__actual_value
 
     # -----------------------------------------------------------------------------
 
     @actual_value.setter
-    def actual_value(self, value: Union[str, int, float, bool, None]) -> None:
+    def actual_value(self, value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None]) -> None:
         """Set Characteristic actual value"""
         if self.actual_value != value:
             self.__actual_value = value
 
-            # Set value only for settable characteristic
-            if self.settable:
-                self.set_value(
-                    value=DataTransformHelpers.transform_to_accessory(
-                        data_type=self.hap_data_type,
-                        value=self.actual_value,
-                    ),
-                )
+            if self.settable and self.accessory:
+                self.__notify(value=self.actual_value)
 
         if self.actual_value == self.expected_value:
             self.expected_value = None
@@ -342,24 +608,189 @@ class CharacteristicRecord(Characteristic):  # pylint: disable=too-many-instance
     # -----------------------------------------------------------------------------
 
     @property
-    def expected_value(self) -> Union[str, int, float, bool, None]:
+    def expected_value(self) -> Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None]:
         """Characteristic expected value"""
         return self.__expected_value
 
     # -----------------------------------------------------------------------------
 
     @expected_value.setter
-    def expected_value(self, value: Union[str, int, float, bool, None]) -> None:
+    def expected_value(self, value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None]) -> None:
         """Set Characteristic expected value"""
         self.__expected_value = value
 
     # -----------------------------------------------------------------------------
 
-    def __set_value_callback(self, value) -> None:
-        print(self.__identifier)
-        print(value)
+    @property
+    def type_id(self) -> uuid.UUID:
+        """Characteristic HAP type identifier"""
+        return self.__hap_type_id
 
     # -----------------------------------------------------------------------------
 
-    def __get_value_callback(self) -> None:
-        return self.actual_value
+    @property
+    def accessory(self) -> AccessoryRecord:
+        """Characteristic HAP accessory"""
+        if self.__hap_accessory is None:
+            raise InvalidStateException("Accessory is not assigned to characteristic")
+
+        return self.__hap_accessory
+
+    # -----------------------------------------------------------------------------
+
+    @accessory.setter
+    def accessory(self, accessory: AccessoryRecord) -> None:
+        """Characteristic HAP accessory setter"""
+        self.__hap_accessory = accessory
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def service(self) -> Optional[ServiceRecord]:
+        """Characteristic HAP service"""
+        return self.__hap_service
+
+    # -----------------------------------------------------------------------------
+
+    @service.setter
+    def service(self, service: ServiceRecord) -> None:
+        """Characteristic HAP service setter"""
+        self.__hap_service = service
+
+    # -----------------------------------------------------------------------------
+
+    def to_HAP(self) -> Dict:  # pylint: disable=invalid-name
+        """HAP service representation builder of this Characteristic"""
+        hap_rep = {
+            HAP_REPR_IID: self.accessory.iid_manager.get_iid(self),
+            HAP_REPR_TYPE: uuid_to_hap_type(self.__hap_type_id),
+            HAP_REPR_PERM: self.__hap_permissions,
+            HAP_REPR_FORMAT: self.__hap_data_type.value,
+        }
+
+        if self.__hap_data_type in (
+            HAPDataType.INT,
+            HAPDataType.UINT8,
+            HAPDataType.UINT16,
+            HAPDataType.UINT32,
+            HAPDataType.UINT64,
+            HAPDataType.FLOAT,
+        ):
+            if self.__hap_max_value is not None:
+                hap_rep[self.PROP_MAX_VALUE] = self.__hap_max_value
+
+            if self.__hap_min_value is not None:
+                hap_rep[self.PROP_MIN_VALUE] = self.__hap_min_value
+
+            if self.__hap_min_step is not None:
+                hap_rep[self.PROP_MIN_STEP] = self.__hap_min_step
+
+            if self.__hap_unit is not None:
+                hap_rep[self.PROP_UNIT] = self.__hap_unit
+
+            if self.__hap_valid_values is not None:
+                hap_rep[HAP_REPR_VALID_VALUES] = sorted(self.__hap_valid_values.values())
+
+        elif self.__hap_data_type == HAPDataType.STRING:
+            if self.__hap_max_length != self.DEFAULT_MAX_LENGTH:
+                hap_rep[HAP_REPR_MAX_LEN] = self.__hap_max_length
+
+        if HAP_PERMISSION_READ in self.__hap_permissions:
+            if self.expected_value is not None:
+                hap_rep[HAP_REPR_VALUE] = self.__value_to_accessory(value=self.expected_value)
+
+            else:
+                hap_rep[HAP_REPR_VALUE] = self.__value_to_accessory(value=self.actual_value)
+
+        return hap_rep
+
+    # -----------------------------------------------------------------------------
+
+    def client_update_value(
+        self,
+        value: Union[str, int, float, bool, None],
+        sender_client_address: Optional[Tuple[str, int]] = None,
+    ) -> None:
+        """HAP service callback called when value change in Home app"""
+        self.expected_value = normalize_value(
+            data_type=self.data_type,
+            value_format=self.format,
+            value=DataTransformHelpers.transform_from_accessory(
+                data_type=self.data_type,
+                value_format=self.format,
+                hap_data_type=self.__hap_data_type,
+                hap_valid_values=self.__hap_valid_values,
+                hap_max_length=self.__hap_max_length,
+                hap_min_value=self.__hap_min_value,
+                hap_max_value=self.__hap_max_value,
+                hap_min_step=self.__hap_min_step,
+                value=value,
+            ),
+        )
+
+        self.__event_dispatcher.dispatch(
+            event_id=CharacteristicCommandEvent.EVENT_NAME,
+            event=CharacteristicCommandEvent(characteristic_id=self.id, expected_value=self.expected_value),
+        )
+
+        if self.__is_always_null():
+            self.expected_value = None
+
+        self.__notify(value=self.expected_value, sender_client_address=sender_client_address)
+
+    # -----------------------------------------------------------------------------
+
+    def get_value(self) -> Union[str, int, float, bool, None]:
+        """HAP service callback called when actual value reading requested"""
+        if self.expected_value is not None:
+            return self.__value_to_accessory(value=self.expected_value)
+
+        return self.__value_to_accessory(value=self.actual_value)
+
+    # -----------------------------------------------------------------------------
+
+    def __is_always_null(self) -> bool:
+        return self.__hap_type_id in {
+            self.__PROGRAMMABLE_SWITCH,
+        }
+
+    # -----------------------------------------------------------------------------
+
+    def __immediate_notify(self) -> bool:
+        return self.__hap_type_id in {
+            self.__BUTTON,
+            self.__PROGRAMMABLE_SWITCH,
+        }
+
+    # -----------------------------------------------------------------------------
+
+    def __notify(
+        self,
+        value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None],
+        sender_client_address: Optional[Tuple[str, int]] = None,
+    ) -> None:
+        """Notify clients about a value change"""
+        self.accessory.publish(
+            value=self.__value_to_accessory(value=value),
+            sender=self,
+            sender_client_address=sender_client_address,
+            immediate=self.__immediate_notify(),
+        )
+
+    # -----------------------------------------------------------------------------
+
+    def __value_to_accessory(
+        self,
+        value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None],
+    ) -> Union[str, int, float, bool, None]:
+        return DataTransformHelpers.transform_for_accessory(
+            data_type=self.data_type,
+            value_format=self.format,
+            hap_data_type=self.__hap_data_type,
+            hap_valid_values=self.__hap_valid_values,
+            hap_max_length=self.__hap_max_length,
+            hap_min_value=self.__hap_min_value,
+            hap_max_value=self.__hap_max_value,
+            hap_min_step=self.__hap_min_step,
+            value=value,
+        )

@@ -23,9 +23,20 @@ from enum import unique
 
 # Library dependencies
 from fastybird_metadata.enum import ExtendedEnum
-from pyhap.characteristic import HAP_FORMAT_BOOL, HAP_FORMAT_INT, HAP_FORMAT_FLOAT, HAP_FORMAT_STRING, HAP_FORMAT_ARRAY, \
-    HAP_FORMAT_DICTIONARY, HAP_FORMAT_UINT8, HAP_FORMAT_UINT16, HAP_FORMAT_UINT32, HAP_FORMAT_UINT64, HAP_FORMAT_DATA, \
-    HAP_FORMAT_TLV8
+from pyhap.characteristic import (  # type: ignore[import]
+    HAP_FORMAT_ARRAY,
+    HAP_FORMAT_BOOL,
+    HAP_FORMAT_DATA,
+    HAP_FORMAT_DICTIONARY,
+    HAP_FORMAT_FLOAT,
+    HAP_FORMAT_INT,
+    HAP_FORMAT_STRING,
+    HAP_FORMAT_TLV8,
+    HAP_FORMAT_UINT8,
+    HAP_FORMAT_UINT16,
+    HAP_FORMAT_UINT32,
+    HAP_FORMAT_UINT64,
+)
 
 CONNECTOR_NAME: str = "homekit"
 DEVICE_NAME: str = "homekit"

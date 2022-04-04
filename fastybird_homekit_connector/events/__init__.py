@@ -15,15 +15,5 @@
 #     limitations under the License.
 
 """
-HomeKit connector module
+HomeKit connector events module
 """
-
-from .bootstrap import create_connector
-
-__version__ = "0.1.0"
-
-__all__ = ["connector", "bootstrap", "__connector_version__"]
-
-__connector_name__ = "HomeKit connector"
-
-__connector_version__ = __version__

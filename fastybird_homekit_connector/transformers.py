@@ -20,20 +20,24 @@ HomeKit connector helpers module
 
 # Python base dependencies
 from datetime import datetime
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
 from fastnumbers import fast_float, fast_int
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 
+# Library libs
 from fastybird_homekit_connector.types import HAPDataType
 
 
 def filter_enum_format(
     item: Union[str, Tuple[str, Optional[str], Optional[str]]],
-    value: Union[int, float, str, bool, datetime, ButtonPayload, SwitchPayload],
+    value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None],
 ) -> bool:
     """Filter enum format value by value"""
+    if value is None:
+        return False
+
     if isinstance(item, tuple):
         if len(item) != 3:
             return False
@@ -60,7 +64,7 @@ class DataTransformHelpers:
     """
 
     @staticmethod
-    def transform_to_connector(  # pylint: disable=too-many-branches,too-many-return-statements
+    def transform_from_accessory(  # pylint: disable=too-many-arguments,too-many-branches,too-many-statements
         data_type: DataType,
         value_format: Union[
             Tuple[Optional[int], Optional[int]],
@@ -68,98 +72,159 @@ class DataTransformHelpers:
             List[Union[str, Tuple[str, Optional[str], Optional[str]]]],
             None,
         ],
+        hap_data_type: Optional[HAPDataType],
+        hap_valid_values: Optional[Dict[str, int]],
+        hap_max_length: Optional[int],
+        hap_min_value: Optional[float],
+        hap_max_value: Optional[float],
+        hap_min_step: Optional[float],
         value: Union[str, int, float, bool, None],
-    ) -> Union[str, int, float, bool, SwitchPayload, None]:
-        """Transform value received from device"""
-        if value is None:
+    ) -> Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None]:
+        """Transform value received from Home app"""
+        transformed_value: Union[str, int, float, bool, None] = None
+
+        # HAP transformation
+
+        if hap_data_type is None:
             return None
 
-        if data_type == DataType.FLOAT:
-            try:
-                float_value = (
-                    value
-                    if isinstance(value, float)
-                    else fast_float(str(value), raise_on_invalid=True)  # type: ignore[arg-type]
-                )
+        if hap_data_type == HAPDataType.BOOLEAN:
+            if value is None:
+                transformed_value = False
 
-            except ValueError:
-                return None
+            elif not isinstance(value, bool):
+                transformed_value = str(value).lower() in ["1", "true", "on"]
 
-            if isinstance(value_format, tuple):
-                min_value, max_value = value_format
+        if hap_data_type == HAPDataType.FLOAT:
+            if value is None:
+                float_value = 0.0
 
-                if min_value is not None and min_value >= float_value:
-                    return None
+            elif not isinstance(value, float):
+                try:
+                    float_value = (
+                        value
+                        if isinstance(value, float)
+                        else fast_float(str(value), raise_on_invalid=True)  # type: ignore[arg-type]
+                    )
 
-                if max_value is not None and max_value <= float_value:
-                    return None
+                except ValueError:
+                    float_value = 0.0
 
-            return float_value
+            else:
+                float_value = value
 
-        if data_type in (
-            DataType.CHAR,
-            DataType.UCHAR,
-            DataType.SHORT,
-            DataType.USHORT,
-            DataType.INT,
-            DataType.UINT,
+            if float_value and hap_min_step:
+                float_value = round(hap_min_step * round(float_value / hap_min_step), 14)
+
+            float_value = min(
+                hap_max_value if hap_max_value is not None else float_value,
+                float_value,
+            )
+            float_value = max(
+                hap_min_value if hap_min_value is not None else float_value,
+                float_value,
+            )
+
+            transformed_value = float_value
+
+        if hap_data_type in (
+            HAPDataType.INT,
+            HAPDataType.UINT8,
+            HAPDataType.UINT16,
+            HAPDataType.UINT32,
+            HAPDataType.UINT64,
         ):
-            try:
-                int_value = (
-                    value
-                    if isinstance(value, int)
-                    else fast_int(str(value), raise_on_invalid=True)  # type: ignore[arg-type]
-                )
+            if value is None:
+                int_value = 0
 
-            except ValueError:
-                return None
+            elif not isinstance(value, int):
+                try:
+                    int_value = (
+                        value
+                        if isinstance(value, int)
+                        else fast_int(str(value), raise_on_invalid=True)  # type: ignore[arg-type]
+                    )
 
-            if isinstance(value_format, tuple):
-                min_value, max_value = value_format
+                except ValueError:
+                    int_value = 0
 
-                if min_value is not None and min_value >= int_value:
-                    return None
+            else:
+                int_value = value
 
-                if max_value is not None and max_value <= int_value:
-                    return None
+            if int_value and hap_min_step:
+                int_value = round(int(hap_min_step) * round(int_value / int(hap_min_step)), 14)
 
-            return int_value
+            int_value = min(
+                int(hap_max_value) if hap_max_value is not None else int_value,
+                int_value,
+            )
+            int_value = max(
+                int(hap_min_value) if hap_min_value is not None else int_value,
+                int_value,
+            )
 
-        if data_type == DataType.BOOLEAN:
-            return value if isinstance(value, bool) else bool(value)
+            transformed_value = int(int_value)
 
-        if data_type == DataType.STRING:
-            return str(value)
+        if hap_data_type == HAPDataType.STRING:
+            if value is None:
+                transformed_value = ""
+
+            else:
+                transformed_value = str(value)[:hap_max_length]
+
+        if hap_data_type in (
+            HAPDataType.ARRAY,
+            HAPDataType.DICTIONARY,
+            HAPDataType.DATA,
+            HAPDataType.TLV8,
+        ):
+            if value is None:
+                transformed_value = ""
+
+        if hap_valid_values is not None:
+            remapped_valid_values = map(str, hap_valid_values.values())
+
+            if str(transformed_value) not in remapped_valid_values:
+                transformed_value = min(hap_valid_values.values())
+
+        # Connector transformation
+
+        if transformed_value is None:
+            return None
 
         if data_type == DataType.ENUM:
-            if value_format is not None and isinstance(value_format, list):
-                filtered = [item for item in value_format if filter_enum_format(item=item, value=value)]
+            if format is not None and isinstance(value_format, list):
+                filtered = [item for item in value_format if filter_enum_format(item=item, value=transformed_value)]
 
                 if isinstance(filtered, list) and len(filtered) == 1:
                     if isinstance(filtered[0], tuple):
-                        return str(filtered[0][0]) if str(filtered[0][1]) == str(value) else None
+                        return (
+                            str(filtered[0][0])
+                            if str(filtered[0][1]).lower() == str(transformed_value).lower()
+                            else None
+                        )
 
                     return str(filtered[0])
 
         if data_type == DataType.SWITCH:
             if value_format is not None and isinstance(value_format, list):
-                filtered = [item for item in value_format if filter_enum_format(item=item, value=value)]
+                filtered = [item for item in value_format if filter_enum_format(item=item, value=transformed_value)]
 
                 if (
                     isinstance(filtered, list)
                     and len(filtered) == 1
                     and isinstance(filtered[0], tuple)
-                    and str(filtered[0][1]) == str(value)
+                    and str(filtered[0][1]).lower() == str(transformed_value).lower()
                     and SwitchPayload.has_value(filtered[0][0])
                 ):
                     return SwitchPayload(filtered[0][0])
 
-        return None
+        return transformed_value
 
     # -----------------------------------------------------------------------------
 
     @staticmethod
-    def transform_from_connector(  # pylint: disable=too-many-return-statements
+    def transform_for_accessory(  # pylint: disable=too-many-arguments,too-many-branches,too-many-statements
         data_type: DataType,
         value_format: Union[
             Tuple[Optional[int], Optional[int]],
@@ -167,17 +232,18 @@ class DataTransformHelpers:
             List[Union[str, Tuple[str, Optional[str], Optional[str]]]],
             None,
         ],
+        hap_data_type: Optional[HAPDataType],
+        hap_valid_values: Optional[Dict[str, int]],
+        hap_max_length: Optional[int],
+        hap_min_value: Optional[float],
+        hap_max_value: Optional[float],
+        hap_min_step: Optional[float],
         value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None],
     ) -> Union[str, int, float, bool, None]:
-        """Transform value to be sent to device"""
-        if value is None:
-            return None
+        """Transform value to be transformed to Home app"""
+        transformed_value: Union[str, int, float, bool, datetime, ButtonPayload, SwitchPayload, None] = value
 
-        if data_type == DataType.BOOLEAN:
-            if isinstance(value, bool):
-                return value
-
-            return str(value) == "1"
+        # Connector transformation
 
         if data_type == DataType.ENUM:
             if value_format is not None and isinstance(value_format, list):
@@ -187,14 +253,15 @@ class DataTransformHelpers:
                     isinstance(filtered, list)
                     and len(filtered) == 1
                     and isinstance(filtered[0], tuple)
-                    and str(filtered[0][0]) == str(value)
+                    and str(filtered[0][0]).lower() == str(value).lower()
                 ):
-                    return str(filtered[0][2])
+                    transformed_value = str(filtered[0][2])
 
-                if len(filtered) == 1 and not isinstance(filtered[0], tuple):
-                    return str(filtered[0])
+                elif len(filtered) == 1 and not isinstance(filtered[0], tuple):
+                    transformed_value = str(filtered[0])
 
-                return None
+                else:
+                    transformed_value = None
 
         if data_type == DataType.SWITCH:
             if value_format is not None and isinstance(value_format, list) and isinstance(value, SwitchPayload):
@@ -204,45 +271,120 @@ class DataTransformHelpers:
                     isinstance(filtered, list)
                     and len(filtered) == 1
                     and isinstance(filtered[0], tuple)
-                    and str(filtered[0][0]) == str(value)
+                    and str(filtered[0][0]).lower() == str(value).lower()
                 ):
-                    return str(filtered[0][2])
+                    transformed_value = str(filtered[0][2])
 
-        if not isinstance(value, (str, int, float, bool)):
-            return str(value)
+        # HAP transformation
 
-        return value
+        if hap_data_type is None:
+            return ""
 
-    # -----------------------------------------------------------------------------
+        if hap_data_type == HAPDataType.BOOLEAN:
+            if transformed_value is None:
+                transformed_value = False
 
-    @staticmethod
-    def transform_to_accessory(  # pylint: disable=too-many-return-statements
-        data_type: HAPDataType,
-        value: Union[str, int, float, bool, None],
-    ) -> Union[str, int, float, bool, None]:
-        """Transform value to be sent to accessory"""
-        if value is None:
-            return None
+            elif not isinstance(transformed_value, bool):
+                transformed_value = str(transformed_value).lower() in ["1", "true", "on"]
 
-        if data_type == HAPDataType.BOOLEAN:
-            if isinstance(value, bool):
-                return value
+        if hap_data_type == HAPDataType.FLOAT:
+            if transformed_value is None:
+                float_value = 0.0
 
-            return str(value) == "1"
+            elif not isinstance(transformed_value, float):
+                try:
+                    float_value = (
+                        transformed_value
+                        if isinstance(transformed_value, float)
+                        else fast_float(str(transformed_value), raise_on_invalid=True)  # type: ignore[arg-type]
+                    )
 
-        if data_type == HAPDataType.FLOAT:
-            return fast_float(value)
+                except ValueError:
+                    float_value = 0.0
 
-        if data_type in (
+            else:
+                float_value = transformed_value
+
+            if float_value and hap_min_step:
+                float_value = round(hap_min_step * round(float_value / hap_min_step), 14)
+
+            float_value = min(
+                hap_max_value if hap_max_value is not None else float_value,
+                float_value,
+            )
+            float_value = max(
+                hap_min_value if hap_min_value is not None else float_value,
+                float_value,
+            )
+
+            transformed_value = float_value
+
+        if hap_data_type in (
             HAPDataType.INT,
             HAPDataType.UINT8,
             HAPDataType.UINT16,
             HAPDataType.UINT32,
             HAPDataType.UINT64,
         ):
-            return fast_int(value)
+            if transformed_value is None:
+                int_value = 0
 
-        if data_type == HAPDataType.STRING:
-            return str(value)
+            elif not isinstance(transformed_value, int):
+                try:
+                    int_value = (
+                        transformed_value
+                        if isinstance(transformed_value, int)
+                        else fast_int(str(transformed_value), raise_on_invalid=True)  # type: ignore[arg-type]
+                    )
 
-        return value
+                except ValueError:
+                    int_value = 0
+
+            else:
+                int_value = transformed_value
+
+            if int_value and hap_min_step:
+                int_value = round(int(hap_min_step) * round(int_value / int(hap_min_step)), 14)
+
+            int_value = min(
+                int(hap_max_value) if hap_max_value is not None else int_value,
+                int_value,
+            )
+            int_value = max(
+                int(hap_min_value) if hap_min_value is not None else int_value,
+                int_value,
+            )
+
+            transformed_value = int(int_value)
+
+        if hap_data_type == HAPDataType.STRING:
+            if transformed_value is None:
+                transformed_value = ""
+
+            else:
+                transformed_value = str(transformed_value)[:hap_max_length]
+
+        if hap_data_type in (
+            HAPDataType.ARRAY,
+            HAPDataType.DICTIONARY,
+            HAPDataType.DATA,
+            HAPDataType.TLV8,
+        ):
+            if transformed_value is None:
+                transformed_value = ""
+
+        if hap_valid_values is not None:
+            remapped_valid_values = map(str, hap_valid_values.values())
+
+            if str(transformed_value) in remapped_valid_values:
+                if isinstance(transformed_value, (str, int, float, bool)):
+                    return transformed_value
+
+                return ""
+
+            return min(hap_valid_values.values())
+
+        if isinstance(transformed_value, (str, int, float, bool)):
+            return transformed_value
+
+        return ""

@@ -24,11 +24,17 @@ import uuid
 from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
+from fastybird_devices_module.repositories.state import (
+    ChannelPropertiesStatesRepository,
+)
+from fastybird_metadata.helpers import normalize_value
 from fastybird_metadata.types import DataType
 from inflection import camelize, underscore
+from kink import inject
 from pyhap import CHARACTERISTICS_FILE, SERVICES_FILE
 from pyhap.accessory_driver import AccessoryDriver
-from pyhap.util import hap_type_to_uuid
+from pyhap.util import hap_type_to_uuid  # type: ignore[import]
+from whistle import EventDispatcher
 
 # Library libs
 from fastybird_homekit_connector.exceptions import InvalidStateException
@@ -40,10 +46,12 @@ from fastybird_homekit_connector.registry.records import (
 from fastybird_homekit_connector.types import HAPDataType
 
 
-def read_definition_file(path):
+def read_definition_file(path: bytes) -> Dict[str, Dict[str, Union[str, List[str], Dict[str, Union[str, int, float]]]]]:
     """Read file and return a dict"""
     with open(path, "r", encoding="utf8") as file:
-        return json.load(file)
+        definition: Dict[str, Dict[str, Union[str, List[str], Dict[str, Union[str, int, float]]]]] = json.load(file)
+
+        return definition
 
 
 class AccessoriesRegistry:
@@ -229,7 +237,7 @@ class ServicesRegistry:
     def __init__(
         self,
         characteristics_registry: "CharacteristicsRegistry",
-        services_definitions: str = SERVICES_FILE,
+        services_definitions: bytes = SERVICES_FILE,
     ) -> None:
         self.__items = {}
 
@@ -280,9 +288,10 @@ class ServicesRegistry:
         accessory_id: uuid.UUID,
         service_id: uuid.UUID,
         service_identifier: str,
+        service_name: str,
     ) -> ServiceRecord:
         """Append service record into registry"""
-        service_name = camelize(underscore(service_identifier))
+        service_name = camelize(underscore(service_name))
 
         if service_name not in self.__services_definitions:
             raise AttributeError(f"Provided invalid service name: {service_name}")
@@ -340,6 +349,7 @@ class ServicesRegistry:
             self.__items = {}
 
 
+@inject
 class CharacteristicsRegistry:
     """
     Characteristics registry
@@ -354,15 +364,25 @@ class CharacteristicsRegistry:
 
     __iterator_index = 0
 
+    __event_dispatcher: EventDispatcher
+
+    __channel_property_state_repository: ChannelPropertiesStatesRepository
+
     __characteristics_definitions: Dict
 
     # -----------------------------------------------------------------------------
 
     def __init__(
         self,
-        characteristics_definitions: str = CHARACTERISTICS_FILE,
+        event_dispatcher: EventDispatcher,
+        channel_property_state_repository: ChannelPropertiesStatesRepository,
+        characteristics_definitions: bytes = CHARACTERISTICS_FILE,
     ) -> None:
         self.__items = {}
+
+        self.__event_dispatcher = event_dispatcher
+
+        self.__channel_property_state_repository = channel_property_state_repository
 
         self.__characteristics_definitions = read_definition_file(characteristics_definitions)
 
@@ -406,11 +426,12 @@ class CharacteristicsRegistry:
 
     # -----------------------------------------------------------------------------
 
-    def append(  # pylint: disable=too-many-arguments
+    def append(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         service_id: uuid.UUID,
         characteristic_id: uuid.UUID,
         characteristic_identifier: str,
+        characteristic_name: str,
         characteristic_data_type: DataType,
         characteristic_format: Union[
             Tuple[Optional[int], Optional[int]],
@@ -423,7 +444,7 @@ class CharacteristicsRegistry:
         characteristic_settable: bool = False,
     ) -> CharacteristicRecord:
         """Append characteristic record into registry"""
-        characteristic_name = camelize(underscore(characteristic_identifier))
+        characteristic_name = camelize(underscore(characteristic_name))
 
         if characteristic_name not in self.__characteristics_definitions:
             raise AttributeError(f"Provided invalid characteristic name: {characteristic_name}")
@@ -435,23 +456,89 @@ class CharacteristicsRegistry:
 
         hap_data_type: Optional[HAPDataType] = None
 
-        if "Format" in characteristic_config and HAPDataType.has_value(characteristic_config.get("Format")):
-            hap_data_type = HAPDataType(characteristic_config.get("Format"))
+        if CharacteristicRecord.PROP_FORMAT in characteristic_config and HAPDataType.has_value(
+            str(characteristic_config.get(CharacteristicRecord.PROP_FORMAT))
+        ):
+            hap_data_type = HAPDataType(characteristic_config.get(CharacteristicRecord.PROP_FORMAT))
+
+        hap_valid_values: Optional[Dict[str, int]] = None
+
+        if CharacteristicRecord.PROP_VALID_VALUES in characteristic_config:
+            hap_valid_values = characteristic_config.get(CharacteristicRecord.PROP_VALID_VALUES)
+
+        hap_max_length: Optional[int] = characteristic_config.get(CharacteristicRecord.PROP_MAX_LEN, None)
+
+        hap_min_value: Optional[float] = None
+
+        if CharacteristicRecord.PROP_MIN_VALUE in characteristic_config:
+            hap_min_value = float(str(characteristic_config.get(CharacteristicRecord.PROP_MIN_VALUE)))
+
+        hap_max_value: Optional[float] = None
+
+        if CharacteristicRecord.PROP_MAX_VALUE in characteristic_config:
+            hap_max_value = float(str(characteristic_config.get(CharacteristicRecord.PROP_MAX_VALUE)))
+
+        hap_min_step: Optional[float] = None
+
+        if CharacteristicRecord.PROP_MIN_STEP in characteristic_config:
+            hap_min_step = float(str(characteristic_config.get(CharacteristicRecord.PROP_MIN_STEP)))
+
+        hap_permissions: List[str] = []
+
+        if CharacteristicRecord.PROP_PERMISSIONS in characteristic_config:
+            hap_permissions = (
+                list(characteristic_config.get(CharacteristicRecord.PROP_PERMISSIONS, []))
+                if isinstance(characteristic_config.get(CharacteristicRecord.PROP_PERMISSIONS, []), list)
+                else []
+            )
+
+        hap_unit: Optional[str] = None
+
+        if CharacteristicRecord.PROP_UNIT in characteristic_config:
+            hap_unit = str(characteristic_config.get(CharacteristicRecord.PROP_UNIT))
 
         characteristic_record: CharacteristicRecord = CharacteristicRecord(
+            event_dispatcher=self.__event_dispatcher,
             service_id=service_id,
             characteristic_id=characteristic_id,
             characteristic_identifier=characteristic_identifier,
             characteristic_name=characteristic_name,
             characteristic_type_id=hap_type_to_uuid(characteristic_config.pop("UUID")),
-            characteristic_properties=characteristic_config,
             characteristic_data_type=characteristic_data_type,
             characteristic_format=characteristic_format,
             characteristic_number_of_decimals=characteristic_number_of_decimals,
             characteristic_queryable=characteristic_queryable,
             characteristic_settable=characteristic_settable,
             characteristic_hap_data_type=hap_data_type,
+            characteristic_hap_valid_values=hap_valid_values,
+            characteristic_hap_max_length=hap_max_length,
+            characteristic_hap_min_value=hap_min_value,
+            characteristic_hap_max_value=hap_max_value,
+            characteristic_hap_min_step=hap_min_step,
+            characteristic_hap_permissions=hap_permissions,
+            characteristic_hap_unit=hap_unit,
         )
+
+        characteristic_record.actual_value = None
+        characteristic_record.expected_value = None
+
+        try:
+            stored_state = self.__channel_property_state_repository.get_by_id(property_id=characteristic_id)
+
+            if stored_state is not None:
+                characteristic_record.actual_value = normalize_value(
+                    data_type=characteristic_data_type,
+                    value_format=characteristic_format,
+                    value=stored_state.actual_value,
+                )
+                characteristic_record.expected_value = normalize_value(
+                    data_type=characteristic_data_type,
+                    value_format=characteristic_format,
+                    value=stored_state.expected_value,
+                )
+
+        except (NotImplementedError, AttributeError):
+            pass
 
         self.__items[characteristic_record.id.__str__()] = characteristic_record
 
@@ -486,19 +573,6 @@ class CharacteristicsRegistry:
 
         else:
             self.__items = {}
-
-    # -----------------------------------------------------------------------------
-
-    def __update(self, characteristic: CharacteristicRecord) -> bool:
-        items = self.__items.copy()
-
-        for record in items.values():
-            if record.id == characteristic.id:
-                self.__items[characteristic.id.__str__()] = characteristic
-
-                return True
-
-        return False
 
     # -----------------------------------------------------------------------------
 
