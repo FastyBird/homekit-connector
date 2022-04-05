@@ -1,0 +1,9 @@
+import uuid
+from typing import List
+
+
+def generate_pincode() -> bytearray: ...
+
+def uuid_to_hap_type(uuid: uuid.UUID) -> List[str]: ...
+
+def hap_type_to_uuid(hap_type: List[str]) -> uuid.UUID: ...

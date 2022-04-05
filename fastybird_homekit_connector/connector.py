@@ -22,7 +22,6 @@ HomeKit connector module
 import logging
 import uuid
 from asyncio import AbstractEventLoop
-from os import path
 from typing import Dict, Optional, Union
 
 # Library dependencies
@@ -45,7 +44,7 @@ from fastybird_devices_module.repositories.state import (
     ChannelPropertiesStatesRepository,
 )
 from fastybird_metadata.helpers import normalize_value
-from fastybird_metadata.types import ControlAction
+from fastybird_metadata.types import ControlAction, DataType
 from kink import inject
 from pyhap.accessory import Bridge
 from pyhap.accessory_driver import AccessoryDriver
@@ -59,6 +58,7 @@ from fastybird_homekit_connector.registry.model import (
     CharacteristicsRegistry,
     ServicesRegistry,
 )
+from fastybird_homekit_connector.utils import KeyHashHelpers
 
 
 @inject(
@@ -83,8 +83,8 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
     __services_registry: ServicesRegistry
     __characteristics_registry: CharacteristicsRegistry
 
-    __driver: AccessoryDriver
-    __bridge: Bridge
+    __accessory_driver: AccessoryDriver
+    __accessory_bridge: Bridge
 
     __devices_repository: DevicesRepository
 
@@ -101,6 +101,8 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
     def __init__(  # pylint: disable=too-many-arguments
         self,
         connector_id: uuid.UUID,
+        accessory_driver: AccessoryDriver,
+        accessory_bridge: Bridge,
         devices_repository: DevicesRepository,
         accessories_registry: AccessoriesRegistry,
         services_registry: ServicesRegistry,
@@ -111,6 +113,9 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         loop: Optional[AbstractEventLoop] = None,
     ) -> None:
         self.__connector_id = connector_id
+
+        self.__accessory_driver = accessory_driver
+        self.__accessory_bridge = accessory_bridge
 
         self.__devices_repository = devices_repository
 
@@ -123,14 +128,6 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         self.__loop = loop
 
         self.__events_listener = events_listener
-
-        # Start the accessory on port 51826 & save the accessory.state to our custom path
-        self.__driver = AccessoryDriver(
-            port=51826,
-            persist_file=("/var/miniserver-gateway/miniserver_gateway/homekit.accessory.state".replace("/", path.sep)),
-            loop=self.__loop,
-            pincode=bytearray(str("426-42-409").encode("ascii")),
-        )
 
         self.__logger = logger
 
@@ -145,16 +142,6 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     def initialize(self, settings: Optional[Dict] = None) -> None:
         """Set connector to initial state"""
-        self.__bridge = Bridge(driver=self.__driver, display_name="Bridge")
-        self.__bridge.set_info_service(
-            firmware_revision="0.0.1",
-            manufacturer="FastyBird",
-            model="rPI gateway",
-            serial_number=self.__connector_id.__str__(),
-        )
-
-        self.__driver.add_accessory(accessory=self.__bridge)
-
         for device in self.__devices_repository.get_all_by_connector(connector_id=self.__connector_id):
             self.initialize_device(device=device)
 
@@ -166,13 +153,95 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
             accessory_id=device.id,
             accessory_enabled=device.enabled,
             accessory_name=device.name if device.name is not None else device.identifier,
-            driver=self.__driver,
+            driver=self.__accessory_driver,
         )
+
+        # Special service for accessory describing
+        service = self.__services_registry.append(
+            accessory=accessory,
+            service_id=device.id,
+            service_identifier="accessory-information",
+            service_name="AccessoryInformation",
+        )
+
+        characteristic = self.__characteristics_registry.append(
+            accessory=accessory,
+            service=service,
+            characteristic_id=uuid.uuid4(),
+            characteristic_identifier="identify",
+            characteristic_name="Identify",
+            characteristic_data_type=DataType.BOOLEAN,
+            characteristic_value=False,
+        )
+
+        self.__services_registry.add_characteristic(service=service, characteristic=characteristic)
+
+        characteristic = self.__characteristics_registry.append(
+            accessory=accessory,
+            service=service,
+            characteristic_id=uuid.uuid4(),
+            characteristic_identifier="manufacturer",
+            characteristic_name="Manufacturer",
+            characteristic_data_type=DataType.STRING,
+            characteristic_value="FastyBird",
+        )
+
+        self.__services_registry.add_characteristic(service=service, characteristic=characteristic)
+
+        characteristic = self.__characteristics_registry.append(
+            accessory=accessory,
+            service=service,
+            characteristic_id=uuid.uuid4(),
+            characteristic_identifier="model",
+            characteristic_name="Model",
+            characteristic_data_type=DataType.STRING,
+            characteristic_value="Virtual device",
+        )
+
+        self.__services_registry.add_characteristic(service=service, characteristic=characteristic)
+
+        characteristic = self.__characteristics_registry.append(
+            accessory=accessory,
+            service=service,
+            characteristic_id=uuid.uuid4(),
+            characteristic_identifier="name",
+            characteristic_name="Name",
+            characteristic_data_type=DataType.STRING,
+            characteristic_value=device.name,
+        )
+
+        self.__services_registry.add_characteristic(service=service, characteristic=characteristic)
+
+        characteristic = self.__characteristics_registry.append(
+            accessory=accessory,
+            service=service,
+            characteristic_id=uuid.uuid4(),
+            characteristic_identifier="firmware-revision",
+            characteristic_name="FirmwareRevision",
+            characteristic_data_type=DataType.STRING,
+            characteristic_value="0.0.1",
+        )
+
+        self.__services_registry.add_characteristic(service=service, characteristic=characteristic)
+
+        characteristic = self.__characteristics_registry.append(
+            accessory=accessory,
+            service=service,
+            characteristic_id=uuid.uuid4(),
+            characteristic_identifier="serial-number",
+            characteristic_name="SerialNumber",
+            characteristic_data_type=DataType.STRING,
+            characteristic_value=KeyHashHelpers.encode(device.id.__int__()),
+        )
+
+        self.__services_registry.add_characteristic(service=service, characteristic=characteristic)
+
+        self.__accessories_registry.add_service(accessory=accessory, service=service)
 
         for channel in device.channels:
             self.initialize_device_channel(device=device, channel=channel)
 
-        self.__bridge.add_accessory(acc=accessory)
+        self.__accessory_bridge.add_accessory(acc=accessory)
 
     # -----------------------------------------------------------------------------
 
@@ -339,19 +408,18 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         # When connector is starting...
         self.__events_listener.open()
 
-        self.__driver.start_service()
+        self.__accessory_driver.start_service()
 
         if self.__loop is None:
-            self.__driver.loop.run_forever()
+            self.__accessory_driver.loop.run_forever()
 
         self.__logger.info("Connector has been started")
-        print(self.__driver.state.pincode.decode())
 
     # -----------------------------------------------------------------------------
 
     def stop(self) -> None:
         """Close all opened connections & stop connector"""
-        self.__driver.stop()
+        self.__accessory_driver.stop()
 
         self.__events_listener.close()
 
@@ -361,7 +429,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     def has_unfinished_tasks(self) -> bool:
         """Check if connector has some unfinished task"""
-        return bool(self.__driver.loop.is_running())
+        return bool(self.__accessory_driver.loop.is_running())
 
     # -----------------------------------------------------------------------------
 

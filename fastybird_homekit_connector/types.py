@@ -22,6 +22,7 @@ HomeKit connector types
 from enum import unique
 
 # Library dependencies
+from fastybird_metadata.devices_module import ConnectorPropertyName
 from fastybird_metadata.enum import ExtendedEnum
 from pyhap.characteristic import (
     HAP_FORMAT_ARRAY,
@@ -65,6 +66,26 @@ class HAPDataType(ExtendedEnum):
     UINT64: str = HAP_FORMAT_UINT64
     DATA: str = HAP_FORMAT_DATA
     TLV8: str = HAP_FORMAT_TLV8
+
+    # -----------------------------------------------------------------------------
+
+    def __hash__(self) -> int:
+        return hash(self._name_)  # pylint: disable=no-member
+
+
+@unique
+class ConnectorAttribute(ExtendedEnum):
+    """
+    Connector attribute name
+
+    @package        FastyBird:HomeKitConnector!
+    @module         types
+
+    @author         Adam Kadlec <adam.kadlec@fastybird.com>
+    """
+
+    PORT: str = ConnectorPropertyName.PORT.value
+    PINCODE: str = "pincode"
 
     # -----------------------------------------------------------------------------
 

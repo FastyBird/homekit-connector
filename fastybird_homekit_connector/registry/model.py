@@ -34,7 +34,7 @@ from inflection import camelize, underscore
 from kink import inject
 from pyhap import CHARACTERISTICS_FILE, SERVICES_FILE
 from pyhap.accessory_driver import AccessoryDriver
-from pyhap.util import hap_type_to_uuid  # type: ignore[import]
+from pyhap.util import hap_type_to_uuid
 from whistle import EventDispatcher
 
 # Library libs

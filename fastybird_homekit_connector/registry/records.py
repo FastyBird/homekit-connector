@@ -43,7 +43,7 @@ from pyhap.const import (
     HAP_REPR_VALUE,
 )
 from pyhap.iid_manager import IIDManager
-from pyhap.util import uuid_to_hap_type  # type: ignore[import]
+from pyhap.util import uuid_to_hap_type
 from whistle import EventDispatcher
 
 # Library libs
@@ -91,27 +91,6 @@ class AccessoryRecord:
         self.__hap_name = accessory_name
 
         self.services = set()
-
-        # Define accessory basic information
-        info_service = self.__hap_driver.loader.get_service("AccessoryInformation")
-
-        info_service.configure_char("Identify", value=False)
-        info_service.configure_char("Manufacturer", value="FastyBird")
-        info_service.configure_char("Model", value="Custom model")
-        info_service.configure_char("Name", value=self.__hap_name)
-        info_service.configure_char("FirmwareRevision", value="0.0.1")
-        info_service.configure_char("SerialNumber", value=accessory_id.__str__())
-
-        self.iid_manager.assign(info_service)
-
-        self.services.add(info_service)
-
-        info_service.broker = self
-
-        for char in info_service.characteristics:
-            self.iid_manager.assign(char)
-
-            char.broker = self
 
     # -----------------------------------------------------------------------------
 

@@ -22,12 +22,22 @@ HomeKit connector entities module
 from typing import Union
 
 # Library dependencies
-from fastybird_devices_module.entities.connector import ConnectorEntity
+from fastybird_devices_module.entities.connector import (
+    ConnectorEntity,
+    ConnectorStaticPropertyEntity,
+)
 from fastybird_devices_module.entities.device import DeviceEntity
 from fastybird_metadata.types import ConnectorSource, ModuleSource, PluginSource
+from pyhap.util import generate_pincode
 
 # Library libs
-from fastybird_homekit_connector.types import CONNECTOR_NAME, DEVICE_NAME
+from fastybird_homekit_connector.types import (
+    CONNECTOR_NAME,
+    DEVICE_NAME,
+    ConnectorAttribute,
+)
+
+DEFAULT_PORT: int = 51826
 
 
 class HomeKitConnectorEntity(ConnectorEntity):
@@ -55,6 +65,44 @@ class HomeKitConnectorEntity(ConnectorEntity):
     def source(self) -> Union[ModuleSource, ConnectorSource, PluginSource]:
         """Entity source type"""
         return ConnectorSource.HOMEKIT_CONNECTOR
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def port(self) -> int:
+        """Connector network port"""
+        port_property = next(
+            iter([record for record in self.properties if record.identifier == ConnectorAttribute.PORT.value]),
+            None,
+        )
+
+        if (
+            port_property is None
+            or not isinstance(port_property, ConnectorStaticPropertyEntity)
+            or not isinstance(port_property.value, int)
+        ):
+            return DEFAULT_PORT
+
+        return port_property.value
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def pincode(self) -> bytearray:
+        """Connector PIN code"""
+        pincode_property = next(
+            iter([record for record in self.properties if record.identifier == ConnectorAttribute.PINCODE.value]),
+            None,
+        )
+
+        if (
+            pincode_property is None
+            or not isinstance(pincode_property, ConnectorStaticPropertyEntity)
+            or not isinstance(pincode_property.value, str)
+        ):
+            return generate_pincode()
+
+        return bytearray(pincode_property.value.encode("ascii"))
 
 
 class HomeKitDeviceEntity(DeviceEntity):  # pylint: disable=too-few-public-methods
