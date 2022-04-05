@@ -48,7 +48,6 @@ from whistle import EventDispatcher
 
 # Library libs
 from fastybird_homekit_connector.events.events import CharacteristicCommandEvent
-from fastybird_homekit_connector.exceptions import InvalidStateException
 from fastybird_homekit_connector.transformers import DataTransformHelpers
 from fastybird_homekit_connector.types import HAPDataType
 
@@ -179,12 +178,8 @@ class AccessoryRecord:
 
         self.services.add(service)
 
-        service.accessory = self
-
         for char in service.characteristics:
             self.iid_manager.assign(char)
-
-            char.accessory = self
 
     # -----------------------------------------------------------------------------
 
@@ -254,7 +249,7 @@ class ServiceRecord:  # pylint: disable=too-many-instance-attributes
 
     characteristics: Set["CharacteristicRecord"] = set()
 
-    __accessory_id: uuid.UUID
+    __accessory: AccessoryRecord
 
     __id: uuid.UUID
     __identifier: str
@@ -263,19 +258,17 @@ class ServiceRecord:  # pylint: disable=too-many-instance-attributes
     __hap_name: str
     __hap_is_primary: Optional[bool] = None
 
-    __hap_accessory: Optional[AccessoryRecord] = None
-
     # -----------------------------------------------------------------------------
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        accessory_id: uuid.UUID,
+        accessory: AccessoryRecord,
         service_id: uuid.UUID,
         service_identifier: str,
         service_name: str,
         service_type_id: uuid.UUID,
     ) -> None:
-        self.__accessory_id = accessory_id
+        self.__accessory = accessory
 
         self.__id = service_id
         self.__identifier = service_identifier
@@ -283,7 +276,6 @@ class ServiceRecord:  # pylint: disable=too-many-instance-attributes
         self.__hap_type_id = service_type_id
         self.__hap_name = service_name
         self.__hap_is_primary = None
-        self.__hap_accessory = None
 
         self.characteristics = set()
 
@@ -291,7 +283,7 @@ class ServiceRecord:  # pylint: disable=too-many-instance-attributes
 
     def __repr__(self) -> str:
         """Return the representation of the service"""
-        characteristics = {char.name: char.actual_value for char in self.characteristics}
+        characteristics = {char.name: char.get_value() for char in self.characteristics}
 
         return f"<service display_name={self.name} chars={characteristics}>"
 
@@ -300,7 +292,7 @@ class ServiceRecord:  # pylint: disable=too-many-instance-attributes
     @property
     def accessory_id(self) -> uuid.UUID:
         """Service accessory unique identifier"""
-        return self.__accessory_id
+        return self.__accessory.id
 
     # -----------------------------------------------------------------------------
 
@@ -328,25 +320,13 @@ class ServiceRecord:  # pylint: disable=too-many-instance-attributes
     @property
     def accessory(self) -> AccessoryRecord:
         """Characteristic HAP accessory"""
-        if self.__hap_accessory is None:
-            raise InvalidStateException("Accessory is not assigned to service")
-
-        return self.__hap_accessory
-
-    # -----------------------------------------------------------------------------
-
-    @accessory.setter
-    def accessory(self, accessory: AccessoryRecord) -> None:
-        """Characteristic HAP accessory setter"""
-        self.__hap_accessory = accessory
+        return self.__accessory
 
     # -----------------------------------------------------------------------------
 
     def add_characteristic(self, char: "CharacteristicRecord") -> None:
         """Add the given characteristic to Service"""
         if not any(char.type_id == original_char.type_id for original_char in self.characteristics):
-            char.service = self
-
             self.characteristics.add(char)
 
     # -----------------------------------------------------------------------------
@@ -377,7 +357,8 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
 
     __event_dispatcher: EventDispatcher
 
-    __service_id: uuid.UUID
+    __accessory: AccessoryRecord
+    __service: ServiceRecord
 
     __id: uuid.UUID
     __identifier: str
@@ -407,9 +388,6 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
     __hap_permissions: List[str] = []
     __hap_unit: Optional[str] = None
 
-    __hap_accessory: Optional[AccessoryRecord] = None
-    __hap_service: Optional[ServiceRecord] = None
-
     PROP_FORMAT: str = "Format"
     PROP_MAX_VALUE: str = "maxValue"
     PROP_MIN_STEP: str = "minStep"
@@ -430,7 +408,8 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
     def __init__(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         event_dispatcher: EventDispatcher,
-        service_id: uuid.UUID,
+        accessory: AccessoryRecord,
+        service: ServiceRecord,
         characteristic_type_id: uuid.UUID,
         characteristic_id: uuid.UUID,
         characteristic_identifier: str,
@@ -456,7 +435,8 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
     ) -> None:
         self.__event_dispatcher = event_dispatcher
 
-        self.__service_id = service_id
+        self.__accessory = accessory
+        self.__service = service
 
         self.__id = characteristic_id
         self.__identifier = characteristic_identifier
@@ -506,20 +486,14 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
         if self.__hap_unit is not None:
             properties[self.PROP_UNIT] = self.__hap_unit
 
-        if self.expected_value is not None:
-            value = self.__value_to_accessory(value=self.expected_value)
-
-        else:
-            value = self.__value_to_accessory(value=self.actual_value)
-
-        return f"<characteristic display_name={self.name} value={value} properties={properties}>"
+        return f"<characteristic display_name={self.name} value={self.get_value()} properties={properties}>"
 
     # -----------------------------------------------------------------------------
 
     @property
     def service_id(self) -> uuid.UUID:
         """Characteristic service unique identifier"""
-        return self.__service_id
+        return self.__service.id
 
     # -----------------------------------------------------------------------------
 
@@ -631,31 +605,14 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
     @property
     def accessory(self) -> AccessoryRecord:
         """Characteristic HAP accessory"""
-        if self.__hap_accessory is None:
-            raise InvalidStateException("Accessory is not assigned to characteristic")
-
-        return self.__hap_accessory
-
-    # -----------------------------------------------------------------------------
-
-    @accessory.setter
-    def accessory(self, accessory: AccessoryRecord) -> None:
-        """Characteristic HAP accessory setter"""
-        self.__hap_accessory = accessory
+        return self.__accessory
 
     # -----------------------------------------------------------------------------
 
     @property
     def service(self) -> Optional[ServiceRecord]:
         """Characteristic HAP service"""
-        return self.__hap_service
-
-    # -----------------------------------------------------------------------------
-
-    @service.setter
-    def service(self, service: ServiceRecord) -> None:
-        """Characteristic HAP service setter"""
-        self.__hap_service = service
+        return self.__service
 
     # -----------------------------------------------------------------------------
 

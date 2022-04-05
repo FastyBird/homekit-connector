@@ -21,6 +21,7 @@ HomeKit connector registry module models
 # Python base dependencies
 import json
 import uuid
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
 # Library dependencies
@@ -28,7 +29,7 @@ from fastybird_devices_module.repositories.state import (
     ChannelPropertiesStatesRepository,
 )
 from fastybird_metadata.helpers import normalize_value
-from fastybird_metadata.types import DataType
+from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 from inflection import camelize, underscore
 from kink import inject
 from pyhap import CHARACTERISTICS_FILE, SERVICES_FILE
@@ -149,7 +150,7 @@ class AccessoriesRegistry:
 
         self.__update(accessory=accessory)
 
-        updated_accessory = self.get_by_id(accessory.id)
+        updated_accessory = self.get_by_id(accessory_id=accessory.id)
 
         if updated_accessory is None:
             raise InvalidStateException("Accessory record could not be re-fetched from registry after update")
@@ -164,7 +165,22 @@ class AccessoriesRegistry:
 
         self.__update(accessory=accessory)
 
-        updated_accessory = self.get_by_id(accessory.id)
+        updated_accessory = self.get_by_id(accessory_id=accessory.id)
+
+        if updated_accessory is None:
+            raise InvalidStateException("Accessory record could not be re-fetched from registry after update")
+
+        return updated_accessory
+
+    # -----------------------------------------------------------------------------
+
+    def add_service(self, accessory: AccessoryRecord, service: ServiceRecord) -> AccessoryRecord:
+        """Add service to accessory"""
+        accessory.add_service(service)
+
+        self.__update(accessory=accessory)
+
+        updated_accessory = self.get_by_id(accessory_id=accessory.id)
 
         if updated_accessory is None:
             raise InvalidStateException("Accessory record could not be re-fetched from registry after update")
@@ -285,7 +301,7 @@ class ServicesRegistry:
 
     def append(
         self,
-        accessory_id: uuid.UUID,
+        accessory: AccessoryRecord,
         service_id: uuid.UUID,
         service_identifier: str,
         service_name: str,
@@ -302,7 +318,7 @@ class ServicesRegistry:
             raise KeyError(f"Could not load service: {service_name}")
 
         service_record: ServiceRecord = ServiceRecord(
-            accessory_id=accessory_id,
+            accessory=accessory,
             service_id=service_id,
             service_identifier=service_identifier,
             service_name=service_name,
@@ -347,6 +363,34 @@ class ServicesRegistry:
                 self.__characteristics_registry.reset(service_id=record.id)
 
             self.__items = {}
+
+    # -----------------------------------------------------------------------------
+
+    def add_characteristic(self, service: ServiceRecord, characteristic: CharacteristicRecord) -> ServiceRecord:
+        """Add characteristic to service"""
+        service.add_characteristic(characteristic)
+
+        self.__update(service=service)
+
+        updated_service = self.get_by_id(service_id=service.id)
+
+        if updated_service is None:
+            raise InvalidStateException("Service record could not be re-fetched from registry after update")
+
+        return updated_service
+
+    # -----------------------------------------------------------------------------
+
+    def __update(self, service: ServiceRecord) -> bool:
+        items = self.__items.copy()
+
+        for record in items.values():
+            if record.id == service.id:
+                self.__items[service.id.__str__()] = service
+
+                return True
+
+        return False
 
 
 @inject
@@ -428,7 +472,8 @@ class CharacteristicsRegistry:
 
     def append(  # pylint: disable=too-many-arguments,too-many-locals
         self,
-        service_id: uuid.UUID,
+        accessory: AccessoryRecord,
+        service: ServiceRecord,
         characteristic_id: uuid.UUID,
         characteristic_identifier: str,
         characteristic_name: str,
@@ -499,7 +544,8 @@ class CharacteristicsRegistry:
 
         characteristic_record: CharacteristicRecord = CharacteristicRecord(
             event_dispatcher=self.__event_dispatcher,
-            service_id=service_id,
+            accessory=accessory,
+            service=service,
             characteristic_id=characteristic_id,
             characteristic_identifier=characteristic_identifier,
             characteristic_name=characteristic_name,
@@ -573,6 +619,38 @@ class CharacteristicsRegistry:
 
         else:
             self.__items = {}
+
+    # -----------------------------------------------------------------------------
+
+    def set_actual_value(
+        self,
+        characteristic: CharacteristicRecord,
+        value: Union[int, float, str, bool, datetime, ButtonPayload, SwitchPayload, None],
+    ) -> CharacteristicRecord:
+        """Set characteristic expected value"""
+        characteristic.actual_value = value
+
+        self.__update(characteristic=characteristic)
+
+        updated_characteristic = self.get_by_id(characteristic.id)
+
+        if updated_characteristic is None:
+            raise InvalidStateException("Register record could not be re-fetched from registry after update")
+
+        return updated_characteristic
+
+    # -----------------------------------------------------------------------------
+
+    def __update(self, characteristic: CharacteristicRecord) -> bool:
+        items = self.__items.copy()
+
+        for record in items.values():
+            if record.id == characteristic.id:
+                self.__items[characteristic.id.__str__()] = characteristic
+
+                return True
+
+        return False
 
     # -----------------------------------------------------------------------------
 

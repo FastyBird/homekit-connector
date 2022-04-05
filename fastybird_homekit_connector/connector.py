@@ -131,16 +131,6 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
             pincode=bytearray(str("426-42-409").encode("ascii")),
         )
 
-        self.__bridge = Bridge(driver=self.__driver, display_name="Bridge")
-        self.__bridge.set_info_service(
-            firmware_revision="0.0.1",
-            manufacturer="FastyBird",
-            model="rPI gateway",
-            serial_number=connector_id.__str__(),
-        )
-
-        self.__driver.add_accessory(accessory=self.__bridge)
-
         self.__logger = logger
 
     # -----------------------------------------------------------------------------
@@ -154,6 +144,16 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     def initialize(self, settings: Optional[Dict] = None) -> None:
         """Set connector to initial state"""
+        self.__bridge = Bridge(driver=self.__driver, display_name="Bridge")
+        self.__bridge.set_info_service(
+            firmware_revision="0.0.1",
+            manufacturer="FastyBird",
+            model="rPI gateway",
+            serial_number=self.__connector_id.__str__(),
+        )
+
+        self.__driver.add_accessory(accessory=self.__bridge)
+
         for device in self.__devices_repository.get_all_by_connector(connector_id=self.__connector_id):
             self.initialize_device(device=device)
 
@@ -161,7 +161,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     def initialize_device(self, device: HomeKitDeviceEntity) -> None:
         """Initialize device in connector registry"""
-        self.__accessories_registry.append(
+        accessory = self.__accessories_registry.append(
             accessory_id=device.id,
             accessory_enabled=device.enabled,
             accessory_name=device.name if device.name is not None else device.identifier,
@@ -170,6 +170,8 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
         for channel in device.channels:
             self.initialize_device_channel(device=device, channel=channel)
+
+        self.__bridge.add_accessory(acc=accessory)
 
     # -----------------------------------------------------------------------------
 
@@ -208,8 +210,13 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         if channel.name is None:
             return
 
-        self.__services_registry.append(
-            accessory_id=device.id,
+        accessory = self.__accessories_registry.get_by_id(accessory_id=device.id)
+
+        if accessory is None:
+            return
+
+        service = self.__services_registry.append(
+            accessory=accessory,
             service_id=channel.id,
             service_identifier=channel.identifier,
             service_name=channel.name,
@@ -217,6 +224,8 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
         for channel_property in channel.properties:
             self.initialize_device_channel_property(channel=channel, channel_property=channel_property)
+
+        self.__accessories_registry.add_service(accessory=accessory, service=service)
 
     # -----------------------------------------------------------------------------
 
@@ -239,8 +248,19 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         if channel_property.name is None:
             return
 
-        self.__characteristics_registry.append(
-            service_id=channel.id,
+        accessory = self.__accessories_registry.get_by_id(accessory_id=channel.device.id)
+
+        if accessory is None:
+            return
+
+        service = self.__services_registry.get_by_id(service_id=channel.id)
+
+        if service is None:
+            return
+
+        characteristic = self.__characteristics_registry.append(
+            accessory=accessory,
+            service=service,
             characteristic_id=channel_property.id,
             characteristic_identifier=channel_property.identifier,
             characteristic_name=channel_property.name,
@@ -250,6 +270,8 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
             characteristic_queryable=channel_property.queryable,
             characteristic_settable=channel_property.settable,
         )
+
+        self.__services_registry.add_characteristic(service=service, characteristic=characteristic)
 
     # -----------------------------------------------------------------------------
 
@@ -272,10 +294,13 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
             if state is None:
                 return
 
-            char.actual_value = normalize_value(
-                data_type=channel_property.data_type,
-                value=state.actual_value,
-                value_format=channel_property.format,
+            self.__characteristics_registry.set_actual_value(
+                characteristic=char,
+                value=normalize_value(
+                    data_type=channel_property.data_type,
+                    value=state.actual_value,
+                    value_format=channel_property.format,
+                ),
             )
 
     # -----------------------------------------------------------------------------
@@ -294,15 +319,6 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         """Start connector services"""
         # When connector is starting...
         self.__events_listener.open()
-
-        for accessory in self.__accessories_registry:
-            for service in self.__services_registry.get_all_by_accessory(accessory_id=accessory.id):
-                for characteristic in self.__characteristics_registry.get_all_for_service(service_id=service.id):
-                    service.add_characteristic(characteristic)
-
-                accessory.add_service(service)
-
-            self.__bridge.add_accessory(acc=accessory)
 
         self.__driver.start_service()
 
