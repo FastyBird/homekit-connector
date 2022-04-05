@@ -39,18 +39,20 @@ from fastybird_devices_module.entities.device import (
     DeviceControlEntity,
     DevicePropertyEntity,
 )
-from fastybird_devices_module.repositories.device import DevicesRepository
 from fastybird_devices_module.repositories.state import (
     ChannelPropertiesStatesRepository,
 )
-from fastybird_metadata.helpers import normalize_value
+from fastybird_devices_module.utils import normalize_value
 from fastybird_metadata.types import ControlAction, DataType
 from kink import inject
 from pyhap.accessory import Bridge
 from pyhap.accessory_driver import AccessoryDriver
 
 # Library libs
-from fastybird_homekit_connector.entities import HomeKitDeviceEntity
+from fastybird_homekit_connector.entities import (
+    HomeKitConnectorEntity,
+    HomeKitDeviceEntity,
+)
 from fastybird_homekit_connector.events.listeners import EventsListener
 from fastybird_homekit_connector.logger import Logger
 from fastybird_homekit_connector.registry.model import (
@@ -86,8 +88,6 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
     __accessory_driver: AccessoryDriver
     __accessory_bridge: Bridge
 
-    __devices_repository: DevicesRepository
-
     __channel_property_state_repository: ChannelPropertiesStatesRepository
 
     __loop: Optional[AbstractEventLoop] = None
@@ -103,7 +103,6 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         connector_id: uuid.UUID,
         accessory_driver: AccessoryDriver,
         accessory_bridge: Bridge,
-        devices_repository: DevicesRepository,
         accessories_registry: AccessoriesRegistry,
         services_registry: ServicesRegistry,
         characteristics_registry: CharacteristicsRegistry,
@@ -116,8 +115,6 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
         self.__accessory_driver = accessory_driver
         self.__accessory_bridge = accessory_bridge
-
-        self.__devices_repository = devices_repository
 
         self.__accessories_registry = accessories_registry
         self.__services_registry = services_registry
@@ -140,9 +137,9 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     # -----------------------------------------------------------------------------
 
-    def initialize(self, settings: Optional[Dict] = None) -> None:
+    def initialize(self, connector: HomeKitConnectorEntity) -> None:
         """Set connector to initial state"""
-        for device in self.__devices_repository.get_all_by_connector(connector_id=self.__connector_id):
+        for device in connector.devices:
             self.initialize_device(device=device)
 
     # -----------------------------------------------------------------------------
@@ -337,6 +334,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
                 characteristic_name=channel_property.name,
                 characteristic_data_type=channel_property.data_type,
                 characteristic_format=channel_property.format,
+                characteristic_invalid=channel_property.invalid,
                 characteristic_number_of_decimals=channel_property.number_of_decimals,
                 characteristic_queryable=channel_property.queryable,
                 characteristic_settable=channel_property.settable,
@@ -354,6 +352,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
                 characteristic_name=channel_property.name,
                 characteristic_data_type=channel_property.data_type,
                 characteristic_format=channel_property.format,
+                characteristic_invalid=channel_property.invalid,
                 characteristic_number_of_decimals=channel_property.number_of_decimals,
                 characteristic_queryable=channel_property.queryable,
                 characteristic_settable=channel_property.settable,
@@ -388,6 +387,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
                     data_type=channel_property.data_type,
                     value=state.actual_value,
                     value_format=channel_property.format,
+                    value_invalid=channel_property.invalid,
                 ),
             )
 

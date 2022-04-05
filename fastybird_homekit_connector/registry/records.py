@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple, Union
 
 # Library dependencies
-from fastybird_metadata.helpers import normalize_value
+from fastybird_devices_module.utils import normalize_value
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 from pyhap.accessory_driver import AccessoryDriver
 from pyhap.const import (
@@ -348,6 +348,7 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
         List[Union[str, Tuple[str, Optional[str], Optional[str]]]],
         None,
     ] = None
+    __invalid: Union[int, float, str, None] = None
     __number_of_decimals: Optional[int] = None
     __queryable: bool = False
     __settable: bool = False
@@ -400,6 +401,7 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
             List[Union[str, Tuple[str, Optional[str], Optional[str]]]],
             None,
         ] = None,
+        characteristic_invalid: Union[int, float, str, None] = None,
         characteristic_number_of_decimals: Optional[int] = None,
         characteristic_queryable: bool = False,
         characteristic_settable: bool = False,
@@ -422,6 +424,7 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
         self.__identifier = characteristic_identifier
         self.__data_type = characteristic_data_type
         self.__format = characteristic_format
+        self.__invalid = characteristic_invalid
         self.__number_of_decimals = characteristic_number_of_decimals
 
         self.__queryable = characteristic_queryable
@@ -519,6 +522,13 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
     ]:
         """Characteristic value format"""
         return self.__format
+
+    # -----------------------------------------------------------------------------
+
+    @property
+    def invalid(self) -> Union[int, float, str, None]:
+        """Invalid value representation"""
+        return self.__invalid
 
     # -----------------------------------------------------------------------------
 
@@ -654,7 +664,6 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
         """HAP service callback called when value change in Home app"""
         self.expected_value = normalize_value(
             data_type=self.data_type,
-            value_format=self.format,
             value=DataTransformHelpers.transform_from_accessory(
                 data_type=self.data_type,
                 value_format=self.format,
@@ -666,6 +675,8 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
                 hap_min_step=self.__hap_min_step,
                 value=value,
             ),
+            value_format=self.format,
+            value_invalid=self.invalid,
         )
 
         self.__event_dispatcher.dispatch(

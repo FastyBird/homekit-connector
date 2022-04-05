@@ -29,8 +29,8 @@ from fastybird_devices_module.repositories.channel import ChannelPropertiesRepos
 from fastybird_devices_module.repositories.state import (
     ChannelPropertiesStatesRepository,
 )
+from fastybird_devices_module.utils import normalize_value
 from fastybird_exchange.publisher import Publisher
-from fastybird_metadata.helpers import normalize_value
 from fastybird_metadata.routing import RoutingKey
 from fastybird_metadata.types import ModuleSource, PropertyAction
 from kink import inject
@@ -134,8 +134,9 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
         expected_value = normalize_value(
             data_type=channel_property.data_type,
-            value_format=channel_property.format,
             value=event.expected_value,
+            value_format=channel_property.format,
+            value_invalid=channel_property.invalid,
         )
 
         if property_state is None:

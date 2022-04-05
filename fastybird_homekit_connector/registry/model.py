@@ -28,7 +28,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from fastybird_devices_module.repositories.state import (
     ChannelPropertiesStatesRepository,
 )
-from fastybird_metadata.helpers import normalize_value
+from fastybird_devices_module.utils import normalize_value
 from fastybird_metadata.types import ButtonPayload, DataType, SwitchPayload
 from inflection import camelize, underscore
 from kink import inject
@@ -484,6 +484,7 @@ class CharacteristicsRegistry:
             List[Union[str, Tuple[str, Optional[str], Optional[str]]]],
             None,
         ] = None,
+        characteristic_invalid: Union[int, float, str, None] = None,
         characteristic_number_of_decimals: Optional[int] = None,
         characteristic_queryable: bool = False,
         characteristic_settable: bool = False,
@@ -553,6 +554,7 @@ class CharacteristicsRegistry:
             characteristic_type_id=hap_type_to_uuid(characteristic_config.pop("UUID")),
             characteristic_data_type=characteristic_data_type,
             characteristic_format=characteristic_format,
+            characteristic_invalid=characteristic_invalid,
             characteristic_number_of_decimals=characteristic_number_of_decimals,
             characteristic_queryable=characteristic_queryable,
             characteristic_settable=characteristic_settable,
@@ -573,13 +575,15 @@ class CharacteristicsRegistry:
             if stored_state is not None:
                 characteristic_record.actual_value = normalize_value(
                     data_type=characteristic_data_type,
-                    value_format=characteristic_format,
                     value=stored_state.actual_value,
+                    value_format=characteristic_format,
+                    value_invalid=characteristic_invalid,
                 )
                 characteristic_record.expected_value = normalize_value(
                     data_type=characteristic_data_type,
-                    value_format=characteristic_format,
                     value=stored_state.expected_value,
+                    value_format=characteristic_format,
+                    value_invalid=characteristic_invalid,
                 )
 
         except (NotImplementedError, AttributeError):
