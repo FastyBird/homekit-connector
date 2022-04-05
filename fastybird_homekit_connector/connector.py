@@ -33,6 +33,7 @@ from fastybird_devices_module.entities.channel import (
     ChannelEntity,
     ChannelMappedPropertyEntity,
     ChannelPropertyEntity,
+    ChannelStaticPropertyEntity,
 )
 from fastybird_devices_module.entities.connector import ConnectorControlEntity
 from fastybird_devices_module.entities.device import (
@@ -258,20 +259,38 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         if service is None:
             return
 
-        characteristic = self.__characteristics_registry.append(
-            accessory=accessory,
-            service=service,
-            characteristic_id=channel_property.id,
-            characteristic_identifier=channel_property.identifier,
-            characteristic_name=channel_property.name,
-            characteristic_data_type=channel_property.data_type,
-            characteristic_format=channel_property.format,
-            characteristic_number_of_decimals=channel_property.number_of_decimals,
-            characteristic_queryable=channel_property.queryable,
-            characteristic_settable=channel_property.settable,
-        )
+        if isinstance(channel_property, ChannelStaticPropertyEntity):
+            characteristic = self.__characteristics_registry.append(
+                accessory=accessory,
+                service=service,
+                characteristic_id=channel_property.id,
+                characteristic_identifier=channel_property.identifier,
+                characteristic_name=channel_property.name,
+                characteristic_data_type=channel_property.data_type,
+                characteristic_format=channel_property.format,
+                characteristic_number_of_decimals=channel_property.number_of_decimals,
+                characteristic_queryable=channel_property.queryable,
+                characteristic_settable=channel_property.settable,
+                characteristic_value=channel_property.value,
+            )
 
-        self.__services_registry.add_characteristic(service=service, characteristic=characteristic)
+            self.__services_registry.add_characteristic(service=service, characteristic=characteristic)
+
+        if isinstance(channel_property, ChannelMappedPropertyEntity):
+            characteristic = self.__characteristics_registry.append(
+                accessory=accessory,
+                service=service,
+                characteristic_id=channel_property.id,
+                characteristic_identifier=channel_property.identifier,
+                characteristic_name=channel_property.name,
+                characteristic_data_type=channel_property.data_type,
+                characteristic_format=channel_property.format,
+                characteristic_number_of_decimals=channel_property.number_of_decimals,
+                characteristic_queryable=channel_property.queryable,
+                characteristic_settable=channel_property.settable,
+            )
+
+            self.__services_registry.add_characteristic(service=service, characteristic=characteristic)
 
     # -----------------------------------------------------------------------------
 

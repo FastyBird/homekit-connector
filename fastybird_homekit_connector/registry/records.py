@@ -424,6 +424,7 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
         characteristic_number_of_decimals: Optional[int] = None,
         characteristic_queryable: bool = False,
         characteristic_settable: bool = False,
+        characteristic_value: Union[int, float, str, bool, datetime, ButtonPayload, SwitchPayload, None] = None,
         characteristic_hap_data_type: Optional[HAPDataType] = None,
         characteristic_hap_valid_values: Optional[Dict[str, int]] = None,
         characteristic_hap_max_length: Optional[int] = None,
@@ -446,6 +447,9 @@ class CharacteristicRecord:  # pylint: disable=too-many-instance-attributes,too-
 
         self.__queryable = characteristic_queryable
         self.__settable = characteristic_settable
+
+        self.__actual_value = characteristic_value
+        self.__expected_value = None
 
         self.__hap_type_id = characteristic_type_id
         self.__hap_name = characteristic_name

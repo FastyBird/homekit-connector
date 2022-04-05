@@ -487,6 +487,7 @@ class CharacteristicsRegistry:
         characteristic_number_of_decimals: Optional[int] = None,
         characteristic_queryable: bool = False,
         characteristic_settable: bool = False,
+        characteristic_value: Union[int, float, str, bool, datetime, ButtonPayload, SwitchPayload, None] = None,
     ) -> CharacteristicRecord:
         """Append characteristic record into registry"""
         characteristic_name = camelize(underscore(characteristic_name))
@@ -555,6 +556,7 @@ class CharacteristicsRegistry:
             characteristic_number_of_decimals=characteristic_number_of_decimals,
             characteristic_queryable=characteristic_queryable,
             characteristic_settable=characteristic_settable,
+            characteristic_value=characteristic_value,
             characteristic_hap_data_type=hap_data_type,
             characteristic_hap_valid_values=hap_valid_values,
             characteristic_hap_max_length=hap_max_length,
@@ -564,9 +566,6 @@ class CharacteristicsRegistry:
             characteristic_hap_permissions=hap_permissions,
             characteristic_hap_unit=hap_unit,
         )
-
-        characteristic_record.actual_value = None
-        characteristic_record.expected_value = None
 
         try:
             stored_state = self.__channel_property_state_repository.get_by_id(property_id=characteristic_id)
