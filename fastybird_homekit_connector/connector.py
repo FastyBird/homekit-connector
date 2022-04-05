@@ -47,7 +47,7 @@ from fastybird_devices_module.repositories.state import (
 from fastybird_metadata.helpers import normalize_value
 from fastybird_metadata.types import ControlAction
 from kink import inject
-from pyhap.accessory import Bridge  # type: ignore[import]
+from pyhap.accessory import Bridge
 from pyhap.accessory_driver import AccessoryDriver
 
 # Library libs
@@ -84,7 +84,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
     __characteristics_registry: CharacteristicsRegistry
 
     __driver: AccessoryDriver
-    __bridge: Bridge  # type: ignore[no-any-unimported]
+    __bridge: Bridge
 
     __devices_repository: DevicesRepository
 
