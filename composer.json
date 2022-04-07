@@ -40,7 +40,7 @@
   "require" : {
     "php": ">=7.4.0|>=8.0.0",
     "cweagans/composer-patches": "^1.7",
-    "fastybird/devices-module": "^0.51",
+    "fastybird/devices-module": "^0.52",
     "fastybird/json-api": "^0.10",
     "fastybird/metadata": "^0.53"
   },
