@@ -20,7 +20,7 @@ HomeKit connector module
 
 from .bootstrap import create_connector
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = ["connector", "bootstrap", "__connector_version__"]
 
