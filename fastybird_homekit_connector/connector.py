@@ -19,6 +19,7 @@ HomeKit connector module
 """
 
 # Python base dependencies
+import asyncio
 import logging
 import uuid
 from asyncio import AbstractEventLoop
@@ -435,6 +436,8 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     def handle(self) -> None:
         """Run connector service"""
+        # Be gentle to server
+        await asyncio.sleep(0.001)
 
     # -----------------------------------------------------------------------------
 
