@@ -20,7 +20,6 @@ HomeKit connector events module listeners
 
 # Python base dependencies
 import logging
-from enum import Enum
 from typing import Optional, Union
 
 # Library dependencies
@@ -126,8 +125,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
                 "property": channel_property.id.__str__(),
                 "expected_value": (
                     expected_value
-                    if isinstance(expected_value, (str, int, float, bool))
-                    or expected_value is None
+                    if isinstance(expected_value, (str, int, float, bool)) or expected_value is None
                     else str(expected_value)
                 ),
             },

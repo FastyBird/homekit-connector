@@ -34,13 +34,18 @@ from fastybird_devices_module.entities.channel import (
     ChannelPropertyEntity,
     ChannelStaticPropertyEntity,
 )
-from fastybird_devices_module.entities.connector import ConnectorControlEntity, ConnectorStaticPropertyEntity
+from fastybird_devices_module.entities.connector import (
+    ConnectorControlEntity,
+    ConnectorStaticPropertyEntity,
+)
 from fastybird_devices_module.entities.device import (
     DeviceControlEntity,
     DevicePropertyEntity,
 )
 from fastybird_devices_module.managers.connector import ConnectorPropertiesManager
-from fastybird_devices_module.repositories.connector import ConnectorPropertiesRepository
+from fastybird_devices_module.repositories.connector import (
+    ConnectorPropertiesRepository,
+)
 from fastybird_devices_module.repositories.state import (
     ChannelPropertiesStatesRepository,
 )
