@@ -24,11 +24,7 @@ from enum import Enum
 from typing import Optional, Union
 
 # Library dependencies
-from fastybird_devices_module.managers.state import ChannelPropertiesStatesManager
 from fastybird_devices_module.repositories.channel import ChannelPropertiesRepository
-from fastybird_devices_module.repositories.state import (
-    ChannelPropertiesStatesRepository,
-)
 from fastybird_devices_module.utils import normalize_value
 from fastybird_exchange.publisher import Publisher
 from fastybird_metadata.routing import RoutingKey
@@ -39,7 +35,6 @@ from whistle import Event, EventDispatcher
 # Library libs
 from fastybird_homekit_connector.events.events import CharacteristicCommandEvent
 from fastybird_homekit_connector.logger import Logger
-from fastybird_homekit_connector.registry.model import CharacteristicsRegistry
 
 
 @inject(
@@ -57,11 +52,7 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
     @author         Adam Kadlec <adam.kadlec@fastybird.com>
     """
 
-    __characteristics_registry: CharacteristicsRegistry
-
     __channels_properties_repository: ChannelPropertiesRepository
-    __channels_properties_states_repository: ChannelPropertiesStatesRepository
-    __channels_properties_states_manager: ChannelPropertiesStatesManager
 
     __event_dispatcher: EventDispatcher
 
@@ -73,19 +64,12 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
 
     def __init__(  # pylint: disable=too-many-arguments
         self,
-        characteristics_registry: CharacteristicsRegistry,
         event_dispatcher: EventDispatcher,
         channels_properties_repository: ChannelPropertiesRepository,
-        channels_properties_states_repository: ChannelPropertiesStatesRepository,
-        channels_properties_states_manager: ChannelPropertiesStatesManager,
         logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
         publisher: Optional[Publisher] = None,
     ) -> None:
-        self.__characteristics_registry = characteristics_registry
-
         self.__channels_properties_repository = channels_properties_repository
-        self.__channels_properties_states_repository = channels_properties_states_repository
-        self.__channels_properties_states_manager = channels_properties_states_manager
 
         self.__event_dispatcher = event_dispatcher
 
@@ -120,17 +104,10 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
         if self.__publisher is None:
             return
 
-        characteristic = self.__characteristics_registry.get_by_id(characteristic_id=event.id)
-
-        if characteristic is None:
-            return
-
         channel_property = self.__channels_properties_repository.get_by_id(property_id=event.id)
 
         if channel_property is None or channel_property.parent is None:
             return
-
-        property_state = self.__channels_properties_states_repository.get_by_id(property_id=channel_property.parent.id)
 
         expected_value = normalize_value(
             data_type=channel_property.data_type,
@@ -138,25 +115,6 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
             value_format=channel_property.format,
             value_invalid=channel_property.invalid,
         )
-
-        if property_state is None:
-            self.__channels_properties_states_manager.create(
-                channel_property=channel_property.parent,
-                data={
-                    "expectedValue": expected_value,
-                    "pending": True,
-                },
-            )
-
-        else:
-            self.__channels_properties_states_manager.update(
-                channel_property=channel_property.parent,
-                state=property_state,
-                data={
-                    "expectedValue": expected_value,
-                    "pending": True,
-                },
-            )
 
         self.__publisher.publish(
             source=ModuleSource.DEVICES_MODULE,
@@ -166,7 +124,12 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
                 "device": channel_property.channel.device.id.__str__(),
                 "channel": channel_property.channel.id.__str__(),
                 "property": channel_property.id.__str__(),
-                "expected_value": expected_value.value if isinstance(expected_value, Enum) else expected_value,
+                "expected_value": (
+                    expected_value
+                    if isinstance(expected_value, (str, int, float, bool))
+                    or expected_value is None
+                    else str(expected_value)
+                ),
             },
         )
 

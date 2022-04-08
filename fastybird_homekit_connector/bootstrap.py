@@ -117,7 +117,6 @@ def create_connector(
 
     # Inner events system
     di[EventsListener] = EventsListener(  # type: ignore[call-arg]
-        characteristics_registry=di[CharacteristicsRegistry],
         event_dispatcher=di[EventDispatcher],
         logger=connector_logger,
     )

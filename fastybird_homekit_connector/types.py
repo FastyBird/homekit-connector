@@ -86,6 +86,7 @@ class ConnectorAttribute(ExtendedEnum):
 
     PORT: str = ConnectorPropertyName.PORT.value
     PINCODE: str = "pincode"
+    XHM_URI: str = "xhm_uri"
 
     # -----------------------------------------------------------------------------
 

@@ -19,7 +19,6 @@ HomeKit connector module
 """
 
 # Python base dependencies
-import asyncio
 import logging
 import uuid
 from asyncio import AbstractEventLoop
@@ -35,11 +34,13 @@ from fastybird_devices_module.entities.channel import (
     ChannelPropertyEntity,
     ChannelStaticPropertyEntity,
 )
-from fastybird_devices_module.entities.connector import ConnectorControlEntity
+from fastybird_devices_module.entities.connector import ConnectorControlEntity, ConnectorStaticPropertyEntity
 from fastybird_devices_module.entities.device import (
     DeviceControlEntity,
     DevicePropertyEntity,
 )
+from fastybird_devices_module.managers.connector import ConnectorPropertiesManager
+from fastybird_devices_module.repositories.connector import ConnectorPropertiesRepository
 from fastybird_devices_module.repositories.state import (
     ChannelPropertiesStatesRepository,
 )
@@ -61,6 +62,7 @@ from fastybird_homekit_connector.registry.model import (
     CharacteristicsRegistry,
     ServicesRegistry,
 )
+from fastybird_homekit_connector.types import ConnectorAttribute
 from fastybird_homekit_connector.utils import KeyHashHelpers
 
 
@@ -89,6 +91,9 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
     __accessory_driver: AccessoryDriver
     __accessory_bridge: Bridge
 
+    __connector_properties_repository: ConnectorPropertiesRepository
+    __connector_properties_manager: ConnectorPropertiesManager
+
     __channel_property_state_repository: ChannelPropertiesStatesRepository
 
     __loop: Optional[AbstractEventLoop] = None
@@ -107,6 +112,8 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         accessories_registry: AccessoriesRegistry,
         services_registry: ServicesRegistry,
         characteristics_registry: CharacteristicsRegistry,
+        connector_properties_repository: ConnectorPropertiesRepository,
+        connector_properties_manager: ConnectorPropertiesManager,
         channel_property_state_repository: ChannelPropertiesStatesRepository,
         events_listener: EventsListener,
         logger: Union[Logger, logging.Logger] = logging.getLogger("dummy"),
@@ -120,6 +127,9 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         self.__accessories_registry = accessories_registry
         self.__services_registry = services_registry
         self.__characteristics_registry = characteristics_registry
+
+        self.__connector_properties_repository = connector_properties_repository
+        self.__connector_properties_manager = connector_properties_manager
 
         self.__channel_property_state_repository = channel_property_state_repository
 
@@ -239,7 +249,8 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
         for channel in device.channels:
             self.initialize_device_channel(device=device, channel=channel)
 
-        self.__accessory_bridge.add_accessory(acc=accessory)
+        if accessory.enabled:
+            self.__accessory_bridge.add_accessory(acc=accessory)
 
     # -----------------------------------------------------------------------------
 
@@ -411,6 +422,40 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
         self.__accessory_driver.start_service()
 
+        pincode_property = self.__connector_properties_repository.get_by_identifier(
+            connector_id=self.__connector_id,
+            property_identifier=ConnectorAttribute.PINCODE.value,
+        )
+
+        if pincode_property is None:
+            self.__connector_properties_manager.create(
+                data={
+                    "connector_id": self.__connector_id,
+                    "identifier": ConnectorAttribute.PINCODE.value,
+                    "name": "Connector PIN code",
+                    "data_type": DataType.STRING,
+                    "value": self.__accessory_driver.state.pincode,
+                },
+                property_type=ConnectorStaticPropertyEntity,
+            )
+
+        xhm_uri_property = self.__connector_properties_repository.get_by_identifier(
+            connector_id=self.__connector_id,
+            property_identifier=ConnectorAttribute.XHM_URI.value,
+        )
+
+        if xhm_uri_property is None:
+            self.__connector_properties_manager.create(
+                data={
+                    "connector_id": self.__connector_id,
+                    "identifier": ConnectorAttribute.XHM_URI.value,
+                    "name": "Connector XHM uri",
+                    "data_type": DataType.STRING,
+                    "value": self.__accessory_bridge.xhm_uri(),
+                },
+                property_type=ConnectorStaticPropertyEntity,
+            )
+
         if self.__loop is None:
             self.__accessory_driver.loop.run_forever()
 
@@ -430,14 +475,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     def has_unfinished_tasks(self) -> bool:
         """Check if connector has some unfinished task"""
-        return bool(self.__accessory_driver.loop.is_running())
-
-    # -----------------------------------------------------------------------------
-
-    async def handle(self) -> None:
-        """Run connector service"""
-        # Be gentle to server
-        await asyncio.sleep(0.001)
+        return False
 
     # -----------------------------------------------------------------------------
 

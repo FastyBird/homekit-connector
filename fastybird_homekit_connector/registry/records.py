@@ -133,7 +133,7 @@ class AccessoryRecord:
     @property
     def available(self) -> bool:
         """Accessory HAP availability flag"""
-        return self.__enabled
+        return True
 
     # -----------------------------------------------------------------------------
 
