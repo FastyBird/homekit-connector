@@ -434,7 +434,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     # -----------------------------------------------------------------------------
 
-    def handle(self) -> None:
+    async def handle(self) -> None:
         """Run connector service"""
         # Be gentle to server
         await asyncio.sleep(0.001)
