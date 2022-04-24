@@ -39,6 +39,7 @@ from fastybird_devices_module.entities.connector import (
     ConnectorStaticPropertyEntity,
 )
 from fastybird_devices_module.entities.device import (
+    DeviceAttributeEntity,
     DeviceControlEntity,
     DevicePropertyEntity,
 )
@@ -286,6 +287,26 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     def reset_devices_properties(self, device: HomeKitDeviceEntity) -> None:
         """Reset devices properties registry to initial state"""
+
+    # -----------------------------------------------------------------------------
+
+    def initialize_device_attribute(self, device: HomeKitDeviceEntity, device_attribute: DeviceAttributeEntity) -> None:
+        """Initialize device attribute in connector"""
+
+    # -----------------------------------------------------------------------------
+
+    def notify_device_attribute(self, device: HomeKitDeviceEntity, device_attribute: DeviceAttributeEntity) -> None:
+        """Notify device attribute was reported to connector"""
+
+    # -----------------------------------------------------------------------------
+
+    def remove_device_attribute(self, device: HomeKitDeviceEntity, attribute_id: uuid.UUID) -> None:
+        """Remove device attribute from connector"""
+
+    # -----------------------------------------------------------------------------
+
+    def reset_devices_attributes(self, device: HomeKitDeviceEntity) -> None:
+        """Reset devices attributes to initial state"""
 
     # -----------------------------------------------------------------------------
 
