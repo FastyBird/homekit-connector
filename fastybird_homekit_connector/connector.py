@@ -505,7 +505,11 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     # -----------------------------------------------------------------------------
 
-    async def write_property(self, property_item: Union[DevicePropertyEntity, ChannelPropertyEntity], data: Dict) -> None:
+    async def write_property(
+        self,
+        property_item: Union[DevicePropertyEntity, ChannelPropertyEntity],
+        data: Dict,
+    ) -> None:
         """Write device or channel property value to device"""
 
     # -----------------------------------------------------------------------------
