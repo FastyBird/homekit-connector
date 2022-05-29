@@ -441,7 +441,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     # -----------------------------------------------------------------------------
 
-    def start(self) -> None:
+    async def start(self) -> None:
         """Start connector services"""
         # When connector is starting...
         self.__events_listener.open()
@@ -505,12 +505,12 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
 
     # -----------------------------------------------------------------------------
 
-    def write_property(self, property_item: Union[DevicePropertyEntity, ChannelPropertyEntity], data: Dict) -> None:
+    async def write_property(self, property_item: Union[DevicePropertyEntity, ChannelPropertyEntity], data: Dict) -> None:
         """Write device or channel property value to device"""
 
     # -----------------------------------------------------------------------------
 
-    def write_control(
+    async def write_control(
         self,
         control_item: Union[ConnectorControlEntity, DeviceControlEntity, ChannelControlEntity],
         data: Optional[Dict],
