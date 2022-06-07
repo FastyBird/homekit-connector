@@ -98,7 +98,7 @@ def create_connector(
         firmware_revision=find_version(os.path.join(pathlib.Path(__file__).parent.resolve(), "__init__.py")),
         manufacturer="FastyBird",
         model="Virtual gateway",
-        serial_number=KeyHashHelpers.encode(connector.id.__int__()),
+        serial_number=KeyHashHelpers.encode(int(connector.id)),
     )
     di[Bridge] = bridge
     di["homekit-connector_accessory-bridge"] = di[Bridge]

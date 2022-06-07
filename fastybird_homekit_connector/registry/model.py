@@ -88,7 +88,7 @@ class AccessoriesRegistry:
         items = self.__items.copy()
 
         return next(
-            iter([record for record in items.values() if accessory_id.__eq__(record.id)]),
+            iter([record for record in items.values() if accessory_id == record.id]),
             None,
         )
 
@@ -109,7 +109,7 @@ class AccessoriesRegistry:
             driver=driver,
         )
 
-        self.__items[accessory_record.id.__str__()] = accessory_record
+        self.__items[str(accessory_record.id)] = accessory_record
 
         return accessory_record
 
@@ -120,9 +120,9 @@ class AccessoriesRegistry:
         items = self.__items.copy()
 
         for record in items.values():
-            if accessory_id.__eq__(record.id):
+            if accessory_id == record.id:
                 try:
-                    del self.__items[record.id.__str__()]
+                    del self.__items[str(record.id)]
 
                     self.__services_registry.reset(accessory_id=record.id)
 
@@ -194,7 +194,7 @@ class AccessoriesRegistry:
 
         for record in items.values():
             if record.id == accessory.id:
-                self.__items[accessory.id.__str__()] = accessory
+                self.__items[str(accessory.id)] = accessory
 
                 return True
 
@@ -268,7 +268,7 @@ class ServicesRegistry:
         items = self.__items.copy()
 
         return next(
-            iter([record for record in items.values() if service_id.__eq__(record.id)]),
+            iter([record for record in items.values() if service_id == record.id]),
             None,
         )
 
@@ -283,7 +283,7 @@ class ServicesRegistry:
                 [
                     record
                     for record in items.values()
-                    if accessory_id.__eq__(record.accessory_id) and record.identifier == service_identifier
+                    if accessory_id == record.accessory_id and record.identifier == service_identifier
                 ]
             ),
             None,
@@ -295,7 +295,7 @@ class ServicesRegistry:
         """Find services in registry by accessory unique identifier"""
         items = self.__items.copy()
 
-        return list(iter([record for record in items.values() if accessory_id.__eq__(record.accessory_id)]))
+        return list(iter([record for record in items.values() if accessory_id == record.accessory_id]))
 
     # -----------------------------------------------------------------------------
 
@@ -325,7 +325,7 @@ class ServicesRegistry:
             service_type_id=hap_type_to_uuid(service_config.pop("UUID")),
         )
 
-        self.__items[service_record.id.__str__()] = service_record
+        self.__items[str(service_record.id)] = service_record
 
         return service_record
 
@@ -336,9 +336,9 @@ class ServicesRegistry:
         items = self.__items.copy()
 
         for record in items.values():
-            if service_id.__eq__(record.id):
+            if service_id == record.id:
                 try:
-                    del self.__items[record.id.__str__()]
+                    del self.__items[str(record.id)]
 
                     self.__characteristics_registry.reset(service_id=record.id)
 
@@ -355,7 +355,7 @@ class ServicesRegistry:
 
         if accessory_id is not None:
             for record in items.values():
-                if accessory_id.__eq__(record.accessory_id):
+                if accessory_id == record.accessory_id:
                     self.remove(service_id=record.id)
 
         else:
@@ -386,7 +386,7 @@ class ServicesRegistry:
 
         for record in items.values():
             if record.id == service.id:
-                self.__items[service.id.__str__()] = service
+                self.__items[str(service.id)] = service
 
                 return True
 
@@ -437,7 +437,7 @@ class CharacteristicsRegistry:
         items = self.__items.copy()
 
         return next(
-            iter([record for record in items.values() if characteristic_id.__eq__(record.id)]),
+            iter([record for record in items.values() if characteristic_id == record.id]),
             None,
         )
 
@@ -454,7 +454,7 @@ class CharacteristicsRegistry:
                 [
                     record
                     for record in items.values()
-                    if service_id.__eq__(record.service_id) and record.identifier == characteristic_identifier
+                    if service_id == record.service_id and record.identifier == characteristic_identifier
                 ]
             ),
             None,
@@ -466,7 +466,7 @@ class CharacteristicsRegistry:
         """Find characteristic in registry by service unique identifier"""
         items = self.__items.copy()
 
-        return [record for record in items.values() if service_id.__eq__(record.service_id)]
+        return [record for record in items.values() if service_id == record.service_id]
 
     # -----------------------------------------------------------------------------
 
@@ -589,7 +589,7 @@ class CharacteristicsRegistry:
         except (NotImplementedError, AttributeError):
             pass
 
-        self.__items[characteristic_record.id.__str__()] = characteristic_record
+        self.__items[str(characteristic_record.id)] = characteristic_record
 
         return characteristic_record
 
@@ -600,9 +600,9 @@ class CharacteristicsRegistry:
         items = self.__items.copy()
 
         for record in items.values():
-            if characteristic_id.__eq__(record.id):
+            if characteristic_id == record.id:
                 try:
-                    del self.__items[record.id.__str__()]
+                    del self.__items[str(record.id)]
 
                 except KeyError:
                     pass
@@ -617,7 +617,7 @@ class CharacteristicsRegistry:
 
         if service_id is not None:
             for record in items.values():
-                if service_id.__eq__(record.service_id):
+                if service_id == record.service_id:
                     self.remove(characteristic_id=record.id)
 
         else:
@@ -649,7 +649,7 @@ class CharacteristicsRegistry:
 
         for record in items.values():
             if record.id == characteristic.id:
-                self.__items[characteristic.id.__str__()] = characteristic
+                self.__items[str(characteristic.id)] = characteristic
 
                 return True
 

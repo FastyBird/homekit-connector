@@ -245,7 +245,7 @@ class HomeKitConnector(IConnector):  # pylint: disable=too-many-public-methods,t
             characteristic_identifier="serial-number",
             characteristic_name="SerialNumber",
             characteristic_data_type=DataType.STRING,
-            characteristic_value=KeyHashHelpers.encode(device.id.__int__()),
+            characteristic_value=KeyHashHelpers.encode(int(device.id)),
         )
 
         self.__services_registry.add_characteristic(service=service, characteristic=characteristic)

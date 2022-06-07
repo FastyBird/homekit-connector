@@ -120,9 +120,9 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
             routing_key=RoutingKey.CHANNEL_PROPERTY_ACTION,
             data={
                 "action": PropertyAction.SET.value,
-                "device": channel_property.channel.device.id.__str__(),
-                "channel": channel_property.channel.id.__str__(),
-                "property": channel_property.id.__str__(),
+                "device": str(channel_property.channel.device.id),
+                "channel": str(channel_property.channel.id),
+                "property": str(channel_property.id),
                 "expected_value": (
                     expected_value
                     if isinstance(expected_value, (str, int, float, bool)) or expected_value is None
@@ -135,14 +135,14 @@ class EventsListener:  # pylint: disable=too-many-instance-attributes
             "Sending channel property value command",
             extra={
                 "device": {
-                    "id": channel_property.channel.device.id.__str__(),
+                    "id": str(channel_property.channel.device.id),
                 },
                 "channel": {
-                    "id": channel_property.channel.id.__str__(),
+                    "id": str(channel_property.channel.id),
                 },
                 "property": {
-                    "id": channel_property.id.__str__(),
-                    "parent": channel_property.parent.id.__str__(),
+                    "id": str(channel_property.id),
+                    "parent": str(channel_property.parent.id),
                 },
             },
         )

@@ -147,7 +147,7 @@ class AccessoryRecord:
     @property
     def aid(self) -> int:
         """Accessory HAP unique identifier"""
-        return self.id.__int__()
+        return int(self.id)
 
     # -----------------------------------------------------------------------------
 
