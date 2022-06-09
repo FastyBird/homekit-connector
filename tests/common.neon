@@ -24,20 +24,23 @@ extensions:
     nettrineOrmCache                    : Nettrine\ORM\DI\OrmCacheExtension
     ipubDoctrineConsistence             : IPub\DoctrineConsistence\DI\DoctrineConsistenceExtension
     ipubDoctrineCrud                    : IPub\DoctrineCrud\DI\DoctrineCrudExtension
-    ipubDoctrineTimestampable           : IPub\DoctrineTimestampable\DI\DoctrineTimestampableExtension
     ipubDoctrineDynamicDiscriminatorMap : IPub\DoctrineDynamicDiscriminatorMap\DI\DoctrineDynamicDiscriminatorMapExtension
+    ipubDoctrineTimestampable           : IPub\DoctrineTimestampable\DI\DoctrineTimestampableExtension
     ipubPhone                           : IPub\Phone\DI\PhoneExtension
     fbDateTimeFactory                   : FastyBird\DateTimeFactory\DI\DateTimeFactoryExtension
     fbExchange                          : FastyBird\Exchange\DI\ExchangeExtension
     fbJsonApi                           : FastyBird\JsonApi\DI\JsonApiExtension
-    fbSimpleAuth                        : FastyBird\SimpleAuth\DI\SimpleAuthExtension
-    fbSocketServerFactory               : FastyBird\SocketServerFactory\DI\SocketServerFactoryExtension
-    fbWebServer                         : FastyBird\WebServer\DI\WebServerExtension(%consoleMode%)
-    fbDevicesModule                     : FastyBird\DevicesModule\DI\DevicesModuleExtension
     fbMetadata                          : FastyBird\Metadata\DI\MetadataExtension
+    fbSimpleAuth                        : FastyBird\SimpleAuth\DI\SimpleAuthExtension
+    fbDevicesModule                     : FastyBird\DevicesModule\DI\DevicesModuleExtension
 
 services:
     - {factory: Symfony\Component\Console\Application}
+    - {factory: IPub\SlimRouter\Http\ResponseFactory}
+    -
+        factory: IPub\SlimRouter\Routing\Router
+        setup:
+            - addMiddleware(@fbJsonApi.middlewares.jsonapi)
 
 contributteTranslation:
     locales:
