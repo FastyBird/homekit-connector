@@ -74,7 +74,12 @@
   },
 
   "config" : {
-    "sort-packages" : true
+    "sort-packages" : true,
+    "allow-plugins": {
+      "cweagans/composer-patches": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
+    }
   },
 
   "extra" : {
