@@ -23,18 +23,12 @@ jobs :
   php-qa :
     name : "Quality assurance for PHP code"
     runs-on : "${{ matrix.operating-system }}"
-    continue-on-error : "${{ matrix.experimental }}"
 
     strategy :
       fail-fast : false
       matrix :
-        php-version : [ "7.4" ]
+        php-version : [ "8.0", "8.1" ]
         operating-system : [ "ubuntu-latest" ]
-        experimental : [ false ]
-        include :
-          - php-version : "8.0"
-            operating-system : "ubuntu-latest"
-            experimental : true
 
     steps :
       - name : "Checkout"
@@ -89,18 +83,12 @@ jobs :
   php-static-analysis :
     name : "Static analysis for PHP code"
     runs-on : "${{ matrix.operating-system }}"
-    continue-on-error : "${{ matrix.experimental }}"
 
     strategy :
       fail-fast : false
       matrix :
-        php-version : [ "7.4" ]
+        php-version : [ "8.0", "8.1" ]
         operating-system : [ "ubuntu-latest" ]
-        experimental : [ false ]
-        include :
-          - php-version : "8.0"
-            operating-system : "ubuntu-latest"
-            experimental : true
 
     steps :
       - name : "Checkout"
@@ -153,18 +141,12 @@ jobs :
     name : "Tests for PHP code"
     runs-on : "${{ matrix.operating-system }}"
     needs : [ "php-qa", "php-static-analysis" ]
-    continue-on-error : "${{ matrix.experimental }}"
 
     strategy :
       fail-fast : false
       matrix :
-        php-version : [ "7.4" ]
+        php-version : [ "8.0", "8.1" ]
         operating-system : [ "ubuntu-latest" ]
-        experimental : [ false ]
-        include :
-          - php-version : "8.0"
-            operating-system : "ubuntu-latest"
-            experimental : true
 
     steps :
       - name : "Checkout"
@@ -234,7 +216,7 @@ jobs :
 
     strategy :
       matrix :
-        php-version : [ "7.4" ]
+        php-version : [ "8.1" ]
         operating-system : [ "ubuntu-latest" ]
       fail-fast : false
 
