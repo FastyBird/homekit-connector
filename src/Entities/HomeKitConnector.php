@@ -43,8 +43,7 @@ class HomeKitConnector extends DevicesModuleEntities\Connectors\Connector implem
 		$property = $this->findProperty(MetadataTypes\ConnectorPropertyNameType::NAME_PORT);
 
 		if (
-			$property === null
-			|| !$property instanceof DevicesModuleEntities\Connectors\Properties\IStaticProperty
+			!$property instanceof DevicesModuleEntities\Connectors\Properties\IStaticProperty
 			|| !is_numeric($property->getValue())
 		) {
 			return 51826;
@@ -74,7 +73,7 @@ class HomeKitConnector extends DevicesModuleEntities\Connectors\Connector implem
 	/**
 	 * {@inheritDoc}
 	 */
-	public function getSource()
+	public function getSource(): MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType
 	{
 		return MetadataTypes\ConnectorSourceType::get(MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_HOMEKIT);
 	}
