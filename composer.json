@@ -40,9 +40,9 @@
   "require" : {
     "php": ">=8.0.0|>=8.1.0",
     "cweagans/composer-patches": "^1.7",
-    "fastybird/devices-module": "^0.70",
+    "fastybird/devices-module": "^0.71",
     "fastybird/json-api": "^0.11",
-    "fastybird/metadata": "^0.68"
+    "fastybird/metadata": "^0.69"
   },
 
   "require-dev" : {
