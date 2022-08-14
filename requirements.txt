@@ -1,6 +1,6 @@
 fastnumbers>=3.2
-fastybird-devices-module>=0.72
-fastybird-metadata>=0.69
+fastybird-devices-module>=0.73
+fastybird-metadata>=0.73
 HAP-python[QRCode]>=4.3
 inflection>=0.5
 kink>=0.6
