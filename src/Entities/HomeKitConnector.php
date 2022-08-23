@@ -40,7 +40,7 @@ class HomeKitConnector extends DevicesModuleEntities\Connectors\Connector implem
 	 */
 	public function getPort(): int
 	{
-		$property = $this->findProperty(MetadataTypes\ConnectorPropertyNameType::NAME_PORT);
+		$property = $this->findProperty(MetadataTypes\ConnectorPropertyIdentifierType::IDENTIFIER_PORT);
 
 		if (
 			!$property instanceof DevicesModuleEntities\Connectors\Properties\IStaticProperty
