@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * Permission.php
+ * PermissionIdentifier.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -25,14 +25,17 @@ use Consistence;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class Permission extends Consistence\Enum\Enum
+class PermissionIdentifier extends Consistence\Enum\Enum
 {
 
 	/**
 	 * Define permissions identifiers
 	 */
-	public const PERMISSION_USER = [0];
-	public const PERMISSION_ADMIN = [1];
+	public const PERMISSION_HIDDEN = 'hd';
+	public const PERMISSION_NOTIFY = 'ev';
+	public const PERMISSION_READ = 'pr';
+	public const PERMISSION_WRITE = 'pw';
+	public const PERMISSION_WRITE_RESPONSE = 'wr';
 
 	/**
 	 * @return string

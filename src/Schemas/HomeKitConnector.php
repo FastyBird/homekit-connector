@@ -18,7 +18,6 @@ namespace FastyBird\HomeKitConnector\Schemas;
 use FastyBird\DevicesModule\Schemas as DevicesModuleSchemas;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\Metadata\Types as MetadataTypes;
-use Neomerx\JsonApi;
 
 /**
  * HomeKit connector entity schema
