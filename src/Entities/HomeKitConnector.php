@@ -22,7 +22,7 @@ use FastyBird\Metadata\Types as MetadataTypes;
 /**
  * @ORM\Entity
  */
-class HomeKitConnector extends DevicesModuleEntities\Connectors\Connector implements IHomeKitConnector
+class HomeKitConnector extends DevicesModuleEntities\Connectors\Connector
 {
 
 	public const CONNECTOR_TYPE = 'homekit';
@@ -33,33 +33,6 @@ class HomeKitConnector extends DevicesModuleEntities\Connectors\Connector implem
 	public function getType(): string
 	{
 		return self::CONNECTOR_TYPE;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getPort(): int
-	{
-		$property = $this->findProperty(MetadataTypes\ConnectorPropertyIdentifierType::IDENTIFIER_PORT);
-
-		if (
-			!$property instanceof DevicesModuleEntities\Connectors\Properties\IStaticProperty
-			|| !is_numeric($property->getValue())
-		) {
-			return 51826;
-		}
-
-		return intval($property->getValue());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function toArray(): array
-	{
-		return array_merge(parent::toArray(), [
-			'port' => $this->getPort(),
-		]);
 	}
 
 	/**

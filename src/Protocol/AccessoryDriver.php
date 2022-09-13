@@ -1,31 +1,33 @@
 <?php declare(strict_types = 1);
 
 /**
- * IHomeKitDevice.php
+ * AccessoryDriver.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Entities
- * @since          0.1.0
+ * @subpackage     Protocol
+ * @since          0.19.0
  *
- * @date           29.03.22
+ * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Entities;
+namespace FastyBird\HomeKitConnector\Protocol;
 
-use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
+use Nette;
 
 /**
- * HomeKit device entity interface
+ * HAP accessory driver object
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Entities
+ * @subpackage     Types
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface IHomeKitDevice extends DevicesModuleEntities\Devices\IDevice
+class AccessoryDriver
 {
+
+	use Nette\SmartObject;
 
 }

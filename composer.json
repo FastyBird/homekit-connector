@@ -38,11 +38,15 @@
   "minimum-stability" : "stable",
 
   "require" : {
-    "php": ">=8.0.0|>=8.1.0",
-    "cweagans/composer-patches": "^1.7",
-    "fastybird/devices-module": "^0.75",
-    "fastybird/json-api": "^0.11",
-    "fastybird/metadata": "^0.76"
+    "php" : ">=8.0.0|>=8.1.0",
+    "ext-pcntl" : "*",
+    "cweagans/composer-patches" : "^1.7",
+    "fastybird/devices-module" : "dev-main as 0.75.0",
+    "fastybird/json-api" : "^0.11",
+    "fastybird/metadata" : "^0.76",
+    "nette/bootstrap" : "^3.1",
+    "nette/di" : "^3.0",
+    "psr/log" : "^1.1"
   },
 
   "require-dev" : {
@@ -50,13 +54,13 @@
     "mockery/mockery" : "^1.4",
     "ninjify/nunjuck" : "^0.3",
     "ninjify/qa" : "^0.13",
-    "pds/skeleton": "^1.0",
+    "pds/skeleton" : "^1.0",
     "phpstan/extension-installer" : "^1.1",
-    "phpstan/phpstan" : "^0.12",
-    "phpstan/phpstan-deprecation-rules" : "^0.12",
-    "phpstan/phpstan-doctrine" : "^0.12",
-    "phpstan/phpstan-nette" : "^0.12",
-    "tracy/tracy": "^2.9"
+    "phpstan/phpstan" : "^1.8",
+    "phpstan/phpstan-deprecation-rules" : "^1.0",
+    "phpstan/phpstan-doctrine" : "^1.3",
+    "phpstan/phpstan-nette" : "^1.0",
+    "tracy/tracy" : "^2.9"
   },
 
   "autoload" : {
@@ -75,17 +79,20 @@
 
   "config" : {
     "sort-packages" : true,
-    "allow-plugins": {
-      "cweagans/composer-patches": true,
-      "dealerdirect/phpcodesniffer-composer-installer": true,
-      "phpstan/extension-installer": true
+    "allow-plugins" : {
+      "cweagans/composer-patches" : true,
+      "dealerdirect/phpcodesniffer-composer-installer" : true,
+      "phpstan/extension-installer" : true
     }
   },
 
   "extra" : {
     "patches" : {
       "nettrine/orm" : {
-        "Enable connection overrides" : "patches/nettrine.orm.mangerRegistry.diff"
+        "Enable connection overrides" : "https://raw.githubusercontent.com/FastyBird/libraries-patches/master/nettrine.orm.mangerRegistry.diff"
+      },
+      "nette/utils" : {
+        "Bug: Offset check with null support" : "https://raw.githubusercontent.com/FastyBird/libraries-patches/master/nette.array.offsetCheck.diff"
       }
     }
   }

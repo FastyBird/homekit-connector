@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * HomeKitConnectorSchema.php
+ * HomeKitDevice.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -18,7 +18,6 @@ namespace FastyBird\HomeKitConnector\Schemas;
 use FastyBird\DevicesModule\Schemas as DevicesModuleSchemas;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\Metadata\Types as MetadataTypes;
-use Neomerx\JsonApi;
 
 /**
  * HomeKit connector entity schema
@@ -28,22 +27,22 @@ use Neomerx\JsonApi;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  *
- * @phpstan-extends DevicesModuleSchemas\Connectors\ConnectorSchema<Entities\IHomeKitConnector>
+ * @phpstan-extends DevicesModuleSchemas\Devices\DeviceSchema<Entities\HomeKitDevice>
  */
-final class HomeKitConnectorSchema extends DevicesModuleSchemas\Connectors\ConnectorSchema
+final class HomeKitDevice extends DevicesModuleSchemas\Devices\DeviceSchema
 {
 
 	/**
 	 * Define entity schema type string
 	 */
-	public const SCHEMA_TYPE = MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_HOMEKIT . '/connector/' . Entities\HomeKitConnector::CONNECTOR_TYPE;
+	public const SCHEMA_TYPE = MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_HOMEKIT . '/device/' . Entities\HomeKitDevice::DEVICE_TYPE;
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public function getEntityClass(): string
 	{
-		return Entities\HomeKitConnector::class;
+		return Entities\HomeKitDevice::class;
 	}
 
 	/**
@@ -52,21 +51,6 @@ final class HomeKitConnectorSchema extends DevicesModuleSchemas\Connectors\Conne
 	public function getType(): string
 	{
 		return self::SCHEMA_TYPE;
-	}
-
-	/**
-	 * @param Entities\IHomeKitConnector $connector
-	 * @param JsonApi\Contracts\Schema\ContextInterface $context
-	 *
-	 * @return iterable<string, mixed>
-	 *
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingParameterTypeHint
-	 */
-	public function getAttributes($connector, JsonApi\Contracts\Schema\ContextInterface $context): iterable
-	{
-		return array_merge((array) parent::getAttributes($connector, $context), [
-			'port' => $connector->getPort(),
-		]);
 	}
 
 }

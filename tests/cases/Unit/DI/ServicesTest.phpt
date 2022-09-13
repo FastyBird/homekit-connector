@@ -21,11 +21,11 @@ final class ServicesTest extends BaseTestCase
 	{
 		$container = $this->createContainer();
 
-		Assert::notNull($container->getByType(Schemas\HomeKitDeviceSchema::class));
-		Assert::notNull($container->getByType(Schemas\HomeKitConnectorSchema::class));
+		Assert::notNull($container->getByType(Schemas\HomeKitDevice::class));
+		Assert::notNull($container->getByType(Schemas\HomeKitConnector::class));
 
-		Assert::notNull($container->getByType(Hydrators\HomeKitDeviceHydrator::class));
-		Assert::notNull($container->getByType(Hydrators\HomeKitConnectorHydrator::class));
+		Assert::notNull($container->getByType(Hydrators\HomeKitDevice::class));
+		Assert::notNull($container->getByType(Hydrators\HomeKitConnector::class));
 	}
 
 	/**

@@ -1,9 +1,6 @@
 .idea
 /vendor
 /composer.lock
-/dist
-/node_modules
-/yarn.lock
-tests/*/output
-tests/tmp
-__pycache__
+/tests/*/output
+/tests/tmp
+.DS_Store

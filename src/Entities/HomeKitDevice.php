@@ -22,7 +22,7 @@ use FastyBird\Metadata\Types as MetadataTypes;
 /**
  * @ORM\Entity
  */
-class HomeKitDevice extends DevicesModuleEntities\Devices\Device implements IHomeKitDevice
+class HomeKitDevice extends DevicesModuleEntities\Devices\Device
 {
 
 	public const DEVICE_TYPE = 'homekit';

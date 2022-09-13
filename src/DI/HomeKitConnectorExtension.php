@@ -20,6 +20,9 @@ use FastyBird\HomeKitConnector\Hydrators;
 use FastyBird\HomeKitConnector\Schemas;
 use Nette;
 use Nette\DI;
+use Nette\Schema;
+use React\EventLoop;
+use stdClass;
 
 /**
  * HomeKit connector
@@ -53,23 +56,36 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 	/**
 	 * {@inheritDoc}
 	 */
+	public function getConfigSchema(): Schema\Schema
+	{
+		return Schema\Expect::structure([
+			'loop' => Schema\Expect::anyOf(Schema\Expect::string(), Schema\Expect::type(DI\Definitions\Statement::class))
+				->nullable(),
+		]);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
+		/** @var stdClass $configuration */
+		$configuration = $this->getConfig();
 
 		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())
-			->setType(Schemas\HomeKitConnectorSchema::class);
+			->setType(Schemas\HomeKitConnector::class);
 
 		$builder->addDefinition($this->prefix('schemas.device.homekit'), new DI\Definitions\ServiceDefinition())
-			->setType(Schemas\HomeKitDeviceSchema::class);
+			->setType(Schemas\HomeKitDevice::class);
 
 		// API hydrators
 		$builder->addDefinition($this->prefix('hydrators.connector.homekit'), new DI\Definitions\ServiceDefinition())
-			->setType(Hydrators\HomeKitConnectorHydrator::class);
+			->setType(Hydrators\HomeKitConnector::class);
 
 		$builder->addDefinition($this->prefix('hydrators.device.homekit'), new DI\Definitions\ServiceDefinition())
-			->setType(Hydrators\HomeKitDeviceHydrator::class);
+			->setType(Hydrators\HomeKitDevice::class);
 	}
 
 	/**

@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * HomeKitConnectorHydrator.php
+ * HomeKitDevice.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -19,16 +19,16 @@ use FastyBird\DevicesModule\Hydrators as DevicesModuleHydrators;
 use FastyBird\HomeKitConnector\Entities;
 
 /**
- * HomeKit connector entity hydrator
+ * HomeKit device entity hydrator
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Hydrators
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  *
- * @phpstan-extends DevicesModuleHydrators\Connectors\ConnectorHydrator<Entities\IHomeKitConnector>
+ * @phpstan-extends DevicesModuleHydrators\Devices\DeviceHydrator<Entities\HomeKitDevice>
  */
-final class HomeKitConnectorHydrator extends DevicesModuleHydrators\Connectors\ConnectorHydrator
+final class HomeKitDevice extends DevicesModuleHydrators\Devices\DeviceHydrator
 {
 
 	/**
@@ -36,7 +36,7 @@ final class HomeKitConnectorHydrator extends DevicesModuleHydrators\Connectors\C
 	 */
 	public function getEntityName(): string
 	{
-		return Entities\HomeKitConnector::class;
+		return Entities\HomeKitDevice::class;
 	}
 
 }

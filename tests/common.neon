@@ -42,7 +42,6 @@ services:
         factory: IPub\SlimRouter\Routing\Router
         setup:
             - addMiddleware(@fbJsonApi.middlewares.jsonapi)
-    - {factory: React\EventLoop\Loop::get}
 
 contributteTranslation:
     locales:

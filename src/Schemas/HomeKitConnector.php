@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * HomeKitDeviceSchema.php
+ * HomeKitConnector.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Schemas;
 use FastyBird\DevicesModule\Schemas as DevicesModuleSchemas;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\Metadata\Types as MetadataTypes;
+use Neomerx\JsonApi;
 
 /**
  * HomeKit connector entity schema
@@ -27,22 +28,22 @@ use FastyBird\Metadata\Types as MetadataTypes;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  *
- * @phpstan-extends DevicesModuleSchemas\Devices\DeviceSchema<Entities\IHomeKitDevice>
+ * @phpstan-extends DevicesModuleSchemas\Connectors\ConnectorSchema<Entities\HomeKitConnector>
  */
-final class HomeKitDeviceSchema extends DevicesModuleSchemas\Devices\DeviceSchema
+final class HomeKitConnector extends DevicesModuleSchemas\Connectors\ConnectorSchema
 {
 
 	/**
 	 * Define entity schema type string
 	 */
-	public const SCHEMA_TYPE = MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_HOMEKIT . '/device/' . Entities\HomeKitDevice::DEVICE_TYPE;
+	public const SCHEMA_TYPE = MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_HOMEKIT . '/connector/' . Entities\HomeKitConnector::CONNECTOR_TYPE;
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public function getEntityClass(): string
 	{
-		return Entities\HomeKitDevice::class;
+		return Entities\HomeKitConnector::class;
 	}
 
 	/**
