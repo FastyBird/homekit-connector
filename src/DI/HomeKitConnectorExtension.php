@@ -16,6 +16,9 @@
 namespace FastyBird\HomeKitConnector\DI;
 
 use Doctrine\Persistence;
+use FastyBird\HomeKitConnector;
+use FastyBird\HomeKitConnector\Clients;
+use FastyBird\HomeKitConnector\Connector;
 use FastyBird\HomeKitConnector\Hydrators;
 use FastyBird\HomeKitConnector\Schemas;
 use Nette;
@@ -72,6 +75,28 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		$builder = $this->getContainerBuilder();
 		/** @var stdClass $configuration */
 		$configuration = $this->getConfig();
+
+		if ($configuration->loop === null && $builder->getByType(EventLoop\LoopInterface::class) === null) {
+			$builder->addDefinition($this->prefix('client.loop'), new DI\Definitions\ServiceDefinition())
+				->setType(EventLoop\LoopInterface::class)
+				->setFactory('React\EventLoop\Factory::create');
+		}
+
+		// Service factory
+		$builder->addDefinition($this->prefix('service.factory'), new DI\Definitions\ServiceDefinition())
+			->setType(HomeKitConnector\ConnectorFactory::class);
+
+		// Connector
+		$builder->addFactoryDefinition($this->prefix('connector'))
+			->setImplement(Connector\ConnectorFactory::class)
+			->getResultDefinition()
+			->setType(Connector\Connector::class);
+
+		// Clients
+		$builder->addFactoryDefinition($this->prefix('client.mdns'))
+			->setImplement(Clients\MdnsFactory::class)
+			->getResultDefinition()
+			->setType(Clients\Mdns::class);
 
 		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())

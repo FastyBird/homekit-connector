@@ -38,15 +38,17 @@
   "minimum-stability" : "stable",
 
   "require" : {
-    "php" : ">=8.0.0|>=8.1.0",
-    "ext-pcntl" : "*",
-    "cweagans/composer-patches" : "^1.7",
-    "fastybird/devices-module" : "dev-main as 0.75.0",
-    "fastybird/json-api" : "^0.11",
-    "fastybird/metadata" : "^0.76",
-    "nette/bootstrap" : "^3.1",
-    "nette/di" : "^3.0",
-    "psr/log" : "^1.1"
+    "php": ">=8.0.0|>=8.1.0",
+    "ext-pcntl": "*",
+    "ext-sockets": "*",
+    "cweagans/composer-patches": "^1.7",
+    "fastybird/devices-module": "dev-main as 0.75.0",
+    "fastybird/json-api": "^0.11",
+    "fastybird/metadata": "^0.76",
+    "nette/bootstrap": "^3.1",
+    "nette/di": "^3.0",
+    "psr/log": "^1.1",
+    "react/datagram": "^1.8"
   },
 
   "require-dev" : {
