@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\DI;
 use Doctrine\Persistence;
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Clients;
+use FastyBird\HomeKitConnector\Commands;
 use FastyBird\HomeKitConnector\Connector;
 use FastyBird\HomeKitConnector\Hydrators;
 use FastyBird\HomeKitConnector\Schemas;
@@ -111,6 +112,13 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 
 		$builder->addDefinition($this->prefix('hydrators.device.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Hydrators\HomeKitDevice::class);
+
+		// Console commands
+		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
+			->setType(Commands\Initialize::class);
+
+		$builder->addDefinition($this->prefix('commands.execute'), new DI\Definitions\ServiceDefinition())
+			->setType(Commands\Execute::class);
 	}
 
 	/**
