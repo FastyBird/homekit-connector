@@ -16,8 +16,8 @@
 namespace FastyBird\HomeKitConnector\Commands;
 
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
-use FastyBird\Metadata;
 use FastyBird\HomeKitConnector\Entities;
+use FastyBird\Metadata;
 use Psr\Log;
 use Ramsey\Uuid;
 use Symfony\Component\Console;
