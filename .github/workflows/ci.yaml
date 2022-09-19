@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.0", "8.1"]
+        php-version: ["8.1"]
         operating-system: ["ubuntu-latest"]
 
     steps:
@@ -87,7 +87,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.0", "8.1"]
+        php-version: ["8.1"]
         operating-system: ["ubuntu-latest"]
 
     steps:
@@ -145,7 +145,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.0", "8.1"]
+        php-version: ["8.1"]
         operating-system: ["ubuntu-latest"]
 
     steps:

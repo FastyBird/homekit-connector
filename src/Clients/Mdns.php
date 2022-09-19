@@ -27,6 +27,7 @@ use React\Datagram;
 use React\Dns;
 use React\EventLoop;
 use Throwable;
+use function React\Async\async;
 
 /**
  * mDNS connector discovery client
@@ -44,7 +45,9 @@ final class Mdns implements Client
 	private const DNS_ADDRESS = '224.0.0.251';
 	private const DNS_PORT = 5353;
 
-	private const HAP_SERVICE_TYPE = '_hap._tcp.local.';
+	private const DNS_BROADCAST_INTERVAL = 60;
+
+	private const HAP_SERVICE_TYPE = '_hap._tcp.local';
 
 	private const VALID_MDNS_REGEX = '/[^A-Za-z0-9\-]+/';
 	private const LEADING_TRAILING_SPACE_DASH = '/^[ -]+|[ -]+$/';
@@ -136,6 +139,9 @@ final class Mdns implements Client
 								'message' => $ex->getMessage(),
 								'code'    => $ex->getCode(),
 							],
+							'connector' => [
+								'id' => $this->connector->getId()->toString(),
+							],
 						]
 					);
 
@@ -150,15 +156,18 @@ final class Mdns implements Client
 					$this->logger->info(
 						'Server was closed',
 						[
-							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'   => 'mdns-client',
+							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type'      => 'mdns-client',
+							'connector' => [
+								'id' => $this->connector->getId()->toString(),
+							],
 						]
 					);
 				});
 
 				$this->eventLoop->addPeriodicTimer(
-					3,
-					function (): void {
+					self::DNS_BROADCAST_INTERVAL,
+					async(function (): void {
 						$message = new Dns\Model\Message();
 						$message->id = mt_rand(0, 0xffff);
 						$message->qr = true;
@@ -179,7 +188,7 @@ final class Mdns implements Client
 							$this->dumper->toBinary($message),
 							self::DNS_ADDRESS . ':' . self::DNS_PORT
 						);
-					}
+					})
 				);
 			})
 			->otherwise(function (Throwable $ex): void {
@@ -191,6 +200,9 @@ final class Mdns implements Client
 						'exception' => [
 							'message' => $ex->getMessage(),
 							'code'    => $ex->getCode(),
+						],
+						'connector' => [
+							'id' => $this->connector->getId()->toString(),
 						],
 					]
 				);
@@ -297,7 +309,7 @@ final class Mdns implements Client
 			Dns\Model\Message::TYPE_A,
 			Dns\Model\Message::CLASS_IN,
 			120,
-			gethostbyname(strval(gethostname()))
+			Helpers\Protocol::getLocalAddress()
 		);
 
 		$resourceRecords[] = new Dns\Model\Record(

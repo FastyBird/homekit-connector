@@ -176,10 +176,13 @@ class Execute extends Console\Command\Command
 				if ($connectorIdentifierKey === false) {
 					$io->error('Something went wrong, connector could not be loaded');
 
-					$this->logger->alert('Connector identifier was not able to get from answer', [
-						'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
-						'type'   => 'execute-cmd',
-					]);
+					$this->logger->alert(
+						'Connector identifier was not able to get from answer',
+						[
+							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type'   => 'execute-cmd',
+						]
+					);
 
 					return Console\Command\Command::FAILURE;
 				}
@@ -190,10 +193,13 @@ class Execute extends Console\Command\Command
 			if ($connector === null) {
 				$io->error('Something went wrong, connector could not be loaded');
 
-				$this->logger->alert('Connector was not found', [
-					'source' => Metadata\Constants::MODULE_DEVICES_SOURCE,
-					'type'   => 'execute-cmd',
-				]);
+				$this->logger->alert(
+					'Connector was not found',
+					[
+						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'type'   => 'execute-cmd',
+					]
+				);
 
 				return Console\Command\Command::FAILURE;
 			}
