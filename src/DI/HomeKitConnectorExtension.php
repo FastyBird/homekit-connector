@@ -186,18 +186,6 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 				'FastyBird\HomeKitConnector\Entities',
 			]);
 		}
-
-		/**
-		 * Routes
-		 */
-
-		$routerService = $builder->getDefinitionByType(Router\Router::class);
-
-		if ($routerService instanceof DI\Definitions\ServiceDefinition) {
-			$routerService->addSetup('?->registerRoutes()', [
-				$routerService,
-			]);
-		}
 	}
 
 }

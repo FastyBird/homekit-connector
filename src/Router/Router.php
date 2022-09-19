@@ -29,15 +29,6 @@ use IPub\SlimRouter\Routing;
 class Router extends Routing\Router
 {
 
-	/** @var Controllers\PairingController */
-	private Controllers\PairingController $pairingController;
-
-	/** @var Controllers\AccessoriesController */
-	private Controllers\AccessoriesController $accessoriesController;
-
-	/** @var Controllers\CharacteristicsController */
-	private Controllers\CharacteristicsController $characteristicsController;
-
 	/**
 	 * @param Controllers\PairingController $pairingController
 	 * @param Controllers\AccessoriesController $accessoriesController
@@ -50,34 +41,33 @@ class Router extends Routing\Router
 	) {
 		parent::__construct();
 
-		$this->pairingController = $pairingController;
-		$this->accessoriesController = $accessoriesController;
-		$this->characteristicsController = $characteristicsController;
-	}
-
-	/**
-	 * @return void
-	 */
-	public function registerRoutes(): void
-	{
 		// Pairing process requests
-		$this->post('/pair-setup', [$this->pairingController, 'setup']);
-		$this->post('/pair-verify', [$this->pairingController, 'verify']);
-		$this->post('/pairings', [$this->pairingController, 'pairings']);
-		$this->post('/resource', [$this->pairingController, 'resource']);
+		$this->post('/pair-setup', [$pairingController, 'setup']);
+		$this->post('/pair-verify', [$pairingController, 'verify']);
+		$this->post('/pairings', [$pairingController, 'pairings']);
+		$this->post('/resource', [$pairingController, 'resource']);
 
-		$this->group('/prepare', function (Routing\RouteCollector $group): void {
-			$group->put('', [$this->pairingController, 'prepare']);
-		});
+		$this->group(
+			'/prepare',
+			function (Routing\RouteCollector $group) use ($pairingController): void {
+				$group->put('', [$pairingController, 'prepare']);
+			}
+		);
 
-		$this->group('/accessories', function (Routing\RouteCollector $group): void {
-			$group->get('', [$this->accessoriesController, 'index']);
-		});
+		$this->group(
+			'/accessories',
+			function (Routing\RouteCollector $group) use ($accessoriesController): void {
+				$group->get('', [$accessoriesController, 'index']);
+			}
+		);
 
-		$this->group('/characteristics', function (Routing\RouteCollector $group): void {
-			$group->get('', [$this->characteristicsController, 'index']);
-			$group->put('', [$this->characteristicsController, 'update']);
-		});
+		$this->group(
+			'/characteristics',
+			function (Routing\RouteCollector $group) use ($characteristicsController): void {
+				$group->get('', [$characteristicsController, 'index']);
+				$group->put('', [$characteristicsController, 'update']);
+			}
+		);
 	}
 
 }
