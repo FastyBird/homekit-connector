@@ -110,9 +110,9 @@ final class Protocol
 	 */
 	public static function generatePinCode(): string
 	{
-		return strval(rand(pow(10, 3), pow(10,4) - 1))
-			. '-' . strval(rand(pow(10, 2), pow(10,3) - 1))
-			. '-' . strval(rand(pow(10, 3), pow(10,4) - 1));
+		return strval(rand(pow(10, 3), pow(10, 4) - 1))
+			. '-' . strval(rand(pow(10, 2), pow(10, 3) - 1))
+			. '-' . strval(rand(pow(10, 3), pow(10, 4) - 1));
 	}
 
 	/**

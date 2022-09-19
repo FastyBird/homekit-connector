@@ -1,42 +1,38 @@
 <?php declare(strict_types = 1);
 
 /**
- * ConnectorFactory.php
+ * HttpFactory.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Connector
+ * @subpackage     Clients
  * @since          0.19.0
  *
- * @date           17.09.22
+ * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Connector;
+namespace FastyBird\HomeKitConnector\Clients;
 
-use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
-use FastyBird\HomeKitConnector\Connector;
 use FastyBird\Metadata\Entities as MetadataEntities;
 
 /**
- * Connector service executor factory
+ * HTTP connector communication client factory
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Connector
+ * @subpackage     Clients
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface ConnectorFactory extends DevicesModuleConnectors\IConnectorFactory
+interface HttpFactory extends ClientFactory
 {
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 *
-	 * @return Connector\Connector
+	 * @return Http
 	 */
-	public function create(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	): Connector\Connector;
+	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Http;
 
 }

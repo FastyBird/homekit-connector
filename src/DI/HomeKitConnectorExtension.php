@@ -23,6 +23,7 @@ use FastyBird\HomeKitConnector\Connector;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Hydrators;
+use FastyBird\HomeKitConnector\Middleware;
 use FastyBird\HomeKitConnector\Schemas;
 use Nette;
 use Nette\DI;
@@ -101,6 +102,11 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->getResultDefinition()
 			->setType(Clients\Mdns::class);
 
+		$builder->addFactoryDefinition($this->prefix('client.http'))
+			->setImplement(Clients\HttpFactory::class)
+			->getResultDefinition()
+			->setType(Clients\Http::class);
+
 		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\HomeKitConnector::class);
@@ -121,6 +127,10 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 
 		$builder->addDefinition($this->prefix('helpers.connector'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Connector::class);
+
+		// HTTP server services
+		$builder->addDefinition($this->prefix('http.middleware.router'), new DI\Definitions\ServiceDefinition())
+			->setType(Middleware\RouterMiddleware::class);
 
 		// Console commands
 		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())

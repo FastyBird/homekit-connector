@@ -165,7 +165,7 @@ class Characteristic
 	 */
 	public function setValue(int|float|string|bool $value): void
 	{
-		# TBD
+		// TBD
 	}
 
 	/**

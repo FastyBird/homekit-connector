@@ -91,6 +91,7 @@ final class Mdns implements Client
 	) {
 		$this->connector = $connector;
 		$this->connectorHelper = $connectorHelper;
+
 		$this->eventLoop = $eventLoop;
 
 		$this->logger = $logger ?? new Log\NullLogger();
@@ -304,13 +305,17 @@ final class Mdns implements Client
 			$name . ' ' . $shortMacAddress . '.' . self::HAP_SERVICE_TYPE,
 		);
 
-		$resourceRecords[] = new Dns\Model\Record(
-			$hostName . '-' . $shortMacAddress . '.local',
-			Dns\Model\Message::TYPE_A,
-			Dns\Model\Message::CLASS_IN,
-			120,
-			Helpers\Protocol::getLocalAddress()
-		);
+		$localIpAddress = Helpers\Protocol::getLocalAddress();
+
+		if ($localIpAddress !== null) {
+			$resourceRecords[] = new Dns\Model\Record(
+				$hostName . '-' . $shortMacAddress . '.local',
+				Dns\Model\Message::TYPE_A,
+				Dns\Model\Message::CLASS_IN,
+				120,
+				$localIpAddress
+			);
+		}
 
 		$resourceRecords[] = new Dns\Model\Record(
 			$name . ' ' . $shortMacAddress . '.' . self::HAP_SERVICE_TYPE,

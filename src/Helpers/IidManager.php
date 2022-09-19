@@ -15,11 +15,8 @@
 
 namespace FastyBird\HomeKitConnector\Helpers;
 
-use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Protocol;
 use Nette;
-use Nette\Utils;
-use Ramsey\Uuid;
 use SplObjectStorage;
 
 /**
