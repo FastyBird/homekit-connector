@@ -20,10 +20,12 @@ use FastyBird\DevicesModule\DI as DevicesModuleDI;
 use FastyBird\HomeKitConnector\Clients;
 use FastyBird\HomeKitConnector\Commands;
 use FastyBird\HomeKitConnector\Connector;
+use FastyBird\HomeKitConnector\Controllers;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Hydrators;
 use FastyBird\HomeKitConnector\Middleware;
+use FastyBird\HomeKitConnector\Router;
 use FastyBird\HomeKitConnector\Schemas;
 use Nette;
 use Nette\DI;
@@ -129,8 +131,24 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->setType(Helpers\Connector::class);
 
 		// HTTP server services
+		$router = $builder->addDefinition($this->prefix('http.router'), new DI\Definitions\ServiceDefinition())
+			->setType(Router\Router::class);
+
 		$builder->addDefinition($this->prefix('http.middleware.router'), new DI\Definitions\ServiceDefinition())
-			->setType(Middleware\RouterMiddleware::class);
+			->setType(Middleware\RouterMiddleware::class)
+			->setArguments(['router' => $router]);
+
+		$builder->addDefinition($this->prefix('http.controllers.accessories'), new DI\Definitions\ServiceDefinition())
+			->setType(Controllers\AccessoriesController::class)
+			->addTag('nette.inject');
+
+		$builder->addDefinition($this->prefix('http.controllers.characteristics'), new DI\Definitions\ServiceDefinition())
+			->setType(Controllers\CharacteristicsController::class)
+			->addTag('nette.inject');
+
+		$builder->addDefinition($this->prefix('http.controllers.pairing'), new DI\Definitions\ServiceDefinition())
+			->setType(Controllers\PairingController::class)
+			->addTag('nette.inject');
 
 		// Console commands
 		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
@@ -165,6 +183,18 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			$ormAnnotationDriverChainService->addSetup('addDriver', [
 				$ormAnnotationDriverService,
 				'FastyBird\HomeKitConnector\Entities',
+			]);
+		}
+
+		/**
+		 * Routes
+		 */
+
+		$routerService = $builder->getDefinitionByType(Router\Router::class);
+
+		if ($routerService instanceof DI\Definitions\ServiceDefinition) {
+			$routerService->addSetup('?->registerRoutes()', [
+				$routerService,
 			]);
 		}
 	}
