@@ -45,6 +45,7 @@
     "fastybird/devices-module" : "dev-main as 0.75.0",
     "fastybird/json-api" : "^0.11",
     "fastybird/metadata" : "^0.76",
+    "ipub/slim-router" : "^0.2.0",
     "nette/bootstrap" : "^3.1",
     "nette/di" : "^3.0",
     "psr/log" : "^1.1",
