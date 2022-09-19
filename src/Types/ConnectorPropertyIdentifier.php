@@ -33,8 +33,12 @@ class ConnectorPropertyIdentifier extends Consistence\Enum\Enum
 	 * Define connector properties identifiers
 	 */
 	public const IDENTIFIER_PORT = MetadataTypes\ConnectorPropertyIdentifierType::IDENTIFIER_PORT;
-	public const IDENTIFIER_PINCODE = 'pincode';
+	public const IDENTIFIER_PIN_CODE = 'pin_code';
 	public const IDENTIFIER_XHM_URI = 'xhm_uri';
+	public const IDENTIFIER_MAC_ADDRESS = 'mac_address';
+	public const IDENTIFIER_SETUP_ID = 'setup_id';
+	public const IDENTIFIER_CONFIG_VERSION = 'configuration_version';
+	public const IDENTIFIER_PAIRED = 'paired';
 
 	/**
 	 * @return string

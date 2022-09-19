@@ -15,12 +15,13 @@
 
 namespace FastyBird\HomeKitConnector\Clients;
 
-use FastyBird\HomeKitConnector\Clients;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
+use FastyBird\HomeKitConnector;
+use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
+use Nette\Utils;
 use Psr\Log;
 use React\Datagram;
 use React\Dns;
@@ -43,14 +44,26 @@ final class Mdns implements Client
 	private const DNS_ADDRESS = '224.0.0.251';
 	private const DNS_PORT = 5353;
 
-	/** @var Array<string, Array<int, Array<int, Clients\Mdns\ResourceRecord[]>>> */
-	private $resourceRecords = [];
+	private const HAP_SERVICE_TYPE = '_hap._tcp.local.';
+
+	private const VALID_MDNS_REGEX = '/[^A-Za-z0-9\-]+/';
+	private const LEADING_TRAILING_SPACE_DASH = '/^[ -]+|[ -]+$/';
+	private const DASH_REGEX = '/[-]+/';
+
+	/** @var Array<string, Array<int, Array<int, Dns\Model\Record[]>>> */
+	private array $resourceRecords = [];
 
 	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
 	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
 
+	/** @var Helpers\Connector */
+	private Helpers\Connector $connectorHelper;
+
 	/** @var Dns\Protocol\Parser */
 	private Dns\Protocol\Parser $parser;
+
+	/** @var Dns\Protocol\BinaryDumper */
+	private Dns\Protocol\BinaryDumper $dumper;
 
 	/** @var EventLoop\LoopInterface */
 	private EventLoop\LoopInterface $eventLoop;
@@ -63,20 +76,24 @@ final class Mdns implements Client
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
+	 * @param Helpers\Connector $connectorHelper
 	 * @param EventLoop\LoopInterface $eventLoop
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		Helpers\Connector $connectorHelper,
 		EventLoop\LoopInterface $eventLoop,
 		?Log\LoggerInterface $logger = null
 	) {
 		$this->connector = $connector;
+		$this->connectorHelper = $connectorHelper;
 		$this->eventLoop = $eventLoop;
 
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		$this->parser = new Dns\Protocol\Parser();
+		$this->dumper = new Dns\Protocol\BinaryDumper();
 	}
 
 	/**
@@ -84,80 +101,32 @@ final class Mdns implements Client
 	 */
 	public function connect(): void
 	{
+		$this->createZone();
+
 		$factory = new Datagram\Factory($this->eventLoop);
 
 		$factory->createServer(self::DNS_ADDRESS . ':' . self::DNS_PORT)
 			->then(function (Datagram\Socket $server): void {
-				$server->on('message', function (string $message, string $address): void {
+				$this->server = $server;
+
+				$this->server->on('message', function (string $message, string $address): void {
 					$request = $this->parser->parseMessage($message);
 
-					foreach ($request->answers as $answer) {
-						var_dump($answer->name);
-						var_dump($answer->type);
-						var_dump($answer->data);
-					}
-					return;
+					$response = clone $request;
+					$response->qr = true;
+					$response->ra = false;
+					$response->aa = $request->questions !== [];
 
-					try {
-						$responseHeader = new Clients\Mdns\Header(
-							$request->getHeader()->getId(),
-							true,
-							$request->getHeader()->getOpcode(),
-							$request->getQuestions() !== [],
-							$request->getHeader()->isTruncated(),
-							$request->getHeader()->isRecursionDesired(),
-							false,
-							$request->getHeader()->getZ(),
-							$request->getHeader()->getRcode(),
-							$request->getHeader()->getQuestionCount(),
-							$request->getHeader()->getAnswerCount(),
-							$request->getHeader()->getNameServerCount(),
-							$request->getHeader()->getAdditionalRecordsCount(),
-						);
-
-						$additional = $this->needsAdditionalRecords($request);
-
-						$response = new Clients\Mdns\Message(
-							$responseHeader,
-							$request->getQuestions(),
-							$this->getAnswer($request->getQuestions()),
-							$request->getAuthoritatives(),
-							$additional,
-						);
-
-					} catch (Exceptions\UnsupportedType) {
-						$responseHeader = new Clients\Mdns\Header(
-							$request->getHeader()->getId(),
-							true,
-							$request->getHeader()->getOpcode(),
-							$request->getQuestions() !== [],
-							$request->getHeader()->isTruncated(),
-							$request->getHeader()->isRecursionDesired(),
-							false,
-							$request->getHeader()->getZ(),
-							Clients\Mdns\Header::RCODE_NOT_IMPLEMENTED,
-							$request->getHeader()->getQuestionCount(),
-							$request->getHeader()->getAnswerCount(),
-							$request->getHeader()->getNameServerCount(),
-							$request->getHeader()->getAdditionalRecordsCount(),
-						);
-
-						$response = new Clients\Mdns\Message(
-							$responseHeader,
-							$request->getQuestions(),
-							[],
-							$request->getAuthoritatives(),
-							$request->getAdditionals(),
-						);
-					}
+					$response->answers = $this->getAnswers($request->questions);
+					$response->additional = $this->getAdditional($response->answers);
 
 					$this->server?->send(
-						Clients\Mdns\Encoder::encodeMessage($response),
-						$address
+						$this->dumper->toBinary($response),
+						self::DNS_ADDRESS . ':' . self::DNS_PORT
 					);
 				});
 
-				$server->on('error', function (Throwable $ex): void {
+				$this->server->on('error', function (Throwable $ex): void {
 					$this->logger->error(
 						'An error occurred during server handling',
 						[
@@ -169,9 +138,15 @@ final class Mdns implements Client
 							],
 						]
 					);
+
+					throw new DevicesModuleExceptions\TerminateException(
+						'Discovery broadcast server was terminated',
+						$ex->getCode(),
+						$ex
+					);
 				});
 
-				$server->on('close', function (): void {
+				$this->server->on('close', function (): void {
 					$this->logger->info(
 						'Server was closed',
 						[
@@ -180,6 +155,32 @@ final class Mdns implements Client
 						]
 					);
 				});
+
+				$this->eventLoop->addPeriodicTimer(
+					3,
+					function (): void {
+						$message = new Dns\Model\Message();
+						$message->id = mt_rand(0, 0xffff);
+						$message->qr = true;
+						$message->rd = true;
+						$message->answers = $this->getAnswers([
+							new Dns\Query\Query(
+								'',
+								Dns\Model\Message::TYPE_ANY,
+								Dns\Model\Message::CLASS_IN
+							),
+						]);
+
+						if ($message->answers === []) {
+							return;
+						}
+
+						$this->server?->send(
+							$this->dumper->toBinary($message),
+							self::DNS_ADDRESS . ':' . self::DNS_PORT
+						);
+					}
+				);
 			})
 			->otherwise(function (Throwable $ex): void {
 				$this->logger->error(
@@ -205,176 +206,241 @@ final class Mdns implements Client
 	}
 
 	/**
-	 * {@inheritDoc}
-	 */
-	public function isConnected(): bool
-	{
-		return $this->server !== null;
-	}
-
-	public function writeDeviceControl(MetadataEntities\Actions\IActionDeviceControlEntity $action): void
-	{
-		// TODO: Implement writeDeviceControl() method.
-	}
-
-	public function writeChannelControl(MetadataEntities\Actions\IActionChannelControlEntity $action): void
-	{
-		// TODO: Implement writeChannelControl() method.
-	}
-
-	/**
-	 * Populate the additional records of a message if required
-	 *
-	 * @param Clients\Mdns\Message $message
-	 *
-	 * @return Clients\Mdns\ResourceRecord[]
-	 */
-	private function needsAdditionalRecords(Clients\Mdns\Message $message): array
-	{
-		$additional = [];
-
-		foreach ($message->getAnswers() as $answer) {
-			$name = null;
-
-			switch ($answer->getType()) {
-				case Types\ResourceRecordType::TYPE_NS:
-					$name = $answer->getRdata();
-					break;
-
-				case Types\ResourceRecordType::TYPE_MX:
-					if (is_array($answer->getRdata()) && array_key_exists('exchange', $answer->getRdata())) {
-						$name = $answer->getRdata()['exchange'];
-					}
-
-					break;
-
-				case Types\ResourceRecordType::TYPE_SRV:
-					if (is_array($answer->getRdata()) && array_key_exists('target', $answer->getRdata())) {
-						$name = $answer->getRdata()['target'];
-					}
-
-					break;
-			}
-
-			if (!is_string($name)) {
-				continue;
-			}
-
-			$query = [
-				new Clients\Mdns\ResourceRecord(
-					$name,
-					Types\ResourceRecordType::TYPE_A,
-					300,
-					'',
-					Types\ResourceRecordClass::CLASS_INTERNET,
-					true
-				),
-				new Clients\Mdns\ResourceRecord(
-					$name,
-					Types\ResourceRecordType::TYPE_AAAA,
-					300,
-					'',
-					Types\ResourceRecordClass::CLASS_INTERNET,
-					true
-				),
-			];
-
-			foreach ($this->getAnswer($query) as $record) {
-				$additional[] = $record;
-			}
-		}
-
-		return $additional;
-	}
-
-	/**
 	 * @return void
 	 */
 	private function createZone(): void
 	{
+		$name = preg_replace(
+			self::LEADING_TRAILING_SPACE_DASH,
+			'',
+			strval(preg_replace(
+				self::VALID_MDNS_REGEX,
+				' ',
+				$this->connector->getName() ?? $this->connector->getIdentifier()
+			))
+		);
+
+		$hostName = preg_replace(
+			self::DASH_REGEX,
+			'-',
+			Utils\Strings::trim(
+				str_replace(
+					' ',
+					'-',
+					Utils\Strings::trim(
+						strval(preg_replace(
+							self::VALID_MDNS_REGEX,
+							' ',
+							$this->connector->getName() ?? $this->connector->getIdentifier()
+						))
+					)
+				),
+				'-'
+			)
+		);
+
+		$port = $this->connectorHelper->getConfiguration(
+			$this->connector->getId(),
+			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT
+			)
+		);
+
+		$macAddress = $this->connectorHelper->getConfiguration(
+			$this->connector->getId(),
+			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS
+			)
+		);
+
+		$shortMacAddress = str_replace(':', '', Utils\Strings::substring((string) $macAddress, -8));
+
+		$version = $this->connectorHelper->getConfiguration(
+			$this->connector->getId(),
+			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION
+			)
+		);
+
+		$paired = $this->connectorHelper->getConfiguration(
+			$this->connector->getId(),
+			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED
+			)
+		);
+
+		$setupId = $this->connectorHelper->getConfiguration(
+			$this->connector->getId(),
+			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID
+			)
+		);
+
+		$setupHash = substr(
+			base64_encode(hash('sha512', ((string) $setupId . (string) $macAddress), true)),
+			0,
+			4
+		);
+
 		$resourceRecords = [];
 
-		$resourceRecords[] = new Clients\Mdns\ResourceRecord(
-			'hap.local',
-			Types\ResourceRecordType::TYPE_PTR,
+		$resourceRecords[] = new Dns\Model\Record(
+			self::HAP_SERVICE_TYPE,
+			Dns\Model\Message::TYPE_PTR,
+			Dns\Model\Message::CLASS_IN,
 			4500,
-			'Bridge AB33CD.hap.local',
-			Types\ResourceRecordClass::CLASS_INTERNET
+			$name . ' ' . $shortMacAddress . '.' . self::HAP_SERVICE_TYPE,
 		);
 
-		$resourceRecords[] = new Clients\Mdns\ResourceRecord(
-			'Bridge-AB33CD.local',
-			Types\ResourceRecordType::TYPE_A,
+		$resourceRecords[] = new Dns\Model\Record(
+			$hostName . '-' . $shortMacAddress . '.local',
+			Dns\Model\Message::TYPE_A,
+			Dns\Model\Message::CLASS_IN,
 			120,
-			'10.10.10.100'
+			gethostbyname(strval(gethostname()))
 		);
 
-		$resourceRecords[] = new Clients\Mdns\ResourceRecord(
-			'Bridge AB33CD.hap.local',
-			Types\ResourceRecordType::TYPE_NSEC,
-			4500,
+		$resourceRecords[] = new Dns\Model\Record(
+			$name . ' ' . $shortMacAddress . '.' . self::HAP_SERVICE_TYPE,
+			Dns\Model\Message::TYPE_SRV,
+			Dns\Model\Message::CLASS_IN,
+			120,
 			[
-				'nextDomain' => 'Bridge-AB33CD.local',
-				'rrtypes'    => ['AAAA'],
+				'priority' => '0',
+				'weight'   => '0',
+				'port'     => (string) $port,
+				'target'   => $hostName . '-' . $shortMacAddress . '.local',
 			]
 		);
 
-		$resourceRecords[] = new Clients\Mdns\ResourceRecord(
-			'Bridge AB33CD.hap.local',
-			Types\ResourceRecordType::TYPE_SRV,
-			120,
-			[
-				'priority' => 0,
-				'weight'   => 0,
-				'port'     => 'Bridge-AB33CD.local',
-				'target'   => 51234,
-			]
-		);
-
-		$resourceRecords[] = new Clients\Mdns\ResourceRecord(
-			'Bridge AB33CD.hap.local',
-			Types\ResourceRecordType::TYPE_TXT,
+		$resourceRecords[] = new Dns\Model\Record(
+			$name . ' ' . $shortMacAddress . '.' . self::HAP_SERVICE_TYPE,
+			Dns\Model\Message::TYPE_TXT,
+			Dns\Model\Message::CLASS_IN,
 			4500,
 			[
-				'md=Bridge',
-				'pv=1.1',
-				'id=AA:2B:BC:2D:4F:20',
-				'c#=2',
-				's#=1',
+				'md=' . $name,
+				'pv=' . HomeKitConnector\Constants::HAP_PROTOCOL_SHORT_VERSION,
+				'id=' . ((string) $macAddress),
+				// Represents the 'configuration version' of an Accessory.
+				// Increasing this 'version number' signals iOS devices to
+				// re-fetch accessories data
+				'c#=' . ((int) $version),
+				's#=1', // Accessory state
 				'ff=0',
-				'ci=2',
-				'sf=1',
-				'sh=zTFuOw==',
+				'ci=' . HomeKitConnector\Types\Category::CATEGORY_BRIDGE,
+				// 'sf == 1' means "discoverable by HomeKit iOS clients"
+				'sf=' . ((bool) $paired === true ? 0 : 1),
+				'sh=' . $setupHash,
 			]
 		);
 
 		$this->resourceRecords = [];
 
 		foreach ($resourceRecords as $record) {
-			$this->resourceRecords[$record->getName()][$record->getType()][$record->getClass()][] = $record;
+			$this->resourceRecords[$record->name][$record->type][$record->class][] = $record;
 		}
 	}
 
 	/**
-	 * @param Clients\Mdns\ResourceRecord[] $queries
+	 * @param Dns\Query\Query[] $queries
 	 *
-	 * @return Clients\Mdns\ResourceRecord[]
+	 * @return Dns\Model\Record[]
 	 */
-	private function getAnswer(array $queries): array
+	private function getAnswers(array $queries): array
 	{
 		$answers = [];
 
 		foreach ($queries as $query) {
-			$answer = $this->resourceRecords[$query->getName()][$query->getType()][$query->getClass()] ?? [];
+			if ($query->type === Dns\Model\Message::TYPE_ANY) {
+				foreach ($this->resourceRecords as $rrByName) {
+					foreach ($rrByName as $rrByType) {
+						foreach ($rrByType as $rrByClass) {
+							$answers = array_merge($answers, $rrByClass);
+						}
+					}
+				}
+			} else {
+				$answer = $this->resourceRecords[$query->name][$query->type][$query->class] ?? [];
 
-			if ($answer === []) {
-				continue;
+				if ($answer === []) {
+					continue;
+				}
+
+				$answers = array_merge($answers, $answer);
 			}
-
-			$answers = array_merge($answers, $answer);
 		}
 
 		return $answers;
+	}
+
+	/**
+	 * Populate the additional records of a message if required
+	 *
+	 * @param Dns\Model\Record[] $answers
+	 *
+	 * @return Dns\Model\Record[]
+	 */
+	private function getAdditional(array $answers): array
+	{
+		$additional = [];
+
+		$queries = [];
+
+		foreach ($answers as $answer) {
+			if ($answer->type !== Dns\Model\Message::TYPE_PTR) {
+				continue;
+			}
+
+			$queries[] = new Dns\Query\Query(
+				strval($answer->data),
+				Dns\Model\Message::TYPE_SRV,
+				Dns\Model\Message::CLASS_IN,
+			);
+
+			$queries[] = new Dns\Query\Query(
+				strval($answer->data),
+				Dns\Model\Message::TYPE_TXT,
+				Dns\Model\Message::CLASS_IN,
+			);
+		}
+
+		// To populate the A and AAAA records, we need to get a set of unique
+		// targets from the SRV record
+		$srvRecordTargets = array_map(
+			function (Dns\Model\Record $record): string {
+				return is_array($record->data) ? strval($record->data['target']) : '';
+			},
+			array_filter(
+				$additional,
+				function (Dns\Model\Record $record): bool {
+					return $record->type === Dns\Model\Message::TYPE_SRV;
+				}
+			)
+		);
+		$srvRecordTargets = array_unique($srvRecordTargets);
+
+		foreach ($srvRecordTargets as $srvRecordTarget) {
+			$queries[] = new Dns\Query\Query(
+				$srvRecordTarget,
+				Dns\Model\Message::TYPE_A,
+				Dns\Model\Message::CLASS_IN,
+			);
+
+			$queries[] = new Dns\Query\Query(
+				$srvRecordTarget,
+				Dns\Model\Message::TYPE_AAAA,
+				Dns\Model\Message::CLASS_IN,
+			);
+		}
+
+		if ($queries !== []) {
+			foreach ($this->getAnswers($queries) as $record) {
+				$additional[] = $record;
+			}
+		}
+
+		return $additional;
 	}
 
 }
