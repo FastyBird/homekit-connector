@@ -88,12 +88,12 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		// Service factory
 		$builder->addFactoryDefinition($this->prefix('executor.factory'))
 			->setImplement(Connector\ConnectorFactory::class)
-			->getResultDefinition()
-			->setType(Connector\Connector::class)
 			->addTag(
 				DevicesModuleDI\DevicesModuleExtension::CONNECTOR_TYPE_TAG,
 				Entities\HomeKitConnector::CONNECTOR_TYPE
-			);
+			)
+			->getResultDefinition()
+			->setType(Connector\Connector::class);
 
 		// Clients
 		$builder->addFactoryDefinition($this->prefix('client.mdns'))
