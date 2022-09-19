@@ -108,6 +108,16 @@ final class Protocol
 	/**
 	 * @return string
 	 */
+	public static function generatePinCode(): string
+	{
+		return strval(rand(pow(10, 3), pow(10,4) - 1))
+			. '-' . strval(rand(pow(10, 2), pow(10,3) - 1))
+			. '-' . strval(rand(pow(10, 3), pow(10,4) - 1));
+	}
+
+	/**
+	 * @return string
+	 */
 	public static function generateMacAddress(): string
 	{
 		$allowedValues = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];

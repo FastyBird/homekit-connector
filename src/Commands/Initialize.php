@@ -17,12 +17,16 @@ namespace FastyBird\HomeKitConnector\Commands;
 
 use Doctrine\DBAL;
 use Doctrine\Persistence;
+use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
+use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Exceptions;
+use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Types as MetadataTypes;
 use Nette\Utils;
 use Psr\Log;
 use Symfony\Component\Console;
@@ -52,6 +56,9 @@ class Initialize extends Console\Command\Command
 	/** @var DevicesModuleModels\Connectors\IConnectorsManager */
 	private DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager;
 
+	/** @var DevicesModuleModels\Connectors\Properties\IPropertiesManager */
+	private DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager;
+
 	/** @var DevicesModuleModels\Connectors\Controls\IControlsManager */
 	private DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager;
 
@@ -67,6 +74,7 @@ class Initialize extends Console\Command\Command
 	/**
 	 * @param DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository
 	 * @param DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager
+	 * @param DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager
 	 * @param DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager
 	 * @param DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsDataStorageRepository
 	 * @param Persistence\ManagerRegistry $managerRegistry
@@ -76,6 +84,7 @@ class Initialize extends Console\Command\Command
 	public function __construct(
 		DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository,
 		DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager,
+		DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager,
 		DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager,
 		DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsDataStorageRepository,
 		Persistence\ManagerRegistry $managerRegistry,
@@ -84,6 +93,7 @@ class Initialize extends Console\Command\Command
 	) {
 		$this->connectorsRepository = $connectorsRepository;
 		$this->connectorsManager = $connectorsManager;
+		$this->propertiesManager = $propertiesManager;
 		$this->controlsManager = $controlsManager;
 
 		$this->connectorsDataStorageRepository = $connectorsDataStorageRepository;
@@ -218,6 +228,54 @@ class Initialize extends Console\Command\Command
 			$this->controlsManager->create(Utils\ArrayHash::from([
 				'name'      => Types\ConnectorControlName::NAME_REBOOT,
 				'connector' => $connector,
+			]));
+
+			$this->propertiesManager->create(Utils\ArrayHash::from([
+				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
+				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_UCHAR),
+				'value'      => HomeKitConnector\Constants::DEFAULT_PORT,
+				'connector'  => $connector,
+			]));
+
+			$this->propertiesManager->create(Utils\ArrayHash::from([
+				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PIN_CODE,
+				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+				'value'      => Helpers\Protocol::generatePinCode(),
+				'connector'  => $connector,
+			]));
+
+			$this->propertiesManager->create(Utils\ArrayHash::from([
+				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS,
+				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+				'value'      => Helpers\Protocol::generateMacAddress(),
+				'connector'  => $connector,
+			]));
+
+			$this->propertiesManager->create(Utils\ArrayHash::from([
+				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID,
+				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+				'value'      => Helpers\Protocol::generateSetupId(),
+				'connector'  => $connector,
+			]));
+
+			$this->propertiesManager->create(Utils\ArrayHash::from([
+				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION,
+				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_USHORT),
+				'value'      => 1,
+				'connector'  => $connector,
+			]));
+
+			$this->propertiesManager->create(Utils\ArrayHash::from([
+				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED,
+				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN),
+				'value'      => false,
+				'connector'  => $connector,
 			]));
 
 			// Commit all changes into database

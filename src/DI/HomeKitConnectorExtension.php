@@ -16,10 +16,11 @@
 namespace FastyBird\HomeKitConnector\DI;
 
 use Doctrine\Persistence;
-use FastyBird\HomeKitConnector;
+use FastyBird\DevicesModule\DI as DevicesModuleDI;
 use FastyBird\HomeKitConnector\Clients;
 use FastyBird\HomeKitConnector\Commands;
 use FastyBird\HomeKitConnector\Connector;
+use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Hydrators;
 use FastyBird\HomeKitConnector\Schemas;
 use Nette;
@@ -84,14 +85,14 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		}
 
 		// Service factory
-		$builder->addDefinition($this->prefix('service.factory'), new DI\Definitions\ServiceDefinition())
-			->setType(HomeKitConnector\ConnectorFactory::class);
-
-		// Connector
-		$builder->addFactoryDefinition($this->prefix('connector'))
+		$builder->addFactoryDefinition($this->prefix('executor.factory'))
 			->setImplement(Connector\ConnectorFactory::class)
 			->getResultDefinition()
-			->setType(Connector\Connector::class);
+			->setType(Connector\Connector::class)
+			->addTag(
+				DevicesModuleDI\DevicesModuleExtension::CONNECTOR_TYPE_TAG,
+				Entities\HomeKitConnector::CONNECTOR_TYPE
+			);
 
 		// Clients
 		$builder->addFactoryDefinition($this->prefix('client.mdns'))

@@ -16,6 +16,7 @@
 namespace FastyBird\HomeKitConnector\Helpers;
 
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
+use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
@@ -59,7 +60,18 @@ final class Connector
 		$configuration = $this->propertiesRepository->findByIdentifier($connectorId, strval($type->getValue()));
 
 		if ($configuration instanceof MetadataEntities\Modules\DevicesModule\IConnectorStaticPropertyEntity) {
+			if (
+				$type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT
+				&& $configuration->getValue() === null
+			) {
+				return HomeKitConnector\Constants::DEFAULT_PORT;
+			}
+
 			return $configuration->getValue();
+		}
+
+		if ($type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT) {
+			return HomeKitConnector\Constants::DEFAULT_PORT;
 		}
 
 		return null;

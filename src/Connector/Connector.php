@@ -21,7 +21,7 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 
 /**
- * Connector service container
+ * Connector service executor
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Connector
@@ -36,22 +36,23 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
 	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
 
-	/** @var Clients\ClientFactory[] */
-	private array $clientsFactories;
-
 	/** @var Clients\Client[] */
 	private array $clients = [];
 
+	/** @var Clients\ClientFactory[] */
+	private array $clientsFactories;
+
 	/**
-	 * @param Clients\ClientFactory[] $clientsFactories
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
+	 * @param Clients\ClientFactory[] $clientsFactories
 	 */
 	public function __construct(
-		array $clientsFactories,
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
+		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		array $clientsFactories
 	) {
-		$this->clientsFactories = $clientsFactories;
 		$this->connector = $connector;
+
+		$this->clientsFactories = $clientsFactories;
 	}
 
 	/**

@@ -15,26 +15,28 @@
 
 namespace FastyBird\HomeKitConnector\Connector;
 
+use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\HomeKitConnector\Connector;
 
 /**
- * Connector service factory
+ * Connector service executor factory
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Connector
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface ConnectorFactory
+interface ConnectorFactory extends DevicesModuleConnectors\IConnectorFactory
 {
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 *
-	 * @return Connector
+	 * @return Connector\Connector
 	 */
 	public function create(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	): Connector;
+	): Connector\Connector;
 
 }
