@@ -132,7 +132,8 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 
 		// HTTP server services
 		$router = $builder->addDefinition($this->prefix('http.router'), new DI\Definitions\ServiceDefinition())
-			->setType(Router\Router::class);
+			->setType(Router\Router::class)
+			->setAutowired(false);
 
 		$builder->addDefinition($this->prefix('http.middleware.router'), new DI\Definitions\ServiceDefinition())
 			->setType(Middleware\RouterMiddleware::class)
