@@ -21,6 +21,7 @@ use FastyBird\HomeKitConnector\Clients;
 use FastyBird\HomeKitConnector\Commands;
 use FastyBird\HomeKitConnector\Connector;
 use FastyBird\HomeKitConnector\Entities;
+use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Hydrators;
 use FastyBird\HomeKitConnector\Schemas;
 use Nette;
@@ -113,6 +114,13 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 
 		$builder->addDefinition($this->prefix('hydrators.device.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Hydrators\HomeKitDevice::class);
+
+		// Helpers
+		$builder->addDefinition($this->prefix('helpers.database'), new DI\Definitions\ServiceDefinition())
+			->setType(Helpers\Database::class);
+
+		$builder->addDefinition($this->prefix('helpers.connector'), new DI\Definitions\ServiceDefinition())
+			->setType(Helpers\Connector::class);
 
 		// Console commands
 		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
