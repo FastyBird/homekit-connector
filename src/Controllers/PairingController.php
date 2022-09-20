@@ -89,6 +89,19 @@ final class PairingController extends BaseController
 	 *
 	 * @return Message\ResponseInterface
 	 */
+	public function identify(
+		Message\ServerRequestInterface $request,
+		Message\ResponseInterface $response
+	): Message\ResponseInterface {
+		// TODO: Implement
+	}
+
+	/**
+	 * @param Message\ServerRequestInterface $request
+	 * @param Message\ResponseInterface $response
+	 *
+	 * @return Message\ResponseInterface
+	 */
 	public function resource(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response
