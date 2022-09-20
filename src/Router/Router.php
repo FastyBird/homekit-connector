@@ -55,6 +55,13 @@ class Router extends Routing\Router
 		);
 
 		$this->group(
+			'/identify',
+			function (Routing\RouteCollector $group) use ($pairingController): void {
+				$group->post('', [$pairingController, 'identify']);
+			}
+		);
+
+		$this->group(
 			'/accessories',
 			function (Routing\RouteCollector $group) use ($accessoriesController): void {
 				$group->get('', [$accessoriesController, 'index']);
