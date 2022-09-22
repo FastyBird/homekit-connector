@@ -24,9 +24,6 @@ use Psr\Http\Message;
  * @subpackage     Controllers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- *
- * @Secured
- * @Secured\User(loggedIn)
  */
 final class AccessoriesController extends BaseController
 {
@@ -42,6 +39,7 @@ final class AccessoriesController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		// TODO: Implement
+		return $response;
 	}
 
 }

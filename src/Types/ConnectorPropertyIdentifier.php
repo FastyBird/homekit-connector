@@ -39,6 +39,8 @@ class ConnectorPropertyIdentifier extends Consistence\Enum\Enum
 	public const IDENTIFIER_SETUP_ID = 'setup_id';
 	public const IDENTIFIER_CONFIG_VERSION = 'configuration_version';
 	public const IDENTIFIER_PAIRED = 'paired';
+	public const IDENTIFIER_PAIRING_ATTEMPTS = 'pairing_attempts';
+	public const IDENTIFIER_PAIRING_SETUP_MODE = 'pairing_setup_mode';
 
 	/**
 	 * @return string

@@ -25,6 +25,7 @@ use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Hydrators;
 use FastyBird\HomeKitConnector\Middleware;
+use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Router;
 use FastyBird\HomeKitConnector\Schemas;
 use Nette;
@@ -150,6 +151,10 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('http.controllers.pairing'), new DI\Definitions\ServiceDefinition())
 			->setType(Controllers\PairingController::class)
 			->addTag('nette.inject');
+
+		// Protocol utilities
+		$builder->addDefinition($this->prefix('protocol.tlv'), new DI\Definitions\ServiceDefinition())
+			->setType(Protocol\Tlv::class);
 
 		// Console commands
 		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())

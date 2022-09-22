@@ -22,6 +22,8 @@ use FastyBird\HomeKitConnector\Middleware;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log;
 use React\EventLoop;
 use React\Http as ReactHttp;
@@ -40,6 +42,11 @@ final class Http implements Client
 {
 
 	use Nette\SmartObject;
+
+	public const REQUEST_ATTRIBUTE_CONNECTOR = 'connector';
+
+	public const PAIRING_CONTENT_TYPE = 'application/pairing+tlv8';
+	public const JSON_CONTENT_TYPE = 'application/hap+json';
 
 	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
 	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
@@ -155,6 +162,14 @@ final class Http implements Client
 
 		$server = new ReactHttp\HttpServer(
 			$this->eventLoop,
+			function (ServerRequestInterface $request, callable $next): ResponseInterface {
+				$request = $request->withAttribute(
+					self::REQUEST_ATTRIBUTE_CONNECTOR,
+					$this->connector->getId()->toString()
+				);
+
+				return $next($request);
+			},
 			$this->routerMiddleware
 		);
 		$server->listen($this->socket);

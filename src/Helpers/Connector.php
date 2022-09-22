@@ -19,6 +19,7 @@ use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Types\DataTypeType;
 use Nette;
 use Ramsey\Uuid;
 
@@ -67,6 +68,13 @@ final class Connector
 				return HomeKitConnector\Constants::DEFAULT_PORT;
 			}
 
+			if (
+				$type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED
+				&& $configuration->getValue() === null
+			) {
+				return false;
+			}
+
 			return $configuration->getValue();
 		}
 
@@ -75,6 +83,15 @@ final class Connector
 		}
 
 		return null;
+	}
+
+	public function setConfiguration(
+		Uuid\UuidInterface $connectorId,
+		Types\ConnectorPropertyIdentifier $type,
+		DataTypeType $dataType,
+		string|int|float|bool|null $value = null
+	): void {
+		return;
 	}
 
 }
