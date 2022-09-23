@@ -39,15 +39,17 @@
 
   "require" : {
     "php": ">=8.1.0",
-    "ext-bcmath": "*",
+    "ext-gmp": "*",
     "ext-pcntl": "*",
     "ext-sockets": "*",
+    "ext-sodium": "*",
     "brick/math": "^0.10.2",
     "cweagans/composer-patches": "^1.7",
     "fastybird/devices-module": "dev-main as 0.75.0",
     "fastybird/json-api": "^0.11",
     "fastybird/metadata": "^0.76",
     "ipub/slim-router": "^0.2.0",
+    "leigh/aead-chacha20-poly1305": "^0.2.1",
     "nette/bootstrap": "^3.1",
     "nette/di": "^3.0",
     "psr/log": "^1.1",

@@ -75,6 +75,7 @@ final class RouterMiddleware
 		try {
 			$response = $this->router->handle($request);
 		} catch (SlimRouterExceptions\HttpException $ex) {
+			var_dump($ex->getMessage());
 			$this->logger->warning(
 				'Received invalid HTTP request',
 				[
@@ -93,6 +94,7 @@ final class RouterMiddleware
 
 			$response = $this->responseFactory->createResponse($ex->getCode());
 		} catch (Throwable $ex) {
+			var_dump($ex->getMessage());
 			$this->logger->error(
 				'An unhandled error occurred during handling server HTTP request',
 				[

@@ -112,14 +112,14 @@ final class Srp
 		$k = Math\BigInteger::fromBytes(hash('sha512', ($this->n3072->toBytes(false) . pack('C*', ...$gPadded)), true), false);
 		$x = Math\BigInteger::fromBytes(hash('sha512', ($this->salt . hash('sha512', ($username . ':' . $password), true)), true), false);
 
-		$this->serverPasswordVerifier = Math\BigInteger::of(bcpowmod((string) self::G, (string) $x, (string) $this->n3072));
-		$this->serverPublicKey = Math\BigInteger::of(bcmod(
-			bcadd(
-				bcmul((string) $k, (string) $this->serverPasswordVerifier),
-				bcpowmod((string) self::G, (string) $this->serverPrivateKey, (string) $this->n3072)
+		$this->serverPasswordVerifier = Math\BigInteger::of(strval(gmp_powm((string) self::G, (string) $x, (string) $this->n3072)));
+		$this->serverPublicKey = Math\BigInteger::of(strval(gmp_mod(
+			gmp_add(
+				gmp_mul((string) $k, (string) $this->serverPasswordVerifier),
+				gmp_powm((string) self::G, (string) $this->serverPrivateKey, (string) $this->n3072)
 			),
 			(string) $this->n3072
-		));
+		)));
 	}
 
 	/**
@@ -206,14 +206,14 @@ final class Srp
 			false
 		);
 
-		$this->premasterSecret = Math\BigInteger::of(bcpowmod(
-			bcmul(
+		$this->premasterSecret = Math\BigInteger::of(strval(gmp_powm(
+			gmp_mul(
 				(string) $clientPublicKey,
-				bcpowmod((string) $this->serverPasswordVerifier, (string) $this->randomScramblingParameter, (string) $this->n3072)
+				gmp_powm((string) $this->serverPasswordVerifier, (string) $this->randomScramblingParameter, (string) $this->n3072)
 			),
 			(string) $this->serverPrivateKey,
 			(string) $this->n3072
-		));
+		)));
 
 		$this->sessionKey = hash('sha512', $this->premasterSecret->toBytes(false), true);
 

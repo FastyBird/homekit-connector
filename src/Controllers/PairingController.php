@@ -16,7 +16,9 @@
 namespace FastyBird\HomeKitConnector\Controllers;
 
 use Brick\Math;
+use ChaCha20Poly1305\Cipher;
 use FastyBird\HomeKitConnector\Clients;
+use FastyBird\HomeKitConnector\Crypto;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Protocol;
@@ -39,6 +41,24 @@ final class PairingController extends BaseController
 
 	private const MAX_AUTHENTICATION_ATTEMPTS = 100;
 	private const SRP_USERNAME = 'Pair-Setup';
+
+	private const SALT_ENCRYPT = 'Pair-Setup-Encrypt-Salt';
+	private const INFO_ENCRYPT = 'Pair-Setup-Encrypt-Info';
+
+	private const NONCE_SETUP_M5 = [
+		0,   // 0
+		0,   // 0
+		0,   // 0
+		0,   // 0
+		80,  // P
+		83,  // S
+		45,  // -
+		77,  // M
+		115, // s
+		103, // g
+		48,  // 0
+		53,  // 5
+	];
 
 	/** @var bool */
 	private bool $activePairing = false;
@@ -70,6 +90,8 @@ final class PairingController extends BaseController
 		$this->tlv = $tlv;
 
 		$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M1);
+
+		$this->srp = new Protocol\Srp(self::SRP_USERNAME, '735-16-821');
 	}
 
 	/**
@@ -82,6 +104,7 @@ final class PairingController extends BaseController
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
+		var_dump($request->getUri()->getPath());
 		$connectorId = strval($request->getAttribute(Clients\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
@@ -107,6 +130,8 @@ final class PairingController extends BaseController
 		) {
 			$result = $this->srpStart($connectorId);
 
+			$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M3);
+
 		} elseif (
 			$requestedState === Types\TlvState::STATE_M3
 			&& array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
@@ -127,7 +152,7 @@ final class PairingController extends BaseController
 			&& array_key_exists(Types\TlvCode::CODE_ENCRYPTED_DATA, $tlvEntry)
 			&& is_array($tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA])
 		) {
-			$result = $this->srpExchange(
+			$result = $this->exchange(
 				$connectorId,
 				$tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA]
 			);
@@ -249,7 +274,7 @@ final class PairingController extends BaseController
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 					'type'      => 'pairing-controller',
 					'connector' => [
-						'id' => $connectorId,
+						'id' => $connectorId->toString(),
 					],
 				]
 			);
@@ -269,7 +294,7 @@ final class PairingController extends BaseController
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 					'type'      => 'pairing-controller',
 					'connector' => [
-						'id' => $connectorId,
+						'id' => $connectorId->toString(),
 					],
 				]
 			);
@@ -284,12 +309,12 @@ final class PairingController extends BaseController
 
 		if (!$this->expectedState->equalsValue(Types\TlvState::STATE_M1)) {
 			$this->logger->error(
-				'Unexpected pair_setup state',
+				'Unexpected pairing setup state. Expected is M1',
 				[
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 					'type'      => 'pairing-controller',
 					'connector' => [
-						'id' => $connectorId,
+						'id' => $connectorId->toString(),
 					],
 				]
 			);
@@ -309,7 +334,7 @@ final class PairingController extends BaseController
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 					'type'      => 'pairing-controller',
 					'connector' => [
-						'id' => $connectorId,
+						'id' => $connectorId->toString(),
 					],
 				]
 			);
@@ -329,13 +354,13 @@ final class PairingController extends BaseController
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PIN_CODE)
 		);
 
-		$this->srp = new Protocol\Srp(self::SRP_USERNAME, strval($pinCode));
+		// $this->srp = new Protocol\Srp(self::SRP_USERNAME, strval($pinCode));
 
 		return [
 			[
 				Types\TlvCode::CODE_STATE      => Types\TlvState::STATE_M2,
-				Types\TlvCode::CODE_PUBLIC_KEY => $this->srp->getServerPublicKey()->toBytes(false),
-				Types\TlvCode::CODE_SALT       => $this->srp->getSalt(),
+				Types\TlvCode::CODE_PUBLIC_KEY => unpack('C*', $this->srp->getServerPublicKey()->toBytes(false)),
+				Types\TlvCode::CODE_SALT       => unpack('C*', $this->srp->getSalt()),
 			],
 		];
 	}
@@ -354,12 +379,12 @@ final class PairingController extends BaseController
 	): array {
 		if ($this->srp === null || !$this->expectedState->equalsValue(Types\TlvState::STATE_M3)) {
 			$this->logger->error(
-				'Unexpected pairing setup state',
+				'Unexpected pairing setup state. Expected is M3',
 				[
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 					'type'      => 'pairing-controller',
 					'connector' => [
-						'id' => $connectorId,
+						'id' => $connectorId->toString(),
 					],
 				]
 			);
@@ -372,7 +397,9 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$this->srp->computeSharedSessionKey(Math\BigInteger::fromBytes(pack('C*', ...$clientPublicKey)));
+		var_dump('BEFORE COMPUTE');
+		$this->srp->computeSharedSessionKey(Math\BigInteger::fromBytes(pack('C*', ...$clientPublicKey), false));
+		var_dump('AFTER COMPUTE');
 
 		if (!$this->srp->verifyProof(pack('C*', ...$clientProof))) {
 			$this->logger->error(
@@ -381,7 +408,7 @@ final class PairingController extends BaseController
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 					'type'      => 'pairing-controller',
 					'connector' => [
-						'id' => $connectorId,
+						'id' => $connectorId->toString(),
 					],
 				]
 			);
@@ -397,7 +424,7 @@ final class PairingController extends BaseController
 		return [
 			[
 				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-				Types\TlvCode::CODE_PROOF => $this->srp->getServerProofOfSessionKey() ?? '',
+				Types\TlvCode::CODE_PROOF => $this->srp->getServerProofOfSessionKey() !== null ? unpack('C*', $this->srp->getServerProofOfSessionKey()) : [],
 			],
 		];
 	}
@@ -408,18 +435,18 @@ final class PairingController extends BaseController
 	 *
 	 * @return Array<int, Array<int, int|int[]|string>>
 	 */
-	public function srpExchange(
+	public function exchange(
 		Uuid\UuidInterface $connectorId,
 		array $encryptedData
 	): array {
 		if ($this->srp === null || !$this->expectedState->equalsValue(Types\TlvState::STATE_M5)) {
 			$this->logger->error(
-				'Unexpected pairing setup state',
+				'Unexpected pairing setup state. Expected is M5',
 				[
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 					'type'      => 'pairing-controller',
 					'connector' => [
-						'id' => $connectorId,
+						'id' => $connectorId->toString(),
 					],
 				]
 			);
@@ -431,6 +458,50 @@ final class PairingController extends BaseController
 				],
 			];
 		}
+
+		$decryptKey = hash_hkdf(
+			'sha512',
+			(string) $this->srp->getSessionKey(),
+			32,
+			self::INFO_ENCRYPT,
+			self::SALT_ENCRYPT
+		);
+
+		$cipher = new Cipher();
+		$context = $cipher->init($decryptKey, pack('C*', ...self::NONCE_SETUP_M5));
+		$cipher->aad($context, '');
+		$plaintext = $cipher->decrypt($context, pack('C*', ...$encryptedData));
+
+		var_dump($plaintext);
+
+		return [
+			[
+				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
+				Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+			],
+		];
+
+		$chacha = new Crypto\Chacha20Poly1305($decryptKey);
+		$decryptedData = $chacha->decrypt(
+			pack('C*', ...self::NONCE_SETUP_M5),
+			$encryptedData,
+			null
+		);
+
+		$data = $this->tlv->decode(pack('C*', ...$decryptedData));
+		var_dump('CHACHA');
+		var_dump($data);
+
+		$decryptedData = sodium_crypto_aead_chacha20poly1305_decrypt(
+			pack('C*', ...$encryptedData),
+			'',
+			pack('C*', ...self::NONCE_SETUP_M5),
+			$decryptKey
+		);
+
+		$data = $this->tlv->decode(pack('C*', $decryptedData));
+		var_dump('SODIUM');
+		var_dump($data);
 
 		return [
 			[
