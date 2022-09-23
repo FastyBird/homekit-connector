@@ -16,7 +16,6 @@
 namespace FastyBird\HomeKitConnector\Controllers;
 
 use Brick\Math;
-use ChaCha20Poly1305;
 use Elliptic\EC;
 use Elliptic\EdDSA;
 use FastyBird\HomeKitConnector\Clients;
@@ -28,6 +27,7 @@ use FastyBird\Metadata;
 use IPub\SlimRouter;
 use Psr\Http\Message;
 use Ramsey\Uuid;
+use SodiumException;
 
 /**
  * Connector pairing process controller
@@ -39,6 +39,41 @@ use Ramsey\Uuid;
  */
 final class PairingController extends BaseController
 {
+
+	private const ACCESSORY_LTSK = [
+		158,
+		76,
+		86,
+		21,
+		61,
+		212,
+		120,
+		230,
+		81,
+		192,
+		128,
+		61,
+		213,
+		45,
+		130,
+		38,
+		5,
+		133,
+		57,
+		201,
+		18,
+		4,
+		35,
+		144,
+		171,
+		24,
+		141,
+		66,
+		106,
+		103,
+		40,
+		240,
+	];
 
 	private const MAX_AUTHENTICATION_ATTEMPTS = 100;
 	private const SRP_USERNAME = 'Pair-Setup';
@@ -534,7 +569,7 @@ final class PairingController extends BaseController
 
 		if (!$this->srp->verifyProof(pack('C*', ...$clientProof))) {
 			$this->logger->error(
-				'Incorrect setup code, try again',
+				'Incorrect pin code, try again',
 				[
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 					'type'      => 'pairing-controller',
@@ -640,11 +675,21 @@ final class PairingController extends BaseController
 			self::SALT_ENCRYPT
 		);
 
-		$cipher = new ChaCha20Poly1305\Cipher();
-		$context = $cipher->init($decryptKey, pack('C*', ...self::NONCE_SETUP_M5));
-		$cipher->aad($context, '');
+		$tlvDecrypted = sodium_crypto_aead_chacha20poly1305_ietf_decrypt(
+			pack('C*', ...$encryptedData),
+			'',
+			pack('C*', ...self::NONCE_SETUP_M5),
+			$decryptKey
+		);
 
-		$tlvDecrypted = $cipher->decrypt($context, pack('C*', ...$encryptedData));
+		if ($tlvDecrypted === false) {
+			return [
+				[
+					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
+					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+				],
+			];
+		}
 
 		try {
 			$tlv = $this->tlv->decode($tlvDecrypted);
@@ -733,9 +778,9 @@ final class PairingController extends BaseController
 
 		if (
 			!$ec->verify(
-				$iosDeviceInfo,
-				pack('C*', ...$tlvEntry[Types\TlvCode::CODE_SIGNATURE]),
-				pack('C*', ...$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
+				unpack('C*', $iosDeviceInfo),
+				$tlvEntry[Types\TlvCode::CODE_SIGNATURE],
+				$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]
 			)
 		) {
 			$this->logger->error(
@@ -776,10 +821,12 @@ final class PairingController extends BaseController
 
 		$ec = new EdDSA('ed25519');
 
-		$signingKey = $ec->keyFromSecret('61233ca4590acd');
+		$signingKey = $ec->keyFromSecret(self::ACCESSORY_LTSK);
 		$publicKey = $signingKey->getPublic();
+
 		$accessoryInfo = $accessoryX . strval($macAddress) . pack('C*', ...$publicKey);
-		$accessorySignature = $signingKey->sign($accessoryInfo)->toBytes();
+
+		$accessorySignature = $signingKey->sign(unpack('C*', $accessoryInfo))->toBytes();
 
 		$responseInnerData = [
 			[
@@ -789,11 +836,36 @@ final class PairingController extends BaseController
 			],
 		];
 
-		$cipher = new ChaCha20Poly1305\Cipher();
-		$context = $cipher->init($decryptKey, pack('C*', ...self::NONCE_SETUP_M6));
-		$cipher->aad($context, '');
+		try {
+			$responseEncryptedData = unpack('C*', sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
+				$this->tlv->encode($responseInnerData),
+				'',
+				pack('C*', ...self::NONCE_SETUP_M6),
+				$decryptKey
+			));
+		} catch (SodiumException $ex) {
+			$this->logger->error(
+				'Data could not be encrypted',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type'      => 'pairing-controller',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code'    => $ex->getCode(),
+					],
+					'connector' => [
+						'id' => $connectorId->toString(),
+					],
+				]
+			);
 
-		$responseEncryptedData = unpack('C*', $cipher->encrypt($context, $this->tlv->encode($responseInnerData)));
+			return [
+				[
+					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
+					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+				],
+			];
+		}
 
 		if ($responseEncryptedData === false) {
 			$this->logger->error(
@@ -843,7 +915,7 @@ final class PairingController extends BaseController
 		$ec = new EC('curve25519');
 
 		$keyPair = $ec->genKeyPair();
-		$sharedSecret = $keyPair->derive($ec->keyFromPublic(pack('C*', ...$clientPublicKey))->getPublic());
+		$sharedSecret = $keyPair->derive($ec->keyFromPublic($clientPublicKey)->getPublic());
 		$accessoryCurve25519PublicKey = $keyPair->getPublic()->toArray();
 
 		if (!is_array($accessoryCurve25519PublicKey)) {
@@ -870,8 +942,8 @@ final class PairingController extends BaseController
 
 		$ec = new EdDSA('ed25519');
 
-		$signingKey = $ec->keyFromSecret('61233ca4590acd');
-		$accessorySignature = $signingKey->sign($accessoryInfo)->toBytes();
+		$signingKey = $ec->keyFromSecret(self::ACCESSORY_LTSK);
+		$accessorySignature = $signingKey->sign(unpack('C*', $accessoryInfo))->toBytes();
 
 		$responseInnerData = [
 			[
@@ -888,11 +960,36 @@ final class PairingController extends BaseController
 			self::SALT_VERIFY
 		);
 
-		$cipher = new ChaCha20Poly1305\Cipher();
-		$context = $cipher->init($sessionKey, pack('C*', ...self::NONCE_VERIFY_M2));
-		$cipher->aad($context, '');
+		try {
+			$responseEncryptedData = unpack('C*', sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
+				$this->tlv->encode($responseInnerData),
+				'',
+				pack('C*', ...self::NONCE_VERIFY_M2),
+				$sessionKey
+			));
+		} catch (SodiumException $ex) {
+			$this->logger->error(
+				'Data could not be encrypted',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type'      => 'pairing-controller',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code'    => $ex->getCode(),
+					],
+					'connector' => [
+						'id' => $connectorId->toString(),
+					],
+				]
+			);
 
-		$responseEncryptedData = unpack('C*', $cipher->encrypt($context, $this->tlv->encode($responseInnerData)));
+			return [
+				[
+					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
+					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+				],
+			];
+		}
 
 		if ($responseEncryptedData === false) {
 			$this->logger->error(
