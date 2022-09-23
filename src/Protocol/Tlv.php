@@ -165,7 +165,7 @@ final class Tlv
 			$tag = (int) array_pop($tag);
 
 			if (!Types\TlvCode::isValidValue($tag)) {
-				throw new Exceptions\InvalidArgument('Provided TLV code in data is not valid');
+				break;
 			}
 
 			$tlvCode = Types\TlvCode::get($tag);

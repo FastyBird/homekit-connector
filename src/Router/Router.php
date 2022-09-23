@@ -45,6 +45,7 @@ class Router extends Routing\Router
 		$this->post('/pair-setup', [$pairingController, 'setup']);
 		$this->post('/pair-verify', [$pairingController, 'verify']);
 		$this->post('/pairings', [$pairingController, 'pairings']);
+
 		$this->post('/resource', [$pairingController, 'resource']);
 
 		$this->group(
