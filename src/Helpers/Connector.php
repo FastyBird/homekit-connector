@@ -15,12 +15,15 @@
 
 namespace FastyBird\HomeKitConnector\Helpers;
 
+use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
+use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\HomeKitConnector;
+use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
-use FastyBird\Metadata\Types\DataTypeType;
 use Nette;
+use Nette\Utils;
 use Ramsey\Uuid;
 
 /**
@@ -36,16 +39,28 @@ final class Connector
 
 	use Nette\SmartObject;
 
+	/** @var DevicesModuleModels\Connectors\Properties\IPropertiesRepository */
+	private DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesEntitiesRepository;
+
+	/** @var DevicesModuleModels\Connectors\Properties\IPropertiesManager */
+	private DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesEntitiesManagers;
+
 	/** @var DevicesModuleModels\DataStorage\IConnectorPropertiesRepository */
-	private DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesRepository;
+	private DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesItemsRepository;
 
 	/**
-	 * @param DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesRepository
+	 * @param DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesEntitiesRepository
+	 * @param DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesEntitiesManagers
+	 * @param DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesItemsRepository
 	 */
 	public function __construct(
-		DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesRepository
+		DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesEntitiesRepository,
+		DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesEntitiesManagers,
+		DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesItemsRepository
 	) {
-		$this->propertiesRepository = $propertiesRepository;
+		$this->propertiesEntitiesRepository = $propertiesEntitiesRepository;
+		$this->propertiesEntitiesManagers = $propertiesEntitiesManagers;
+		$this->propertiesItemsRepository = $propertiesItemsRepository;
 	}
 
 	/**
@@ -58,7 +73,7 @@ final class Connector
 		Uuid\UuidInterface $connectorId,
 		Types\ConnectorPropertyIdentifier $type
 	): float|bool|int|string|null {
-		$configuration = $this->propertiesRepository->findByIdentifier($connectorId, strval($type->getValue()));
+		$configuration = $this->propertiesItemsRepository->findByIdentifier($connectorId, strval($type->getValue()));
 
 		if ($configuration instanceof MetadataEntities\Modules\DevicesModule\IConnectorStaticPropertyEntity) {
 			if (
@@ -85,13 +100,32 @@ final class Connector
 		return null;
 	}
 
+	/**
+	 * @param Uuid\UuidInterface $connectorId
+	 * @param Types\ConnectorPropertyIdentifier $type
+	 * @param string|int|float|bool|null $value
+	 *
+	 * @return void
+	 */
 	public function setConfiguration(
 		Uuid\UuidInterface $connectorId,
 		Types\ConnectorPropertyIdentifier $type,
-		DataTypeType $dataType,
 		string|int|float|bool|null $value = null
 	): void {
-		return;
+		$findConnectorProperty = new DevicesModuleQueries\FindConnectorPropertiesQuery();
+		$findConnectorProperty->byConnectorId($connectorId);
+		$findConnectorProperty->byIdentifier(strval($type->getValue()));
+
+		$property = $this->propertiesEntitiesRepository->findOneBy(
+			$findConnectorProperty,
+			DevicesModuleEntities\Connectors\Properties\StaticProperty::class
+		);
+
+		if ($property === null) {
+			throw new Exceptions\InvalidState('Connector property could not be loaded');
+		}
+
+		$this->propertiesEntitiesManagers->update($property, Utils\ArrayHash::from(['value' => $value]));
 	}
 
 }

@@ -25,11 +25,14 @@ use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Hydrators;
 use FastyBird\HomeKitConnector\Middleware;
+use FastyBird\HomeKitConnector\Models;
 use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Router;
 use FastyBird\HomeKitConnector\Schemas;
+use IPub\DoctrineCrud;
 use Nette;
 use Nette\DI;
+use Nette\PhpGenerator;
 use Nette\Schema;
 use React\EventLoop;
 use stdClass;
@@ -156,6 +159,15 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('protocol.tlv'), new DI\Definitions\ServiceDefinition())
 			->setType(Protocol\Tlv::class);
 
+		// Database repositories
+		$builder->addDefinition($this->prefix('models.sessionRepository'), new DI\Definitions\ServiceDefinition())
+			->setType(Models\Sessions\SessionRepository::class);
+
+		// Database managers
+		$builder->addDefinition($this->prefix('models.sessionsManager'), new DI\Definitions\ServiceDefinition())
+			->setType(Models\Sessions\SessionsManager::class)
+			->setArgument('entityCrud', '__placeholder__');
+
 		// Console commands
 		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
 			->setType(Commands\Initialize::class);
@@ -191,6 +203,20 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 				'FastyBird\HomeKitConnector\Entities',
 			]);
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function afterCompile(
+		PhpGenerator\ClassType $class
+	): void {
+		$builder = $this->getContainerBuilder();
+
+		$entityFactoryServiceName = $builder->getByType(DoctrineCrud\Crud\IEntityCrudFactory::class, true);
+
+		$devicesManagerService = $class->getMethod('createService' . ucfirst($this->name) . '__models__sessionsManager');
+		$devicesManagerService->setBody('return new ' . Models\Sessions\SessionsManager::class . '($this->getService(\'' . $entityFactoryServiceName . '\')->create(\'' . Entities\Session::class . '\'));');
 	}
 
 }

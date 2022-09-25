@@ -160,3 +160,12 @@ $responseEncryptedData = unpack('C*', sodium_crypto_aead_chacha20poly1305_ietf_e
 
 
 var_dump($responseEncryptedData);
+
+
+
+$secret = random_bytes(32);
+var_dump(bin2hex($secret));
+$ec = new EC('curve25519');
+
+$keyPair = $ec->keyFromPrivate(bin2hex($secret), 16);
+var_dump();
