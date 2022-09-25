@@ -28,6 +28,9 @@ use IPub\SlimRouter;
 use Psr\Http\Message;
 use Ramsey\Uuid;
 use SodiumException;
+use Throwable;
+use function Curve25519\publicKey;
+use function Curve25519\sharedKey;
 
 /**
  * Connector pairing process controller
@@ -40,40 +43,7 @@ use SodiumException;
 final class PairingController extends BaseController
 {
 
-	private const ACCESSORY_LTSK = [
-		158,
-		76,
-		86,
-		21,
-		61,
-		212,
-		120,
-		230,
-		81,
-		192,
-		128,
-		61,
-		213,
-		45,
-		130,
-		38,
-		5,
-		133,
-		57,
-		201,
-		18,
-		4,
-		35,
-		144,
-		171,
-		24,
-		141,
-		66,
-		106,
-		103,
-		40,
-		240,
-	];
+	private const SETUP_ID = '268273ace626474f3e8a8d3210d024a5c3aa33917a66ac96f8eea23a2d668507';
 
 	private const MAX_AUTHENTICATION_ATTEMPTS = 100;
 	private const SRP_USERNAME = 'Pair-Setup';
@@ -113,7 +83,7 @@ final class PairingController extends BaseController
 		115, // s
 		103, // g
 		48,  // 0
-		54,  // 9
+		54,  // 6
 	];
 	private const NONCE_VERIFY_M2 = [
 		0,   // 0
@@ -165,9 +135,14 @@ final class PairingController extends BaseController
 	/** @var Types\TlvState */
 	private Types\TlvState $expectedState;
 
+	/** @var string */
+	private string $setupId;
+
 	/**
 	 * @param Helpers\Connector $connectorHelper
 	 * @param Protocol\Tlv $tlv
+	 *
+	 * @throws Throwable
 	 */
 	public function __construct(
 		Helpers\Connector $connectorHelper,
@@ -178,7 +153,7 @@ final class PairingController extends BaseController
 
 		$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M1);
 
-		$this->srp = new Protocol\Srp(self::SRP_USERNAME, '735-16-821');
+		$this->setupId = bin2hex(random_bytes(2));
 	}
 
 	/**
@@ -478,9 +453,9 @@ final class PairingController extends BaseController
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PIN_CODE)
 		);
 
-		// $this->srp = new Protocol\Srp(self::SRP_USERNAME, strval($pinCode));
+		$this->srp = new Protocol\Srp(self::SRP_USERNAME, strval($pinCode));
 
-		$serverPublicKey = unpack('C*', $this->srp?->getServerPublicKey()->toBytes(false) ?? '');
+		$serverPublicKey = unpack('C*', $this->srp->getServerPublicKey()->toBytes(false));
 
 		if ($serverPublicKey === false) {
 			$this->logger->error(
@@ -502,7 +477,7 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$salt = unpack('C*', $this->srp?->getSalt() ?? '');
+		$salt = unpack('C*', $this->srp->getSalt());
 
 		if ($salt === false) {
 			$this->logger->error(
@@ -587,7 +562,7 @@ final class PairingController extends BaseController
 			];
 		}
 
-		if ($this->srp->getServerProofOfSessionKey() === null) {
+		if ($this->srp->getServerProof() === null) {
 			$this->logger->error(
 				'Server proof of session key is not computed',
 				[
@@ -607,9 +582,9 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$serverProofOfSessionKey = unpack('C*', $this->srp->getServerProofOfSessionKey());
+		$serverProof = unpack('C*', $this->srp->getServerProof());
 
-		if ($serverProofOfSessionKey === false) {
+		if ($serverProof === false) {
 			$this->logger->error(
 				'Server proof of session key could not be converted to binary array',
 				[
@@ -632,7 +607,7 @@ final class PairingController extends BaseController
 		return [
 			[
 				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-				Types\TlvCode::CODE_PROOF => $serverProofOfSessionKey,
+				Types\TlvCode::CODE_PROOF => $serverProof,
 			],
 		];
 	}
@@ -675,24 +650,48 @@ final class PairingController extends BaseController
 			self::SALT_ENCRYPT
 		);
 
-		$tlvDecrypted = sodium_crypto_aead_chacha20poly1305_ietf_decrypt(
-			pack('C*', ...$encryptedData),
-			'',
-			pack('C*', ...self::NONCE_SETUP_M5),
-			$decryptKey
-		);
+		try {
+			$decryptedData = sodium_crypto_aead_chacha20poly1305_ietf_decrypt(
+				pack('C*', ...$encryptedData),
+				'',
+				pack('C*', ...self::NONCE_SETUP_M5),
+				$decryptKey
+			);
+		} catch (SodiumException $ex) {
+			$this->logger->error(
+				'Data could not be encrypted',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type'      => 'pairing-controller',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code'    => $ex->getCode(),
+					],
+					'connector' => [
+						'id' => $connectorId->toString(),
+					],
+				]
+			);
 
-		if ($tlvDecrypted === false) {
 			return [
 				[
 					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+				],
+			];
+		}
+
+		if ($decryptedData === false) {
+			return [
+				[
+					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
+					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
 				],
 			];
 		}
 
 		try {
-			$tlv = $this->tlv->decode($tlvDecrypted);
+			$tlv = $this->tlv->decode($decryptedData);
 		} catch (Exceptions\InvalidArgument) {
 			$this->logger->error(
 				'Unable to decode decrypted tlv data',
@@ -814,24 +813,23 @@ final class PairingController extends BaseController
 			self::SALT_ACCESSORY
 		);
 
+		$ec = new EdDSA('ed25519');
+
+		$serverPrivateKey = $ec->keyFromSecret(unpack('C*', strval(hex2bin($this->setupId))));
+		$serverPublicKey = $serverPrivateKey->getPublic();
+
 		$macAddress = $this->connectorHelper->getConfiguration(
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS)
 		);
 
-		$ec = new EdDSA('ed25519');
-
-		$signingKey = $ec->keyFromSecret(self::ACCESSORY_LTSK);
-		$publicKey = $signingKey->getPublic();
-
-		$accessoryInfo = $accessoryX . strval($macAddress) . pack('C*', ...$publicKey);
-
-		$accessorySignature = $signingKey->sign(unpack('C*', $accessoryInfo))->toBytes();
+		$accessoryInfo = $accessoryX . $macAddress . pack('C*', ...$serverPublicKey);
+		$accessorySignature = $serverPrivateKey->sign(unpack('C*', $accessoryInfo))->toBytes();
 
 		$responseInnerData = [
 			[
 				Types\TlvCode::CODE_IDENTIFIER => strval($macAddress),
-				Types\TlvCode::CODE_PUBLIC_KEY => $publicKey,
+				Types\TlvCode::CODE_PUBLIC_KEY => $serverPublicKey,
 				Types\TlvCode::CODE_SIGNATURE  => $accessorySignature,
 			],
 		];
@@ -907,6 +905,9 @@ final class PairingController extends BaseController
 		Uuid\UuidInterface $connectorId,
 		array $clientPublicKey
 	): array {
+		var_dump('VERIFY 1');
+		var_dump('CLIENT PUBLIC');
+		var_dump($clientPublicKey);
 		$macAddress = $this->connectorHelper->getConfiguration(
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS)
@@ -914,13 +915,16 @@ final class PairingController extends BaseController
 
 		$ec = new EC('curve25519');
 
-		$keyPair = $ec->genKeyPair();
-		$sharedSecret = $keyPair->derive($ec->keyFromPublic($clientPublicKey)->getPublic());
-		$accessoryCurve25519PublicKey = $keyPair->getPublic()->toArray();
+		// $keyPair = $ec->genKeyPair();
+		// $accessoryPublicKey = hex2bin(strval($keyPair->getPublic(false, 'hex')));
+		// $sharedSecret = $keyPair->derive($ec->keyFromPublic($clientPublicKey)->getPublic());
 
-		if (!is_array($accessoryCurve25519PublicKey)) {
+		$accessoryPublicKey = publicKey(hex2bin($this->setupId));
+		$sharedSecret = sharedKey(hex2bin($this->setupId), pack('C*', ...$clientPublicKey));
+
+		if ($accessoryPublicKey === false) {
 			$this->logger->error(
-				'Accessory curve 25519 public key could not be prepared',
+				'Accessory public key could not be created',
 				[
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 					'type'      => 'pairing-controller',
@@ -938,12 +942,12 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$accessoryInfo = pack('C*', $accessoryCurve25519PublicKey) . strval($macAddress) . pack('C*', $clientPublicKey);
+		$accessoryInfo = $accessoryPublicKey . $macAddress . pack('C*', ...$clientPublicKey);
 
 		$ec = new EdDSA('ed25519');
 
-		$signingKey = $ec->keyFromSecret(self::ACCESSORY_LTSK);
-		$accessorySignature = $signingKey->sign(unpack('C*', $accessoryInfo))->toBytes();
+		$serverPrivateKey = $ec->keyFromSecret(unpack('C*', strval(hex2bin($this->setupId))));
+		$accessorySignature = $serverPrivateKey->sign(unpack('C*', $accessoryInfo))->toBytes();
 
 		$responseInnerData = [
 			[
@@ -952,9 +956,9 @@ final class PairingController extends BaseController
 			],
 		];
 
-		$sessionKey = hash_hkdf(
+		$encodeKey = hash_hkdf(
 			'sha512',
-			$sharedSecret->toString(),
+			$sharedSecret,
 			32,
 			self::INFO_VERIFY,
 			self::SALT_VERIFY
@@ -965,7 +969,7 @@ final class PairingController extends BaseController
 				$this->tlv->encode($responseInnerData),
 				'',
 				pack('C*', ...self::NONCE_VERIFY_M2),
-				$sessionKey
+				$encodeKey
 			));
 		} catch (SodiumException $ex) {
 			$this->logger->error(
@@ -985,7 +989,7 @@ final class PairingController extends BaseController
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
+					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
 					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
 				],
 			];
@@ -1010,11 +1014,11 @@ final class PairingController extends BaseController
 				],
 			];
 		}
-
+		var_dump('RESPONSE 1');
 		return [
 			[
 				Types\TlvCode::CODE_STATE          => Types\TlvState::STATE_M2,
-				Types\TlvCode::CODE_PUBLIC_KEY     => $accessoryCurve25519PublicKey,
+				Types\TlvCode::CODE_PUBLIC_KEY     => unpack('C*', $accessoryPublicKey),
 				Types\TlvCode::CODE_ENCRYPTED_DATA => $responseEncryptedData,
 			],
 		];
@@ -1030,6 +1034,7 @@ final class PairingController extends BaseController
 		Uuid\UuidInterface $connectorId,
 		array $encryptedData
 	): array {
+		var_dump('VERIFY 2');
 		return [
 			[
 				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,

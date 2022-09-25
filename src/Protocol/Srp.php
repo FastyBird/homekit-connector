@@ -75,10 +75,10 @@ final class Srp
 	private ?string $sessionKey = null;
 
 	/** @var string|null */
-	private ?string $clientProofOfSessionKey = null;
+	private ?string $clientProof = null;
 
 	/** @var string|null */
-	private ?string $serverProofOfSessionKey = null;
+	private ?string $serverProof = null;
 
 	/** @var Math\BigInteger */
 	private Math\BigInteger $n3072;
@@ -141,9 +141,9 @@ final class Srp
 	/**
 	 * @return string|null
 	 */
-	public function getClientProofOfSessionKey(): ?string
+	public function getClientProof(): ?string
 	{
-		return $this->clientProofOfSessionKey;
+		return $this->clientProof;
 	}
 
 	/**
@@ -165,9 +165,9 @@ final class Srp
 	/**
 	 * @return string|null
 	 */
-	public function getServerProofOfSessionKey(): ?string
+	public function getServerProof(): ?string
 	{
-		return $this->serverProofOfSessionKey;
+		return $this->serverProof;
 	}
 
 	/**
@@ -236,7 +236,7 @@ final class Srp
 
 		$combined = pack('C*', ...$combined);
 
-		$this->clientProofOfSessionKey = hash(
+		$this->clientProof = hash(
 			'sha512',
 			(
 				$combined
@@ -249,11 +249,11 @@ final class Srp
 			true
 		);
 
-		$this->serverProofOfSessionKey = hash(
+		$this->serverProof = hash(
 			'sha512',
 			(
 				$clientPublicKey->toBytes(false) .
-				$this->clientProofOfSessionKey .
+				$this->clientProof .
 				$this->sessionKey
 			),
 			true
@@ -267,7 +267,7 @@ final class Srp
 	 */
 	public function verifyProof(string $clientProof): bool
 	{
-		return $this->clientProofOfSessionKey === $clientProof;
+		return $this->clientProof === $clientProof;
 	}
 
 	/**

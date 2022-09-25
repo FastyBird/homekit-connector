@@ -1,58 +1,122 @@
-import ed25519
-from os import urandom
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from cryptography.hazmat.primitives.hashes import SHA512
+from cryptography.hazmat.primitives.asymmetric import ed25519, x25519
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
+from cryptography.hazmat.primitives.hashes import SHA512
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from pyhap.tlv import (
     TlvCode,
-    TlvState,
-    TlvError,
     tlv_parser
 )
 
-# accessory_ltsk = bytes(bytearray.fromhex(urandom(32).hex()))
-accessory_ltsk = b'\x9eLV\x15=\xd4x\xe6Q\xc0\x80=\xd5-\x82&\x05\x859\xc9\x12\x04#\x90\xab\x18\x8dBjg(\xf0'
+setup_id = bytes(bytearray([
+  38,
+  130,
+  115,
+  172,
+  230,
+  38,
+  71,
+  79,
+  62,
+  138,
+  141,
+  50,
+  16,
+  208,
+  36,
+  165,
+  195,
+  170,
+  51,
+  145,
+  122,
+  102,
+  172,
+  150,
+  248,
+  238,
+  162,
+  58,
+  45,
+  102,
+  133,
+  7,
+]))
 
-# device_id = ':'.join(urandom(1).hex().upper() for _ in range(8))
-device_id = "DD:68:CD:2D:5D:07:05:C1"
+client_public_key = bytes(bytearray([
+  47,
+  119,
+  147,
+  248,
+  220,
+  1,
+  204,
+  100,
+  209,
+  106,
+  31,
+  55,
+  226,
+  85,
+  158,
+  49,
+  145,
+  19,
+  127,
+  16,
+  39,
+  240,
+  205,
+  0,
+  152,
+  23,
+  145,
+  73,
+  132,
+  25,
+  38,
+  85,
+]))
 
-SALT_ACCESSORY = b'Pair-Setup-Accessory-Sign-Salt'
-INFO_ACCESSORY = b'Pair-Setup-Accessory-Sign-Info'
-SALT_ENCRYPT = b'Pair-Setup-Encrypt-Salt'
-INFO_ENCRYPT = b'Pair-Setup-Encrypt-Info'
+SALT_VERIFY = b'Pair-Verify-Encrypt-Salt'
+INFO_VERIFY = b'Pair-Verify-Encrypt-Info'
+NONCE_VERIFY_M2 = b'\x00\x00\x00\x00PV-Msg02'
 
-NONCE_SETUP_M6 = b'\x00\x00\x00\x00PS-Msg06'
+server_private_key = ed25519.Ed25519PrivateKey.from_private_bytes(setup_id)
+server_public_key = server_private_key.public_key()
 
-TEST_K = bytes.fromhex(
-    '5CBC219D B052138E E1148C71 CD449896 3D682549 CE91CA24 F098468F 06015BEB'
-    '6AF245C2 093F98C3 651BCA83 AB8CAB2B 580BBF02 184FEFDF 26142F73 DF95AC50'
+private_key = x25519.X25519PrivateKey.from_private_bytes(setup_id)
+public_key = private_key.public_key()
+shared_key = private_key.exchange(
+    x25519.X25519PublicKey.from_public_bytes(client_public_key)
 )
 
-hkdf = HKDF(algorithm=SHA512(), length=32, salt=SALT_ENCRYPT, info=INFO_ENCRYPT, backend=default_backend())
-decrypt_key = hkdf.derive(TEST_K)
+mac = "26:5B:B6:FE:93:40:ED".encode()
 
-hkdf = HKDF(algorithm=SHA512(), length=32, salt=SALT_ACCESSORY, info=INFO_ACCESSORY, backend=default_backend())
-accessory_x = hkdf.derive(TEST_K)
+public_key_bytes = public_key.public_bytes(
+    encoding=serialization.Encoding.Raw,
+    format=serialization.PublicFormat.Raw,
+)
 
-signing_key = ed25519.SigningKey(accessory_ltsk)
-public_key = signing_key.get_verifying_key().to_bytes()
-accessory_info = accessory_x + device_id.encode() + public_key
-accessory_signature = signing_key.sign(accessory_info)
+material = (
+        public_key_bytes
+        + mac
+        + client_public_key
+)
+
+server_proof = server_private_key.sign(material)
 
 sub_tlv = tlv_parser.encode([{
-    TlvCode.identifier: device_id,
-    TlvCode.public_key: public_key,
-    TlvCode.signature: accessory_signature,
+    TlvCode.identifier: "26:5B:B6:FE:93:40:ED",
+    TlvCode.signature: server_proof,
 }])
 
-chacha = ChaCha20Poly1305(decrypt_key)
-encrypted_data = chacha.encrypt(NONCE_SETUP_M6, sub_tlv, None)
+hkdf = HKDF(algorithm=SHA512(), length=32, salt=SALT_VERIFY, info=INFO_VERIFY, backend=default_backend())
+session_key = hkdf.derive(shared_key)
 
-i = 1
+chacha = ChaCha20Poly1305(session_key)
+encrypted_data = chacha.encrypt(NONCE_VERIFY_M2, sub_tlv, None)
+
 for byte in encrypted_data:
-    print("{} - {}".format(i, byte))
-    i = i + 1
-
-print("")
-print(len(encrypted_data))
+    print(byte)

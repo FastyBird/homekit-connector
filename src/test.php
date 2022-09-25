@@ -15,152 +15,148 @@
 
 namespace FastyBird\HomeKitConnector;
 
-require_once __DIR__ . '/../vendor/autoload.php';
-
-use ChaCha20Poly1305;
+use Curve25519\Curve25519;
+use Elliptic\EC;
 use Elliptic\EdDSA;
 use FastyBird\HomeKitConnector\Protocol\Tlv;
 
-const TEST_SESSION_KEY = '5CBC219D B052138E E1148C71 CD449896 3D682549 CE91CA24 F098468F 06015BEB'
-	. '6AF245C2 093F98C3 651BCA83 AB8CAB2B 580BBF02 184FEFDF 26142F73 DF95AC50';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-const SALT_ACCESSORY = 'Pair-Setup-Accessory-Sign-Salt';
-const INFO_ACCESSORY = 'Pair-Setup-Accessory-Sign-Info';
-const SALT_ENCRYPT = 'Pair-Setup-Encrypt-Salt';
-const INFO_ENCRYPT = 'Pair-Setup-Encrypt-Info';
+const SETUP_ID = '268273ace626474f3e8a8d3210d024a5c3aa33917a66ac96f8eea23a2d668507';
 
-const NONCE_SETUP_M6 = [
+const NONCE_VERIFY_M2 = [
 	0,   // 0
 	0,   // 0
 	0,   // 0
 	0,   // 0
 	80,  // P
-	83,  // S
+	86,  // V
 	45,  // -
 	77,  // M
 	115, // s
 	103, // g
 	48,  // 0
-	54,  // 9
+	50,  // 2
 ];
 
-$tlv = new Tlv();
-
-$sessionKey = (string) hex2bin(str_replace(' ', '', TEST_SESSION_KEY));
-
-$accessoryLtsk = [
-	158,
-	76,
-	86,
-	21,
-	61,
-	212,
-	120,
-	230,
-	81,
-	192,
-	128,
-	61,
-	213,
-	45,
-	130,
-	38,
-	5,
-	133,
-	57,
-	201,
-	18,
-	4,
-	35,
-	144,
-	171,
-	24,
-	141,
-	66,
-	106,
-	103,
-	40,
-	240,
+$setupId = [
+  38,
+  130,
+  115,
+  172,
+  230,
+  38,
+  71,
+  79,
+  62,
+  138,
+  141,
+  50,
+  16,
+  208,
+  36,
+  165,
+  195,
+  170,
+  51,
+  145,
+  122,
+  102,
+  172,
+  150,
+  248,
+  238,
+  162,
+  58,
+  45,
+  102,
+  133,
+  7,
 ];
 
-$deviceID = 'DD:68:CD:2D:5D:07:05:C1';
+$clientPublicKey = [
+  47,
+  119,
+  147,
+  248,
+  220,
+  1,
+  204,
+  100,
+  209,
+  106,
+  31,
+  55,
+  226,
+  85,
+  158,
+  49,
+  145,
+  19,
+  127,
+  16,
+  39,
+  240,
+  205,
+  0,
+  152,
+  23,
+  145,
+  73,
+  132,
+  25,
+  38,
+  85,
+];
 
-$decryptKey = hash_hkdf(
-	'sha512',
-	$sessionKey,
-	32,
-	INFO_ENCRYPT,
-	SALT_ENCRYPT
-);
+$ec = new EC('curve25519');
 
-$accessoryX = hash_hkdf(
-	'sha512',
-	$sessionKey,
-	32,
-	INFO_ACCESSORY,
-	SALT_ACCESSORY
-);
+//$keyPair = $ec->keyFromPrivate(bin2hex(pack('C*', ...$setupId)));
+$keyPair = $ec->keyFromPrivate(SETUP_ID, 16);
+
+$clientKeyPair = $ec->keyFromPublic($clientPublicKey);
+//var_dump($keyPair->getPrivate());
+
+$sharedSecret = $keyPair->derive($clientKeyPair->getPublic());
+
+//var_dump($keyPair->getPublic()->encode(16));
+//var_dump(unpack('C*', hex2bin($sharedSecret->toString(16))));
+
+$accessoryPublicKey = \Curve25519\publicKey(hex2bin(SETUP_ID));
+$sharedSecret = \Curve25519\sharedKey(hex2bin(SETUP_ID), pack('C*', ...$clientPublicKey));
+
+$macAddress = '26:5B:B6:FE:93:40:ED';
+
+$accessoryInfo = $accessoryPublicKey . $macAddress . pack('C*', ...$clientPublicKey);
 
 $ec = new EdDSA('ed25519');
 
-$signingKey = $ec->keyFromSecret($accessoryLtsk);
-$publicKey = $signingKey->getPublic();
+$serverPrivateKey = $ec->keyFromSecret(unpack('C*', strval(hex2bin(SETUP_ID))));
+$accessorySignature = $serverPrivateKey->sign(unpack('C*', $accessoryInfo))->toBytes();
 
-$accessoryInfo = array_merge(unpack('C*', $accessoryX . $deviceID), $publicKey);
-
-$accessorySignature = $signingKey->sign($accessoryInfo)->toBytes();
+$encodeKey = hash_hkdf(
+	'sha512',
+	$sharedSecret,
+	32,
+	'Pair-Verify-Encrypt-Info',
+	'Pair-Verify-Encrypt-Salt'
+);
 
 $responseInnerData = [
 	[
-		Types\TlvCode::CODE_IDENTIFIER => $deviceID,
-		Types\TlvCode::CODE_PUBLIC_KEY => $publicKey,
+		Types\TlvCode::CODE_IDENTIFIER => strval($macAddress),
 		Types\TlvCode::CODE_SIGNATURE  => $accessorySignature,
 	],
 ];
 
-$add = [
-	36,
-	115,
-	219,
-	93,
-	228,
-	156,
-	197,
-	57,
-	188,
-	25,
-	168,
-	75,
-	76,
-	136,
-	128,
-	238,
-];
+$tlvTool = new Tlv();
 
-$cipher = new ChaCha20Poly1305\Cipher();
-$context = $cipher->init($decryptKey, pack('C*', ...NONCE_SETUP_M6));
-$cipher->aad($context, pack('C*', ''));
-
-$responseEncryptedData = unpack('C*', $cipher->encrypt($context, $tlv->encode($responseInnerData)));
-
-$tag = $cipher->finish($context);
-
-$dataToEncode = $tlv->encode($responseInnerData);
-
-var_dump(unpack('C*', $dataToEncode));
-
-$encoded = sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
-	$dataToEncode,
+$responseEncryptedData = unpack('C*', sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
+	$tlvTool->encode($responseInnerData),
 	'',
-	pack('C*', ...NONCE_SETUP_M6),
-	$decryptKey
-);
+	pack('C*', ...NONCE_VERIFY_M2),
+	$encodeKey
+));
 
-$decoded = sodium_crypto_aead_chacha20poly1305_ietf_decrypt(
-	$encoded,
-	'',
-	pack('C*', ...NONCE_SETUP_M6),
-	$decryptKey
-);
 
-var_dump(unpack('C*', $decoded));
+var_dump($responseEncryptedData);

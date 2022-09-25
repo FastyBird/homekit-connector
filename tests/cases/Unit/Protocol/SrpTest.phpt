@@ -176,19 +176,19 @@ final class SrpTest extends BaseTestCase
 
 	public function testSessionKeyClientProof(): void
 	{
-		Assert::notNull($this->srp->getClientProofOfSessionKey());
+		Assert::notNull($this->srp->getClientProof());
 		Assert::equal(
 			(string) hex2bin(str_replace(' ', '', self::TEST_CLIENT_PROOF_OF_SESSION_KEY)),
-			(string) $this->srp->getClientProofOfSessionKey()
+			(string) $this->srp->getClientProof()
 		);
 	}
 
 	public function testSessionKeyServerProof(): void
 	{
-		Assert::notNull($this->srp->getServerProofOfSessionKey());
+		Assert::notNull($this->srp->getServerProof());
 		Assert::equal(
 			(string) hex2bin(str_replace(' ', '', self::TEST_SERVER_PROOF_OF_SESSION_KEY)),
-			(string) $this->srp->getServerProofOfSessionKey()
+			(string) $this->srp->getServerProof()
 		);
 	}
 
