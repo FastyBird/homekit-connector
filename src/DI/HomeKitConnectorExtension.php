@@ -160,8 +160,8 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->setType(Protocol\Tlv::class);
 
 		// Database repositories
-		$builder->addDefinition($this->prefix('models.sessionRepository'), new DI\Definitions\ServiceDefinition())
-			->setType(Models\Sessions\SessionRepository::class);
+		$builder->addDefinition($this->prefix('models.sessionsRepository'), new DI\Definitions\ServiceDefinition())
+			->setType(Models\Sessions\SessionsRepository::class);
 
 		// Database managers
 		$builder->addDefinition($this->prefix('models.sessionsManager'), new DI\Definitions\ServiceDefinition())

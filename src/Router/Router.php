@@ -45,22 +45,10 @@ class Router extends Routing\Router
 		$this->post('/pair-setup', [$pairingController, 'setup']);
 		$this->post('/pair-verify', [$pairingController, 'verify']);
 		$this->post('/pairings', [$pairingController, 'pairings']);
-
 		$this->post('/resource', [$pairingController, 'resource']);
+		$this->post('/identify', [$pairingController, 'identify']);
 
-		$this->group(
-			'/prepare',
-			function (Routing\RouteCollector $group) use ($pairingController): void {
-				$group->put('', [$pairingController, 'prepare']);
-			}
-		);
-
-		$this->group(
-			'/identify',
-			function (Routing\RouteCollector $group) use ($pairingController): void {
-				$group->post('', [$pairingController, 'identify']);
-			}
-		);
+		$this->put('/prepare', [$pairingController, 'prepare']);
 
 		$this->group(
 			'/accessories',

@@ -75,7 +75,7 @@ class FindSessionsQuery extends DoctrineOrmQuery\QueryObject
 	{
 		$this->select[] = function (ORM\QueryBuilder $qb): void {
 			$qb->addSelect('connector');
-			$qb->join('d.connector', 'connector');
+			$qb->join('s.connector', 'connector');
 		};
 
 		$this->filter[] = function (ORM\QueryBuilder $qb) use ($connectorId): void {

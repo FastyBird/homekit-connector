@@ -22,6 +22,7 @@ use IPub\DoctrineCrud;
 use IPub\DoctrineCrud\Mapping\Annotation as IPubDoctrine;
 use IPub\DoctrineTimestampable;
 use Ramsey\Uuid;
+use function Curve25519\publicKey;
 
 /**
  * @ORM\Entity
@@ -32,8 +33,8 @@ use Ramsey\Uuid;
  *       "charset"="utf8mb4",
  *       "comment"="HomeKit connector sessions"
  *     },
- *     indexes={
- *       @ORM\Index(name="token_state_idx", columns={"token_state"})
+ *     uniqueConstraints={
+ *       @ORM\UniqueConstraint(name="session_client_uid_unique", columns={"session_client_uid"})
  *     }
  * )
  */
@@ -71,68 +72,60 @@ class Session implements DoctrineCrud\Entities\IEntity,
 	private string $clientUid;
 
 	/**
-	 * @var string
+	 * @var string|resource
 	 *
 	 * @IPubDoctrine\Crud(is="required")
-	 * @ORM\Column(name="session_client_ltpk", type="text", nullable=false)
+	 * @ORM\Column(name="session_client_ltpk", type="binary", nullable=false)
 	 */
-	private string $clientLtpk;
+	private $clientLtpk;
 
 	/**
-	 * @var string
+	 * @var string|resource
 	 *
 	 * @IPubDoctrine\Crud(is="writable")
-	 * @ORM\Column(name="session_server_private_key", type="text", nullable=false)
+	 * @ORM\Column(name="session_server_private_key", type="binary", nullable=false)
 	 */
-	private string $serverPrivateKey;
+	private $serverPrivateKey;
 
 	/**
-	 * @var string|null
+	 * @var string|resource|null
 	 *
 	 * @IPubDoctrine\Crud(is="writable")
-	 * @ORM\Column(name="session_server_public_key", type="text", nullable=true)
+	 * @ORM\Column(name="session_client_public_key", type="binary", nullable=true)
 	 */
-	private ?string $serverPublicKey;
+	private $clientPublicKey;
 
 	/**
-	 * @var string|null
+	 * @var string|resource|null
 	 *
 	 * @IPubDoctrine\Crud(is="writable")
-	 * @ORM\Column(name="session_client_public_key", type="text", nullable=true)
+	 * @ORM\Column(name="session_shared_key", type="binary", nullable=true)
 	 */
-	private ?string $clientPublicKey;
+	private $sharedKey;
 
 	/**
-	 * @var string|null
+	 * @var string|resource|null
 	 *
 	 * @IPubDoctrine\Crud(is="writable")
-	 * @ORM\Column(name="session_shared_key", type="text", nullable=true)
+	 * @ORM\Column(name="session_hasing_key", type="binary", nullable=true)
 	 */
-	private ?string $sharedKey;
+	private $hashingKey;
 
 	/**
-	 * @var string|null
+	 * @var string|resource|null
 	 *
 	 * @IPubDoctrine\Crud(is="writable")
-	 * @ORM\Column(name="session_hasing_key", type="text", nullable=true)
+	 * @ORM\Column(name="session_decrypt_key", type="binary", nullable=true)
 	 */
-	private ?string $hashingKey;
+	private $decryptKey;
 
 	/**
-	 * @var string|null
+	 * @var string|resource|null
 	 *
 	 * @IPubDoctrine\Crud(is="writable")
-	 * @ORM\Column(name="session_decrypt_key", type="text", nullable=true)
+	 * @ORM\Column(name="session_encrypt_key", type="binary", nullable=true)
 	 */
-	private ?string $decryptKey;
-
-	/**
-	 * @var string|null
-	 *
-	 * @IPubDoctrine\Crud(is="writable")
-	 * @ORM\Column(name="session_encrypt_key", type="text", nullable=true)
-	 */
-	private ?string $encryptKey;
+	private $encryptKey;
 
 	/**
 	 * @var bool
@@ -161,7 +154,7 @@ class Session implements DoctrineCrud\Entities\IEntity,
 
 		$this->connector = $connector;
 
-		$this->serverPrivateKey = Helpers\Protocol::generateSignKey();
+		$this->serverPrivateKey = hex2bin(Helpers\Protocol::generateSignKey()) ?: '';
 	}
 
 	/**
@@ -193,6 +186,12 @@ class Session implements DoctrineCrud\Entities\IEntity,
 	 */
 	public function getClientLtpk(): string
 	{
+		if (is_resource($this->clientLtpk)) {
+			rewind($this->clientLtpk);
+
+			return strval(stream_get_contents($this->clientLtpk));
+		}
+
 		return $this->clientLtpk;
 	}
 
@@ -201,6 +200,12 @@ class Session implements DoctrineCrud\Entities\IEntity,
 	 */
 	public function getServerPrivateKey(): string
 	{
+		if (is_resource($this->serverPrivateKey)) {
+			rewind($this->serverPrivateKey);
+
+			return strval(stream_get_contents($this->serverPrivateKey));
+		}
+
 		return $this->serverPrivateKey;
 	}
 
@@ -209,15 +214,7 @@ class Session implements DoctrineCrud\Entities\IEntity,
 	 */
 	public function getServerPublicKey(): ?string
 	{
-		return $this->serverPublicKey;
-	}
-
-	/**
-	 * @param string $serverPublicKey
-	 */
-	public function setServerPublicKey(string $serverPublicKey): void
-	{
-		$this->serverPublicKey = $serverPublicKey;
+		return publicKey($this->getServerPrivateKey());
 	}
 
 	/**
@@ -225,6 +222,12 @@ class Session implements DoctrineCrud\Entities\IEntity,
 	 */
 	public function getClientPublicKey(): ?string
 	{
+		if (is_resource($this->clientPublicKey)) {
+			rewind($this->clientPublicKey);
+
+			return strval(stream_get_contents($this->clientPublicKey));
+		}
+
 		return $this->clientPublicKey;
 	}
 
@@ -241,6 +244,12 @@ class Session implements DoctrineCrud\Entities\IEntity,
 	 */
 	public function getSharedKey(): ?string
 	{
+		if (is_resource($this->sharedKey)) {
+			rewind($this->sharedKey);
+
+			return strval(stream_get_contents($this->sharedKey));
+		}
+
 		return $this->sharedKey;
 	}
 
@@ -257,6 +266,12 @@ class Session implements DoctrineCrud\Entities\IEntity,
 	 */
 	public function getHashingKey(): ?string
 	{
+		if (is_resource($this->hashingKey)) {
+			rewind($this->hashingKey);
+
+			return strval(stream_get_contents($this->hashingKey));
+		}
+
 		return $this->hashingKey;
 	}
 
@@ -273,6 +288,12 @@ class Session implements DoctrineCrud\Entities\IEntity,
 	 */
 	public function getDecryptKey(): ?string
 	{
+		if (is_resource($this->decryptKey)) {
+			rewind($this->decryptKey);
+
+			return strval(stream_get_contents($this->decryptKey));
+		}
+
 		return $this->decryptKey;
 	}
 
@@ -289,6 +310,12 @@ class Session implements DoctrineCrud\Entities\IEntity,
 	 */
 	public function getEncryptKey(): ?string
 	{
+		if (is_resource($this->encryptKey)) {
+			rewind($this->encryptKey);
+
+			return strval(stream_get_contents($this->encryptKey));
+		}
+
 		return $this->encryptKey;
 	}
 

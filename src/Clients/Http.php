@@ -28,6 +28,7 @@ use Psr\Log;
 use React\EventLoop;
 use React\Http as ReactHttp;
 use React\Socket;
+use React\Socket\ConnectionInterface;
 use Throwable;
 
 /**
@@ -158,6 +159,12 @@ final class Http implements Client
 					],
 				]
 			);
+		});
+
+		$this->socket->on('connection', function (ConnectionInterface $connection): void {
+			$connection->on('data', function ($data): void {
+				// var_dump($data);
+			});
 		});
 
 		$server = new ReactHttp\HttpServer(

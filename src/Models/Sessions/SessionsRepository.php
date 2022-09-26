@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * SessionRepository.php
+ * SessionsRepository.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -20,6 +20,7 @@ use Doctrine\Persistence;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Queries;
+use IPub\DoctrineOrmQuery;
 use Nette;
 use Ramsey\Uuid;
 
@@ -31,7 +32,7 @@ use Ramsey\Uuid;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class SessionRepository
+final class SessionsRepository
 {
 
 	use Nette\SmartObject;
@@ -87,6 +88,23 @@ final class SessionRepository
 		$session = $queryObject->fetchOne($this->getRepository());
 
 		return $session;
+	}
+
+	/**
+	 * @param Queries\FindSessionsQuery<Entities\Session> $queryObject
+	 *
+	 * @return DoctrineOrmQuery\ResultSet<Entities\Session>
+	 */
+	public function getResultSet(
+		Queries\FindSessionsQuery $queryObject
+	): DoctrineOrmQuery\ResultSet {
+		$result = $queryObject->fetch($this->getRepository());
+
+		if (!$result instanceof DoctrineOrmQuery\ResultSet) {
+			throw new Exceptions\InvalidState('Result set for given query could not be loaded.');
+		}
+
+		return $result;
 	}
 
 	/**

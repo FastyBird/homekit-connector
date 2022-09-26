@@ -15,6 +15,7 @@
 
 namespace FastyBird\HomeKitConnector\Helpers;
 
+use Evenement;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
@@ -34,7 +35,7 @@ use Ramsey\Uuid;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Connector
+final class Connector extends Evenement\EventEmitter
 {
 
 	use Nette\SmartObject;
@@ -125,7 +126,9 @@ final class Connector
 			throw new Exceptions\InvalidState('Connector property could not be loaded');
 		}
 
-		$this->propertiesEntitiesManagers->update($property, Utils\ArrayHash::from(['value' => $value]));
+		$property = $this->propertiesEntitiesManagers->update($property, Utils\ArrayHash::from(['value' => $value]));
+
+		$this->emit('updated', [$connectorId, $type, $property]);
 	}
 
 }

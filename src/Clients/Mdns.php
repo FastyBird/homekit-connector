@@ -15,6 +15,7 @@
 
 namespace FastyBird\HomeKitConnector\Clients;
 
+use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Helpers;
@@ -23,6 +24,7 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
+use Ramsey\Uuid;
 use React\Datagram;
 use React\Dns;
 use React\EventLoop;
@@ -98,6 +100,23 @@ final class Mdns implements Client
 
 		$this->parser = new Dns\Protocol\Parser();
 		$this->dumper = new Dns\Protocol\BinaryDumper();
+
+		$this->connectorHelper->on(
+			'updated',
+			function (
+				Uuid\UuidInterface $connectorId,
+				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
+				DevicesModuleEntities\Connectors\Properties\StaticProperty $property
+			): void {
+				if (
+					$this->connector->getId()->equals($connectorId)
+					&& $type->equalsValue(HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED)
+				) {
+					$this->createZone();
+					$this->broadcastZone();
+				}
+			}
+		);
 	}
 
 	/**
@@ -169,26 +188,7 @@ final class Mdns implements Client
 				$this->eventLoop->addPeriodicTimer(
 					self::DNS_BROADCAST_INTERVAL,
 					async(function (): void {
-						$message = new Dns\Model\Message();
-						$message->id = mt_rand(0, 0xffff);
-						$message->qr = true;
-						$message->rd = true;
-						$message->answers = $this->getAnswers([
-							new Dns\Query\Query(
-								'',
-								Dns\Model\Message::TYPE_ANY,
-								Dns\Model\Message::CLASS_IN
-							),
-						]);
-
-						if ($message->answers === []) {
-							return;
-						}
-
-						$this->server?->send(
-							$this->dumper->toBinary($message),
-							self::DNS_ADDRESS . ':' . self::DNS_PORT
-						);
+						$this->broadcastZone();
 					})
 				);
 			})
@@ -216,6 +216,33 @@ final class Mdns implements Client
 	public function disconnect(): void
 	{
 		$this->server?->close();
+	}
+
+	/**
+	 * @return void
+	 */
+	private function broadcastZone(): void
+	{
+		$message = new Dns\Model\Message();
+		$message->id = mt_rand(0, 0xffff);
+		$message->qr = true;
+		$message->rd = true;
+		$message->answers = $this->getAnswers([
+			new Dns\Query\Query(
+				'',
+				Dns\Model\Message::TYPE_ANY,
+				Dns\Model\Message::CLASS_IN
+			),
+		]);
+
+		if ($message->answers === []) {
+			return;
+		}
+
+		$this->server?->send(
+			$this->dumper->toBinary($message),
+			self::DNS_ADDRESS . ':' . self::DNS_PORT
+		);
 	}
 
 	/**

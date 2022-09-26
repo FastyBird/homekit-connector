@@ -140,6 +140,9 @@ final class PairingController extends BaseController
 	/** @var Protocol\Srp|null */
 	private ?Protocol\Srp $srp = null;
 
+	/** @var EdDSA */
+	private EdDSA $edDsa;
+
 	/** @var Types\TlvState */
 	private Types\TlvState $expectedState;
 
@@ -170,6 +173,8 @@ final class PairingController extends BaseController
 
 		$this->sessionsManager = $sessionsManager;
 		$this->connectorsRepository = $connectorsRepository;
+
+		$this->edDsa = new EdDSA('ed25519');
 
 		$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M1);
 	}
@@ -250,6 +255,7 @@ final class PairingController extends BaseController
 			$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M1);
 		}
 
+		$response = $response->withStatus(200);
 		$response = $response->withHeader('Content-Type', Clients\Http::PAIRING_CONTENT_TYPE);
 		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString($this->tlv->encode($result)));
 
@@ -277,34 +283,49 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$tlv = $this->tlv->decode($request->getBody()->getContents());
+		$paired = $this->connectorHelper->getConfiguration(
+			$connectorId,
+			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED)
+		);
 
-		if ($tlv === []) {
-			throw new Exceptions\InvalidArgument('Provided TLV content is not valid');
-		}
-
-		$tlvEntry = array_pop($tlv);
-
-		$requestedState = array_key_exists(Types\TlvCode::CODE_STATE, $tlvEntry) ? $tlvEntry[Types\TlvCode::CODE_STATE] : null;
-
-		if (
-			$requestedState === Types\TlvState::STATE_M1
-			&& array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
-			&& is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
-		) {
-			$result = $this->verifyStart($connectorId, $tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]);
-
-		} elseif (
-			$requestedState === Types\TlvState::STATE_M3
-			&& array_key_exists(Types\TlvCode::CODE_ENCRYPTED_DATA, $tlvEntry)
-			&& is_array($tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA])
-		) {
-			$result = $this->verifyFinish($connectorId, $tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA]);
-
+		if ((bool) $paired) {
+			$result = [
+				[
+					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
+					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+				],
+			];
 		} else {
-			throw new Exceptions\InvalidState('Unknown data received');
+			$tlv = $this->tlv->decode($request->getBody()->getContents());
+
+			if ($tlv === []) {
+				throw new Exceptions\InvalidArgument('Provided TLV content is not valid');
+			}
+
+			$tlvEntry = array_pop($tlv);
+
+			$requestedState = array_key_exists(Types\TlvCode::CODE_STATE, $tlvEntry) ? $tlvEntry[Types\TlvCode::CODE_STATE] : null;
+
+			if (
+				$requestedState === Types\TlvState::STATE_M1
+				&& array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
+				&& is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
+			) {
+				$result = $this->verifyStart($connectorId, $tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]);
+
+			} elseif (
+				$requestedState === Types\TlvState::STATE_M3
+				&& array_key_exists(Types\TlvCode::CODE_ENCRYPTED_DATA, $tlvEntry)
+				&& is_array($tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA])
+			) {
+				$result = $this->verifyFinish($connectorId, $tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA]);
+
+			} else {
+				throw new Exceptions\InvalidState('Unknown data received');
+			}
 		}
 
+		$response = $response->withStatus(200);
 		$response = $response->withHeader('Content-Type', Clients\Http::PAIRING_CONTENT_TYPE);
 		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString($this->tlv->encode($result)));
 
@@ -397,6 +418,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'srp_start',
+						'state' => Types\TlvState::STATE_M2,
+					],
 				]
 			);
 
@@ -416,6 +441,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'srp_start',
+						'state' => Types\TlvState::STATE_M2,
 					],
 				]
 			);
@@ -437,6 +466,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'srp_start',
+						'state' => Types\TlvState::STATE_M2,
+					],
 				]
 			);
 
@@ -456,6 +489,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'srp_start',
+						'state' => Types\TlvState::STATE_M2,
 					],
 				]
 			);
@@ -488,6 +525,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'srp_start',
+						'state' => Types\TlvState::STATE_M2,
+					],
 				]
 			);
 
@@ -509,6 +550,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'srp_start',
+						'state' => Types\TlvState::STATE_M2,
 					],
 				]
 			);
@@ -551,6 +596,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'srp_finish',
+						'state' => Types\TlvState::STATE_M4,
+					],
 				]
 			);
 
@@ -575,6 +624,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'srp_finish',
+						'state' => Types\TlvState::STATE_M4,
+					],
 				]
 			);
 
@@ -594,6 +647,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'srp_finish',
+						'state' => Types\TlvState::STATE_M4,
 					],
 				]
 			);
@@ -616,6 +673,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'srp_finish',
+						'state' => Types\TlvState::STATE_M4,
 					],
 				]
 			);
@@ -657,6 +718,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'exchange',
+						'state' => Types\TlvState::STATE_M6,
+					],
 				]
 			);
 
@@ -696,6 +761,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'exchange',
+						'state' => Types\TlvState::STATE_M6,
+					],
 				]
 			);
 
@@ -727,6 +796,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'exchange',
+						'state' => Types\TlvState::STATE_M6,
+					],
 				]
 			);
 
@@ -746,6 +819,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'exchange',
+						'state' => Types\TlvState::STATE_M6,
 					],
 				]
 			);
@@ -776,6 +853,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'exchange',
+						'state' => Types\TlvState::STATE_M6,
+					],
 				]
 			);
 
@@ -795,16 +876,12 @@ final class PairingController extends BaseController
 			self::SALT_CONTROLLER
 		);
 
-		var_dump('IDENTIFIER 1 ');
-		var_dump($tlvEntry[Types\TlvCode::CODE_IDENTIFIER]);
 		$iosDeviceInfo = $iosDeviceX
 			. $tlvEntry[Types\TlvCode::CODE_IDENTIFIER]
 			. pack('C*', ...$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]);
 
-		$ec = new EdDSA('ed25519');
-
 		if (
-			!$ec->verify(
+			!$this->edDsa->verify(
 				unpack('C*', $iosDeviceInfo),
 				$tlvEntry[Types\TlvCode::CODE_SIGNATURE],
 				$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]
@@ -817,6 +894,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'exchange',
+						'state' => Types\TlvState::STATE_M6,
 					],
 				]
 			);
@@ -869,10 +950,8 @@ final class PairingController extends BaseController
 			self::SALT_ACCESSORY
 		);
 
-		$ec = new EdDSA('ed25519');
-
-		$serverPrivateKey = $ec->keyFromSecret(
-			unpack('C*', strval(hex2bin($this->pairingSession->getServerPrivateKey())))
+		$serverPrivateKey = $this->edDsa->keyFromSecret(
+			unpack('C*', $this->pairingSession->getServerPrivateKey())
 		);
 		$serverPublicKey = $serverPrivateKey->getPublic();
 
@@ -912,6 +991,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'exchange',
+						'state' => Types\TlvState::STATE_M6,
+					],
 				]
 			);
 
@@ -931,6 +1014,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'exchange',
+						'state' => Types\TlvState::STATE_M6,
 					],
 				]
 			);
@@ -974,6 +1061,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'verify_start',
+						'state' => Types\TlvState::STATE_M2,
+					],
 				]
 			);
 
@@ -990,18 +1081,13 @@ final class PairingController extends BaseController
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS)
 		);
 
-		$serverPublicKey = publicKey(hex2bin($this->pairingSession->getServerPrivateKey()));
-		$sharedSecret = sharedKey(
-			hex2bin($this->pairingSession->getServerPrivateKey()),
-			pack('C*', ...$clientPublicKey)
-		);
+		$serverPublicKey = publicKey($this->pairingSession->getServerPrivateKey());
+		$sharedSecret = sharedKey($this->pairingSession->getServerPrivateKey(), pack('C*', ...$clientPublicKey));
 
 		$serverInfo = $serverPublicKey . $macAddress . pack('C*', ...$clientPublicKey);
 
-		$ec = new EdDSA('ed25519');
-
-		$serverPrivateKey = $ec->keyFromSecret(
-			unpack('C*', strval(hex2bin($this->pairingSession->getServerPrivateKey())))
+		$serverPrivateKey = $this->edDsa->keyFromSecret(
+			unpack('C*', $this->pairingSession->getServerPrivateKey())
 		);
 		$serverSignature = $serverPrivateKey->sign(unpack('C*', $serverInfo))->toBytes();
 
@@ -1040,6 +1126,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'verify_start',
+						'state' => Types\TlvState::STATE_M2,
+					],
 				]
 			);
 
@@ -1059,6 +1149,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'verify_start',
+						'state' => Types\TlvState::STATE_M2,
 					],
 				]
 			);
@@ -1082,6 +1176,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'verify_start',
+						'state' => Types\TlvState::STATE_M2,
+					],
 				]
 			);
 
@@ -1098,7 +1196,6 @@ final class PairingController extends BaseController
 		$this->databaseHelper->transaction(
 			function () use (
 				$pairingSession,
-				$serverPublicKey,
 				$clientPublicKey,
 				$sharedSecret,
 				$encodeKey
@@ -1106,7 +1203,6 @@ final class PairingController extends BaseController
 				return $this->sessionsManager->update(
 					$pairingSession,
 					ArrayHash::from([
-						'serverPublicKey' => $serverPublicKey,
 						'clientPublicKey' => pack('C*', ...$clientPublicKey),
 						'sharedKey'       => $sharedSecret,
 						'hashingKey'      => $encodeKey,
@@ -1145,6 +1241,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'verify_finish',
+						'state' => Types\TlvState::STATE_M2,
+					],
 				]
 			);
 
@@ -1175,6 +1275,10 @@ final class PairingController extends BaseController
 					],
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'verify_finish',
+						'state' => Types\TlvState::STATE_M2,
 					],
 				]
 			);
@@ -1207,6 +1311,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'verify_finish',
+						'state' => Types\TlvState::STATE_M2,
+					],
 				]
 			);
 
@@ -1227,6 +1335,10 @@ final class PairingController extends BaseController
 					'connector' => [
 						'id' => $connectorId->toString(),
 					],
+					'pairing'   => [
+						'type'  => 'verify_finish',
+						'state' => Types\TlvState::STATE_M2,
+					],
 				]
 			);
 
@@ -1243,6 +1355,8 @@ final class PairingController extends BaseController
 		if (
 			!array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
 			|| !is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
+			|| !array_key_exists(Types\TlvCode::CODE_SIGNATURE, $tlvEntry)
+			|| !is_array($tlvEntry[Types\TlvCode::CODE_SIGNATURE])
 		) {
 			$this->logger->error(
 				'Data in decoded decrypted tlv data are invalid',
@@ -1251,6 +1365,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'verify_finish',
+						'state' => Types\TlvState::STATE_M2,
 					],
 				]
 			);
@@ -1262,19 +1380,16 @@ final class PairingController extends BaseController
 				],
 			];
 		}
-		var_dump('IDENTIFIER 2');
-		var_dump($tlvEntry[Types\TlvCode::CODE_IDENTIFIER]);
+
 		$iosDeviceInfo = $this->pairingSession->getClientPublicKey()
 			. $tlvEntry[Types\TlvCode::CODE_IDENTIFIER]
-			. $this->pairingSession->getServerPublicKey();
-
-		$ec = new EdDSA('ed25519');
+			. publicKey($this->pairingSession->getServerPrivateKey());
 
 		if (
-			!$ec->verify(
-				unpack('C*', $iosDeviceInfo),
+			!$this->edDsa->verify(
+				array_values((array) unpack('C*', $iosDeviceInfo)),
 				$tlvEntry[Types\TlvCode::CODE_SIGNATURE],
-				$this->pairingSession->getClientLtpk()
+				array_values((array) unpack('C*', $this->pairingSession->getClientLtpk()))
 			)
 		) {
 			$this->logger->error(
@@ -1284,6 +1399,10 @@ final class PairingController extends BaseController
 					'type'      => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
+					],
+					'pairing'   => [
+						'type'  => 'verify_finish',
+						'state' => Types\TlvState::STATE_M2,
 					],
 				]
 			);
