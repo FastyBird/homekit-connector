@@ -58,11 +58,14 @@ final class Http implements Client
 	/** @var Middleware\RouterMiddleware */
 	private Middleware\RouterMiddleware $routerMiddleware;
 
+	/** @var SecureServerFactory */
+	private SecureServerFactory $secureServerFactory;
+
 	/** @var EventLoop\LoopInterface */
 	private EventLoop\LoopInterface $eventLoop;
 
-	/** @var Socket\SocketServer|null */
-	private ?Socket\SocketServer $socket = null;
+	/** @var Socket\ServerInterface|null */
+	private ?Socket\ServerInterface $socket = null;
 
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
@@ -71,6 +74,7 @@ final class Http implements Client
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Helpers\Connector $connectorHelper
 	 * @param Middleware\RouterMiddleware $routerMiddleware
+	 * @param SecureServerFactory $secureServerFactory
 	 * @param EventLoop\LoopInterface $eventLoop
 	 * @param Log\LoggerInterface|null $logger
 	 */
@@ -78,12 +82,14 @@ final class Http implements Client
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		Helpers\Connector $connectorHelper,
 		Middleware\RouterMiddleware $routerMiddleware,
+		SecureServerFactory $secureServerFactory,
 		EventLoop\LoopInterface $eventLoop,
 		?Log\LoggerInterface $logger = null
 	) {
 		$this->connector = $connector;
 		$this->connectorHelper = $connectorHelper;
 		$this->routerMiddleware = $routerMiddleware;
+		$this->secureServerFactory = $secureServerFactory;
 
 		$this->eventLoop = $eventLoop;
 
@@ -105,7 +111,10 @@ final class Http implements Client
 		);
 
 		try {
-			$this->socket = new Socket\SocketServer('0.0.0.0:' . $port, [], $this->eventLoop);
+			$this->socket = $this->secureServerFactory->create(
+				$this->connector,
+				new Socket\SocketServer('0.0.0.0:' . $port, [], $this->eventLoop),
+			);
 		} catch (Throwable $ex) {
 			$this->logger->error(
 				'Socket server could not be created',

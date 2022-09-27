@@ -185,6 +185,10 @@ final class Mdns implements Client
 					);
 				});
 
+				$this->eventLoop->futureTick(function (): void {
+					$this->broadcastZone();
+				});
+
 				$this->eventLoop->addPeriodicTimer(
 					self::DNS_BROADCAST_INTERVAL,
 					async(function (): void {

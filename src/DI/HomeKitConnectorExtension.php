@@ -113,6 +113,16 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->getResultDefinition()
 			->setType(Clients\Http::class);
 
+		$builder->addFactoryDefinition($this->prefix('client.http.secure.server'))
+			->setImplement(Clients\SecureServerFactory::class)
+			->getResultDefinition()
+			->setType(Clients\SecureServer::class);
+
+		$builder->addFactoryDefinition($this->prefix('client.http.secure.connection'))
+			->setImplement(Clients\SecureConnectionFactory::class)
+			->getResultDefinition()
+			->setType(Clients\SecureConnection::class);
+
 		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\HomeKitConnector::class);

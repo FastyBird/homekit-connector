@@ -38,6 +38,9 @@ final class AccessoriesController extends BaseController
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
+		var_dump($request->getUri()->getPath());
+		var_dump($request->getHeaders());
+		var_dump($request->getBody()->getContents());
 		// TODO: Implement
 		return $response;
 	}
