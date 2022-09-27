@@ -15,7 +15,7 @@
 
 namespace FastyBird\HomeKitConnector\Clients;
 
-use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
+use Doctrine\DBAL;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Helpers;
@@ -105,8 +105,7 @@ final class Mdns implements Client
 			'updated',
 			function (
 				Uuid\UuidInterface $connectorId,
-				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
-				DevicesModuleEntities\Connectors\Properties\StaticProperty $property
+				HomeKitConnector\Types\ConnectorPropertyIdentifier $type
 			): void {
 				if (
 					$this->connector->getId()->equals($connectorId)
@@ -121,6 +120,8 @@ final class Mdns implements Client
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * @throws DBAL\Exception
 	 */
 	public function connect(): void
 	{
@@ -132,7 +133,7 @@ final class Mdns implements Client
 			->then(function (Datagram\Socket $server): void {
 				$this->server = $server;
 
-				$this->server->on('message', function (string $message, string $address): void {
+				$this->server->on('message', function (string $message): void {
 					$request = $this->parser->parseMessage($message);
 
 					$response = clone $request;
@@ -251,6 +252,8 @@ final class Mdns implements Client
 
 	/**
 	 * @return void
+	 *
+	 * @throws DBAL\Exception
 	 */
 	private function createZone(): void
 	{

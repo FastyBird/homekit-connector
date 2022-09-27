@@ -33,6 +33,9 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 
 	use Nette\SmartObject;
 
+	/** @var string|null */
+	private ?string $sharedKey;
+
 	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
 	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
 
@@ -46,24 +49,37 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Socket\ServerInterface $server
 	 * @param SecureConnectionFactory $secureConnectionFactory
+	 * @param string|null $sharedKey
 	 */
 	public function __construct(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		Socket\ServerInterface $server,
-		SecureConnectionFactory $secureConnectionFactory
+		SecureConnectionFactory $secureConnectionFactory,
+		?string $sharedKey = null
 	) {
 		$this->connector = $connector;
-
 		$this->server = $server;
 		$this->secureConnectionFactory = $secureConnectionFactory;
 
+		$this->sharedKey = $sharedKey;
+
 		$this->server->on('connection', function ($connection): void {
-			$this->emit('connection', [$this->secureConnectionFactory->create($this->connector, $connection)]);
+			$this->emit('connection', [$this->secureConnectionFactory->create($this->connector, $this->sharedKey, $connection)]);
 		});
 
 		$this->server->on('error', function ($error): void {
 			$this->emit('error', [$error]);
 		});
+	}
+
+	/**
+	 * @param string|null $sharedKey
+	 *
+	 * @return void
+	 */
+	public function setSharedKey(?string $sharedKey): void
+	{
+		$this->sharedKey = $sharedKey;
 	}
 
 	/**

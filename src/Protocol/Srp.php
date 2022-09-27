@@ -16,7 +16,6 @@
 namespace FastyBird\HomeKitConnector\Protocol;
 
 use Brick\Math;
-use FastyBird\HomeKitConnector\Exceptions;
 use Nette;
 use Throwable;
 
@@ -152,14 +151,6 @@ final class Srp
 	public function getServerPublicKey(): Math\BigInteger
 	{
 		return $this->serverPublicKey;
-	}
-
-	/**
-	 * @return Math\BigInteger
-	 */
-	public function getServerPrivateKey(): Math\BigInteger
-	{
-		return $this->serverPrivateKey;
 	}
 
 	/**
@@ -308,24 +299,6 @@ final class Srp
 		}
 
 		return Math\BigInteger::fromBytes(implode('', $unpacked), false);
-	}
-
-	/**
-	 * @param string $number
-	 *
-	 * @return int
-	 */
-	private function stringToInt(string $number): int
-	{
-		$number = unpack('P*', $number);
-
-		if ($number === false) {
-			throw new Exceptions\InvalidState('Error during SRP string to number transformation');
-		}
-
-		$number = array_pop($number);
-
-		return (int) $number;
 	}
 
 }

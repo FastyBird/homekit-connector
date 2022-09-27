@@ -170,12 +170,12 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->setType(Protocol\Tlv::class);
 
 		// Database repositories
-		$builder->addDefinition($this->prefix('models.sessionsRepository'), new DI\Definitions\ServiceDefinition())
-			->setType(Models\Sessions\SessionsRepository::class);
+		$builder->addDefinition($this->prefix('models.clientsRepository'), new DI\Definitions\ServiceDefinition())
+			->setType(Models\Clients\ClientsRepository::class);
 
 		// Database managers
-		$builder->addDefinition($this->prefix('models.sessionsManager'), new DI\Definitions\ServiceDefinition())
-			->setType(Models\Sessions\SessionsManager::class)
+		$builder->addDefinition($this->prefix('models.clientsManager'), new DI\Definitions\ServiceDefinition())
+			->setType(Models\Clients\ClientsManager::class)
 			->setArgument('entityCrud', '__placeholder__');
 
 		// Console commands
@@ -225,8 +225,8 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 
 		$entityFactoryServiceName = $builder->getByType(DoctrineCrud\Crud\IEntityCrudFactory::class, true);
 
-		$devicesManagerService = $class->getMethod('createService' . ucfirst($this->name) . '__models__sessionsManager');
-		$devicesManagerService->setBody('return new ' . Models\Sessions\SessionsManager::class . '($this->getService(\'' . $entityFactoryServiceName . '\')->create(\'' . Entities\Session::class . '\'));');
+		$devicesManagerService = $class->getMethod('createService' . ucfirst($this->name) . '__models__clientsManager');
+		$devicesManagerService->setBody('return new ' . Models\Clients\ClientsManager::class . '($this->getService(\'' . $entityFactoryServiceName . '\')->create(\'' . Entities\Client::class . '\'));');
 	}
 
 }

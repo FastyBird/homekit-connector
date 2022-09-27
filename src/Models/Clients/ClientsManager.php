@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * SessionsManager.php
+ * ClientsManager.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -13,7 +13,7 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Models\Sessions;
+namespace FastyBird\HomeKitConnector\Models\Clients;
 
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Models;
@@ -22,14 +22,14 @@ use Nette;
 use Nette\Utils;
 
 /**
- * Sessions entities manager
+ * Clients entities manager
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Models
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class SessionsManager
+class ClientsManager
 {
 
 	use Nette\SmartObject;
@@ -37,14 +37,14 @@ class SessionsManager
 	/**
 	 * @var Crud\IEntityCrud
 	 *
-	 * @phpstan-var Crud\IEntityCrud<Entities\Session>
+	 * @phpstan-var Crud\IEntityCrud<Entities\Client>
 	 */
 	private Crud\IEntityCrud $entityCrud;
 
 	/**
 	 * @param Crud\IEntityCrud $entityCrud
 	 *
-	 * @phpstan-param Crud\IEntityCrud<Entities\Session> $entityCrud
+	 * @phpstan-param Crud\IEntityCrud<Entities\Client> $entityCrud
 	 */
 	public function __construct(
 		Crud\IEntityCrud $entityCrud
@@ -56,31 +56,31 @@ class SessionsManager
 	/**
 	 * @param Utils\ArrayHash $values
 	 *
-	 * @return Entities\Session
+	 * @return Entities\Client
 	 */
 	public function create(
 		Utils\ArrayHash $values
-	): Entities\Session {
+	): Entities\Client {
 		// Get entity creator
 		$creator = $this->entityCrud->getEntityCreator();
 
-		/** @var Entities\Session $entity */
+		/** @var Entities\Client $entity */
 		$entity = $creator->create($values);
 
 		return $entity;
 	}
 
 	/**
-	 * @param Entities\Session $entity
+	 * @param Entities\Client $entity
 	 * @param Utils\ArrayHash $values
 	 *
-	 * @return Entities\Session
+	 * @return Entities\Client
 	 */
 	public function update(
-		Entities\Session $entity,
+		Entities\Client $entity,
 		Utils\ArrayHash $values
-	): Entities\Session {
-		/** @var Entities\Session $entity */
+	): Entities\Client {
+		/** @var Entities\Client $entity */
 		$entity = $this->entityCrud->getEntityUpdater()
 			->update($values, $entity);
 
@@ -88,12 +88,12 @@ class SessionsManager
 	}
 
 	/**
-	 * @param Entities\Session $entity
+	 * @param Entities\Client $entity
 	 *
 	 * @return bool
 	 */
 	public function delete(
-		Entities\Session $entity
+		Entities\Client $entity
 	): bool {
 		// Delete entity from database
 		return $this->entityCrud->getEntityDeleter()

@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * FindSessionsQuery.php
+ * FindClientsQuery.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -23,17 +23,17 @@ use IPub\DoctrineOrmQuery;
 use Ramsey\Uuid;
 
 /**
- * Find sessions entities query
+ * Find clients entities query
  *
  * @package          FastyBird:HomeKitConnector!
  * @subpackage       Queries
  *
  * @author           Adam Kadlec <adam.kadlec@fastybird.com>
  *
- * @phpstan-template T of Entities\Session
+ * @phpstan-template T of Entities\Client
  * @phpstan-extends  DoctrineOrmQuery\QueryObject<T>
  */
-class FindSessionsQuery extends DoctrineOrmQuery\QueryObject
+class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 {
 
 	/** @var Closure[] */
@@ -50,19 +50,19 @@ class FindSessionsQuery extends DoctrineOrmQuery\QueryObject
 	public function byId(Uuid\UuidInterface $id): void
 	{
 		$this->filter[] = function (ORM\QueryBuilder $qb) use ($id): void {
-			$qb->andWhere('s.id = :id')->setParameter('id', $id, Uuid\Doctrine\UuidBinaryType::NAME);
+			$qb->andWhere('c.id = :id')->setParameter('id', $id, Uuid\Doctrine\UuidBinaryType::NAME);
 		};
 	}
 
 	/**
-	 * @param string $clientUid
+	 * @param string $uid
 	 *
 	 * @return void
 	 */
-	public function byClientUid(string $clientUid): void
+	public function byUid(string $uid): void
 	{
-		$this->filter[] = function (ORM\QueryBuilder $qb) use ($clientUid): void {
-			$qb->andWhere('s.clientUid = :clientUid')->setParameter('clientUid', $clientUid);
+		$this->filter[] = function (ORM\QueryBuilder $qb) use ($uid): void {
+			$qb->andWhere('c.uid = :uid')->setParameter('uid', $uid);
 		};
 	}
 
@@ -75,7 +75,7 @@ class FindSessionsQuery extends DoctrineOrmQuery\QueryObject
 	{
 		$this->select[] = function (ORM\QueryBuilder $qb): void {
 			$qb->addSelect('connector');
-			$qb->join('s.connector', 'connector');
+			$qb->join('c.connector', 'connector');
 		};
 
 		$this->filter[] = function (ORM\QueryBuilder $qb) use ($connectorId): void {
@@ -93,7 +93,7 @@ class FindSessionsQuery extends DoctrineOrmQuery\QueryObject
 	{
 		$this->select[] = function (ORM\QueryBuilder $qb): void {
 			$qb->addSelect('connector');
-			$qb->join('s.connector', 'connector');
+			$qb->join('c.connector', 'connector');
 		};
 
 		$this->filter[] = function (ORM\QueryBuilder $qb) use ($connector): void {
@@ -123,7 +123,7 @@ class FindSessionsQuery extends DoctrineOrmQuery\QueryObject
 	 */
 	private function createBasicDql(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{
-		$qb = $repository->createQueryBuilder('s');
+		$qb = $repository->createQueryBuilder('c');
 
 		foreach ($this->select as $modifier) {
 			$modifier($qb);
@@ -145,7 +145,7 @@ class FindSessionsQuery extends DoctrineOrmQuery\QueryObject
 	 */
 	protected function doCreateCountQuery(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{
-		return $this->createBasicDql($repository)->select('COUNT(s.id)');
+		return $this->createBasicDql($repository)->select('COUNT(c.id)');
 	}
 
 }

@@ -15,12 +15,16 @@
 
 namespace FastyBird\HomeKitConnector\Middleware;
 
+use FastyBird\HomeKitConnector\Clients;
 use FastyBird\HomeKitConnector\Events;
+use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\Metadata;
 use Fig\Http\Message\StatusCodeInterface;
+use IPub\SlimRouter;
 use IPub\SlimRouter\Exceptions as SlimRouterExceptions;
 use IPub\SlimRouter\Http as SlimRouterHttp;
 use IPub\SlimRouter\Routing as SlimRouterRouting;
+use Nette\Utils;
 use Psr\EventDispatcher;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -74,8 +78,30 @@ final class RouterMiddleware
 
 		try {
 			$response = $this->router->handle($request);
+		} catch (Exceptions\HapRequestError $ex) {
+			$this->logger->warning(
+				'Request ended with error',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type'      => 'router-middleware',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code'    => $ex->getCode(),
+					],
+					'request'   => [
+						'method' => $request->getMethod(),
+						'path'   => $request->getUri()->getPath(),
+					],
+				]
+			);
+
+			$response = $this->responseFactory->createResponse($ex->getCode());
+
+			$response = $response->withHeader('Content-Type', Clients\Http::JSON_CONTENT_TYPE);
+			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
+				'status' => $ex->getError()->getValue(),
+			])));
 		} catch (SlimRouterExceptions\HttpException $ex) {
-			var_dump($ex->getMessage());
 			$this->logger->warning(
 				'Received invalid HTTP request',
 				[
@@ -94,7 +120,6 @@ final class RouterMiddleware
 
 			$response = $this->responseFactory->createResponse($ex->getCode());
 		} catch (Throwable $ex) {
-			var_dump($ex->getMessage());
 			$this->logger->error(
 				'An unhandled error occurred during handling server HTTP request',
 				[

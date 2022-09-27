@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * SessionsRepository.php
+ * ClientsRepository.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -13,7 +13,7 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Models\Sessions;
+namespace FastyBird\HomeKitConnector\Models\Clients;
 
 use Doctrine\ORM;
 use Doctrine\Persistence;
@@ -22,22 +22,21 @@ use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Queries;
 use IPub\DoctrineOrmQuery;
 use Nette;
-use Ramsey\Uuid;
 
 /**
- * Session repository
+ * Clients repository
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Models
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class SessionsRepository
+final class ClientsRepository
 {
 
 	use Nette\SmartObject;
 
-	/** @var ORM\EntityRepository<Entities\Session>|null */
+	/** @var ORM\EntityRepository<Entities\Client>|null */
 	private ?ORM\EntityRepository $repository = null;
 
 	/** @var Persistence\ManagerRegistry */
@@ -49,54 +48,26 @@ final class SessionsRepository
 	}
 
 	/**
-	 * @param string $identifier
+	 * @param Queries\FindClientsQuery<Entities\Client> $queryObject
 	 *
-	 * @return Entities\Session|null
-	 */
-	public function findOneByIdentifier(
-		string $identifier
-	): ?Entities\Session {
-		$findQuery = new Queries\FindSessionsQuery();
-		$findQuery->byId(Uuid\Uuid::fromString($identifier));
-
-		return $this->findOneBy($findQuery);
-	}
-
-	/**
-	 * @param string $clientUid
-	 *
-	 * @return Entities\Session|null
-	 */
-	public function findOneByClientUid(
-		string $clientUid
-	): ?Entities\Session {
-		$findQuery = new Queries\FindSessionsQuery();
-		$findQuery->byClientUid($clientUid);
-
-		return $this->findOneBy($findQuery);
-	}
-
-	/**
-	 * @param Queries\FindSessionsQuery<Entities\Session> $queryObject
-	 *
-	 * @return Entities\Session|null
+	 * @return Entities\Client|null
 	 */
 	public function findOneBy(
-		Queries\FindSessionsQuery $queryObject
-	): ?Entities\Session {
-		/** @var Entities\Session|null $session */
-		$session = $queryObject->fetchOne($this->getRepository());
+		Queries\FindClientsQuery $queryObject
+	): ?Entities\Client {
+		/** @var Entities\Client|null $client */
+		$client = $queryObject->fetchOne($this->getRepository());
 
-		return $session;
+		return $client;
 	}
 
 	/**
-	 * @param Queries\FindSessionsQuery<Entities\Session> $queryObject
+	 * @param Queries\FindClientsQuery<Entities\Client> $queryObject
 	 *
-	 * @return DoctrineOrmQuery\ResultSet<Entities\Session>
+	 * @return DoctrineOrmQuery\ResultSet<Entities\Client>
 	 */
 	public function getResultSet(
-		Queries\FindSessionsQuery $queryObject
+		Queries\FindClientsQuery $queryObject
 	): DoctrineOrmQuery\ResultSet {
 		$result = $queryObject->fetch($this->getRepository());
 
@@ -110,12 +81,12 @@ final class SessionsRepository
 	/**
 	 * @return ORM\EntityRepository
 	 *
-	 * @phpstan-return ORM\EntityRepository<Entities\Session>
+	 * @phpstan-return ORM\EntityRepository<Entities\Client>
 	 */
 	private function getRepository(): ORM\EntityRepository
 	{
 		if ($this->repository === null) {
-			$repository = $this->managerRegistry->getRepository(Entities\Session::class);
+			$repository = $this->managerRegistry->getRepository(Entities\Client::class);
 
 			if (!$repository instanceof ORM\EntityRepository) {
 				throw new Exceptions\InvalidState('Entity repository could not be loaded');

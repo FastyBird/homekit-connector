@@ -15,6 +15,7 @@
 
 namespace FastyBird\HomeKitConnector\Clients;
 
+use Doctrine\DBAL;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Helpers;
@@ -25,10 +26,10 @@ use Nette;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log;
+use Ramsey\Uuid;
 use React\EventLoop;
 use React\Http as ReactHttp;
 use React\Socket;
-use React\Socket\ConnectionInterface;
 use Throwable;
 
 /**
@@ -64,8 +65,8 @@ final class Http implements Client
 	/** @var EventLoop\LoopInterface */
 	private EventLoop\LoopInterface $eventLoop;
 
-	/** @var Socket\ServerInterface|null */
-	private ?Socket\ServerInterface $socket = null;
+	/** @var SecureServer|null */
+	private ?SecureServer $socket = null;
 
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
@@ -94,11 +95,44 @@ final class Http implements Client
 		$this->eventLoop = $eventLoop;
 
 		$this->logger = $logger ?? new Log\NullLogger();
+
+		$this->connectorHelper->on(
+			'updated',
+			function (
+				Uuid\UuidInterface $connectorId,
+				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
+				MetadataEntities\Modules\DevicesModule\ConnectorStaticPropertyEntity $property
+			): void {
+				if (
+					$this->connector->getId()->equals($connectorId)
+					&& $type->equalsValue(HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
+				) {
+					$this->socket?->setSharedKey(is_string($property->getValue()) ? $property->getValue() : null);
+				}
+			}
+		);
+
+		$this->connectorHelper->on(
+			'created',
+			function (
+				Uuid\UuidInterface $connectorId,
+				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
+				MetadataEntities\Modules\DevicesModule\ConnectorStaticPropertyEntity $property
+			): void {
+				if (
+					$this->connector->getId()->equals($connectorId)
+					&& $type->equalsValue(HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
+				) {
+					$this->socket?->setSharedKey(is_string($property->getValue()) ? $property->getValue() : null);
+				}
+			}
+		);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 *
+	 * @throws DBAL\Exception
 	 * @throws DevicesModuleExceptions\TerminateException
 	 */
 	public function connect(): void
@@ -168,12 +202,6 @@ final class Http implements Client
 					],
 				]
 			);
-		});
-
-		$this->socket->on('connection', function (ConnectionInterface $connection): void {
-			$connection->on('data', function ($data): void {
-				// var_dump($data);
-			});
 		});
 
 		$server = new ReactHttp\HttpServer(

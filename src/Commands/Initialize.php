@@ -230,6 +230,11 @@ class Initialize extends Console\Command\Command
 				'connector' => $connector,
 			]));
 
+			$this->controlsManager->create(Utils\ArrayHash::from([
+				'name'      => Types\ConnectorControlName::NAME_RESET,
+				'connector' => $connector,
+			]));
+
 			$this->propertiesManager->create(Utils\ArrayHash::from([
 				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,

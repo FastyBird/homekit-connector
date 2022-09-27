@@ -16,6 +16,7 @@
 namespace FastyBird\HomeKitConnector\Helpers;
 
 use FastyBird\HomeKitConnector;
+use FastyBird\HomeKitConnector\Exceptions;
 use Nette\Utils;
 use Ramsey\Uuid;
 use Socket;
@@ -97,12 +98,16 @@ final class Protocol
 
 	/**
 	 * @return string
-	 *
-	 * @throws Throwable
 	 */
 	public static function generateSetupId(): string
 	{
-		return bin2hex(random_bytes(2));
+		try {
+			$bytes = random_bytes(2);
+		} catch (Throwable) {
+			throw new Exceptions\InvalidState('Setup ID could not be generated');
+		}
+
+		return bin2hex($bytes);
 	}
 
 	/**
@@ -110,9 +115,9 @@ final class Protocol
 	 */
 	public static function generatePinCode(): string
 	{
-		return strval(rand(pow(10, 2), pow(10, 3) - 1))
-			. '-' . strval(rand(pow(10, 1), pow(10, 2) - 1))
-			. '-' . strval(rand(pow(10, 2), pow(10, 3) - 1));
+		return rand(pow(10, 2), pow(10, 3) - 1)
+			. '-' . rand(pow(10, 1), pow(10, 2) - 1)
+			. '-' . rand(pow(10, 2), pow(10, 3) - 1);
 	}
 
 	/**
@@ -123,7 +128,7 @@ final class Protocol
 		try {
 			$bytes = random_bytes(32);
 		} catch (Throwable) {
-			return '';
+			throw new Exceptions\InvalidState('Sign key could not be generated');
 		}
 
 		return bin2hex($bytes);

@@ -45,10 +45,6 @@ class Router extends Routing\Router
 		$this->post('/pair-setup', [$pairingController, 'setup']);
 		$this->post('/pair-verify', [$pairingController, 'verify']);
 		$this->post('/pairings', [$pairingController, 'pairings']);
-		$this->post('/resource', [$pairingController, 'resource']);
-		$this->post('/identify', [$pairingController, 'identify']);
-
-		$this->put('/prepare', [$pairingController, 'prepare']);
 
 		$this->group(
 			'/accessories',
@@ -56,6 +52,9 @@ class Router extends Routing\Router
 				$group->get('', [$accessoriesController, 'index']);
 			}
 		);
+		$this->post('/resource', [$accessoriesController, 'resource']);
+		$this->post('/identify', [$accessoriesController, 'identify']);
+		$this->put('/prepare', [$accessoriesController, 'prepare']);
 
 		$this->group(
 			'/characteristics',

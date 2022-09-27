@@ -32,12 +32,14 @@ interface SecureServerFactory
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Socket\ServerInterface $server
+	 * @param string|null $sharedKey
 	 *
 	 * @return SecureServer
 	 */
 	public function create(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		Socket\ServerInterface $server
+		Socket\ServerInterface $server,
+		?string $sharedKey = null
 	): SecureServer;
 
 }

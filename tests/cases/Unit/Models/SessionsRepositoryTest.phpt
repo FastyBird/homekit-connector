@@ -19,25 +19,25 @@ final class SessionsRepositoryTest extends DbTestCase
 
 	public function testReadOne(): void
 	{
-		/** @var Models\Sessions\SessionsRepository $repository */
-		$repository = $this->getContainer()->getByType(Models\Sessions\SessionsRepository::class);
+		/** @var Models\Clients\ClientsRepository $repository */
+		$repository = $this->getContainer()->getByType(Models\Clients\ClientsRepository::class);
 
-		$findQuery = new Queries\FindSessionsQuery();
-		$findQuery->byClientUid('e348f5fc-42de-459e-926e-2f4cd039c665');
+		$findQuery = new Queries\FindClientsQuery();
+		$findQuery->byUid('e348f5fc-42de-459e-926e-2f4cd039c665');
 
 		$entity = $repository->findOneBy($findQuery);
 
 		Assert::true(is_object($entity));
-		Assert::type(Entities\Session::class, $entity);
-		Assert::same('e348f5fc-42de-459e-926e-2f4cd039c665', $entity->getClientUid());
+		Assert::type(Entities\Client::class, $entity);
+		Assert::same('e348f5fc-42de-459e-926e-2f4cd039c665', $entity->getUid());
 	}
 
 	public function testReadResultSet(): void
 	{
-		/** @var Models\Sessions\SessionsRepository $repository */
-		$repository = $this->getContainer()->getByType(Models\Sessions\SessionsRepository::class);
+		/** @var Models\Clients\ClientsRepository $repository */
+		$repository = $this->getContainer()->getByType(Models\Clients\ClientsRepository::class);
 
-		$findQuery = new Queries\FindSessionsQuery();
+		$findQuery = new Queries\FindClientsQuery();
 
 		$resultSet = $repository->getResultSet($findQuery);
 
