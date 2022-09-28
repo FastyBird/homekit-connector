@@ -7,13 +7,13 @@
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Clients
+ * @subpackage     Servers
  * @since          0.19.0
  *
  * @date           17.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Clients;
+namespace FastyBird\HomeKitConnector\Servers;
 
 use Doctrine\DBAL;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
@@ -32,14 +32,14 @@ use Throwable;
 use function React\Async\async;
 
 /**
- * mDNS connector discovery client
+ * mDNS connector discovery server
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Clients
+ * @subpackage     Servers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Mdns implements Client
+final class Mdns implements Server
 {
 
 	use Nette\SmartObject;
@@ -155,7 +155,7 @@ final class Mdns implements Client
 						'An error occurred during server handling',
 						[
 							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'      => 'mdns-client',
+							'type'      => 'mdns-server',
 							'exception' => [
 								'message' => $ex->getMessage(),
 								'code'    => $ex->getCode(),
@@ -178,7 +178,7 @@ final class Mdns implements Client
 						'Server was closed',
 						[
 							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'      => 'mdns-client',
+							'type'      => 'mdns-server',
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
 							],
@@ -202,7 +202,7 @@ final class Mdns implements Client
 					'Could not create mDNS discovery server',
 					[
 						'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-						'type'      => 'mdns-client',
+						'type'      => 'mdns-server',
 						'exception' => [
 							'message' => $ex->getMessage(),
 							'code'    => $ex->getCode(),

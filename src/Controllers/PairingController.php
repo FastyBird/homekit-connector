@@ -20,7 +20,7 @@ use Doctrine\DBAL;
 use Elliptic\EdDSA;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
-use FastyBird\HomeKitConnector\Clients;
+use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
@@ -198,7 +198,7 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
-		$connectorId = strval($request->getAttribute(Clients\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -262,7 +262,7 @@ final class PairingController extends BaseController
 		}
 
 		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
-		$response = $response->withHeader('Content-Type', Clients\Http::PAIRING_CONTENT_TYPE);
+		$response = $response->withHeader('Content-Type', Servers\Http::PAIRING_CONTENT_TYPE);
 		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString($this->tlv->encode($result)));
 
 		return $response;
@@ -281,7 +281,7 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
-		$connectorId = strval($request->getAttribute(Clients\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -332,7 +332,7 @@ final class PairingController extends BaseController
 		}
 
 		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
-		$response = $response->withHeader('Content-Type', Clients\Http::PAIRING_CONTENT_TYPE);
+		$response = $response->withHeader('Content-Type', Servers\Http::PAIRING_CONTENT_TYPE);
 		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString($this->tlv->encode($result)));
 
 		return $response;
@@ -351,7 +351,7 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
-		$connectorId = strval($request->getAttribute(Clients\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -421,7 +421,7 @@ final class PairingController extends BaseController
 		}
 
 		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
-		$response = $response->withHeader('Content-Type', Clients\Http::PAIRING_CONTENT_TYPE);
+		$response = $response->withHeader('Content-Type', Servers\Http::PAIRING_CONTENT_TYPE);
 		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString($this->tlv->encode($result)));
 
 		return $response;

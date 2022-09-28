@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * Client.php
+ * Server.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com

@@ -7,25 +7,25 @@
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Clients
+ * @subpackage     Servers
  * @since          0.19.0
  *
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Clients;
+namespace FastyBird\HomeKitConnector\Servers;
 
 use FastyBird\Metadata\Entities as MetadataEntities;
 
 /**
- * HTTP connector communication client factory
+ * HTTP connector communication server factory
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Clients
+ * @subpackage     Servers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface HttpFactory extends ClientFactory
+interface HttpFactory extends ServerFactory
 {
 
 	/**

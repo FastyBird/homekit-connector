@@ -7,13 +7,13 @@
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Clients
+ * @subpackage     Servers
  * @since          0.19.0
  *
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Clients;
+namespace FastyBird\HomeKitConnector\Servers;
 
 use Doctrine\DBAL;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
@@ -33,14 +33,14 @@ use React\Socket;
 use Throwable;
 
 /**
- * HTTP connector communication client
+ * HTTP connector communication server
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Clients
+ * @subpackage     Servers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Http implements Client
+final class Http implements Server
 {
 
 	use Nette\SmartObject;
@@ -154,7 +154,7 @@ final class Http implements Client
 				'Socket server could not be created',
 				[
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'http-client',
+					'type'      => 'http-server',
 					'exception' => [
 						'message' => $ex->getMessage(),
 						'code'    => $ex->getCode(),
@@ -173,7 +173,7 @@ final class Http implements Client
 				'An error occurred during socket handling',
 				[
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'http-client',
+					'type'      => 'http-server',
 					'exception' => [
 						'message' => $ex->getMessage(),
 						'code'    => $ex->getCode(),
@@ -196,7 +196,7 @@ final class Http implements Client
 				'Server was closed',
 				[
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'mdns-client',
+					'type'      => 'mdns-server',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
@@ -223,7 +223,7 @@ final class Http implements Client
 				'An error occurred during server handling',
 				[
 					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'http-client',
+					'type'      => 'http-server',
 					'exception' => [
 						'message' => $ex->getMessage(),
 						'code'    => $ex->getCode(),

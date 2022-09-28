@@ -30,7 +30,7 @@ use Ramsey\Uuid;
  *
  * @author           Adam Kadlec <adam.kadlec@fastybird.com>
  *
- * @phpstan-template T of Entities\Client
+ * @phpstan-template T of Entities\Server
  * @phpstan-extends  DoctrineOrmQuery\QueryObject<T>
  */
 class FindClientsQuery extends DoctrineOrmQuery\QueryObject

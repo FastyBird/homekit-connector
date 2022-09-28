@@ -1,38 +1,45 @@
 <?php declare(strict_types = 1);
 
 /**
- * ClientFactory.php
+ * SecureConnectionFactory.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Clients
+ * @subpackage     Servers
  * @since          0.19.0
  *
  * @date           17.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Clients;
+namespace FastyBird\HomeKitConnector\Servers;
 
 use FastyBird\Metadata\Entities as MetadataEntities;
+use React\Socket;
 
 /**
- * Base client factory
+ * HTTP secured server connection wrapper factory
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Clients
+ * @subpackage     Servers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface ClientFactory
+interface SecureConnectionFactory
 {
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
+	 * @param string|null $sharedKey
+	 * @param Socket\ConnectionInterface $connection
 	 *
-	 * @return Client
+	 * @return SecureConnection
 	 */
-	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Client;
+	public function create(
+		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		?string $sharedKey,
+		Socket\ConnectionInterface $connection
+	): SecureConnection;
 
 }

@@ -15,7 +15,7 @@
 
 namespace FastyBird\HomeKitConnector\Controllers;
 
-use FastyBird\HomeKitConnector\Clients;
+use FastyBird\HomeKitConnector\Servers;
 use Psr\Http\Message;
 
 /**
@@ -45,7 +45,7 @@ final class CharacteristicsController extends BaseController
 		// TODO: Implement
 
 		$response = $response->withStatus(200);
-		$response = $response->withHeader('Content-Type', Clients\Http::JSON_CONTENT_TYPE);
+		$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 
 		return $response;
 	}
@@ -66,7 +66,7 @@ final class CharacteristicsController extends BaseController
 		// TODO: Implement
 
 		$response = $response->withStatus(200);
-		$response = $response->withHeader('Content-Type', Clients\Http::JSON_CONTENT_TYPE);
+		$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 
 		return $response;
 	}

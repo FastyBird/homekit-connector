@@ -7,13 +7,13 @@
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Clients
+ * @subpackage     Servers
  * @since          0.19.0
  *
  * @date           26.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Clients;
+namespace FastyBird\HomeKitConnector\Servers;
 
 use Evenement\EventEmitter;
 use FastyBird\Metadata\Entities as MetadataEntities;
@@ -24,7 +24,7 @@ use React\Socket;
  * HTTP secured server wrapper
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Clients
+ * @subpackage     Servers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */

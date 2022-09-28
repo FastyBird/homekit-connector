@@ -16,7 +16,7 @@
 namespace FastyBird\HomeKitConnector\Controllers;
 
 use Doctrine\DBAL;
-use FastyBird\HomeKitConnector\Clients;
+use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
@@ -64,7 +64,7 @@ final class AccessoriesController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
-		$connectorId = strval($request->getAttribute(Clients\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -78,7 +78,7 @@ final class AccessoriesController extends BaseController
 		];
 
 		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
-		$response = $response->withHeader('Content-Type', Clients\Http::JSON_CONTENT_TYPE);
+		$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode($result)));
 
 		return $response;
@@ -99,7 +99,7 @@ final class AccessoriesController extends BaseController
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
 		var_dump($request->getBody()->getContents());
-		$connectorId = strval($request->getAttribute(Clients\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -149,7 +149,7 @@ final class AccessoriesController extends BaseController
 		$result = [];
 
 		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
-		$response = $response->withHeader('Content-Type', Clients\Http::JSON_CONTENT_TYPE);
+		$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode($result)));
 
 		return $response;

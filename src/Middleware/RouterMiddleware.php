@@ -15,7 +15,7 @@
 
 namespace FastyBird\HomeKitConnector\Middleware;
 
-use FastyBird\HomeKitConnector\Clients;
+use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Events;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\Metadata;
@@ -97,7 +97,7 @@ final class RouterMiddleware
 
 			$response = $this->responseFactory->createResponse($ex->getCode());
 
-			$response = $response->withHeader('Content-Type', Clients\Http::JSON_CONTENT_TYPE);
+			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
 				'status' => $ex->getError()->getValue(),
 			])));

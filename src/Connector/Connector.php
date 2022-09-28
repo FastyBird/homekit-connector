@@ -16,7 +16,7 @@
 namespace FastyBird\HomeKitConnector\Connector;
 
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
-use FastyBird\HomeKitConnector\Clients;
+use FastyBird\HomeKitConnector\Servers;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 
@@ -36,23 +36,23 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
 	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
 
-	/** @var Clients\Client[] */
-	private array $clients = [];
+	/** @var Servers\Server[] */
+	private array $servers = [];
 
-	/** @var Clients\ClientFactory[] */
-	private array $clientsFactories;
+	/** @var Servers\ServerFactory[] */
+	private array $serversFactories;
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param Clients\ClientFactory[] $clientsFactories
+	 * @param Servers\ServerFactory[] $serversFactories
 	 */
 	public function __construct(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		array $clientsFactories
+		array $serversFactories
 	) {
 		$this->connector = $connector;
 
-		$this->clientsFactories = $clientsFactories;
+		$this->serversFactories = $serversFactories;
 	}
 
 	/**
@@ -60,11 +60,11 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 */
 	public function execute(): void
 	{
-		foreach ($this->clientsFactories as $clientFactory) {
-			$client = $clientFactory->create($this->connector);
-			$client->connect();
+		foreach ($this->serversFactories as $serverFactory) {
+			$server = $serverFactory->create($this->connector);
+			$server->connect();
 
-			$this->clients[] = $client;
+			$this->servers[] = $server;
 		}
 	}
 
@@ -73,8 +73,8 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 */
 	public function terminate(): void
 	{
-		foreach ($this->clients as $client) {
-			$client->disconnect();
+		foreach ($this->servers as $server) {
+			$server->disconnect();
 		}
 	}
 

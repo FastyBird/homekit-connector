@@ -17,7 +17,7 @@ namespace FastyBird\HomeKitConnector\DI;
 
 use Doctrine\Persistence;
 use FastyBird\DevicesModule\DI as DevicesModuleDI;
-use FastyBird\HomeKitConnector\Clients;
+use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Commands;
 use FastyBird\HomeKitConnector\Connector;
 use FastyBird\HomeKitConnector\Controllers;
@@ -104,24 +104,24 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 
 		// Clients
 		$builder->addFactoryDefinition($this->prefix('client.mdns'))
-			->setImplement(Clients\MdnsFactory::class)
+			->setImplement(Servers\MdnsFactory::class)
 			->getResultDefinition()
-			->setType(Clients\Mdns::class);
+			->setType(Servers\Mdns::class);
 
 		$builder->addFactoryDefinition($this->prefix('client.http'))
-			->setImplement(Clients\HttpFactory::class)
+			->setImplement(Servers\HttpFactory::class)
 			->getResultDefinition()
-			->setType(Clients\Http::class);
+			->setType(Servers\Http::class);
 
 		$builder->addFactoryDefinition($this->prefix('client.http.secure.server'))
-			->setImplement(Clients\SecureServerFactory::class)
+			->setImplement(Servers\SecureServerFactory::class)
 			->getResultDefinition()
-			->setType(Clients\SecureServer::class);
+			->setType(Servers\SecureServer::class);
 
 		$builder->addFactoryDefinition($this->prefix('client.http.secure.connection'))
-			->setImplement(Clients\SecureConnectionFactory::class)
+			->setImplement(Servers\SecureConnectionFactory::class)
 			->getResultDefinition()
-			->setType(Clients\SecureConnection::class);
+			->setType(Servers\SecureConnection::class);
 
 		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())
