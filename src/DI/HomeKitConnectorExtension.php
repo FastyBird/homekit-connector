@@ -182,6 +182,9 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('protocol.tlv'), new DI\Definitions\ServiceDefinition())
 			->setType(Protocol\Tlv::class);
 
+		$builder->addDefinition($this->prefix('protocol.accessoryDriver'))
+			->setType(Protocol\Driver::class);
+
 		// Database repositories
 		$builder->addDefinition($this->prefix('models.clientsRepository'), new DI\Definitions\ServiceDefinition())
 			->setType(Models\Clients\ClientsRepository::class);

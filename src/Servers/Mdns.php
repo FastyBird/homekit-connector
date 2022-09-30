@@ -379,7 +379,7 @@ final class Mdns implements Server
 				'c#=' . ((int) $version),
 				's#=1', // Accessory state
 				'ff=0',
-				'ci=' . HomeKitConnector\Types\Category::CATEGORY_BRIDGE,
+				'ci=' . HomeKitConnector\Types\AccessoryCategory::CATEGORY_BRIDGE,
 				// 'sf == 1' means "discoverable by HomeKit iOS clients"
 				'sf=' . ((bool) $paired === true ? 0 : 1),
 				'sh=' . $setupHash,

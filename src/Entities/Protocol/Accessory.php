@@ -17,7 +17,6 @@ namespace FastyBird\HomeKitConnector\Entities\Protocol;
 
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
-use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use SplObjectStorage;
 
@@ -29,7 +28,7 @@ use SplObjectStorage;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class Accessory
+abstract class Accessory
 {
 
 	use Nette\SmartObject;
@@ -40,8 +39,8 @@ class Accessory
 	/** @var string */
 	protected string $name;
 
-	/** @var Types\Category */
-	protected Types\Category $category;
+	/** @var Types\AccessoryCategory */
+	protected Types\AccessoryCategory $category;
 
 	/** @var SplObjectStorage<Service, null> */
 	protected SplObjectStorage $services;
@@ -49,26 +48,19 @@ class Accessory
 	/** @var Helpers\IidManager */
 	protected Helpers\IidManager $iidManager;
 
-	/** @var MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null */
-	protected MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null $owner = null;
-
 	/**
 	 * @param string $name
 	 * @param int|null $aid
-	 * @param Types\Category $category
-	 * @param MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null $owner
+	 * @param Types\AccessoryCategory $category
 	 */
 	public function __construct(
 		string $name,
 		?int $aid,
-		Types\Category $category,
-		MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null $owner = null
+		Types\AccessoryCategory $category
 	) {
 		$this->name = $name;
 		$this->aid = $aid;
 		$this->category = $category;
-
-		$this->owner = $owner;
 
 		$this->services = new SplObjectStorage();
 
@@ -84,19 +76,27 @@ class Accessory
 	}
 
 	/**
-	 * @return Types\Category
+	 * @return int|null
 	 */
-	public function getCategory(): Types\Category
+	public function getAid(): ?int
 	{
-		return $this->category;
+		return $this->aid;
 	}
 
 	/**
-	 * @return MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null
+	 * @param int $aid
 	 */
-	public function getOwner(): MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null
+	public function setAid(int $aid): void
 	{
-		return $this->owner;
+		$this->aid = $aid;
+	}
+
+	/**
+	 * @return Types\AccessoryCategory
+	 */
+	public function getCategory(): Types\AccessoryCategory
+	{
+		return $this->category;
 	}
 
 	/**

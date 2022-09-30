@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * PermissionIdentifier.php
+ * CharacteristicUnit.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -25,17 +25,17 @@ use Consistence;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class PermissionIdentifier extends Consistence\Enum\Enum
+class CharacteristicUnit extends Consistence\Enum\Enum
 {
 
 	/**
 	 * Define permissions identifiers
 	 */
-	public const PERMISSION_HIDDEN = 'hd';
-	public const PERMISSION_NOTIFY = 'ev';
-	public const PERMISSION_READ = 'pr';
-	public const PERMISSION_WRITE = 'pw';
-	public const PERMISSION_WRITE_RESPONSE = 'wr';
+	public const UNIT_CELSIUS = 'celsius';
+	public const UNIT_PERCENTAGE = 'percentage';
+	public const UNIT_ARCDEGREES = 'arcdegrees';
+	public const UNIT_LUX = 'lux';
+	public const UNIT_SECONDS = 'seconds';
 
 	/**
 	 * @return string

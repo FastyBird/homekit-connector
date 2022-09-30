@@ -26,6 +26,12 @@ namespace FastyBird\HomeKitConnector;
 final class Constants
 {
 
+	public const PACKAGE_NAME = 'fastybird/homekit-connector';
+
+	public const DEFAULT_MANUFACTURER = 'FastyBird';
+	public const DEFAULT_BRIDGE_MODEL = 'Virtual bridge';
+	public const DEFAULT_DEVICE_MODEL = 'Virtual device';
+
 	public const BASE_UUID = '-0000-1000-8000-0026BB765291';
 
 	public const RESOURCES_FOLDER = __DIR__ . '/../resources';

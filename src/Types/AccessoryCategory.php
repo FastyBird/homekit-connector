@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * Category.php
+ * AccessoryCategory.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -25,7 +25,7 @@ use Consistence;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class Category extends Consistence\Enum\Enum
+class AccessoryCategory extends Consistence\Enum\Enum
 {
 
 	/**

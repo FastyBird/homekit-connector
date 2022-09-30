@@ -39,14 +39,16 @@ class Service
 
 	use Nette\SmartObject;
 
+	public const HAP_PROTOCOL_INFORMATION_SERVICE_UUID = '000000A2-0000-1000-8000-0026BB765291';
+
 	/** @var Uuid\UuidInterface */
 	private Uuid\UuidInterface $typeId;
 
 	/** @var string */
 	private string $name;
 
-	/** @var bool|null */
-	private ?bool $primary;
+	/** @var bool */
+	private bool $primary;
 
 	/** @var string[] */
 	private array $requiredCharacteristics;
@@ -70,7 +72,7 @@ class Service
 	 * @param MetadataEntities\Modules\DevicesModule\ChannelEntity|null $channel
 	 * @param string[] $requiredCharacteristics
 	 * @param string[] $optionalCharacteristics
-	 * @param bool|null $primary
+	 * @param bool $primary
 	 */
 	public function __construct(
 		Uuid\UuidInterface $typeId,
@@ -79,7 +81,7 @@ class Service
 		?MetadataEntities\Modules\DevicesModule\ChannelEntity $channel = null,
 		array $requiredCharacteristics = [],
 		array $optionalCharacteristics = [],
-		?bool $primary = null
+		bool $primary = false
 	) {
 		$this->typeId = $typeId;
 		$this->name = $name;
@@ -177,6 +179,22 @@ class Service
 		}
 
 		$this->characteristics->attach($characteristic);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isPrimary(): bool
+	{
+		return $this->primary;
+	}
+
+	/**
+	 * @param bool $primary
+	 */
+	public function setPrimary(bool $primary): void
+	{
+		$this->primary = $primary;
 	}
 
 	/**

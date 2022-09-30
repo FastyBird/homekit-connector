@@ -20,7 +20,7 @@ use Nette;
 use Throwable;
 
 /**
- * Server Side SRP implementation
+ * Server Side Secure Remote Password implementation
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Protocol

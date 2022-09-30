@@ -32,25 +32,37 @@ use SplObjectStorage;
 class Bridge extends Accessory
 {
 
+	/** @var MetadataEntities\Modules\DevicesModule\ConnectorEntity */
+	private MetadataEntities\Modules\DevicesModule\ConnectorEntity $connector;
+
 	/** @var SplObjectStorage<Accessory, null> */
 	private SplObjectStorage $accessories;
 
 	/**
 	 * @param string $name
-	 * @param MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null $owner
+	 * @param MetadataEntities\Modules\DevicesModule\ConnectorEntity $connector
 	 */
 	public function __construct(
 		string $name,
-		MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null $owner = null
+		MetadataEntities\Modules\DevicesModule\ConnectorEntity $connector
 	) {
 		parent::__construct(
 			$name,
 			HomeKitConnector\Constants::STANDALONE_AID,
-			Types\Category::get(Types\Category::CATEGORY_BRIDGE),
-			$owner
+			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE)
 		);
 
+		$this->connector = $connector;
+
 		$this->accessories = new SplObjectStorage();
+	}
+
+	/**
+	 * @return MetadataEntities\Modules\DevicesModule\ConnectorEntity
+	 */
+	public function getConnector(): MetadataEntities\Modules\DevicesModule\ConnectorEntity
+	{
+		return $this->connector;
 	}
 
 	/**
@@ -60,8 +72,48 @@ class Bridge extends Accessory
 	 */
 	public function addAccessory(Accessory $accessory): void
 	{
-		if ($accessory->getCategory()->equalsValue(Types\Category::CATEGORY_BRIDGE)) {
+		if ($accessory->getCategory()->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {
 			throw new Exceptions\InvalidArgument('Bridges cannot be bridged');
+		}
+
+		if ($accessory->getAid() === null) {
+			$this->accessories->rewind();
+
+			$newAid = 2;
+			$searching = true;
+
+			while ($searching || $newAid > 100) {
+				// For some reason AID=7 gets unsupported
+				if ($newAid === 7) {
+					$newAid++;
+
+					continue;
+				}
+
+				foreach ($this->accessories as $accessory) {
+					if ($accessory->getAid() !== null && $accessory->getAid() === $newAid) {
+						$newAid++;
+
+						break;
+					}
+				}
+
+				$searching = false;
+			}
+
+			$accessory->setAid($newAid);
+		}
+
+		if ($accessory->getAid() === $this->getAid()) {
+			throw new Exceptions\InvalidArgument('Accessory added to bridge could not have same AID');
+		}
+
+		$this->accessories->rewind();
+
+		foreach ($this->accessories as $existingAccessory) {
+			if ($existingAccessory->getAid() === $accessory->getAid()) {
+				throw new Exceptions\InvalidArgument('Duplicate AID found when attempting to add accessory');
+			}
 		}
 
 		$this->accessories->attach($accessory);

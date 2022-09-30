@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Controllers;
 use Doctrine\DBAL;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
+use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Types;
 use Fig\Http\Message\StatusCodeInterface;
@@ -40,13 +41,19 @@ final class AccessoriesController extends BaseController
 	/** @var Helpers\Connector */
 	private Helpers\Connector $connectorHelper;
 
+	/** @var Protocol\Driver */
+	private Protocol\Driver $accessoriesDriver;
+
 	/**
 	 * @param Helpers\Connector $connectorHelper
+	 * @param Protocol\Driver $accessoriesDriver
 	 */
 	public function __construct(
-		Helpers\Connector $connectorHelper
+		Helpers\Connector $connectorHelper,
+		Protocol\Driver $accessoriesDriver
 	) {
 		$this->connectorHelper = $connectorHelper;
+		$this->accessoriesDriver = $accessoriesDriver;
 	}
 
 	/**
@@ -72,10 +79,7 @@ final class AccessoriesController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		// TODO: Implement
-		$result = [
-			'accessories' => [],
-		];
+		$result = $this->accessoriesDriver->toHap($connectorId);
 
 		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
 		$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);

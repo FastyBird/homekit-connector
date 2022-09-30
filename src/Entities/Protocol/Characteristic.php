@@ -244,7 +244,7 @@ class Characteristic
 			}
 		}
 
-		if (in_array(Types\PermissionIdentifier::PERMISSION_READ, $this->permissions, true)) {
+		if (in_array(Types\CharacteristicPermission::PERMISSION_READ, $this->permissions, true)) {
 			$hapRepresentation[Types\Representation::REPR_VALUE] = $this->getValue();
 		}
 
@@ -259,28 +259,28 @@ class Characteristic
 	public function __toString(): string
 	{
 		$properties = [
-			Types\CharacteristicPropertyIdentifier::IDENTIFIER_PERMISSIONS => $this->permissions,
-			Types\CharacteristicPropertyIdentifier::IDENTIFIER_FORMAT => $this->dataType->getValue(),
+			'permissions' => $this->permissions,
+			'format' => $this->dataType->getValue(),
 		];
 
 		if ($this->validValues !== null) {
-			$properties[Types\CharacteristicPropertyIdentifier::IDENTIFIER_VALID_VALUES] = $this->validValues;
+			$properties['valid-values'] = $this->validValues;
 		}
 
 		if ($this->minStep !== null) {
-			$properties[Types\CharacteristicPropertyIdentifier::IDENTIFIER_MIN_STEP] = $this->minStep;
+			$properties['min-step'] = $this->minStep;
 		}
 
 		if ($this->minValue !== null) {
-			$properties[Types\CharacteristicPropertyIdentifier::IDENTIFIER_MIN_VALUE] = $this->minValue;
+			$properties['min-value'] = $this->minValue;
 		}
 
 		if ($this->maxValue !== null) {
-			$properties[Types\CharacteristicPropertyIdentifier::IDENTIFIER_MAX_VALUE] = $this->maxValue;
+			$properties['max-value'] = $this->maxValue;
 		}
 
 		if ($this->unit !== null) {
-			$properties[Types\CharacteristicPropertyIdentifier::IDENTIFIER_UNIT] = $this->unit;
+			$properties['unit'] = $this->unit;
 		}
 
 		return sprintf(

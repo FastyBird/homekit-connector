@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * CharacteristicPropertyIdentifier.php
+ * CharacteristicPermission.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -18,26 +18,24 @@ namespace FastyBird\HomeKitConnector\Types;
 use Consistence;
 
 /**
- * HAP characteristic property identifier type
+ * HAP accessory permissions type
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Types
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class CharacteristicPropertyIdentifier extends Consistence\Enum\Enum
+class CharacteristicPermission extends Consistence\Enum\Enum
 {
 
 	/**
-	 * Define properties identifiers
+	 * Define permissions identifiers
 	 */
-	public const IDENTIFIER_FORMAT = 'format';
-	public const IDENTIFIER_MAX_VALUE = 'maxValue';
-	public const IDENTIFIER_MIN_STEP = 'minStep';
-	public const IDENTIFIER_MIN_VALUE = 'minValue';
-	public const IDENTIFIER_PERMISSIONS = 'permissions';
-	public const IDENTIFIER_UNIT = 'unit';
-	public const IDENTIFIER_VALID_VALUES = 'validValues';
+	public const PERMISSION_HIDDEN = 'hd';
+	public const PERMISSION_NOTIFY = 'ev';
+	public const PERMISSION_READ = 'pr';
+	public const PERMISSION_WRITE = 'pw';
+	public const PERMISSION_WRITE_RESPONSE = 'wr';
 
 	/**
 	 * @return string
