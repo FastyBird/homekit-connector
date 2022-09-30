@@ -7,13 +7,13 @@
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Protocol
+ * @subpackage     Entities
  * @since          0.19.0
  *
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Protocol\Accessories;
+namespace FastyBird\HomeKitConnector\Entities\Protocol;
 
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Exceptions;
@@ -25,7 +25,7 @@ use SplObjectStorage;
  * HAP bridge accessory
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Protocol
+ * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */

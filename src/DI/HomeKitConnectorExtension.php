@@ -169,11 +169,14 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->addTag('nette.inject');
 
 		// Entities
+		$builder->addDefinition($this->prefix('entities.accessory.factory'))
+			->setType(Entities\Protocol\Accessory::class);
+
 		$builder->addDefinition($this->prefix('entities.service.factory'))
-			->setType(Protocol\Accessories\ServiceFactory::class);
+			->setType(Entities\Protocol\ServiceFactory::class);
 
 		$builder->addDefinition($this->prefix('entities.characteristic.factory'))
-			->setType(Protocol\Accessories\CharacteristicsFactory::class);
+			->setType(Entities\Protocol\CharacteristicsFactory::class);
 
 		// Protocol utilities
 		$builder->addDefinition($this->prefix('protocol.tlv'), new DI\Definitions\ServiceDefinition())
