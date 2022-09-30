@@ -170,7 +170,7 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 
 		// Entities
 		$builder->addDefinition($this->prefix('entities.accessory.factory'))
-			->setType(Entities\Protocol\Accessory::class);
+			->setType(Entities\Protocol\AccessoryFactory::class);
 
 		$builder->addDefinition($this->prefix('entities.service.factory'))
 			->setType(Entities\Protocol\ServiceFactory::class);
