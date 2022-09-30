@@ -15,9 +15,9 @@
 
 namespace FastyBird\HomeKitConnector\Middleware;
 
-use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Events;
 use FastyBird\HomeKitConnector\Exceptions;
+use FastyBird\HomeKitConnector\Servers;
 use FastyBird\Metadata;
 use Fig\Http\Message\StatusCodeInterface;
 use IPub\SlimRouter;

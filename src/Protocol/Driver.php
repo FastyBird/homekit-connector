@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * AccessoryDriver.php
+ * Driver.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -18,14 +18,14 @@ namespace FastyBird\HomeKitConnector\Protocol;
 use Nette;
 
 /**
- * HAP accessory driver object
+ * HAP accessory driver service
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Types
+ * @subpackage     Protocol
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class AccessoryDriver
+class Driver
 {
 
 	use Nette\SmartObject;

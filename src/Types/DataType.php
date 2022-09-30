@@ -35,8 +35,6 @@ class DataType extends Consistence\Enum\Enum
 	public const DATA_TYPE_INT = 'int';
 	public const DATA_TYPE_FLOAT = 'float';
 	public const DATA_TYPE_STRING = 'string';
-	public const DATA_TYPE_ARRAY = 'array';
-	public const DATA_TYPE_DICTIONARY = 'dictionary';
 	public const DATA_TYPE_UINT8 = 'uint8';
 	public const DATA_TYPE_UINT16 = 'uint16';
 	public const DATA_TYPE_UINT32 = 'uint32';

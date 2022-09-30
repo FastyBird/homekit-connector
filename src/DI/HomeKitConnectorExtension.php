@@ -17,7 +17,6 @@ namespace FastyBird\HomeKitConnector\DI;
 
 use Doctrine\Persistence;
 use FastyBird\DevicesModule\DI as DevicesModuleDI;
-use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Commands;
 use FastyBird\HomeKitConnector\Connector;
 use FastyBird\HomeKitConnector\Controllers;
@@ -29,6 +28,7 @@ use FastyBird\HomeKitConnector\Models;
 use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Router;
 use FastyBird\HomeKitConnector\Schemas;
+use FastyBird\HomeKitConnector\Servers;
 use IPub\DoctrineCrud;
 use Nette;
 use Nette\DI;
@@ -102,23 +102,23 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->getResultDefinition()
 			->setType(Connector\Connector::class);
 
-		// Clients
-		$builder->addFactoryDefinition($this->prefix('client.mdns'))
+		// Servers
+		$builder->addFactoryDefinition($this->prefix('server.mdns'))
 			->setImplement(Servers\MdnsFactory::class)
 			->getResultDefinition()
 			->setType(Servers\Mdns::class);
 
-		$builder->addFactoryDefinition($this->prefix('client.http'))
+		$builder->addFactoryDefinition($this->prefix('server.http'))
 			->setImplement(Servers\HttpFactory::class)
 			->getResultDefinition()
 			->setType(Servers\Http::class);
 
-		$builder->addFactoryDefinition($this->prefix('client.http.secure.server'))
+		$builder->addFactoryDefinition($this->prefix('server.http.secure.server'))
 			->setImplement(Servers\SecureServerFactory::class)
 			->getResultDefinition()
 			->setType(Servers\SecureServer::class);
 
-		$builder->addFactoryDefinition($this->prefix('client.http.secure.connection'))
+		$builder->addFactoryDefinition($this->prefix('server.http.secure.connection'))
 			->setImplement(Servers\SecureConnectionFactory::class)
 			->getResultDefinition()
 			->setType(Servers\SecureConnection::class);
@@ -144,6 +144,9 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('helpers.connector'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Connector::class);
 
+		$builder->addDefinition($this->prefix('helpers.loader'), new DI\Definitions\ServiceDefinition())
+			->setType(Helpers\Loader::class);
+
 		// HTTP server services
 		$router = $builder->addDefinition($this->prefix('http.router'), new DI\Definitions\ServiceDefinition())
 			->setType(Router\Router::class)
@@ -164,6 +167,13 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('http.controllers.pairing'), new DI\Definitions\ServiceDefinition())
 			->setType(Controllers\PairingController::class)
 			->addTag('nette.inject');
+
+		// Entities
+		$builder->addDefinition($this->prefix('entities.service.factory'))
+			->setType(Protocol\Accessories\ServiceFactory::class);
+
+		$builder->addDefinition($this->prefix('entities.characteristic.factory'))
+			->setType(Protocol\Accessories\CharacteristicsFactory::class);
 
 		// Protocol utilities
 		$builder->addDefinition($this->prefix('protocol.tlv'), new DI\Definitions\ServiceDefinition())

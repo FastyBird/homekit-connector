@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Protocol\Accessories;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use Ramsey\Uuid;
 
@@ -30,7 +31,7 @@ use Ramsey\Uuid;
  * like format, min and max values, valid values and others.
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Types
+ * @subpackage     Protocol
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
@@ -60,7 +61,7 @@ class Characteristic
 	/** @var Types\DataType */
 	private Types\DataType $dataType;
 
-	/** @var string[]|null */
+	/** @var int[]|null */
 	private ?array $validValues;
 
 	/** @var int|null */
@@ -81,20 +82,20 @@ class Characteristic
 	/** @var string[] */
 	private array $permissions;
 
-	/** @var Accessory */
-	private Accessory $accessory;
-
 	/** @var Service */
 	private Service $service;
+
+	/** @var MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null */
+	private MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property;
 
 	/**
 	 * @param Uuid\UuidInterface $typeId
 	 * @param string $name
 	 * @param Types\DataType $dataType
 	 * @param string[] $permissions
-	 * @param Accessory $accessory
 	 * @param Service $service
-	 * @param string[]|null $validValues
+	 * @param MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property
+	 * @param int[]|null $validValues
 	 * @param int|null $maxLength
 	 * @param float|null $minValue
 	 * @param float|null $maxValue
@@ -106,8 +107,8 @@ class Characteristic
 		string $name,
 		Types\DataType $dataType,
 		array $permissions,
-		Accessory $accessory,
 		Service $service,
+		MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property = null,
 		?array $validValues = [],
 		?int $maxLength = null,
 		?float $minValue = null,
@@ -130,16 +131,8 @@ class Characteristic
 		$this->unit = $unit;
 		$this->permissions = $permissions;
 
-		$this->accessory = $accessory;
 		$this->service = $service;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName(): string
-	{
-		return $this->name;
+		$this->property = $property;
 	}
 
 	/**
@@ -151,11 +144,28 @@ class Characteristic
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getName(): string
+	{
+		return $this->name;
+	}
+
+	/**
+	 * @return MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null
+	 */
+	public function getProperty(): MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null
+	{
+		return $this->property;
+	}
+
+	/**
 	 * @return int|float|string|bool
 	 */
 	public function getValue(): int|float|string|bool
 	{
-		return 'TBD';
+		// TODO: implement it
+		return false;
 	}
 
 	/**
@@ -165,19 +175,35 @@ class Characteristic
 	 */
 	public function setValue(int|float|string|bool $value): void
 	{
-		// TBD
+		// TODO: implement it
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isAlwaysNull(): bool
+	{
+		return in_array($this->typeId->toString(), self::ALWAYS_NULL);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function immediateNotify(): bool
+	{
+		return in_array($this->typeId->toString(), self::IMMEDIATE_NOTIFY);
 	}
 
 	/**
 	 * Create a HAP representation of this Characteristic
 	 * Used for json serialization
 	 *
-	 * @return Array<string, string|int|float|bool|string[]|null>
+	 * @return Array<string, bool|float|int|int[]|string|string[]|null>
 	 */
 	public function toHap(): array
 	{
 		$hapRepresentation = [
-			Types\Representation::REPR_IID    => $this->accessory->getIidManager()->getIid($this),
+			Types\Representation::REPR_IID    => $this->service->getAccessory()->getIidManager()->getIid($this),
 			Types\Representation::REPR_TYPE   => Helpers\Protocol::uuidToHapType($this->typeId),
 			Types\Representation::REPR_PERM   => $this->permissions,
 			Types\Representation::REPR_FORMAT => strval($this->dataType->getValue()),
@@ -192,19 +218,19 @@ class Characteristic
 			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_FLOAT)
 		) {
 			if ($this->maxValue !== null) {
-				$hapRepresentation[Types\CharacteristicPropertyIdentifier::IDENTIFIER_MAX_VALUE] = $this->maxValue;
+				$hapRepresentation[Types\Representation::REPR_MAX_VALUE] = $this->maxValue;
 			}
 
 			if ($this->minValue !== null) {
-				$hapRepresentation[Types\CharacteristicPropertyIdentifier::IDENTIFIER_MIN_VALUE] = $this->minValue;
+				$hapRepresentation[Types\Representation::REPR_MIN_VALUE] = $this->minValue;
 			}
 
 			if ($this->minStep !== null) {
-				$hapRepresentation[Types\CharacteristicPropertyIdentifier::IDENTIFIER_MIN_STEP] = $this->minStep;
+				$hapRepresentation[Types\Representation::REPR_MIN_STEP] = $this->minStep;
 			}
 
 			if ($this->unit !== null) {
-				$hapRepresentation[Types\CharacteristicPropertyIdentifier::IDENTIFIER_UNIT] = $this->unit;
+				$hapRepresentation[Types\Representation::REPR_UNIT] = $this->unit;
 			}
 
 			if ($this->validValues !== null) {
@@ -223,22 +249,6 @@ class Characteristic
 		}
 
 		return $hapRepresentation;
-	}
-
-	/**
-	 * @return bool
-	 */
-	private function isAlwaysNull(): bool
-	{
-		return in_array($this->typeId->toString(), self::ALWAYS_NULL);
-	}
-
-	/**
-	 * @return bool
-	 */
-	private function immediateNotify(): bool
-	{
-		return in_array($this->typeId->toString(), self::IMMEDIATE_NOTIFY);
 	}
 
 	/**
@@ -274,7 +284,7 @@ class Characteristic
 		}
 
 		return sprintf(
-			'<characteristic display_name=%s value=%s properties=%s>',
+			'<characteristic name=%s value=%s properties=%s>',
 			$this->name,
 			$this->getValue(),
 			Nette\Utils\Json::encode($properties)

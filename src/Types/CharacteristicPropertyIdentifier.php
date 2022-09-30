@@ -31,13 +31,13 @@ class CharacteristicPropertyIdentifier extends Consistence\Enum\Enum
 	/**
 	 * Define properties identifiers
 	 */
-	public const IDENTIFIER_FORMAT = 'Format';
+	public const IDENTIFIER_FORMAT = 'format';
 	public const IDENTIFIER_MAX_VALUE = 'maxValue';
 	public const IDENTIFIER_MIN_STEP = 'minStep';
 	public const IDENTIFIER_MIN_VALUE = 'minValue';
-	public const IDENTIFIER_PERMISSIONS = 'Permissions';
+	public const IDENTIFIER_PERMISSIONS = 'permissions';
 	public const IDENTIFIER_UNIT = 'unit';
-	public const IDENTIFIER_VALID_VALUES = 'ValidValues';
+	public const IDENTIFIER_VALID_VALUES = 'validValues';
 
 	/**
 	 * @return string

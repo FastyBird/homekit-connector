@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * Bridge.php
+ * Accessory.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -16,8 +16,8 @@
 namespace FastyBird\HomeKitConnector\Protocol\Accessories;
 
 use FastyBird\HomeKitConnector\Helpers;
-use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Types;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use SplObjectStorage;
 
@@ -25,7 +25,7 @@ use SplObjectStorage;
  * HAP accessory
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Types
+ * @subpackage     Protocol
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
@@ -46,37 +46,31 @@ class Accessory
 	/** @var SplObjectStorage<Service, null> */
 	protected SplObjectStorage $services;
 
-	/** @var Protocol\AccessoryDriver */
-	protected Protocol\AccessoryDriver $driver;
-
 	/** @var Helpers\IidManager */
 	protected Helpers\IidManager $iidManager;
 
+	/** @var MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null */
+	protected MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null $owner = null;
+
 	/**
-	 * @param Protocol\AccessoryDriver $driver
 	 * @param string $name
 	 * @param int|null $aid
-	 * @param Types\Category|null $category
+	 * @param Types\Category $category
+	 * @param MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null $owner
 	 */
 	public function __construct(
-		Protocol\AccessoryDriver $driver,
 		string $name,
-		?int $aid = null,
-		?Types\Category $category = null,
+		?int $aid,
+		Types\Category $category,
+		MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null $owner = null
 	) {
-		$this->driver = $driver;
 		$this->name = $name;
 		$this->aid = $aid;
-		$this->category = $category ?? Types\Category::get(Types\Category::CATEGORY_OTHER);
+		$this->category = $category;
+
+		$this->owner = $owner;
 
 		$this->services = new SplObjectStorage();
-
-		// Add the required `AccessoryInformation` service
-		$serviceInfo = $driver->getLoader()->getService('AccessoryInformation');
-		$serviceInfo->configureCharacteristic('Name', $name);
-		$serviceInfo->configureCharacteristic('SerialNumber', 'default');
-
-		$this->addService($serviceInfo);
 
 		$this->iidManager = new Helpers\IidManager();
 	}
@@ -95,6 +89,14 @@ class Accessory
 	public function getCategory(): Types\Category
 	{
 		return $this->category;
+	}
+
+	/**
+	 * @return MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null
+	 */
+	public function getOwner(): MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null
+	{
+		return $this->owner;
 	}
 
 	/**
@@ -120,9 +122,15 @@ class Accessory
 	 */
 	public function addService(Service $service): void
 	{
-		if (!$this->services->contains($service)) {
-			$this->services->attach($service);
+		$this->services->rewind();
+
+		foreach ($this->services as $existingService) {
+			if ($existingService->getTypeId()->equals($service->getTypeId())) {
+				$this->services->detach($existingService);
+			}
 		}
+
+		$this->services->attach($service);
 	}
 
 	/**
@@ -137,7 +145,7 @@ class Accessory
 	 * Create a HAP representation of this Service
 	 * Used for json serialization
 	 *
-	 * @return Array<string, string|int|bool|Array<string, string|int|float|bool|string[]|null>[]|null>
+	 * @return Array<string, int|Array<string, string|int|bool|Array<string, bool|float|int|int[]|string|string[]|null>[]|null>[]|null>
 	 */
 	public function toHap(): array
 	{
@@ -165,7 +173,7 @@ class Accessory
 		}
 
 		return sprintf(
-			'<accessory display_name=%s chars=%s>',
+			'<accessory name=%s chars=%s>',
 			$this->getName(),
 			Nette\Utils\Json::encode($services)
 		);

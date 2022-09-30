@@ -17,15 +17,15 @@ namespace FastyBird\HomeKitConnector\Protocol\Accessories;
 
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Types;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use SplObjectStorage;
 
 /**
  * HAP bridge accessory
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Types
+ * @subpackage     Protocol
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
@@ -36,18 +36,18 @@ class Bridge extends Accessory
 	private SplObjectStorage $accessories;
 
 	/**
-	 * @param Protocol\AccessoryDriver $driver
-	 * @param string $displayName
+	 * @param string $name
+	 * @param MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null $owner
 	 */
 	public function __construct(
-		Protocol\AccessoryDriver $driver,
-		string $displayName
+		string $name,
+		MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity|null $owner = null
 	) {
 		parent::__construct(
-			$driver,
-			$displayName,
+			$name,
 			HomeKitConnector\Constants::STANDALONE_AID,
-			Types\Category::get(Types\Category::CATEGORY_BRIDGE)
+			Types\Category::get(Types\Category::CATEGORY_BRIDGE),
+			$owner
 		);
 
 		$this->accessories = new SplObjectStorage();

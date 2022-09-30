@@ -16,9 +16,9 @@
 namespace FastyBird\HomeKitConnector\Controllers;
 
 use Doctrine\DBAL;
-use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
+use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Types;
 use Fig\Http\Message\StatusCodeInterface;
 use IPub\SlimRouter;

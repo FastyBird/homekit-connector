@@ -48,6 +48,10 @@ class Representation extends Consistence\Enum\Enum
 	public const REPR_TYPE = 'type';
 	public const REPR_VALUE = 'value';
 	public const REPR_VALID_VALUES = 'valid-values';
+	public const REPR_MAX_VALUE = 'maxValue';
+	public const REPR_MIN_STEP = 'minStep';
+	public const REPR_MIN_VALUE = 'minValue';
+	public const REPR_UNIT = 'unit';
 
 	/**
 	 * @return string

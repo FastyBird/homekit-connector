@@ -15,8 +15,10 @@
 
 namespace FastyBird\HomeKitConnector\Protocol\Accessories;
 
+use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use Ramsey\Uuid;
 use SplObjectStorage;
@@ -28,7 +30,7 @@ use SplObjectStorage;
  * For example, a TemperatureSensor service has the characteristic CurrentTemperature.
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Types
+ * @subpackage     Protocol
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
@@ -46,31 +48,58 @@ class Service
 	/** @var bool|null */
 	private ?bool $primary;
 
+	/** @var string[] */
+	private array $requiredCharacteristics;
+
+	/** @var string[] */
+	private array $optionalCharacteristics;
+
 	/** @var SplObjectStorage<Characteristic, null> */
 	private SplObjectStorage $characteristics;
 
 	/** @var Accessory */
 	private Accessory $accessory;
 
+	/** @var MetadataEntities\Modules\DevicesModule\ChannelEntity|null */
+	private ?MetadataEntities\Modules\DevicesModule\ChannelEntity $channel;
+
 	/**
 	 * @param Uuid\UuidInterface $typeId
 	 * @param string $name
 	 * @param Accessory $accessory
+	 * @param MetadataEntities\Modules\DevicesModule\ChannelEntity|null $channel
+	 * @param string[] $requiredCharacteristics
+	 * @param string[] $optionalCharacteristics
 	 * @param bool|null $primary
 	 */
 	public function __construct(
 		Uuid\UuidInterface $typeId,
 		string $name,
 		Accessory $accessory,
+		?MetadataEntities\Modules\DevicesModule\ChannelEntity $channel = null,
+		array $requiredCharacteristics = [],
+		array $optionalCharacteristics = [],
 		?bool $primary = null
 	) {
 		$this->typeId = $typeId;
 		$this->name = $name;
 		$this->primary = $primary;
 
+		$this->requiredCharacteristics = $requiredCharacteristics;
+		$this->optionalCharacteristics = $optionalCharacteristics;
+
 		$this->accessory = $accessory;
+		$this->channel = $channel;
 
 		$this->characteristics = new SplObjectStorage();
+	}
+
+	/**
+	 * @return Uuid\UuidInterface
+	 */
+	public function getTypeId(): Uuid\UuidInterface
+	{
+		return $this->typeId;
 	}
 
 	/**
@@ -82,11 +111,27 @@ class Service
 	}
 
 	/**
-	 * @return Uuid\UuidInterface
+	 * @return Accessory
 	 */
-	public function getTypeId(): Uuid\UuidInterface
+	public function getAccessory(): Accessory
 	{
-		return $this->typeId;
+		return $this->accessory;
+	}
+
+	/**
+	 * @return MetadataEntities\Modules\DevicesModule\ChannelEntity|null
+	 */
+	public function getChannel(): ?MetadataEntities\Modules\DevicesModule\ChannelEntity
+	{
+		return $this->channel;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getAllowedCharacteristicsNames(): array
+	{
+		return array_merge($this->requiredCharacteristics, $this->optionalCharacteristics);
 	}
 
 	/**
@@ -112,16 +157,33 @@ class Service
 	 */
 	public function addCharacteristic(Characteristic $characteristic): void
 	{
-		if (!$this->characteristics->contains($characteristic)) {
-			$this->characteristics->attach($characteristic);
+		if (
+			!in_array($characteristic->getName(), $this->requiredCharacteristics, true)
+			|| !in_array($characteristic->getName(), $this->optionalCharacteristics, true)
+		) {
+			throw new Exceptions\InvalidArgument(sprintf(
+				'Characteristics: %s is not allowed for service: %s',
+				$characteristic->getName(),
+				$this->getName()
+			));
 		}
+
+		$this->characteristics->rewind();
+
+		foreach ($this->characteristics as $existingCharacteristic) {
+			if ($existingCharacteristic->getTypeId()->equals($characteristic->getTypeId())) {
+				$this->characteristics->detach($existingCharacteristic);
+			}
+		}
+
+		$this->characteristics->attach($characteristic);
 	}
 
 	/**
 	 * Create a HAP representation of this Service
 	 * Used for json serialization
 	 *
-	 * @return Array<string, string|int|bool|Array<string, string|int|float|bool|string[]|null>[]|null>
+	 * @return Array<string, string|int|bool|Array<string, bool|float|int|int[]|string|string[]|null>[]|null>
 	 */
 	public function toHap(): array
 	{
@@ -156,7 +218,7 @@ class Service
 		}
 
 		return sprintf(
-			'<service display_name=%s chars=%s>',
+			'<service name=%s chars=%s>',
 			$this->getName(),
 			Nette\Utils\Json::encode($characteristics)
 		);
