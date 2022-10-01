@@ -32,19 +32,19 @@ use SplObjectStorage;
 class Bridge extends Accessory
 {
 
-	/** @var MetadataEntities\Modules\DevicesModule\ConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\ConnectorEntity $connector;
+	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
+	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
 
-	/** @var SplObjectStorage<Accessory, null> */
+	/** @var SplObjectStorage<Device, null> */
 	private SplObjectStorage $accessories;
 
 	/**
 	 * @param string $name
-	 * @param MetadataEntities\Modules\DevicesModule\ConnectorEntity $connector
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 */
 	public function __construct(
 		string $name,
-		MetadataEntities\Modules\DevicesModule\ConnectorEntity $connector
+		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	) {
 		parent::__construct(
 			$name,
@@ -58,19 +58,19 @@ class Bridge extends Accessory
 	}
 
 	/**
-	 * @return MetadataEntities\Modules\DevicesModule\ConnectorEntity
+	 * @return MetadataEntities\Modules\DevicesModule\IConnectorEntity
 	 */
-	public function getConnector(): MetadataEntities\Modules\DevicesModule\ConnectorEntity
+	public function getConnector(): MetadataEntities\Modules\DevicesModule\IConnectorEntity
 	{
 		return $this->connector;
 	}
 
 	/**
-	 * @param Accessory $accessory
+	 * @param Device $accessory
 	 *
 	 * @return void
 	 */
-	public function addAccessory(Accessory $accessory): void
+	public function addAccessory(Device $accessory): void
 	{
 		if ($accessory->getCategory()->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {
 			throw new Exceptions\InvalidArgument('Bridges cannot be bridged');
@@ -120,7 +120,7 @@ class Bridge extends Accessory
 	}
 
 	/**
-	 * @return Accessory[]
+	 * @return Device[]
 	 */
 	public function getAccessories(): array
 	{
@@ -133,6 +133,24 @@ class Bridge extends Accessory
 		}
 
 		return $accessories;
+	}
+
+	/**
+	 * @param int $aid
+	 *
+	 * @return Device|null
+	 */
+	public function getAccessory(int $aid): ?Device
+	{
+		$this->accessories->rewind();
+
+		foreach ($this->accessories as $accessory) {
+			if ($accessory->getAid() === $aid) {
+				return $accessory;
+			}
+		}
+
+		return null;
 	}
 
 }

@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Middleware;
 use FastyBird\HomeKitConnector\Events;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Servers;
+use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use Fig\Http\Message\StatusCodeInterface;
 use IPub\SlimRouter;
@@ -99,7 +100,7 @@ final class RouterMiddleware
 
 			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
-				'status' => $ex->getError()->getValue(),
+				Types\Representation::REPR_STATUS => $ex->getError()->getValue(),
 			])));
 		} catch (SlimRouterExceptions\HttpException $ex) {
 			$this->logger->warning(
@@ -119,6 +120,11 @@ final class RouterMiddleware
 			);
 
 			$response = $this->responseFactory->createResponse($ex->getCode());
+
+			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
+			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
+				Types\Representation::REPR_STATUS => Types\ServerStatus::STATUS_SERVICE_COMMUNICATION_FAILURE,
+			])));
 		} catch (Throwable $ex) {
 			$this->logger->error(
 				'An unhandled error occurred during handling server HTTP request',
@@ -133,6 +139,11 @@ final class RouterMiddleware
 			);
 
 			$response = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR);
+
+			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
+			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
+				Types\Representation::REPR_STATUS => Types\ServerStatus::STATUS_SERVICE_COMMUNICATION_FAILURE,
+			])));
 		}
 
 		$this->dispatcher?->dispatch(new Events\ResponseEvent($request, $response));

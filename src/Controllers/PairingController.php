@@ -36,6 +36,7 @@ use Nette\Utils\ArrayHash;
 use Psr\Http\Message;
 use Ramsey\Uuid;
 use SodiumException;
+use Throwable;
 use function Curve25519\publicKey;
 use function Curve25519\sharedKey;
 
@@ -343,8 +344,6 @@ final class PairingController extends BaseController
 	 * @param Message\ResponseInterface $response
 	 *
 	 * @return Message\ResponseInterface
-	 *
-	 * @throws DBAL\Exception
 	 */
 	public function pairings(
 		Message\ServerRequestInterface $request,
@@ -359,10 +358,25 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$paired = $this->connectorHelper->getConfiguration(
-			$connectorId,
-			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED)
-		);
+		try {
+			$paired = $this->connectorHelper->getConfiguration(
+				$connectorId,
+				Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED)
+			);
+		} catch (Throwable) {
+			$result = [
+				[
+					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
+					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+				],
+			];
+
+			$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
+			$response = $response->withHeader('Content-Type', Servers\Http::PAIRING_CONTENT_TYPE);
+			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString($this->tlv->encode($result)));
+
+			return $response;
+		}
 
 		if ((bool) $paired === false) {
 			$result = [
@@ -1486,8 +1500,6 @@ final class PairingController extends BaseController
 	 * @param Uuid\UuidInterface $connectorId
 	 *
 	 * @return Array<int, Array<int, int|int[]|string>>
-	 *
-	 * @throws DBAL\Exception
 	 */
 	private function listPairings(Uuid\UuidInterface $connectorId): array
 	{
@@ -1497,13 +1509,22 @@ final class PairingController extends BaseController
 			],
 		];
 
-		/** @var DoctrineOrmQuery\ResultSet<Entities\Client> $clients */
-		$clients = $this->databaseHelper->query(function () use ($connectorId): DoctrineOrmQuery\ResultSet {
-			$findClientsQuery = new Queries\FindClientsQuery();
-			$findClientsQuery->byConnectorId($connectorId);
+		try {
+			/** @var DoctrineOrmQuery\ResultSet<Entities\Client> $clients */
+			$clients = $this->databaseHelper->query(function () use ($connectorId): DoctrineOrmQuery\ResultSet {
+				$findClientsQuery = new Queries\FindClientsQuery();
+				$findClientsQuery->byConnectorId($connectorId);
 
-			return $this->clientsRepository->getResultSet($findClientsQuery);
-		});
+				return $this->clientsRepository->getResultSet($findClientsQuery);
+			});
+		} catch (Throwable) {
+			return [
+				[
+					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
+					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+				],
+			];
+		}
 
 		foreach ($clients as $client) {
 			$result[] = [
@@ -1523,8 +1544,6 @@ final class PairingController extends BaseController
 	 * @param int $clientPermission
 	 *
 	 * @return Array<int, Array<int, int>>
-	 *
-	 * @throws DBAL\Exception
 	 */
 	private function addPairing(
 		Uuid\UuidInterface $connectorId,
@@ -1532,31 +1551,16 @@ final class PairingController extends BaseController
 		array $clientPublicKey,
 		int $clientPermission
 	): array {
-		/** @var Entities\Client|null $client */
-		$client = $this->databaseHelper->query(function () use ($connectorId, $clientUid): ?Entities\Client {
-			$findClientQuery = new Queries\FindClientsQuery();
-			$findClientQuery->byUid($clientUid);
-			$findClientQuery->byConnectorId($connectorId);
+		try {
+			/** @var Entities\Client|null $client */
+			$client = $this->databaseHelper->query(function () use ($connectorId, $clientUid): ?Entities\Client {
+				$findClientQuery = new Queries\FindClientsQuery();
+				$findClientQuery->byUid($clientUid);
+				$findClientQuery->byConnectorId($connectorId);
 
-			return $this->clientsRepository->findOneBy($findClientQuery);
-		});
-
-		if ($client !== null && $client->getPublicKey() !== pack('C*', ...$clientPublicKey)) {
-			$this->logger->error(
-				'Received iOS device public key does not match with previously saved key',
-				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'pairing-controller',
-					'connector' => [
-						'id' => $connectorId->toString(),
-					],
-					'pairing'   => [
-						'type'  => 'add-pairing',
-						'state' => Types\TlvState::STATE_M2,
-					],
-				]
-			);
-
+				return $this->clientsRepository->findOneBy($findClientQuery);
+			});
+		} catch (Throwable) {
 			return [
 				[
 					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
@@ -1565,28 +1569,80 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$this->databaseHelper->transaction(
-			function () use ($connectorId, $clientUid, $clientPublicKey, $clientPermission): void {
-				$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
-				$findConnectorQuery->byId($connectorId);
-
-				$connector = $this->connectorsRepository->findOneBy(
-					$findConnectorQuery,
-					Entities\HomeKitConnector::class
+		if ($client !== null) {
+			if ($client->getPublicKey() !== pack('C*', ...$clientPublicKey)) {
+				$this->logger->error(
+					'Received iOS device public key does not match with previously saved key',
+					[
+						'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'type'      => 'pairing-controller',
+						'connector' => [
+							'id' => $connectorId->toString(),
+						],
+						'pairing'   => [
+							'type'  => 'add-pairing',
+							'state' => Types\TlvState::STATE_M2,
+						],
+					]
 				);
 
-				if ($connector === null) {
-					throw new Exceptions\InvalidState('Connector entity could not be loaded from database');
+				return [
+					[
+						Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
+						Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					],
+				];
+			} else {
+				try {
+					$this->databaseHelper->transaction(
+						function () use ($client, $clientPermission): void {
+							$this->clientsManager->update($client, ArrayHash::from([
+								'admin' => $clientPermission === Types\ClientPermission::PERMISSION_ADMIN,
+							]));
+						}
+					);
+				} catch (Throwable) {
+					return [
+						[
+							Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
+							Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+						],
+					];
 				}
-
-				$this->clientsManager->create(ArrayHash::from([
-					'uid'       => $clientUid,
-					'publicKey' => pack('C*', ...$clientPublicKey),
-					'admin'     => $clientPermission === Types\ClientPermission::PERMISSION_ADMIN,
-					'connector' => $connector,
-				]));
 			}
-		);
+		} else {
+			try {
+				$this->databaseHelper->transaction(
+					function () use ($connectorId, $clientUid, $clientPublicKey, $clientPermission): void {
+						$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
+						$findConnectorQuery->byId($connectorId);
+
+						$connector = $this->connectorsRepository->findOneBy(
+							$findConnectorQuery,
+							Entities\HomeKitConnector::class
+						);
+
+						if ($connector === null) {
+							throw new Exceptions\InvalidState('Connector entity could not be loaded from database');
+						}
+
+						$this->clientsManager->create(ArrayHash::from([
+							'uid'       => $clientUid,
+							'publicKey' => pack('C*', ...$clientPublicKey),
+							'admin'     => $clientPermission === Types\ClientPermission::PERMISSION_ADMIN,
+							'connector' => $connector,
+						]));
+					}
+				);
+			} catch (Throwable) {
+				return [
+					[
+						Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
+						Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					],
+				];
+			}
+		}
 
 		return [
 			[
@@ -1600,52 +1656,59 @@ final class PairingController extends BaseController
 	 * @param string $clientUid
 	 *
 	 * @return Array<int, Array<int, int>>
-	 *
-	 * @throws DBAL\Exception
 	 */
 	private function removePairing(
 		Uuid\UuidInterface $connectorId,
 		string $clientUid
 	): array {
-		$this->databaseHelper->transaction(function () use ($connectorId, $clientUid): void {
-			$findClientQuery = new Queries\FindClientsQuery();
-			$findClientQuery->byUid($clientUid);
-			$findClientQuery->byConnectorId($connectorId);
+		try {
+			$this->databaseHelper->transaction(function () use ($connectorId, $clientUid): void {
+				$findClientQuery = new Queries\FindClientsQuery();
+				$findClientQuery->byUid($clientUid);
+				$findClientQuery->byConnectorId($connectorId);
 
-			$client = $this->clientsRepository->findOneBy($findClientQuery);
+				$client = $this->clientsRepository->findOneBy($findClientQuery);
 
-			if ($client !== null) {
-				$this->clientsManager->delete($client);
-			}
+				if ($client !== null) {
+					$this->clientsManager->delete($client);
+				}
 
-			$findClientsQuery = new Queries\FindClientsQuery();
-			$findClientsQuery->byConnectorId($connectorId);
+				$findClientsQuery = new Queries\FindClientsQuery();
+				$findClientsQuery->byConnectorId($connectorId);
 
-			$clients = $this->clientsRepository->getResultSet($findClientsQuery);
+				$clients = $this->clientsRepository->getResultSet($findClientsQuery);
 
-			if ($clients->count() === 0) {
-				$this->connectorHelper->setConfiguration(
-					$connectorId,
-					Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED),
-					false
-				);
+				if ($clients->count() === 0) {
+					$this->connectorHelper->setConfiguration(
+						$connectorId,
+						Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED),
+						false
+					);
 
-				$this->connectorHelper->setConfiguration(
-					$connectorId,
-					Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_PUBLIC_KEY)
-				);
+					$this->connectorHelper->setConfiguration(
+						$connectorId,
+						Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_PUBLIC_KEY)
+					);
 
-				$this->connectorHelper->setConfiguration(
-					$connectorId,
-					Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
-				);
+					$this->connectorHelper->setConfiguration(
+						$connectorId,
+						Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
+					);
 
-				$this->connectorHelper->setConfiguration(
-					$connectorId,
-					Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_HASHING_KEY)
-				);
-			}
-		});
+					$this->connectorHelper->setConfiguration(
+						$connectorId,
+						Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_HASHING_KEY)
+					);
+				}
+			});
+		} catch (Throwable) {
+			return [
+				[
+					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
+					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+				],
+			];
+		}
 
 		return [
 			[

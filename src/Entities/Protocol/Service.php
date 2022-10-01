@@ -50,6 +50,9 @@ class Service
 	/** @var bool */
 	private bool $primary;
 
+	/** @var bool */
+	private bool $hidden = false;
+
 	/** @var string[] */
 	private array $requiredCharacteristics;
 
@@ -198,6 +201,22 @@ class Service
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function isHidden(): bool
+	{
+		return $this->hidden;
+	}
+
+	/**
+	 * @param bool $hidden
+	 */
+	public function setHidden(bool $hidden): void
+	{
+		$this->hidden = $hidden;
+	}
+
+	/**
 	 * Create a HAP representation of this Service
 	 * Used for json serialization
 	 *
@@ -205,19 +224,15 @@ class Service
 	 */
 	public function toHap(): array
 	{
-		$hapRepresentation = [
-			Types\Representation::REPR_IID    => $this->accessory->getIidManager()->getIid($this),
-			Types\Representation::REPR_TYPE   => Helpers\Protocol::uuidToHapType($this->getTypeId()),
-			Types\Representation::REPR_CHARS  => array_map(function (Characteristic $characteristic): array {
+		return [
+			Types\Representation::REPR_IID     => $this->accessory->getIidManager()->getIid($this),
+			Types\Representation::REPR_TYPE    => Helpers\Protocol::uuidToHapType($this->getTypeId()),
+			Types\Representation::REPR_CHARS   => array_map(function (Characteristic $characteristic): array {
 				return $characteristic->toHap();
 			}, $this->getCharacteristics()),
+			Types\Representation::REPR_PRIMARY => $this->primary,
+			Types\Representation::REPR_HIDDEN => $this->hidden,
 		];
-
-		if ($this->primary !== null) {
-			$hapRepresentation[Types\Representation::REPR_PRIMARY] = $this->primary;
-		}
-
-		return $hapRepresentation;
 	}
 
 	/**

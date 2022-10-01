@@ -21,6 +21,7 @@ use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Types;
+use FastyBird\Metadata;
 use Fig\Http\Message\StatusCodeInterface;
 use IPub\SlimRouter;
 use Nette\Utils;
@@ -71,6 +72,16 @@ final class AccessoriesController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
+		var_dump($request->getHeaders());
+
+		$this->logger->debug(
+			'Requested list of all registered accessories',
+			[
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'   => 'accessories-controller',
+			]
+		);
+
 		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
@@ -89,6 +100,8 @@ final class AccessoriesController extends BaseController
 	}
 
 	/**
+	 * Help user to locate accessory
+	 *
 	 * @param Message\ServerRequestInterface $request
 	 * @param Message\ResponseInterface $response
 	 *
@@ -102,7 +115,16 @@ final class AccessoriesController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
-		var_dump($request->getBody()->getContents());
+		var_dump($request->getHeaders());
+
+		$this->logger->debug(
+			'Requested accessories identify routine',
+			[
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'   => 'accessories-controller',
+			]
+		);
+
 		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
@@ -117,6 +139,14 @@ final class AccessoriesController extends BaseController
 		);
 
 		if ((bool) $paired) {
+			$this->logger->error(
+				'Paired connector could not trigger identify routine',
+				[
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type'   => 'accessories-controller',
+				]
+			);
+
 			throw new Exceptions\HapRequestError(
 				$request,
 				Types\ServerStatus::get(Types\ServerStatus::STATUS_INSUFFICIENT_PRIVILEGES),
@@ -125,7 +155,7 @@ final class AccessoriesController extends BaseController
 			);
 		}
 
-		// TODO: Implement
+		// TODO: Call identify routine on connector? or accessories?
 
 		$response = $response->withStatus(StatusCodeInterface::STATUS_NO_CONTENT);
 
@@ -133,34 +163,7 @@ final class AccessoriesController extends BaseController
 	}
 
 	/**
-	 * Handles a client request to prepare to write
-	 *
-	 * @param Message\ServerRequestInterface $request
-	 * @param Message\ResponseInterface $response
-	 *
-	 * @return Message\ResponseInterface
-	 *
-	 * @throws Utils\JsonException
-	 */
-	public function prepare(
-		Message\ServerRequestInterface $request,
-		Message\ResponseInterface $response
-	): Message\ResponseInterface {
-		var_dump($request->getUri()->getPath());
-		var_dump($request->getBody()->getContents());
-		// TODO: Implement
-
-		$result = [];
-
-		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
-		$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
-		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode($result)));
-
-		return $response;
-	}
-
-	/**
-	 * Get a snapshot from the camera
+	 * Get a snapshot from the camera or other resource from accessory
 	 *
 	 * @param Message\ServerRequestInterface $request
 	 * @param Message\ResponseInterface $response
@@ -172,7 +175,16 @@ final class AccessoriesController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
-		var_dump($request->getBody()->getContents());
+		var_dump($request->getHeaders());
+
+		$this->logger->debug(
+			'Requested fetching accessory resource',
+			[
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'   => 'accessories-controller',
+			]
+		);
+
 		// TODO: Implement
 
 		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);

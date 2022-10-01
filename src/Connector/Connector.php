@@ -16,6 +16,7 @@
 namespace FastyBird\HomeKitConnector\Connector;
 
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
+use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Servers;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
@@ -42,17 +43,24 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	/** @var Servers\ServerFactory[] */
 	private array $serversFactories;
 
+	/** @var Entities\Protocol\AccessoryFactory */
+	private Entities\Protocol\AccessoryFactory $accessoryFactory;
+
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Servers\ServerFactory[] $serversFactories
+	 * @param Entities\Protocol\AccessoryFactory $accessoryFactory
 	 */
 	public function __construct(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		array $serversFactories
+		array $serversFactories,
+		Entities\Protocol\AccessoryFactory $accessoryFactory
 	) {
 		$this->connector = $connector;
 
 		$this->serversFactories = $serversFactories;
+
+		$this->accessoryFactory = $accessoryFactory;
 	}
 
 	/**
@@ -60,6 +68,8 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 */
 	public function execute(): void
 	{
+		$this->accessoryFactory->create($this->connector);
+
 		foreach ($this->serversFactories as $serverFactory) {
 			$server = $serverFactory->create($this->connector);
 			$server->connect();

@@ -54,7 +54,6 @@ class Router extends Routing\Router
 		);
 		$this->post('/resource', [$accessoriesController, 'resource']);
 		$this->post('/identify', [$accessoriesController, 'identify']);
-		$this->put('/prepare', [$accessoriesController, 'prepare']);
 
 		$this->group(
 			'/characteristics',
@@ -63,6 +62,7 @@ class Router extends Routing\Router
 				$group->put('', [$characteristicsController, 'update']);
 			}
 		);
+		$this->put('/prepare', [$characteristicsController, 'prepare']);
 	}
 
 }

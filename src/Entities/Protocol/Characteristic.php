@@ -76,8 +76,8 @@ class Characteristic
 	/** @var float|null */
 	private ?float $minStep;
 
-	/** @var string|null */
-	private ?string $unit;
+	/** @var Types\CharacteristicUnit|null */
+	private ?Types\CharacteristicUnit $unit;
 
 	/** @var string[] */
 	private array $permissions;
@@ -100,7 +100,7 @@ class Characteristic
 	 * @param float|null $minValue
 	 * @param float|null $maxValue
 	 * @param float|null $minStep
-	 * @param string|null $unit
+	 * @param Types\CharacteristicUnit|null $unit
 	 */
 	public function __construct(
 		Uuid\UuidInterface $typeId,
@@ -114,7 +114,7 @@ class Characteristic
 		?float $minValue = null,
 		?float $maxValue = null,
 		?float $minStep = null,
-		?string $unit = null
+		?Types\CharacteristicUnit $unit = null
 	) {
 		if ($maxLength !== null && $maxLength > self::ABSOLUTE_MAX_LENGTH) {
 			throw new Exceptions\InvalidArgument('Characteristic max length exceeded allowed maximum');
@@ -149,6 +149,14 @@ class Characteristic
 	public function getName(): string
 	{
 		return $this->name;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getPermissions(): array
+	{
+		return $this->permissions;
 	}
 
 	/**
@@ -195,6 +203,53 @@ class Characteristic
 	}
 
 	/**
+	 * @return Array<string, int|int[]|float|string>
+	 */
+	public function getMeta(): array
+	{
+		$meta = [
+			Types\Representation::REPR_FORMAT => strval($this->dataType->getValue()),
+		];
+
+		if (
+			$this->dataType->equalsValue(Types\DataType::DATA_TYPE_INT)
+			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT8)
+			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT16)
+			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT32)
+			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT64)
+			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_FLOAT)
+		) {
+			if ($this->maxValue !== null) {
+				$meta[Types\Representation::REPR_MAX_VALUE] = $this->maxValue;
+			}
+
+			if ($this->minValue !== null) {
+				$meta[Types\Representation::REPR_MIN_VALUE] = $this->minValue;
+			}
+
+			if ($this->minStep !== null) {
+				$meta[Types\Representation::REPR_MIN_STEP] = $this->minStep;
+			}
+
+			if ($this->unit !== null) {
+				$meta[Types\Representation::REPR_UNIT] = strval($this->unit->getValue());
+			}
+		}
+
+		if ($this->validValues !== null) {
+			$meta[Types\Representation::REPR_VALID_VALUES] = $this->validValues;
+		}
+
+		if ($this->dataType->equalsValue(Types\DataType::DATA_TYPE_STRING) && $this->maxLength !== null) {
+			if ($this->maxLength !== self::DEFAULT_MAX_LENGTH) {
+				$meta[Types\Representation::REPR_MAX_LEN] = $this->maxLength;
+			}
+		}
+
+		return $meta;
+	}
+
+	/**
 	 * Create a HAP representation of this Characteristic
 	 * Used for json serialization
 	 *
@@ -209,44 +264,17 @@ class Characteristic
 			Types\Representation::REPR_FORMAT => strval($this->dataType->getValue()),
 		];
 
-		if (
-			$this->dataType->equalsValue(Types\DataType::DATA_TYPE_INT)
-			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT8)
-			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT16)
-			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT32)
-			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT64)
-			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_FLOAT)
-		) {
-			if ($this->maxValue !== null) {
-				$hapRepresentation[Types\Representation::REPR_MAX_VALUE] = $this->maxValue;
-			}
-
-			if ($this->minValue !== null) {
-				$hapRepresentation[Types\Representation::REPR_MIN_VALUE] = $this->minValue;
-			}
-
-			if ($this->minStep !== null) {
-				$hapRepresentation[Types\Representation::REPR_MIN_STEP] = $this->minStep;
-			}
-
-			if ($this->unit !== null) {
-				$hapRepresentation[Types\Representation::REPR_UNIT] = $this->unit;
-			}
-
-			if ($this->validValues !== null) {
-				$hapRepresentation[Types\Representation::REPR_VALID_VALUES] = $this->validValues;
-			}
-		}
-
-		if ($this->dataType->equalsValue(Types\DataType::DATA_TYPE_STRING)) {
-			if ($this->maxLength !== self::DEFAULT_MAX_LENGTH) {
-				$hapRepresentation[Types\Representation::REPR_MAX_LEN] = $this->maxLength;
-			}
-		}
+		$hapRepresentation = array_merge($hapRepresentation, $this->getMeta());
 
 		if (in_array(Types\CharacteristicPermission::PERMISSION_READ, $this->permissions, true)) {
 			$hapRepresentation[Types\Representation::REPR_VALUE] = $this->getValue();
 		}
+
+		$hapRepresentation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = in_array(
+			Types\CharacteristicPermission::PERMISSION_NOTIFY,
+			$this->permissions,
+			true
+		);
 
 		return $hapRepresentation;
 	}
@@ -280,7 +308,7 @@ class Characteristic
 		}
 
 		if ($this->unit !== null) {
-			$properties['unit'] = $this->unit;
+			$properties['unit'] = $this->unit->getValue();
 		}
 
 		return sprintf(

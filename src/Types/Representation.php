@@ -41,6 +41,7 @@ class Representation extends Consistence\Enum\Enum
 	public const REPR_PERM = 'perms';
 	public const REPR_PID = 'pid';
 	public const REPR_PRIMARY = 'primary';
+	public const REPR_HIDDEN = 'hidden';
 	public const REPR_SERVICES = 'services';
 	public const REPR_LINKED = 'linked';
 	public const REPR_STATUS = 'status';
@@ -52,6 +53,7 @@ class Representation extends Consistence\Enum\Enum
 	public const REPR_MIN_STEP = 'minStep';
 	public const REPR_MIN_VALUE = 'minValue';
 	public const REPR_UNIT = 'unit';
+	public const REPR_META = 'meta';
 
 	/**
 	 * @return string

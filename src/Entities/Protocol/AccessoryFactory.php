@@ -64,14 +64,14 @@ final class AccessoryFactory
 	}
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity $owner
+	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity|MetadataEntities\Modules\DevicesModule\IDeviceEntity $owner
 	 * @param int|null $aid
 	 * @param Types\AccessoryCategory|null $category
 	 *
 	 * @return Accessory
 	 */
 	public function create(
-		MetadataEntities\Modules\DevicesModule\ConnectorEntity|MetadataEntities\Modules\DevicesModule\DeviceEntity $owner,
+		MetadataEntities\Modules\DevicesModule\IConnectorEntity|MetadataEntities\Modules\DevicesModule\IDeviceEntity $owner,
 		?int $aid = null,
 		?Types\AccessoryCategory $category = null
 	): Accessory {

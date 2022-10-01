@@ -36,6 +36,8 @@ class CharacteristicPermission extends Consistence\Enum\Enum
 	public const PERMISSION_READ = 'pr';
 	public const PERMISSION_WRITE = 'pw';
 	public const PERMISSION_WRITE_RESPONSE = 'wr';
+	public const PERMISSION_TIMED_WRITE = 'tw';
+	public const PERMISSION_ADDITIONAL_AUTHORIZATION = 'aa';
 
 	/**
 	 * @return string

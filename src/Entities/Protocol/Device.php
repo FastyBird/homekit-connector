@@ -29,20 +29,20 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 final class Device extends Accessory
 {
 
-	/** @var MetadataEntities\Modules\DevicesModule\DeviceEntity */
-	private MetadataEntities\Modules\DevicesModule\DeviceEntity $device;
+	/** @var MetadataEntities\Modules\DevicesModule\IDeviceEntity */
+	private MetadataEntities\Modules\DevicesModule\IDeviceEntity $device;
 
 	/**
 	 * @param string $name
 	 * @param int|null $aid
 	 * @param Types\AccessoryCategory $category
-	 * @param MetadataEntities\Modules\DevicesModule\DeviceEntity $device
+	 * @param MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
 	 */
 	public function __construct(
 		string $name,
 		?int $aid,
 		Types\AccessoryCategory $category,
-		MetadataEntities\Modules\DevicesModule\DeviceEntity $device
+		MetadataEntities\Modules\DevicesModule\IDeviceEntity $device
 	) {
 		parent::__construct(
 			$name,
@@ -54,9 +54,9 @@ final class Device extends Accessory
 	}
 
 	/**
-	 * @return MetadataEntities\Modules\DevicesModule\DeviceEntity
+	 * @return MetadataEntities\Modules\DevicesModule\IDeviceEntity
 	 */
-	public function getDevice(): MetadataEntities\Modules\DevicesModule\DeviceEntity
+	public function getDevice(): MetadataEntities\Modules\DevicesModule\IDeviceEntity
 	{
 		return $this->device;
 	}

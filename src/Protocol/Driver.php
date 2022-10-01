@@ -44,6 +44,25 @@ class Driver
 	}
 
 	/**
+	 * @param Uuid\UuidInterface $connectorId
+	 *
+	 * @return Entities\Protocol\Bridge|null
+	 */
+	public function getBridge(Uuid\UuidInterface $connectorId): ?Entities\Protocol\Bridge
+	{
+		foreach ($this->getAccessories() as $accessory) {
+			if (
+				$accessory instanceof Entities\Protocol\Bridge
+				&& $accessory->getConnector()->getId()->equals($connectorId)
+			) {
+				return $accessory;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * @param Entities\Protocol\Bridge $accessory
 	 *
 	 * @return void

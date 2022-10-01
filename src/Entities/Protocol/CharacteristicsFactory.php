@@ -53,7 +53,7 @@ final class CharacteristicsFactory
 	 * @param float|null $minValue
 	 * @param float|null $maxValue
 	 * @param float|null $minStep
-	 * @param string|null $unit
+	 * @param Types\CharacteristicUnit|null $unit
 	 *
 	 * @return Characteristic
 	 */
@@ -66,7 +66,7 @@ final class CharacteristicsFactory
 		?float $minValue = null,
 		?float $maxValue = null,
 		?float $minStep = null,
-		?string $unit = null
+		?Types\CharacteristicUnit $unit = null
 	): Characteristic {
 		$metadata = $this->loader->loadCharacteristics();
 
