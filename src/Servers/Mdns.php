@@ -111,6 +111,17 @@ final class Mdns implements Server
 					$this->connector->getId()->equals($connectorId)
 					&& $type->equalsValue(HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED)
 				) {
+					$this->logger->debug(
+						'Paired status has been changed',
+						[
+							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type'      => 'mdns-server',
+							'connector' => [
+								'id' => $this->connector->getId()->toString(),
+							],
+						]
+					);
+
 					$this->createZone();
 					$this->broadcastZone();
 				}
@@ -126,6 +137,17 @@ final class Mdns implements Server
 	public function connect(): void
 	{
 		$this->createZone();
+
+		$this->logger->debug(
+			'Creating mDNS server',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'mdns-server',
+				'connector' => [
+					'id' => $this->connector->getId()->toString(),
+				],
+			]
+		);
 
 		$factory = new Datagram\Factory($this->eventLoop);
 
@@ -220,6 +242,17 @@ final class Mdns implements Server
 	 */
 	public function disconnect(): void
 	{
+		$this->logger->debug(
+			'Closing mDNS server',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'mdns-server',
+				'connector' => [
+					'id' => $this->connector->getId()->toString(),
+				],
+			]
+		);
+
 		$this->server?->close();
 	}
 
@@ -228,6 +261,17 @@ final class Mdns implements Server
 	 */
 	private function broadcastZone(): void
 	{
+		$this->logger->debug(
+			'Broadcasting connector DNS zone',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'mdns-server',
+				'connector' => [
+					'id' => $this->connector->getId()->toString(),
+				],
+			]
+		);
+
 		$message = new Dns\Model\Message();
 		$message->id = mt_rand(0, 0xffff);
 		$message->qr = true;

@@ -48,9 +48,9 @@
       "ev"
     ],
     "UUID" : "00000064-0000-1000-8000-0026BB765291",
-    "maxValue" : 1000,
-    "minStep" : 1,
-    "minValue" : 0
+    "MaxValue" : 1000,
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "AirParticulateSize" : {
     "Format" : "uint8",
@@ -96,10 +96,10 @@
       "ev"
     ],
     "UUID" : "00000068-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "Brightness" : {
     "Format" : "int",
@@ -109,10 +109,10 @@
       "ev"
     ],
     "UUID" : "00000008-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "CarbonDioxideDetected" : {
     "Format" : "uint8",
@@ -133,8 +133,8 @@
       "ev"
     ],
     "UUID" : "00000093-0000-1000-8000-0026BB765291",
-    "maxValue" : 100000,
-    "minValue" : 0
+    "MaxValue" : 100000,
+    "MinValue" : 0
   },
   "CarbonDioxidePeakLevel" : {
     "Format" : "float",
@@ -143,8 +143,8 @@
       "ev"
     ],
     "UUID" : "00000094-0000-1000-8000-0026BB765291",
-    "maxValue" : 100000,
-    "minValue" : 0
+    "MaxValue" : 100000,
+    "MinValue" : 0
   },
   "CarbonMonoxideDetected" : {
     "Format" : "uint8",
@@ -165,8 +165,8 @@
       "ev"
     ],
     "UUID" : "00000090-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minValue" : 0
+    "MaxValue" : 100,
+    "MinValue" : 0
   },
   "CarbonMonoxidePeakLevel" : {
     "Format" : "float",
@@ -175,8 +175,8 @@
       "ev"
     ],
     "UUID" : "00000091-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minValue" : 0
+    "MaxValue" : 100,
+    "MinValue" : 0
   },
   "ChargingState" : {
     "Format" : "uint8",
@@ -212,9 +212,9 @@
       "ev"
     ],
     "UUID" : "000000CE-0000-1000-8000-0026BB765291",
-    "maxValue" : 500,
-    "minStep" : 1,
-    "minValue" : 140
+    "MaxValue" : 500,
+    "MinStep" : 1,
+    "MinValue" : 140
   },
   "ConfiguredName" : {
     "Format" : "string",
@@ -245,10 +245,10 @@
       "ev"
     ],
     "UUID" : "0000000D-0000-1000-8000-0026BB765291",
-    "maxValue" : 35,
-    "minStep" : 0.1,
-    "minValue" : 10,
-    "unit" : "celsius"
+    "MaxValue" : 35,
+    "MinStep" : 0.1,
+    "MinValue" : 10,
+    "Unit" : "celsius"
   },
   "CurrentAirPurifierState" : {
     "Format" : "uint8",
@@ -270,9 +270,9 @@
       "ev"
     ],
     "UUID" : "0000006B-0000-1000-8000-0026BB765291",
-    "maxValue" : 100000,
-    "minValue" : 0.0001,
-    "unit" : "lux"
+    "MaxValue" : 100000,
+    "MinValue" : 0.0001,
+    "Unit" : "lux"
   },
   "CurrentDoorState" : {
     "Format" : "uint8",
@@ -336,10 +336,10 @@
       "ev"
     ],
     "UUID" : "0000006C-0000-1000-8000-0026BB765291",
-    "maxValue" : 90,
-    "minStep" : 1,
-    "minValue" : -90,
-    "unit" : "arcdegrees"
+    "MaxValue" : 90,
+    "MinStep" : 1,
+    "MinValue" : -90,
+    "Unit" : "arcdegrees"
   },
   "CurrentHumidifierDehumidifierState" : {
     "Format" : "uint8",
@@ -376,10 +376,10 @@
       "ev"
     ],
     "UUID" : "0000006D-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "CurrentRelativeHumidity" : {
     "Format" : "float",
@@ -388,10 +388,10 @@
       "ev"
     ],
     "UUID" : "00000010-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "CurrentSlatState" : {
     "Format" : "uint8",
@@ -413,10 +413,10 @@
       "ev"
     ],
     "UUID" : "00000011-0000-1000-8000-0026BB765291",
-    "maxValue" : 1000,
-    "minStep" : 0.1,
-    "minValue" : -273.1,
-    "unit" : "celsius"
+    "MaxValue" : 1000,
+    "MinStep" : 0.1,
+    "MinValue" : -273.1,
+    "Unit" : "celsius"
   },
   "CurrentTiltAngle" : {
     "Format" : "int",
@@ -425,10 +425,10 @@
       "ev"
     ],
     "UUID" : "000000C1-0000-1000-8000-0026BB765291",
-    "maxValue" : 90,
-    "minStep" : 1,
-    "minValue" : -90,
-    "unit" : "arcdegrees"
+    "MaxValue" : 90,
+    "MinStep" : 1,
+    "MinValue" : -90,
+    "Unit" : "arcdegrees"
   },
   "CurrentVerticalTiltAngle" : {
     "Format" : "int",
@@ -437,10 +437,10 @@
       "ev"
     ],
     "UUID" : "0000006E-0000-1000-8000-0026BB765291",
-    "maxValue" : 90,
-    "minStep" : 1,
-    "minValue" : -90,
-    "unit" : "arcdegrees"
+    "MaxValue" : 90,
+    "MinStep" : 1,
+    "MinValue" : -90,
+    "Unit" : "arcdegrees"
   },
   "CurrentVisibilityState" : {
     "Format" : "uint8",
@@ -493,8 +493,8 @@
       "ev"
     ],
     "UUID" : "000000AB-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minValue" : 0,
+    "MaxValue" : 100,
+    "MinValue" : 0,
     "stepValue" : 1
   },
   "FirmwareRevision" : {
@@ -519,10 +519,10 @@
       "ev"
     ],
     "UUID" : "00000012-0000-1000-8000-0026BB765291",
-    "maxValue" : 25,
-    "minStep" : 0.1,
-    "minValue" : 0,
-    "unit" : "celsius"
+    "MaxValue" : 25,
+    "MinStep" : 0.1,
+    "MinValue" : 0,
+    "Unit" : "celsius"
   },
   "HoldPosition" : {
     "Format" : "bool",
@@ -539,10 +539,10 @@
       "ev"
     ],
     "UUID" : "00000013-0000-1000-8000-0026BB765291",
-    "maxValue" : 360,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "arcdegrees"
+    "MaxValue" : 360,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "arcdegrees"
   },
   "Identifier" : {
     "Format" : "uint32",
@@ -550,8 +550,8 @@
       "pr"
     ],
     "UUID" : "000000E6-0000-1000-8000-0026BB765291",
-    "minStep" : 1,
-    "minValue" : 0
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "Identify" : {
     "Format" : "bool",
@@ -577,10 +577,10 @@
       "ev"
     ],
     "UUID" : "0000011E-0000-1000-8000-0026BB765291",
-    "maxValue" : 270,
-    "minStep" : 90,
-    "minValue" : 0,
-    "unit" : "arcdegrees"
+    "MaxValue" : 270,
+    "MinStep" : 90,
+    "MinValue" : 0,
+    "Unit" : "arcdegrees"
   },
   "InputSourceType" : {
     "Format" : "uint8",
@@ -704,7 +704,7 @@
       "ev"
     ],
     "UUID" : "0000001A-0000-1000-8000-0026BB765291",
-    "unit" : "seconds"
+    "Unit" : "seconds"
   },
   "LockPhysicalControls" : {
     "Format" : "uint8",
@@ -794,9 +794,9 @@
       "ev"
     ],
     "UUID" : "000000C4-0000-1000-8000-0026BB765291",
-    "maxValue" : 1000,
-    "minStep" : 1,
-    "minValue" : 0
+    "MaxValue" : 1000,
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "ObstructionDetected" : {
     "Format" : "bool",
@@ -851,9 +851,9 @@
       "ev"
     ],
     "UUID" : "000000C3-0000-1000-8000-0026BB765291",
-    "maxValue" : 1000,
-    "minStep" : 1,
-    "minValue" : 0
+    "MaxValue" : 1000,
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "PM10Density" : {
     "Format" : "float",
@@ -862,9 +862,9 @@
       "ev"
     ],
     "UUID" : "000000C7-0000-1000-8000-0026BB765291",
-    "maxValue" : 1000,
-    "minStep" : 1,
-    "minValue" : 0
+    "MaxValue" : 1000,
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "PM2.5Density" : {
     "Format" : "float",
@@ -873,9 +873,9 @@
       "ev"
     ],
     "UUID" : "000000C6-0000-1000-8000-0026BB765291",
-    "maxValue" : 1000,
-    "minStep" : 1,
-    "minValue" : 0
+    "MaxValue" : 1000,
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "PairSetup" : {
     "Format" : "tlv8",
@@ -916,8 +916,8 @@
       "ev"
     ],
     "UUID" : "000000E2-0000-1000-8000-0026BB765291",
-    "maxValue" : 13,
-    "minValue" : 0,
+    "MaxValue" : 13,
+    "MinValue" : 0,
     "ValidValues" : {
       "Other" : 0,
       "Standard" : 1,
@@ -987,10 +987,10 @@
       "ev"
     ],
     "UUID" : "000000C9-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "RelativeHumidityHumidifierThreshold" : {
     "Format" : "float",
@@ -1000,10 +1000,10 @@
       "ev"
     ],
     "UUID" : "000000CA-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "RemainingDuration" : {
     "Format" : "uint32",
@@ -1012,9 +1012,9 @@
       "ev"
     ],
     "UUID" : "000000D4-0000-1000-8000-0026BB765291",
-    "maxValue" : 3600,
-    "minStep" : 1,
-    "minValue" : 0
+    "MaxValue" : 3600,
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "RemoteKey" : {
     "Format" : "uint8",
@@ -1022,8 +1022,8 @@
       "pw"
     ],
     "UUID" : "000000E1-0000-1000-8000-0026BB765291",
-    "maxValue" : 16,
-    "minValue" : 0,
+    "MaxValue" : 16,
+    "MinValue" : 0,
     "ValidValues" : {
       "Rewind" : 0,
       "FastForward" : 1,
@@ -1046,9 +1046,9 @@
       "pw"
     ],
     "UUID" : "000000AD-0000-1000-8000-0026BB765291",
-    "maxValue" : 1,
-    "minStep" : 1,
-    "minValue" : 1
+    "MaxValue" : 1,
+    "MinStep" : 1,
+    "MinValue" : 1
   },
   "RotationDirection" : {
     "Format" : "int",
@@ -1071,10 +1071,10 @@
       "ev"
     ],
     "UUID" : "00000029-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "Saturation" : {
     "Format" : "float",
@@ -1084,10 +1084,10 @@
       "ev"
     ],
     "UUID" : "0000002F-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "SecuritySystemAlarmType" : {
     "Format" : "uint8",
@@ -1096,9 +1096,9 @@
       "ev"
     ],
     "UUID" : "0000008E-0000-1000-8000-0026BB765291",
-    "maxValue" : 1,
-    "minStep" : 1,
-    "minValue" : 0
+    "MaxValue" : 1,
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "SecuritySystemCurrentState" : {
     "Format" : "uint8",
@@ -1152,9 +1152,9 @@
       "pr"
     ],
     "UUID" : "000000CB-0000-1000-8000-0026BB765291",
-    "maxValue" : 255,
-    "minStep" : 1,
-    "minValue" : 1
+    "MaxValue" : 255,
+    "MinStep" : 1,
+    "MinValue" : 1
   },
   "ServiceLabelNamespace" : {
     "Format" : "uint8",
@@ -1175,9 +1175,9 @@
       "ev"
     ],
     "UUID" : "000000D3-0000-1000-8000-0026BB765291",
-    "maxValue" : 3600,
-    "minStep" : 1,
-    "minValue" : 0
+    "MaxValue" : 3600,
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "SetupEndpoints" : {
     "Format" : "tlv8",
@@ -1293,9 +1293,9 @@
       "ev"
     ],
     "UUID" : "000000C5-0000-1000-8000-0026BB765291",
-    "maxValue" : 1000,
-    "minStep" : 1,
-    "minValue" : 0
+    "MaxValue" : 1000,
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "SupportedAudioStreamConfiguration" : {
     "Format" : "tlv8",
@@ -1421,10 +1421,10 @@
       "ev"
     ],
     "UUID" : "0000007B-0000-1000-8000-0026BB765291",
-    "maxValue" : 90,
-    "minStep" : 1,
-    "minValue" : -90,
-    "unit" : "arcdegrees"
+    "MaxValue" : 90,
+    "MinStep" : 1,
+    "MinValue" : -90,
+    "Unit" : "arcdegrees"
   },
   "TargetHumidifierDehumidifierState" : {
     "Format" : "uint8",
@@ -1462,10 +1462,10 @@
       "ev"
     ],
     "UUID" : "0000007C-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "TargetRelativeHumidity" : {
     "Format" : "float",
@@ -1475,10 +1475,10 @@
       "ev"
     ],
     "UUID" : "00000034-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "TargetSlatState" : {
     "Format" : "uint8",
@@ -1501,10 +1501,10 @@
       "ev"
     ],
     "UUID" : "00000035-0000-1000-8000-0026BB765291",
-    "maxValue" : 38,
-    "minStep" : 0.1,
-    "minValue" : 10,
-    "unit" : "celsius"
+    "MaxValue" : 38,
+    "MinStep" : 0.1,
+    "MinValue" : 10,
+    "Unit" : "celsius"
   },
   "TargetTiltAngle" : {
     "Format" : "int",
@@ -1514,10 +1514,10 @@
       "ev"
     ],
     "UUID" : "000000C2-0000-1000-8000-0026BB765291",
-    "maxValue" : 90,
-    "minStep" : 1,
-    "minValue" : -90,
-    "unit" : "arcdegrees"
+    "MaxValue" : 90,
+    "MinStep" : 1,
+    "MinValue" : -90,
+    "Unit" : "arcdegrees"
   },
   "TargetVerticalTiltAngle" : {
     "Format" : "int",
@@ -1527,10 +1527,10 @@
       "ev"
     ],
     "UUID" : "0000007D-0000-1000-8000-0026BB765291",
-    "maxValue" : 90,
-    "minStep" : 1,
-    "minValue" : -90,
-    "unit" : "arcdegrees"
+    "MaxValue" : 90,
+    "MinStep" : 1,
+    "MinValue" : -90,
+    "Unit" : "arcdegrees"
   },
   "TargetVisibilityState" : {
     "Format" : "uint8",
@@ -1565,9 +1565,9 @@
       "ev"
     ],
     "UUID" : "000000C8-0000-1000-8000-0026BB765291",
-    "maxValue" : 1000,
-    "minStep" : 1,
-    "minValue" : 0
+    "MaxValue" : 1000,
+    "MinStep" : 1,
+    "MinValue" : 0
   },
   "ValveType" : {
     "Format" : "uint8",
@@ -1600,10 +1600,10 @@
       "ev"
     ],
     "UUID" : "00000119-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minStep" : 1,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinStep" : 1,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   },
   "VolumeControlType" : {
     "Format" : "uint8",
@@ -1637,8 +1637,8 @@
       "ev"
     ],
     "UUID" : "000000B5-0000-1000-8000-0026BB765291",
-    "maxValue" : 100,
-    "minValue" : 0,
-    "unit" : "percentage"
+    "MaxValue" : 100,
+    "MinValue" : 0,
+    "Unit" : "percentage"
   }
 }

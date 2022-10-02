@@ -75,7 +75,7 @@ final class RouterMiddleware
 
 	public function __invoke(ServerRequestInterface $request): ResponseInterface
 	{
-		$this->dispatcher?->dispatch(new Events\RequestEvent($request));
+		$this->dispatcher?->dispatch(new Events\Request($request));
 
 		try {
 			$response = $this->router->handle($request);
@@ -146,7 +146,7 @@ final class RouterMiddleware
 			])));
 		}
 
-		$this->dispatcher?->dispatch(new Events\ResponseEvent($request, $response));
+		$this->dispatcher?->dispatch(new Events\Response($request, $response));
 
 		return $response;
 	}

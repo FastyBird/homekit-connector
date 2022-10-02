@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Servers;
 use Doctrine\DBAL;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\HomeKitConnector;
+use FastyBird\HomeKitConnector\Clients;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Middleware;
 use FastyBird\Metadata;
@@ -50,6 +51,8 @@ final class Http implements Server
 	public const PAIRING_CONTENT_TYPE = 'application/pairing+tlv8';
 	public const JSON_CONTENT_TYPE = 'application/hap+json';
 
+	private const LISTENING_ADDRESS = '0.0.0.0';
+
 	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
 	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
 
@@ -61,6 +64,9 @@ final class Http implements Server
 
 	/** @var SecureServerFactory */
 	private SecureServerFactory $secureServerFactory;
+
+	/** @var Clients\Subscriber */
+	private Clients\Subscriber $subscriber;
 
 	/** @var EventLoop\LoopInterface */
 	private EventLoop\LoopInterface $eventLoop;
@@ -76,6 +82,7 @@ final class Http implements Server
 	 * @param Helpers\Connector $connectorHelper
 	 * @param Middleware\RouterMiddleware $routerMiddleware
 	 * @param SecureServerFactory $secureServerFactory
+	 * @param Clients\Subscriber $subscriber
 	 * @param EventLoop\LoopInterface $eventLoop
 	 * @param Log\LoggerInterface|null $logger
 	 */
@@ -84,6 +91,7 @@ final class Http implements Server
 		Helpers\Connector $connectorHelper,
 		Middleware\RouterMiddleware $routerMiddleware,
 		SecureServerFactory $secureServerFactory,
+		Clients\Subscriber $subscriber,
 		EventLoop\LoopInterface $eventLoop,
 		?Log\LoggerInterface $logger = null
 	) {
@@ -91,6 +99,7 @@ final class Http implements Server
 		$this->connectorHelper = $connectorHelper;
 		$this->routerMiddleware = $routerMiddleware;
 		$this->secureServerFactory = $secureServerFactory;
+		$this->subscriber = $subscriber;
 
 		$this->eventLoop = $eventLoop;
 
@@ -107,6 +116,17 @@ final class Http implements Server
 					$this->connector->getId()->equals($connectorId)
 					&& $type->equalsValue(HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
 				) {
+					$this->logger->debug(
+						'Shared key has been changed',
+						[
+							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type'      => 'http-server',
+							'connector' => [
+								'id' => $this->connector->getId()->toString(),
+							],
+						]
+					);
+
 					$this->socket?->setSharedKey(is_string($property->getValue()) ? $property->getValue() : null);
 				}
 			}
@@ -123,6 +143,17 @@ final class Http implements Server
 					$this->connector->getId()->equals($connectorId)
 					&& $type->equalsValue(HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
 				) {
+					$this->logger->debug(
+						'Shared key has been created',
+						[
+							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type'      => 'http-server',
+							'connector' => [
+								'id' => $this->connector->getId()->toString(),
+							],
+						]
+					);
+
 					$this->socket?->setSharedKey(is_string($property->getValue()) ? $property->getValue() : null);
 				}
 			}
@@ -145,9 +176,24 @@ final class Http implements Server
 		);
 
 		try {
+			$this->logger->debug(
+				'Creating HAP web server',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type'      => 'http-server',
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
+					'server'    => [
+						'address' => self::LISTENING_ADDRESS,
+						'port'    => $port,
+					],
+				]
+			);
+
 			$this->socket = $this->secureServerFactory->create(
 				$this->connector,
-				new Socket\SocketServer('0.0.0.0:' . $port, [], $this->eventLoop),
+				new Socket\SocketServer(self::LISTENING_ADDRESS . ':' . $port, [], $this->eventLoop),
 			);
 		} catch (Throwable $ex) {
 			$this->logger->error(
@@ -167,6 +213,48 @@ final class Http implements Server
 
 			throw new DevicesModuleExceptions\TerminateException('Socket server could not be created', $ex->getCode(), $ex);
 		}
+
+		$this->socket->on('connection', function (Socket\ConnectionInterface $connection): void {
+			$this->logger->debug(
+				'New client has connected to server',
+				[
+					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type'      => 'http-server',
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
+					'client'    => [
+						'address' => $connection->getRemoteAddress(),
+					],
+				]
+			);
+
+			$this->subscriber->registerConnection($connection);
+
+			var_dump('CONNECTED CLIENT');
+			var_dump($connection->getRemoteAddress());
+
+			$connection->on('close', function () use ($connection): void {
+				$this->logger->debug(
+					'Connected client has closed connection',
+					[
+						'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'type'      => 'http-server',
+						'connector' => [
+							'id' => $this->connector->getId()->toString(),
+						],
+						'client'    => [
+							'address' => $connection->getRemoteAddress(),
+						],
+					]
+				);
+
+				$this->subscriber->unregisterConnection($connection);
+
+				var_dump('DISCONNECTED CLIENT');
+				var_dump($connection->getRemoteAddress());
+			});
+		});
 
 		$this->socket->on('error', function (Throwable $ex): void {
 			$this->logger->error(
@@ -247,6 +335,17 @@ final class Http implements Server
 	 */
 	public function disconnect(): void
 	{
+		$this->logger->debug(
+			'Closing HAP web server',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'http-server',
+				'connector' => [
+					'id' => $this->connector->getId()->toString(),
+				],
+			]
+		);
+
 		$this->socket?->close();
 	}
 

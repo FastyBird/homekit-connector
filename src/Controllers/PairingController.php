@@ -199,6 +199,19 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
+		var_dump($request->getHeaders());
+
+		$this->logger->debug(
+			'Requested pairing setup',
+			[
+				'source'  => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'    => 'pairing-controller',
+				'request' => [
+					'query' => $request->getQueryParams(),
+				],
+			]
+		);
+
 		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
@@ -282,6 +295,19 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
+		var_dump($request->getHeaders());
+
+		$this->logger->debug(
+			'Requested pairing verify',
+			[
+				'source'  => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'    => 'pairing-controller',
+				'request' => [
+					'query' => $request->getQueryParams(),
+				],
+			]
+		);
+
 		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
@@ -350,6 +376,19 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
+		var_dump($request->getHeaders());
+
+		$this->logger->debug(
+			'Requested clients pairing update',
+			[
+				'source'  => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'    => 'pairing-controller',
+				'request' => [
+					'query' => $request->getQueryParams(),
+				],
+			]
+		);
+
 		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
@@ -613,6 +652,21 @@ final class PairingController extends BaseController
 			];
 		}
 
+		$this->logger->debug(
+			'SRP start success',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'pairing-controller',
+				'connector' => [
+					'id' => $connectorId->toString(),
+				],
+				'pairing'   => [
+					'type'  => 'srp-start',
+					'state' => Types\TlvState::STATE_M2,
+				],
+			]
+		);
+
 		return [
 			[
 				Types\TlvCode::CODE_STATE      => Types\TlvState::STATE_M2,
@@ -735,6 +789,21 @@ final class PairingController extends BaseController
 				],
 			];
 		}
+
+		$this->logger->debug(
+			'SRP finish success',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'pairing-controller',
+				'connector' => [
+					'id' => $connectorId->toString(),
+				],
+				'pairing'   => [
+					'type'  => 'srp-finish',
+					'state' => Types\TlvState::STATE_M4,
+				],
+			]
+		);
 
 		return [
 			[
@@ -1084,6 +1153,21 @@ final class PairingController extends BaseController
 
 		$this->activePairing = false;
 
+		$this->logger->debug(
+			'Pair verify success',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'pairing-controller',
+				'connector' => [
+					'id' => $connectorId->toString(),
+				],
+				'pairing'   => [
+					'type'  => 'exchange',
+					'state' => Types\TlvState::STATE_M6,
+				],
+			]
+		);
+
 		return [
 			[
 				Types\TlvCode::CODE_STATE          => Types\TlvState::STATE_M6,
@@ -1264,6 +1348,21 @@ final class PairingController extends BaseController
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_HASHING_KEY),
 			$encodeKey
+		);
+
+		$this->logger->debug(
+			'Verify start success',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'pairing-controller',
+				'connector' => [
+					'id' => $connectorId->toString(),
+				],
+				'pairing'   => [
+					'type'  => 'verify-start',
+					'state' => Types\TlvState::STATE_M2,
+				],
+			]
 		);
 
 		return [
@@ -1489,6 +1588,21 @@ final class PairingController extends BaseController
 
 		$this->pairingClient = null;
 
+		$this->logger->debug(
+			'Verify finish success',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'pairing-controller',
+				'connector' => [
+					'id' => $connectorId->toString(),
+				],
+				'pairing'   => [
+					'type'  => 'verify-start',
+					'state' => Types\TlvState::STATE_M2,
+				],
+			]
+		);
+
 		return [
 			[
 				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
@@ -1503,6 +1617,17 @@ final class PairingController extends BaseController
 	 */
 	private function listPairings(Uuid\UuidInterface $connectorId): array
 	{
+		$this->logger->debug(
+			'Requested list pairings',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'pairing-controller',
+				'connector' => [
+					'id' => $connectorId->toString(),
+				],
+			]
+		);
+
 		$result = [
 			[
 				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
@@ -1551,6 +1676,17 @@ final class PairingController extends BaseController
 		array $clientPublicKey,
 		int $clientPermission
 	): array {
+		$this->logger->debug(
+			'Requested add new pairing',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'pairing-controller',
+				'connector' => [
+					'id' => $connectorId->toString(),
+				],
+			]
+		);
+
 		try {
 			/** @var Entities\Client|null $client */
 			$client = $this->databaseHelper->query(function () use ($connectorId, $clientUid): ?Entities\Client {
@@ -1661,6 +1797,17 @@ final class PairingController extends BaseController
 		Uuid\UuidInterface $connectorId,
 		string $clientUid
 	): array {
+		$this->logger->debug(
+			'Requested remove pairing',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'pairing-controller',
+				'connector' => [
+					'id' => $connectorId->toString(),
+				],
+			]
+		);
+
 		try {
 			$this->databaseHelper->transaction(function () use ($connectorId, $clientUid): void {
 				$findClientQuery = new Queries\FindClientsQuery();

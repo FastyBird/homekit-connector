@@ -17,6 +17,7 @@ namespace FastyBird\HomeKitConnector\DI;
 
 use Doctrine\Persistence;
 use FastyBird\DevicesModule\DI as DevicesModuleDI;
+use FastyBird\HomeKitConnector\Clients;
 use FastyBird\HomeKitConnector\Commands;
 use FastyBird\HomeKitConnector\Connector;
 use FastyBird\HomeKitConnector\Controllers;
@@ -184,6 +185,10 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 
 		$builder->addDefinition($this->prefix('protocol.accessoryDriver'))
 			->setType(Protocol\Driver::class);
+
+		// Clients
+		$builder->addDefinition($this->prefix('clients.subscriber'))
+			->setType(Clients\Subscriber::class);
 
 		// Database repositories
 		$builder->addDefinition($this->prefix('models.clientsRepository'), new DI\Definitions\ServiceDefinition())

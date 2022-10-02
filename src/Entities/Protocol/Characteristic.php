@@ -15,10 +15,13 @@
 
 namespace FastyBird\HomeKitConnector\Entities\Protocol;
 
+use DateTimeInterface;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
+use FastyBird\HomeKitConnector\Protocol\Transformer;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Types as MetadataTypes;
 use Nette;
 use Ramsey\Uuid;
 
@@ -88,6 +91,12 @@ class Characteristic
 	/** @var MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null */
 	private MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property;
 
+	/** @var bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null */
+	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $actualValue = null;
+
+	/** @var bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null */
+	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $expectedValue = null;
+
 	/**
 	 * @param Uuid\UuidInterface $typeId
 	 * @param string $name
@@ -152,11 +161,59 @@ class Characteristic
 	}
 
 	/**
+	 * @return Types\DataType
+	 */
+	public function getDataType(): Types\DataType
+	{
+		return $this->dataType;
+	}
+
+	/**
 	 * @return string[]
 	 */
 	public function getPermissions(): array
 	{
 		return $this->permissions;
+	}
+
+	/**
+	 * @return int[]|null
+	 */
+	public function getValidValues(): ?array
+	{
+		return $this->validValues;
+	}
+
+	/**
+	 * @return float|null
+	 */
+	public function getMinValue(): ?float
+	{
+		return $this->minValue;
+	}
+
+	/**
+	 * @return float|null
+	 */
+	public function getMaxValue(): ?float
+	{
+		return $this->maxValue;
+	}
+
+	/**
+	 * @return float|null
+	 */
+	public function getMinStep(): ?float
+	{
+		return $this->minStep;
+	}
+
+	/**
+	 * @return int|null
+	 */
+	public function getMaxLength(): ?int
+	{
+		return $this->maxLength;
 	}
 
 	/**
@@ -168,22 +225,47 @@ class Characteristic
 	}
 
 	/**
-	 * @return int|float|string|bool
+	 * @return bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
 	 */
-	public function getValue(): int|float|string|bool
+	public function getActualValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
 	{
-		// TODO: implement it
-		return false;
+		if ($this->expectedValue !== null) {
+			return $this->expectedValue;
+		}
+
+		return $this->actualValue;
 	}
 
 	/**
-	 * @param int|float|string|bool $value
+	 * @param bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value
 	 *
 	 * @return void
 	 */
-	public function setValue(int|float|string|bool $value): void
+	public function setActualValue(bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value): void
 	{
-		// TODO: implement it
+		$this->actualValue = $value;
+
+		if ($this->actualValue === $this->expectedValue) {
+			$this->expectedValue = null;
+		}
+	}
+
+	/**
+	 * @return bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
+	 */
+	public function getExpectedValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
+	{
+		return $this->expectedValue;
+	}
+
+	/**
+	 * @param bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value
+	 *
+	 * @return void
+	 */
+	public function setExpectedValue(bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value): void
+	{
+		$this->expectedValue = $value;
 	}
 
 	/**
@@ -267,7 +349,16 @@ class Characteristic
 		$hapRepresentation = array_merge($hapRepresentation, $this->getMeta());
 
 		if (in_array(Types\CharacteristicPermission::PERMISSION_READ, $this->permissions, true)) {
-			$hapRepresentation[Types\Representation::REPR_VALUE] = $this->getValue();
+			$hapRepresentation[Types\Representation::REPR_VALUE] = $this->property !== null ? Transformer::toClient(
+				$this->property,
+				$this->dataType,
+				$this->validValues,
+				$this->maxLength,
+				$this->minValue,
+				$this->maxValue,
+				$this->minStep,
+				$this->getActualValue()
+			) : null;
 		}
 
 		$hapRepresentation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = in_array(
@@ -314,7 +405,7 @@ class Characteristic
 		return sprintf(
 			'<characteristic name=%s value=%s properties=%s>',
 			$this->name,
-			$this->getValue(),
+			strval($this->getActualValue()),
 			Nette\Utils\Json::encode($properties)
 		);
 	}

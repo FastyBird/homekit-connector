@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * ResponseEvent.php
+ * Request.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -15,33 +15,30 @@
 
 namespace FastyBird\HomeKitConnector\Events;
 
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Contracts\EventDispatcher;
 
 /**
- * Http response event
+ * Http request event
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Events
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class ResponseEvent extends EventDispatcher\Event
+class Request extends EventDispatcher\Event
 {
 
 	/** @var ServerRequestInterface */
 	private ServerRequestInterface $request;
 
-	/** @var ResponseInterface */
-	private ResponseInterface $response;
-
+	/**
+	 * @param ServerRequestInterface $request
+	 */
 	public function __construct(
-		ServerRequestInterface $request,
-		ResponseInterface $response
+		ServerRequestInterface $request
 	) {
 		$this->request = $request;
-		$this->response = $response;
 	}
 
 	/**
@@ -50,14 +47,6 @@ class ResponseEvent extends EventDispatcher\Event
 	public function getRequest(): ServerRequestInterface
 	{
 		return $this->request;
-	}
-
-	/**
-	 * @return ResponseInterface
-	 */
-	public function getResponse(): ResponseInterface
-	{
-		return $this->response;
 	}
 
 }

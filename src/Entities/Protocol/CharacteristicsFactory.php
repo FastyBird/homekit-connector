@@ -92,7 +92,41 @@ final class CharacteristicsFactory
 			throw new Exceptions\InvalidState('Service definition is missing required attributes');
 		}
 
-		// TODO: Validate valid values/unit
+		if (
+			$unit === null
+			&& $characteristicsMetadata->offsetExists('Unit')
+			&& Types\CharacteristicUnit::isValidValue($characteristicsMetadata->offsetGet('Unit'))
+		) {
+			$unit = Types\CharacteristicUnit::get($characteristicsMetadata->offsetGet('Unit'));
+		}
+
+		if ($minValue === null && $characteristicsMetadata->offsetExists('MinValue')) {
+			$minValue = floatval(Types\CharacteristicUnit::get($characteristicsMetadata->offsetGet('MinValue')));
+		}
+
+		if ($maxValue === null && $characteristicsMetadata->offsetExists('MaxValue')) {
+			$maxValue = floatval(Types\CharacteristicUnit::get($characteristicsMetadata->offsetGet('MaxValue')));
+		}
+
+		if ($minStep === null && $characteristicsMetadata->offsetExists('MinStep')) {
+			$minStep = floatval(Types\CharacteristicUnit::get($characteristicsMetadata->offsetGet('MinStep')));
+		}
+
+		if ($maxLength === null && $characteristicsMetadata->offsetExists('MaximumLength')) {
+			$maxLength = intval(Types\CharacteristicUnit::get($characteristicsMetadata->offsetGet('MaximumLength')));
+		}
+
+		if ($characteristicsMetadata->offsetExists('ValidValues')) {
+			$defaultValidValues = is_array($characteristicsMetadata->offsetGet('ValidValues')) ? array_values($characteristicsMetadata->offsetGet('ValidValues')) : null;
+
+			if ($validValues !== null && $defaultValidValues !== null) {
+				$validValues = array_values(array_intersect($validValues, $defaultValidValues));
+			} else {
+				$validValues = $defaultValidValues;
+			}
+		} else {
+			$validValues = null;
+		}
 
 		return new Characteristic(
 			Helpers\Protocol::hapTypeToUuid(strval($characteristicsMetadata->offsetGet('UUID'))),

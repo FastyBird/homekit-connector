@@ -16,8 +16,13 @@
 namespace FastyBird\HomeKitConnector\Controllers;
 
 use FastyBird\DateTimeFactory;
+use FastyBird\DevicesModule\Models as DevicesModuleModels;
+use FastyBird\Exchange\Entities as ExchangeEntities;
+use FastyBird\Exchange\Publisher as ExchangePublisher;
+use FastyBird\HomeKitConnector\Clients;
 use FastyBird\HomeKitConnector\Constants;
 use FastyBird\HomeKitConnector\Entities;
+use FastyBird\HomeKitConnector\Events;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Protocol;
@@ -27,6 +32,7 @@ use FastyBird\Metadata;
 use Fig\Http\Message\StatusCodeInterface;
 use IPub\SlimRouter;
 use Nette\Utils;
+use Psr\EventDispatcher;
 use Psr\Http\Message;
 use Ramsey\Uuid;
 
@@ -47,19 +53,49 @@ final class CharacteristicsController extends BaseController
 	/** @var Protocol\Driver */
 	private Protocol\Driver $accessoryDriver;
 
+	/** @var Clients\Subscriber */
+	private Clients\Subscriber $subscriber;
+
 	/** @var DateTimeFactory\DateTimeFactory */
 	private DateTimeFactory\DateTimeFactory $dateTimeFactory;
 
+	/** @var ExchangeEntities\EntityFactory */
+	private ExchangeEntities\EntityFactory $entityFactory;
+
+	/** @var ExchangePublisher\IPublisher|null */
+	private ?ExchangePublisher\IPublisher $publisher;
+
+	/** @var EventDispatcher\EventDispatcherInterface|null */
+	private ?EventDispatcher\EventDispatcherInterface $dispatcher;
+
+	/** @var DevicesModuleModels\DataStorage\ChannelsRepository */
+	private DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository;
+
 	/**
 	 * @param Protocol\Driver $accessoryDriver
+	 * @param Clients\Subscriber $subscriber
 	 * @param DateTimeFactory\DateTimeFactory $dateTimeFactory
+	 * @param ExchangeEntities\EntityFactory $entityFactory
+	 * @param ExchangePublisher\IPublisher|null $publisher
+	 * @param EventDispatcher\EventDispatcherInterface|null $dispatcher
+	 * @param DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository
 	 */
 	public function __construct(
 		Protocol\Driver $accessoryDriver,
-		DateTimeFactory\DateTimeFactory $dateTimeFactory
+		Clients\Subscriber $subscriber,
+		DateTimeFactory\DateTimeFactory $dateTimeFactory,
+		ExchangeEntities\EntityFactory $entityFactory,
+		?ExchangePublisher\IPublisher $publisher,
+		?EventDispatcher\EventDispatcherInterface $dispatcher,
+		DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
 	) {
 		$this->accessoryDriver = $accessoryDriver;
+		$this->subscriber = $subscriber;
 		$this->dateTimeFactory = $dateTimeFactory;
+		$this->entityFactory = $entityFactory;
+		$this->publisher = $publisher;
+		$this->dispatcher = $dispatcher;
+		$this->channelsRepository = $channelsRepository;
 	}
 
 	/**
@@ -170,6 +206,7 @@ final class CharacteristicsController extends BaseController
 	 * @return Message\ResponseInterface
 	 *
 	 * @throws Exceptions\HapRequestError
+	 * @throws Metadata\Exceptions\FileNotFoundException
 	 * @throws Utils\JsonException
 	 */
 	public function update(
@@ -377,7 +414,7 @@ final class CharacteristicsController extends BaseController
 	 * @param bool $type
 	 * @param bool $ev
 	 *
-	 * @return Array<string, bool|int|int[]|float|string|string[]>
+	 * @return Array<string, bool|int|int[]|float|string|string[]|null>
 	 */
 	private function readCharacteristic(
 		Uuid\UuidInterface $connectorId,
@@ -403,7 +440,16 @@ final class CharacteristicsController extends BaseController
 		}
 
 		$representation[Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_SUCCESS;
-		$representation[Types\Representation::REPR_VALUE] = $characteristic->getValue();
+		$representation[Types\Representation::REPR_VALUE] = $characteristic->getProperty() !== null ? Protocol\Transformer::toClient(
+			$characteristic->getProperty(),
+			$characteristic->getDataType(),
+			$characteristic->getValidValues(),
+			$characteristic->getMaxLength(),
+			$characteristic->getMinValue(),
+			$characteristic->getMaxValue(),
+			$characteristic->getMinStep(),
+			$characteristic->getActualValue(),
+		) : null;
 
 		if ($perms) {
 			$representation[Types\Representation::REPR_PERM] = $characteristic->getPermissions();
@@ -442,6 +488,9 @@ final class CharacteristicsController extends BaseController
 	 * @param bool $timedWriteError
 	 *
 	 * @return Array<string, int>
+	 *
+	 * @throws Metadata\Exceptions\FileNotFoundException
+	 * @throws Utils\JsonException
 	 */
 	public function writeCharacteristic(
 		Uuid\UuidInterface $connectorId,
@@ -495,15 +544,160 @@ final class CharacteristicsController extends BaseController
 		}
 
 		if ($value !== null) {
-			// TODO: Trigger set value event
+			$this->dispatcher?->dispatch(new Events\ClientWriteCharacteristic($characteristic, $value));
 
-			$characteristic->setValue($value);
+			if ($characteristic->getProperty() === null) {
+				$this->logger->error(
+					'Accessory characteristic is not connected to any property',
+					[
+						'source'         => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'type'           => 'characteristics-controller',
+						'characteristic' => [
+							'type' => $characteristic->getTypeId()->toString(),
+							'name' => $characteristic->getName(),
+						],
+					]
+				);
+			} else {
+				$value = Protocol\Transformer::fromClient(
+					$characteristic->getProperty(),
+					$characteristic->getDataType(),
+					$value,
+				);
+
+				if (!$characteristic->isAlwaysNull()) {
+					$characteristic->setExpectedValue($value);
+				}
+
+				if ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IConnectorDynamicPropertyEntity) {
+					$this->publisher?->publish(
+						Metadata\Types\ModuleSourceType::get(Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES),
+						Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_CONNECTOR_PROPERTY_ACTION),
+						$this->entityFactory->create(
+							Utils\Json::encode([
+								'action'    => Metadata\Types\PropertyActionType::ACTION_SET,
+								'connector' => $characteristic->getProperty()->getConnector()->toString(),
+								'property'  => $characteristic->getProperty()->getId()->toString(),
+							]),
+							Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_CONNECTOR_PROPERTY_ACTION)
+						),
+					);
+
+					$this->logger->debug(
+						'Apple client requested to set expected value to connector dynamic property',
+						[
+							'source'         => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type'           => 'characteristics-controller',
+							'characteristic' => [
+								'type' => $characteristic->getTypeId()->toString(),
+								'name' => $characteristic->getName(),
+							],
+							'connector'      => [
+								'id' => $characteristic->getProperty()->getConnector()->toString(),
+							],
+							'property'       => [
+								'id' => $characteristic->getProperty()->getId()->toString(),
+							],
+						]
+					);
+				} elseif ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IDeviceDynamicPropertyEntity) {
+					$this->publisher?->publish(
+						Metadata\Types\ModuleSourceType::get(Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES),
+						Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_DEVICE_PROPERTY_ACTION),
+						$this->entityFactory->create(
+							Utils\Json::encode([
+								'action'   => Metadata\Types\PropertyActionType::ACTION_SET,
+								'device'   => $characteristic->getProperty()->getDevice()->toString(),
+								'property' => $characteristic->getProperty()->getId()->toString(),
+							]),
+							Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_DEVICE_PROPERTY_ACTION)
+						),
+					);
+
+					$this->logger->debug(
+						'Apple client requested to set expected value to device dynamic property',
+						[
+							'source'         => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type'           => 'characteristics-controller',
+							'characteristic' => [
+								'type' => $characteristic->getTypeId()->toString(),
+								'name' => $characteristic->getName(),
+							],
+							'device'         => [
+								'id' => $characteristic->getProperty()->getDevice()->toString(),
+							],
+							'property'       => [
+								'id' => $characteristic->getProperty()->getId()->toString(),
+							],
+						]
+					);
+				} elseif ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IChannelDynamicPropertyEntity) {
+					$channel = $this->channelsRepository->findById($characteristic->getProperty()->getChannel());
+
+					if ($channel !== null) {
+						$this->publisher?->publish(
+							Metadata\Types\ModuleSourceType::get(Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES),
+							Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_CHANNEL_PROPERTY_ACTION),
+							$this->entityFactory->create(
+								Utils\Json::encode([
+									'action'   => Metadata\Types\PropertyActionType::ACTION_SET,
+									'device'   => $channel->getDevice()->toString(),
+									'channel'  => $characteristic->getProperty()->getChannel()->toString(),
+									'property' => $characteristic->getProperty()->getId()->toString(),
+								]),
+								Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_CHANNEL_PROPERTY_ACTION)
+							),
+						);
+
+						$this->logger->debug(
+							'Apple client requested to set expected value to device channel dynamic property',
+							[
+								'source'         => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+								'type'           => 'characteristics-controller',
+								'characteristic' => [
+									'type' => $characteristic->getTypeId()->toString(),
+									'name' => $characteristic->getName(),
+								],
+								'device'         => [
+									'id' => $channel->getDevice()->toString(),
+								],
+								'channel'       => [
+									'id' => $characteristic->getProperty()->getChannel()->toString(),
+								],
+								'property'       => [
+									'id' => $characteristic->getProperty()->getId()->toString(),
+								],
+							]
+						);
+					} else {
+						$this->logger->error(
+							'Channel for characteristic dynamic property was not found',
+							[
+								'source'         => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+								'type'           => 'characteristics-controller',
+								'characteristic' => [
+									'type' => $characteristic->getTypeId()->toString(),
+									'name' => $characteristic->getName(),
+								],
+								'channel'       => [
+									'id' => $characteristic->getProperty()->getChannel()->toString(),
+								],
+								'property'       => [
+									'id' => $characteristic->getProperty()->getId()->toString(),
+								],
+							]
+						);
+					}
+				}
+			}
 		}
 
-		if ($events) {
-			// TODO: Subscribe for events
-			var_dump($clientAddress);
-			var_dump($clientPort);
+		if ($events !== null) {
+			if ($events) {
+				$this->subscriber->subscribe($aid, $iid, $clientAddress);
+			} else {
+				$this->subscriber->unsubscribe($aid, $iid, $clientAddress);
+			}
 		}
 
 		$representation[Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_SUCCESS;

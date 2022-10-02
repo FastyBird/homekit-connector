@@ -91,7 +91,7 @@ final class AccessoryFactory
 			);
 
 			$accessoryProtocolVersion = $this->characteristicsFactory->create('Version', $accessoryProtocolInformation);
-			$accessoryProtocolVersion->setValue(HomeKitConnector\Constants::HAP_PROTOCOL_VERSION);
+			$accessoryProtocolVersion->setActualValue(HomeKitConnector\Constants::HAP_PROTOCOL_VERSION);
 
 			$accessoryProtocolInformation->addCharacteristic($accessoryProtocolVersion);
 
@@ -107,33 +107,33 @@ final class AccessoryFactory
 		$accessoryInformation = $this->serviceFactory->create('AccessoryInformation', $accessory);
 
 		$accessoryName = $this->characteristicsFactory->create('Name', $accessoryInformation);
-		$accessoryName->setValue($owner->getName() ?: $owner->getIdentifier());
+		$accessoryName->setActualValue($owner->getName() ?: $owner->getIdentifier());
 
 		$accessoryInformation->addCharacteristic($accessoryName);
 
 		$accessorySerialNumber = $this->characteristicsFactory->create('SerialNumber', $accessoryInformation);
-		$accessorySerialNumber->setValue($this->hashIds->encode((int) $owner->getId()->getInteger()->toString()));
+		$accessorySerialNumber->setActualValue($this->hashIds->encode((int) $owner->getId()->getInteger()->toString()));
 
 		$accessoryInformation->addCharacteristic($accessorySerialNumber);
 
 		$accessoryFirmwareRevision = $this->characteristicsFactory->create('FirmwareRevision', $accessoryInformation);
-		$accessoryFirmwareRevision->setValue(Composer\InstalledVersions::getVersion(HomeKitConnector\Constants::PACKAGE_NAME) ?: 'N/A');
+		$accessoryFirmwareRevision->setActualValue(Composer\InstalledVersions::getVersion(HomeKitConnector\Constants::PACKAGE_NAME) ?: 'N/A');
 
 		$accessoryInformation->addCharacteristic($accessoryFirmwareRevision);
 
 		$accessoryManufacturer = $this->characteristicsFactory->create('Manufacturer', $accessoryInformation);
-		$accessoryManufacturer->setValue(HomeKitConnector\Constants::DEFAULT_MANUFACTURER);
+		$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_MANUFACTURER);
 
 		$accessoryInformation->addCharacteristic($accessoryManufacturer);
 
 		if ($accessory instanceof Bridge) {
 			$accessoryManufacturer = $this->characteristicsFactory->create('Model', $accessoryInformation);
-			$accessoryManufacturer->setValue(HomeKitConnector\Constants::DEFAULT_BRIDGE_MODEL);
+			$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_BRIDGE_MODEL);
 
 			$accessoryInformation->addCharacteristic($accessoryManufacturer);
 		} else {
 			$accessoryManufacturer = $this->characteristicsFactory->create('Model', $accessoryInformation);
-			$accessoryManufacturer->setValue(HomeKitConnector\Constants::DEFAULT_DEVICE_MODEL);
+			$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_DEVICE_MODEL);
 
 			$accessoryInformation->addCharacteristic($accessoryManufacturer);
 		}

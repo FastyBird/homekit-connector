@@ -18,8 +18,10 @@ namespace FastyBird\HomeKitConnector\Connector;
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Servers;
+use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
+use Psr\Log;
 
 /**
  * Connector service executor
@@ -46,21 +48,28 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	/** @var Entities\Protocol\AccessoryFactory */
 	private Entities\Protocol\AccessoryFactory $accessoryFactory;
 
+	/** @var Log\LoggerInterface */
+	private Log\LoggerInterface $logger;
+
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Servers\ServerFactory[] $serversFactories
 	 * @param Entities\Protocol\AccessoryFactory $accessoryFactory
+	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		array $serversFactories,
-		Entities\Protocol\AccessoryFactory $accessoryFactory
+		Entities\Protocol\AccessoryFactory $accessoryFactory,
+		?Log\LoggerInterface $logger = null
 	) {
 		$this->connector = $connector;
 
 		$this->serversFactories = $serversFactories;
 
 		$this->accessoryFactory = $accessoryFactory;
+
+		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	/**
@@ -68,6 +77,17 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 */
 	public function execute(): void
 	{
+		$this->logger->debug(
+			'Registering bridge accessory from connector configuration',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'connector',
+				'connector' => [
+					'id' => $this->connector->getId()->toString(),
+				],
+			]
+		);
+
 		$this->accessoryFactory->create($this->connector);
 
 		foreach ($this->serversFactories as $serverFactory) {
@@ -76,6 +96,17 @@ final class Connector implements DevicesModuleConnectors\IConnector
 
 			$this->servers[] = $server;
 		}
+
+		$this->logger->debug(
+			'Connector has been started',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'connector',
+				'connector' => [
+					'id' => $this->connector->getId()->toString(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -86,6 +117,17 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		foreach ($this->servers as $server) {
 			$server->disconnect();
 		}
+
+		$this->logger->debug(
+			'Connector has been terminated',
+			[
+				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type'      => 'connector',
+				'connector' => [
+					'id' => $this->connector->getId()->toString(),
+				],
+			]
+		);
 	}
 
 	/**
