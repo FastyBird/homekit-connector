@@ -1426,7 +1426,7 @@ final class PairingController extends BaseController
 				pack('C*', ...$encryptedData),
 				'',
 				pack('C*', ...self::NONCE_VERIFY_M3),
-				hex2bin(strval($this->connectorHelper->getConfiguration(
+				(string) hex2bin(strval($this->connectorHelper->getConfiguration(
 					$connectorId,
 					Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_HASHING_KEY)
 				)))
