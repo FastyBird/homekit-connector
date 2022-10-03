@@ -353,7 +353,7 @@ class Characteristic
 		$hapRepresentation = array_merge($hapRepresentation, $this->getMeta());
 
 		if (in_array(Types\CharacteristicPermission::PERMISSION_READ, $this->permissions, true)) {
-			$hapRepresentation[Types\Representation::REPR_VALUE] = $this->property !== null ? Transformer::toClient(
+			$hapRepresentation[Types\Representation::REPR_VALUE] = Transformer::toClient(
 				$this->property,
 				$this->dataType,
 				$this->validValues,
@@ -362,7 +362,7 @@ class Characteristic
 				$this->maxValue,
 				$this->minStep,
 				$this->getActualValue()
-			) : null;
+			);
 		}
 
 		$hapRepresentation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = in_array(

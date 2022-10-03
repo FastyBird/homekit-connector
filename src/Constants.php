@@ -46,4 +46,6 @@ final class Constants
 	public const HAP_PROTOCOL_VERSION = '01.01.00';
 	public const HAP_PROTOCOL_SHORT_VERSION = '1.1';
 
+	public const VERSION_REGEXP = '/^(?:[0-9]*).(?:[0-9]*).(?:[0-9]*)$/';
+
 }

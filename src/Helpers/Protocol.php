@@ -23,6 +23,7 @@ use Socket;
 use Throwable;
 use function count;
 use function implode;
+use function ltrim;
 use function str_repeat;
 
 /**
@@ -51,7 +52,7 @@ final class Protocol
 			return $longType;
 		}
 
-		return Utils\Strings::trim((explode('-', $uuid->toString(), 2) + [''])[0], '0');
+		return ltrim((explode('-', $uuid->toString(), 2) + [''])[0], '0');
 	}
 
 	/**

@@ -119,7 +119,6 @@ final class CharacteristicsController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
-		var_dump($request->getHeaders());
 
 		$this->logger->debug(
 			'Requested list of characteristics of selected accessories',
@@ -142,7 +141,7 @@ final class CharacteristicsController extends BaseController
 
 		$queryParams = $request->getQueryParams();
 
-		if (array_key_exists('id', $queryParams)) {
+		if (!array_key_exists('id', $queryParams)) {
 			throw new Exceptions\HapRequestError(
 				$request,
 				Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
@@ -199,6 +198,7 @@ final class CharacteristicsController extends BaseController
 			}
 		}
 
+		var_dump($result);
 		$response = $response->withStatus($anyError ? StatusCodeInterface::STATUS_MULTI_STATUS : StatusCodeInterface::STATUS_OK);
 		$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode($result)));
@@ -447,7 +447,7 @@ final class CharacteristicsController extends BaseController
 		}
 
 		$representation[Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_SUCCESS;
-		$representation[Types\Representation::REPR_VALUE] = $characteristic->getProperty() !== null ? Protocol\Transformer::toClient(
+		$representation[Types\Representation::REPR_VALUE] = Protocol\Transformer::toClient(
 			$characteristic->getProperty(),
 			$characteristic->getDataType(),
 			$characteristic->getValidValues(),
@@ -456,7 +456,7 @@ final class CharacteristicsController extends BaseController
 			$characteristic->getMaxValue(),
 			$characteristic->getMinStep(),
 			$characteristic->getActualValue(),
-		) : null;
+		);
 
 		if ($perms) {
 			$representation[Types\Representation::REPR_PERM] = $characteristic->getPermissions();

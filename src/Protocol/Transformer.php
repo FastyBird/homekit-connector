@@ -50,14 +50,14 @@ final class Transformer
 {
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity $property
+	 * @param MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property
 	 * @param Types\DataType $dataType
 	 * @param bool|float|int|string|null $value
 	 *
 	 * @return bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
 	 */
 	public static function fromClient(
-		MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity $property,
+		MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property,
 		Types\DataType $dataType,
 		bool|float|int|string|null $value
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null {
@@ -119,6 +119,10 @@ final class Transformer
 			return null;
 		}
 
+		if ($property === null) {
+			return $transformedValue;
+		}
+
 		if (
 			$property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)
 			|| $property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)
@@ -178,7 +182,7 @@ final class Transformer
 	}
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity $property
+	 * @param MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property
 	 * @param Types\DataType $dataType
 	 * @param int[]|null $validValues
 	 * @param int|null $maxLength
@@ -190,7 +194,7 @@ final class Transformer
 	 * @return bool|float|int|string|null
 	 */
 	public static function toClient(
-		MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity $property,
+		MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property,
 		Types\DataType $dataType,
 		?array $validValues,
 		?int $maxLength,
@@ -203,50 +207,54 @@ final class Transformer
 
 		// Connector transformation
 
-		if (
-			$property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)
-			|| $property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)
-			|| $property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_BUTTON)
-		) {
-			if ($property->getFormat() instanceof MetadataValueObjects\StringEnumFormat) {
-				$filtered = array_values(array_filter(
-					$property->getFormat()->getItems(),
-					function (string $item) use ($value): bool {
-						return Utils\Strings::lower(strval($value)) === $item;
-					}
-				));
+		if ($property !== null) {
+			if (
+				$property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_ENUM)
+				|| $property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)
+				|| $property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_BUTTON)
+			) {
+				if ($property->getFormat() instanceof MetadataValueObjects\StringEnumFormat) {
+					$filtered = array_values(array_filter(
+						$property->getFormat()->getItems(),
+						function (string $item) use ($value): bool {
+							return Utils\Strings::lower(strval($value)) === $item;
+						}
+					));
 
-				if (count($filtered) === 1) {
-					$transformedValue = strval($value);
-				}
-			} elseif ($property->getFormat() instanceof MetadataValueObjects\CombinedEnumFormat) {
-				$filtered = array_values(array_filter(
-					$property->getFormat()->getItems(),
-					function (array $item) use ($value): bool {
-						return $item[0] !== null
-							&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(strval($value));
+					if (count($filtered) === 1) {
+						$transformedValue = strval($value);
 					}
-				));
+				} elseif ($property->getFormat() instanceof MetadataValueObjects\CombinedEnumFormat) {
+					$filtered = array_values(array_filter(
+						$property->getFormat()->getItems(),
+						function (array $item) use ($value): bool {
+							return $item[0] !== null
+								&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(strval($value));
+						}
+					));
+
+					if (
+						count($filtered) === 1
+						&& $filtered[0][2] instanceof MetadataValueObjects\CombinedEnumFormatItem
+					) {
+						$transformedValue = is_scalar($filtered[0][2]->getValue()) ? $filtered[0][2]->getValue() : strval($filtered[0][2]->getValue());
+					}
+				}
 
 				if (
-					count($filtered) === 1
-					&& $filtered[0][2] instanceof MetadataValueObjects\CombinedEnumFormatItem
+					(
+						$property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)
+						&& $value instanceof MetadataTypes\SwitchPayloadType
+					) || (
+						$property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_BUTTON)
+						&& $value instanceof MetadataTypes\ButtonPayloadType
+					)
 				) {
-					$transformedValue = is_scalar($filtered[0][2]->getValue()) ? $filtered[0][2]->getValue() : strval($filtered[0][2]->getValue());
+					$transformedValue = strval($value->getValue());
 				}
 			}
-
-			if (
-				(
-					$property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)
-					&& $value instanceof MetadataTypes\SwitchPayloadType
-				) || (
-					$property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_BUTTON)
-					&& $value instanceof MetadataTypes\ButtonPayloadType
-				)
-			) {
-				$transformedValue = strval($value->getValue());
-			}
+		} else {
+			$transformedValue = $value;
 		}
 
 		// HAP transformation

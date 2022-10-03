@@ -118,8 +118,15 @@ final class AccessoryFactory
 
 		$accessoryInformation->addCharacteristic($accessorySerialNumber);
 
+		$packageRevision = Composer\InstalledVersions::getVersion(HomeKitConnector\Constants::PACKAGE_NAME);
+
 		$accessoryFirmwareRevision = $this->characteristicsFactory->create('FirmwareRevision', $accessoryInformation);
-		$accessoryFirmwareRevision->setActualValue(Composer\InstalledVersions::getVersion(HomeKitConnector\Constants::PACKAGE_NAME) ?: 'N/A');
+		$accessoryFirmwareRevision->setActualValue(
+			$packageRevision !== null && preg_match(
+				HomeKitConnector\Constants::VERSION_REGEXP,
+				$packageRevision
+			) === 1 ? $packageRevision : '0.0.0'
+		);
 
 		$accessoryInformation->addCharacteristic($accessoryFirmwareRevision);
 

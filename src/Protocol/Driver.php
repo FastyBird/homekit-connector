@@ -175,7 +175,7 @@ class Driver
 	/**
 	 * @param Uuid\UuidInterface $connectorId
 	 *
-	 * @return Array<string, int|Array<string, string|int|bool|Array<string, bool|float|int|int[]|string|string[]|null>[]|null>[]|null>[]
+	 * @return Array<string, Array<string, int|Array<string, string|int|bool|Array<string, bool|float|int|int[]|string|string[]|null>[]|null>[]|null>[]>
 	 */
 	public function toHap(Uuid\UuidInterface $connectorId): array
 	{
@@ -196,7 +196,9 @@ class Driver
 			}
 		}
 
-		return $accessories;
+		return [
+			'accessories' => $accessories,
+		];
 	}
 
 }

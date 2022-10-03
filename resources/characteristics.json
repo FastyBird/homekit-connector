@@ -776,7 +776,8 @@
     "Permissions" : [
       "pr"
     ],
-    "UUID" : "00000023-0000-1000-8000-0026BB765291"
+    "UUID" : "00000023-0000-1000-8000-0026BB765291",
+    "MaximumLength" : 64
   },
   "NightVision" : {
     "Format" : "bool",
