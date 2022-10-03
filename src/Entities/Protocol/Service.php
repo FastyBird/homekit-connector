@@ -22,6 +22,9 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use Ramsey\Uuid;
 use SplObjectStorage;
+use function array_map;
+use function array_merge;
+use function sprintf;
 
 /**
  * Represents a HAP service
@@ -136,7 +139,7 @@ class Service
 	 */
 	public function getAllowedCharacteristicsNames(): array
 	{
-		return \array_merge($this->requiredCharacteristics, $this->optionalCharacteristics);
+		return array_merge($this->requiredCharacteristics, $this->optionalCharacteristics);
 	}
 
 	/**
@@ -227,7 +230,7 @@ class Service
 		return [
 			Types\Representation::REPR_IID     => $this->accessory->getIidManager()->getIid($this),
 			Types\Representation::REPR_TYPE    => Helpers\Protocol::uuidToHapType($this->getTypeId()),
-			Types\Representation::REPR_CHARS   => \array_map(function (Characteristic $characteristic): array {
+			Types\Representation::REPR_CHARS   => array_map(function (Characteristic $characteristic): array {
 				return $characteristic->toHap();
 			}, $this->getCharacteristics()),
 			Types\Representation::REPR_PRIMARY => $this->primary,
@@ -250,7 +253,7 @@ class Service
 			$characteristics[$characteristic->getName()] = $characteristic->getActualValue();
 		}
 
-		return \sprintf(
+		return sprintf(
 			'<service name=%s chars=%s>',
 			$this->getName(),
 			Nette\Utils\Json::encode($characteristics)

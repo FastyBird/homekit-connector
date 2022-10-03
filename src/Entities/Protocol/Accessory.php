@@ -19,6 +19,7 @@ use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
 use Nette;
 use SplObjectStorage;
+use function array_map;
 
 /**
  * HAP accessory
@@ -157,7 +158,7 @@ abstract class Accessory
 	{
 		return [
 			Types\Representation::REPR_AID      => $this->aid,
-			Types\Representation::REPR_SERVICES => \array_map(function (Service $service): array {
+			Types\Representation::REPR_SERVICES => array_map(function (Service $service): array {
 				return $service->toHap();
 			}, $this->getServices()),
 		];

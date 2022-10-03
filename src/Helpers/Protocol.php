@@ -21,6 +21,9 @@ use Nette\Utils;
 use Ramsey\Uuid;
 use Socket;
 use Throwable;
+use function count;
+use function implode;
+use function str_repeat;
 
 /**
  * HAP protocol utilities
@@ -64,7 +67,7 @@ final class Protocol
 			return Uuid\Uuid::fromString($type);
 		}
 
-		return Uuid\Uuid::fromString(\str_repeat('0', 8 - strlen($type)) . $type . HomeKitConnector\Constants::BASE_UUID);
+		return Uuid\Uuid::fromString(str_repeat('0', 8 - strlen($type)) . $type . HomeKitConnector\Constants::BASE_UUID);
 	}
 
 	/**
@@ -143,13 +146,13 @@ final class Protocol
 
 		$mac = [];
 
-		while (\count($mac) < 7) {
+		while (count($mac) < 7) {
 			shuffle($allowedValues);
 
 			$mac[] = $allowedValues[0] . $allowedValues[1];
 		}
 
-		return \implode(':', $mac);
+		return implode(':', $mac);
 	}
 
 }

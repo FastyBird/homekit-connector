@@ -20,6 +20,8 @@ use Nette;
 use Psr\Log;
 use React\Socket;
 use SplObjectStorage;
+use function array_diff;
+use function array_key_exists;
 
 /**
  * HTTP clients exchange subscriber
@@ -127,7 +129,7 @@ final class Subscriber
 			]
 		);
 
-		if (!\array_key_exists($aid . '.' . $iid, $this->subscriptions)) {
+		if (!array_key_exists($aid . '.' . $iid, $this->subscriptions)) {
 			$this->subscriptions[$aid . '.' . $iid] = [];
 		}
 
@@ -156,12 +158,12 @@ final class Subscriber
 			]
 		);
 
-		if (!\array_key_exists($aid . '.' . $iid, $this->subscriptions)) {
+		if (!array_key_exists($aid . '.' . $iid, $this->subscriptions)) {
 			return;
 		}
 
 		if (in_array($address, $this->subscriptions[$aid . '.' . $iid], true)) {
-			$this->subscriptions[$aid . '.' . $iid] = \array_diff($this->subscriptions[$aid . '.' . $iid], [$address]);
+			$this->subscriptions[$aid . '.' . $iid] = array_diff($this->subscriptions[$aid . '.' . $iid], [$address]);
 		}
 	}
 

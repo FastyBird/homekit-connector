@@ -18,6 +18,25 @@ namespace FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Types;
 use Nette;
+use function array_map;
+use function array_merge;
+use function array_pop;
+use function array_sum;
+use function array_values;
+use function chr;
+use function count;
+use function implode;
+use function intval;
+use function is_array;
+use function is_numeric;
+use function is_string;
+use function mb_check_encoding;
+use function ord;
+use function pack;
+use function str_split;
+use function strlen;
+use function substr;
+use function unpack;
 
 /**
  * Apple TLV8 utilities
@@ -45,14 +64,14 @@ final class Tlv
 
 		foreach ($objects as $entry) {
 			if ($cnt > 0) {
-				$row = \pack('C1', Types\TlvCode::CODE_SEPARATOR);
-				$row .= \pack('C1', 0); // Length of separator is 0
+				$row = pack('C1', Types\TlvCode::CODE_SEPARATOR);
+				$row .= pack('C1', 0); // Length of separator is 0
 
 				$data[] = $row;
 			}
 
 			foreach ($entry as $code => $value) {
-				$row = \pack('C1', $code);
+				$row = pack('C1', $code);
 
 				if (!Types\TlvCode::isValidValue($code)) {
 					throw new Exceptions\InvalidArgument('Provided TLV code in data is not valid');
@@ -67,35 +86,35 @@ final class Tlv
 						|| $tlvCode->equalsValue(Types\TlvCode::CODE_ERROR)
 						|| $tlvCode->equalsValue(Types\TlvCode::CODE_RETRY_DELAY)
 						|| $tlvCode->equalsValue(Types\TlvCode::CODE_PERMISSIONS)
-					) && \is_numeric($value)
+					) && is_numeric($value)
 				) {
-					$row .= \pack('C1', 1); // Length of integer, only short (1-byte length) integers is supported
-					$row .= \pack('C1', $value);
+					$row .= pack('C1', 1); // Length of integer, only short (1-byte length) integers is supported
+					$row .= pack('C1', $value);
 
 				} elseif (
 					$tlvCode->equalsValue(Types\TlvCode::CODE_IDENTIFIER)
-					&& \is_string($value)
+					&& is_string($value)
 				) {
-					$chars = \array_map(function (string $char): int {
-						return \ord($char);
-					}, \str_split($value));
+					$chars = array_map(function (string $char): int {
+						return ord($char);
+					}, str_split($value));
 
-					if (\count($chars) > 255) {
-						$chars = \array_values($chars);
+					if (count($chars) > 255) {
+						$chars = array_values($chars);
 
-						for ($i = 0; $i < \count($chars); $i++) {
+						for ($i = 0; $i < count($chars); $i++) {
 							if ($i === 0) {
-								$row .= \pack('C1', 255);
+								$row .= pack('C1', 255);
 							} elseif ($i % 255 === 0) {
-								$row .= \pack('C1', $code);
-								$row .= \pack('C1', (\count($chars) - $i));
+								$row .= pack('C1', $code);
+								$row .= pack('C1', (count($chars) - $i));
 							}
 
-							$row .= \pack('C1', $chars[$i]);
+							$row .= pack('C1', $chars[$i]);
 						}
 					} else {
-						$row .= \pack('C1', \count($chars));
-						$row .= \pack('C*', ...$chars);
+						$row .= pack('C1', count($chars));
+						$row .= pack('C*', ...$chars);
 					}
 				} elseif (
 					(
@@ -107,24 +126,24 @@ final class Tlv
 						|| $tlvCode->equalsValue(Types\TlvCode::CODE_SIGNATURE)
 						|| $tlvCode->equalsValue(Types\TlvCode::CODE_FRAGMENT_DATA)
 						|| $tlvCode->equalsValue(Types\TlvCode::CODE_FRAGMENT_LAST)
-					) && \is_array($value)
+					) && is_array($value)
 				) {
-					if (\count($value) > 255) {
-						$value = \array_values($value);
+					if (count($value) > 255) {
+						$value = array_values($value);
 
-						for ($i = 0; $i < \count($value); $i++) {
+						for ($i = 0; $i < count($value); $i++) {
 							if ($i === 0) {
-								$row .= \pack('C1', 255);
+								$row .= pack('C1', 255);
 							} elseif ($i % 255 === 0) {
-								$row .= \pack('C1', $code);
-								$row .= \pack('C1', (\count($value) - $i));
+								$row .= pack('C1', $code);
+								$row .= pack('C1', (count($value) - $i));
 							}
 
-							$row .= \pack('C1', $value[$i]);
+							$row .= pack('C1', $value[$i]);
 						}
 					} else {
-						$row .= \pack('C1', \count($value));
-						$row .= \pack('C*', ...$value);
+						$row .= pack('C1', count($value));
+						$row .= pack('C*', ...$value);
 					}
 				} else {
 					continue;
@@ -136,7 +155,7 @@ final class Tlv
 			$cnt++;
 		}
 
-		return \implode('', $data);
+		return implode('', $data);
 	}
 
 	/**
@@ -153,8 +172,8 @@ final class Tlv
 
 		$previousCode = null;
 
-		while ($position < \strlen($data)) {
-			$tag = \unpack('C1', \substr($data, $position, 1));
+		while ($position < strlen($data)) {
+			$tag = unpack('C1', substr($data, $position, 1));
 
 			$position++;
 
@@ -162,7 +181,7 @@ final class Tlv
 				throw new Exceptions\InvalidArgument('Provided data are not valid TLV data');
 			}
 
-			$tag = (int) \array_pop($tag);
+			$tag = (int) array_pop($tag);
 
 			if (!Types\TlvCode::isValidValue($tag)) {
 				throw new Exceptions\InvalidArgument('Provided TLV code in data is not valid');
@@ -179,7 +198,7 @@ final class Tlv
 				continue;
 			}
 
-			$length = \unpack('C1', \substr($data, $position, 1));
+			$length = unpack('C1', substr($data, $position, 1));
 
 			$position++;
 
@@ -187,7 +206,7 @@ final class Tlv
 				throw new Exceptions\InvalidArgument('Provided data are not valid TLV data');
 			}
 
-			$length = (int) \array_pop($length);
+			$length = (int) array_pop($length);
 
 			$value = null;
 
@@ -203,22 +222,22 @@ final class Tlv
 				}
 
 				// Int value
-				$value = \unpack('C' . $length, \substr($data, $position, $length));
+				$value = unpack('C' . $length, substr($data, $position, $length));
 
 				if ($value === false) {
 					throw new Exceptions\InvalidArgument('Provided data are not valid TLV data');
 				} else {
-					$value = \array_sum($value);
+					$value = array_sum($value);
 				}
 			} elseif ($tlvCode->equalsValue(Types\TlvCode::CODE_IDENTIFIER)) {
 				// Str value
-				$value = \unpack('C' . $length, \substr($data, $position, $length));
+				$value = unpack('C' . $length, substr($data, $position, $length));
 
 				if ($value === false) {
 					throw new Exceptions\InvalidArgument('Provided data are not valid TLV data');
 				} else {
-					$value = \implode('', \array_map(function (int $item): string {
-						return \mb_check_encoding(chr($item), 'UTF-8') ? \chr($item) : '';
+					$value = implode('', array_map(function (int $item): string {
+						return mb_check_encoding(chr($item), 'UTF-8') ? chr($item) : '';
 					}, $value));
 
 					if ($value === '') {
@@ -236,25 +255,25 @@ final class Tlv
 				|| $tlvCode->equalsValue(Types\TlvCode::CODE_FRAGMENT_LAST)
 			) {
 				// Bytes value
-				$value = \unpack('C' . $length, \substr($data, $position, $length));
+				$value = unpack('C' . $length, substr($data, $position, $length));
 
 				if ($value === false) {
 					throw new Exceptions\InvalidArgument('Provided data are not valid TLV data');
 				} else {
-					$value = \array_values($value);
+					$value = array_values($value);
 				}
 			}
 
 			$position += $length;
 
 			if ($previousCode !== null && $previousCode->equals($tlvCode)) {
-				if (\is_array($entry[$tlvCode->getValue()]) && \is_array($value)) {
-					$entry[\intval($tlvCode->getValue())] = \array_merge($entry[$tlvCode->getValue()], $value);
+				if (is_array($entry[$tlvCode->getValue()]) && is_array($value)) {
+					$entry[intval($tlvCode->getValue())] = array_merge($entry[$tlvCode->getValue()], $value);
 				} else {
-					$entry[\intval($tlvCode->getValue())] = $entry[$tlvCode->getValue()] + $value;
+					$entry[intval($tlvCode->getValue())] = $entry[$tlvCode->getValue()] + $value;
 				}
 			} else {
-				$entry[\intval($tlvCode->getValue())] = $value;
+				$entry[intval($tlvCode->getValue())] = $value;
 			}
 
 			$previousCode = $tlvCode;

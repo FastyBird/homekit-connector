@@ -29,7 +29,17 @@ use React\Datagram;
 use React\Dns;
 use React\EventLoop;
 use Throwable;
+use function array_filter;
+use function array_map;
+use function array_merge;
+use function array_unique;
+use function base64_encode;
+use function is_array;
+use function preg_replace;
 use function React\Async\async;
+use function str_replace;
+use function strval;
+use function substr;
 
 /**
  * mDNS connector discovery server
@@ -301,25 +311,25 @@ final class Mdns implements Server
 	 */
 	private function createZone(): void
 	{
-		$name = \preg_replace(
+		$name = preg_replace(
 			self::LEADING_TRAILING_SPACE_DASH,
 			'',
-			\strval(\preg_replace(
+			strval(preg_replace(
 				self::VALID_MDNS_REGEX,
 				' ',
 				$this->connector->getName() ?? $this->connector->getIdentifier()
 			))
 		);
 
-		$hostName = \preg_replace(
+		$hostName = preg_replace(
 			self::DASH_REGEX,
 			'-',
 			Utils\Strings::trim(
-				\str_replace(
+				str_replace(
 					' ',
 					'-',
 					Utils\Strings::trim(
-						\strval(\preg_replace(
+						strval(preg_replace(
 							self::VALID_MDNS_REGEX,
 							' ',
 							$this->connector->getName() ?? $this->connector->getIdentifier()
@@ -344,7 +354,7 @@ final class Mdns implements Server
 			)
 		);
 
-		$shortMacAddress = \str_replace(':', '', Utils\Strings::substring((string) $macAddress, -8));
+		$shortMacAddress = str_replace(':', '', Utils\Strings::substring((string) $macAddress, -8));
 
 		$version = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
@@ -367,8 +377,8 @@ final class Mdns implements Server
 			)
 		);
 
-		$setupHash = \substr(
-			\base64_encode(hash('sha512', ((string) $setupId . (string) $macAddress), true)),
+		$setupHash = substr(
+			base64_encode(hash('sha512', ((string) $setupId . (string) $macAddress), true)),
 			0,
 			4
 		);
@@ -451,7 +461,7 @@ final class Mdns implements Server
 				foreach ($this->resourceRecords as $rrByName) {
 					foreach ($rrByName as $rrByType) {
 						foreach ($rrByType as $rrByClass) {
-							$answers = \array_merge($answers, $rrByClass);
+							$answers = array_merge($answers, $rrByClass);
 						}
 					}
 				}
@@ -462,7 +472,7 @@ final class Mdns implements Server
 					continue;
 				}
 
-				$answers = \array_merge($answers, $answer);
+				$answers = array_merge($answers, $answer);
 			}
 		}
 
@@ -488,13 +498,13 @@ final class Mdns implements Server
 			}
 
 			$queries[] = new Dns\Query\Query(
-				\strval($answer->data),
+				strval($answer->data),
 				Dns\Model\Message::TYPE_SRV,
 				Dns\Model\Message::CLASS_IN,
 			);
 
 			$queries[] = new Dns\Query\Query(
-				\strval($answer->data),
+				strval($answer->data),
 				Dns\Model\Message::TYPE_TXT,
 				Dns\Model\Message::CLASS_IN,
 			);
@@ -502,18 +512,18 @@ final class Mdns implements Server
 
 		// To populate the A and AAAA records, we need to get a set of unique
 		// targets from the SRV record
-		$srvRecordTargets = \array_map(
+		$srvRecordTargets = array_map(
 			function (Dns\Model\Record $record): string {
-				return \is_array($record->data) ? \strval($record->data['target']) : '';
+				return is_array($record->data) ? strval($record->data['target']) : '';
 			},
-			\array_filter(
+			array_filter(
 				$additional,
 				function (Dns\Model\Record $record): bool {
 					return $record->type === Dns\Model\Message::TYPE_SRV;
 				}
 			)
 		);
-		$srvRecordTargets = \array_unique($srvRecordTargets);
+		$srvRecordTargets = array_unique($srvRecordTargets);
 
 		foreach ($srvRecordTargets as $srvRecordTarget) {
 			$queries[] = new Dns\Query\Query(

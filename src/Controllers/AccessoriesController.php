@@ -27,6 +27,7 @@ use IPub\SlimRouter;
 use Nette\Utils;
 use Psr\Http\Message;
 use Ramsey\Uuid;
+use function strval;
 
 /**
  * Accessories controller
@@ -83,7 +84,7 @@ final class AccessoriesController extends BaseController
 			]
 		);
 
-		$connectorId = \strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -126,7 +127,7 @@ final class AccessoriesController extends BaseController
 			]
 		);
 
-		$connectorId = \strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');

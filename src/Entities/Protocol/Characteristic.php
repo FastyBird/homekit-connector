@@ -24,6 +24,10 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
 use Nette;
 use Ramsey\Uuid;
+use function array_merge;
+use function in_array;
+use function sprintf;
+use function strval;
 
 /**
  * Represents a HAP characteristic, the smallest unit of the smart home
@@ -290,7 +294,7 @@ class Characteristic
 	public function getMeta(): array
 	{
 		$meta = [
-			Types\Representation::REPR_FORMAT => \strval($this->dataType->getValue()),
+			Types\Representation::REPR_FORMAT => strval($this->dataType->getValue()),
 		];
 
 		if (
@@ -314,7 +318,7 @@ class Characteristic
 			}
 
 			if ($this->unit !== null) {
-				$meta[Types\Representation::REPR_UNIT] = \strval($this->unit->getValue());
+				$meta[Types\Representation::REPR_UNIT] = strval($this->unit->getValue());
 			}
 		}
 
@@ -343,12 +347,12 @@ class Characteristic
 			Types\Representation::REPR_IID    => $this->service->getAccessory()->getIidManager()->getIid($this),
 			Types\Representation::REPR_TYPE   => Helpers\Protocol::uuidToHapType($this->typeId),
 			Types\Representation::REPR_PERM   => $this->permissions,
-			Types\Representation::REPR_FORMAT => \strval($this->dataType->getValue()),
+			Types\Representation::REPR_FORMAT => strval($this->dataType->getValue()),
 		];
 
-		$hapRepresentation = \array_merge($hapRepresentation, $this->getMeta());
+		$hapRepresentation = array_merge($hapRepresentation, $this->getMeta());
 
-		if (\in_array(Types\CharacteristicPermission::PERMISSION_READ, $this->permissions, true)) {
+		if (in_array(Types\CharacteristicPermission::PERMISSION_READ, $this->permissions, true)) {
 			$hapRepresentation[Types\Representation::REPR_VALUE] = $this->property !== null ? Transformer::toClient(
 				$this->property,
 				$this->dataType,
@@ -361,7 +365,7 @@ class Characteristic
 			) : null;
 		}
 
-		$hapRepresentation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = \in_array(
+		$hapRepresentation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = in_array(
 			Types\CharacteristicPermission::PERMISSION_NOTIFY,
 			$this->permissions,
 			true
@@ -402,10 +406,10 @@ class Characteristic
 			$properties['unit'] = $this->unit->getValue();
 		}
 
-		return \sprintf(
+		return sprintf(
 			'<characteristic name=%s value=%s properties=%s>',
 			$this->name,
-			\strval($this->getActualValue()),
+			strval($this->getActualValue()),
 			Nette\Utils\Json::encode($properties)
 		);
 	}

@@ -16,6 +16,7 @@
 namespace FastyBird\HomeKitConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * HAP accessory category type
@@ -66,7 +67,7 @@ class AccessoryCategory extends Consistence\Enum\Enum
 	 */
 	public function __toString(): string
 	{
-		return \strval(self::getValue());
+		return strval(self::getValue());
 	}
 
 }

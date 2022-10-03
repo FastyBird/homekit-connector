@@ -20,6 +20,11 @@ use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette\Utils;
+use function array_values;
+use function intval;
+use function is_array;
+use function is_string;
+use function strval;
 
 /**
  * HAP service characteristics factory
@@ -82,9 +87,9 @@ final class CharacteristicsFactory
 		if (
 			!$characteristicsMetadata instanceof Utils\ArrayHash
 			|| !$characteristicsMetadata->offsetExists('UUID')
-			|| !\is_string($characteristicsMetadata->offsetGet('UUID'))
+			|| !is_string($characteristicsMetadata->offsetGet('UUID'))
 			|| !$characteristicsMetadata->offsetExists('Format')
-			|| !\is_string($characteristicsMetadata->offsetGet('Format'))
+			|| !is_string($characteristicsMetadata->offsetGet('Format'))
 			|| !Types\DataType::isValidValue($characteristicsMetadata->offsetGet('Format'))
 			|| !$characteristicsMetadata->offsetExists('Permissions')
 			|| !$characteristicsMetadata->offsetGet('Permissions') instanceof Utils\ArrayHash
@@ -113,14 +118,14 @@ final class CharacteristicsFactory
 		}
 
 		if ($maxLength === null && $characteristicsMetadata->offsetExists('MaximumLength')) {
-			$maxLength = \intval($characteristicsMetadata->offsetGet('MaximumLength'));
+			$maxLength = intval($characteristicsMetadata->offsetGet('MaximumLength'));
 		}
 
 		if ($characteristicsMetadata->offsetExists('ValidValues')) {
-			$defaultValidValues = \is_array($characteristicsMetadata->offsetGet('ValidValues')) ? \array_values($characteristicsMetadata->offsetGet('ValidValues')) : null;
+			$defaultValidValues = is_array($characteristicsMetadata->offsetGet('ValidValues')) ? array_values($characteristicsMetadata->offsetGet('ValidValues')) : null;
 
 			if ($validValues !== null && $defaultValidValues !== null) {
-				$validValues = \array_values(array_intersect($validValues, $defaultValidValues));
+				$validValues = array_values(array_intersect($validValues, $defaultValidValues));
 			} else {
 				$validValues = $defaultValidValues;
 			}
@@ -129,7 +134,7 @@ final class CharacteristicsFactory
 		}
 
 		return new Characteristic(
-			Helpers\Protocol::hapTypeToUuid(\strval($characteristicsMetadata->offsetGet('UUID'))),
+			Helpers\Protocol::hapTypeToUuid(strval($characteristicsMetadata->offsetGet('UUID'))),
 			$name,
 			Types\DataType::get($characteristicsMetadata->offsetGet('Format')),
 			(array) $characteristicsMetadata->offsetGet('Permissions'),

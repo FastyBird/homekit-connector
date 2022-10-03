@@ -17,6 +17,7 @@ namespace FastyBird\HomeKitConnector\Types;
 
 use Consistence;
 use FastyBird\Metadata\Types as MetadataTypes;
+use function strval;
 
 /**
  * Connector property identifier types
@@ -49,7 +50,7 @@ class ConnectorPropertyIdentifier extends Consistence\Enum\Enum
 	 */
 	public function __toString(): string
 	{
-		return \strval(self::getValue());
+		return strval(self::getValue());
 	}
 
 }

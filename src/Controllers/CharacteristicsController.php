@@ -35,6 +35,13 @@ use Nette\Utils;
 use Psr\EventDispatcher;
 use Psr\Http\Message;
 use Ramsey\Uuid;
+use function array_key_exists;
+use function array_merge;
+use function explode;
+use function in_array;
+use function intval;
+use function is_array;
+use function strval;
 
 /**
  * Accessories services characteristics controller
@@ -125,7 +132,7 @@ final class CharacteristicsController extends BaseController
 			]
 		);
 
-		$connectorId = \strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -135,7 +142,7 @@ final class CharacteristicsController extends BaseController
 
 		$queryParams = $request->getQueryParams();
 
-		if (\array_key_exists('id', $queryParams)) {
+		if (array_key_exists('id', $queryParams)) {
 			throw new Exceptions\HapRequestError(
 				$request,
 				Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
@@ -144,12 +151,12 @@ final class CharacteristicsController extends BaseController
 			);
 		}
 
-		$meta = \array_key_exists(Types\Representation::REPR_META, $queryParams) && (int) $queryParams[Types\Representation::REPR_META] === 1;
-		$perms = \array_key_exists(Types\Representation::REPR_PERM, $queryParams) && (int) $queryParams[Types\Representation::REPR_PERM] === 1;
-		$type = \array_key_exists(Types\Representation::REPR_TYPE, $queryParams) && (int) $queryParams[Types\Representation::REPR_TYPE] === 1;
-		$ev = \array_key_exists(Types\CharacteristicPermission::PERMISSION_NOTIFY, $queryParams) && (int) $queryParams[Types\CharacteristicPermission::PERMISSION_NOTIFY] === 1;
+		$meta = array_key_exists(Types\Representation::REPR_META, $queryParams) && (int) $queryParams[Types\Representation::REPR_META] === 1;
+		$perms = array_key_exists(Types\Representation::REPR_PERM, $queryParams) && (int) $queryParams[Types\Representation::REPR_PERM] === 1;
+		$type = array_key_exists(Types\Representation::REPR_TYPE, $queryParams) && (int) $queryParams[Types\Representation::REPR_TYPE] === 1;
+		$ev = array_key_exists(Types\CharacteristicPermission::PERMISSION_NOTIFY, $queryParams) && (int) $queryParams[Types\CharacteristicPermission::PERMISSION_NOTIFY] === 1;
 
-		$ids = \explode(',', $queryParams['id']);
+		$ids = explode(',', $queryParams['id']);
 
 		$result = [
 			Types\Representation::REPR_CHARS => [],
@@ -185,7 +192,7 @@ final class CharacteristicsController extends BaseController
 
 		foreach ($result[Types\Representation::REPR_CHARS] as $charResult) {
 			if (
-				\array_key_exists(Types\Representation::REPR_STATUS, $charResult)
+				array_key_exists(Types\Representation::REPR_STATUS, $charResult)
 				&& $charResult[Types\Representation::REPR_STATUS] !== Types\ServerStatus::STATUS_SUCCESS
 			) {
 				$anyError = true;
@@ -227,7 +234,7 @@ final class CharacteristicsController extends BaseController
 			]
 		);
 
-		$connectorId = \strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -250,9 +257,9 @@ final class CharacteristicsController extends BaseController
 		}
 
 		if (
-			!\is_array($body)
-			|| !\array_key_exists(Types\Representation::REPR_CHARS, $body)
-			|| \is_array($body[Types\Representation::REPR_CHARS])
+			!is_array($body)
+			|| !array_key_exists(Types\Representation::REPR_CHARS, $body)
+			|| is_array($body[Types\Representation::REPR_CHARS])
 		) {
 			throw new Exceptions\HapRequestError(
 				$request,
@@ -262,24 +269,24 @@ final class CharacteristicsController extends BaseController
 			);
 		}
 
-		$pid = \array_key_exists(Types\Representation::REPR_PID, $body) ? (int) $body[Types\Representation::REPR_PID] : null;
+		$pid = array_key_exists(Types\Representation::REPR_PID, $body) ? (int) $body[Types\Representation::REPR_PID] : null;
 
 		$timedWriteError = false;
 
 		if ($pid !== null) {
 			if (
-				!\array_key_exists(\strval($request->getServerParams()['REMOTE_ADDR']), $this->preparedWrites)
-				|| !\array_key_exists($pid, $this->preparedWrites[\strval($request->getServerParams()['REMOTE_ADDR'])])
-				|| $this->preparedWrites[\strval($request->getServerParams()['REMOTE_ADDR'])][$pid] < $this->dateTimeFactory->getNow()->getTimestamp()
+				!array_key_exists(strval($request->getServerParams()['REMOTE_ADDR']), $this->preparedWrites)
+				|| !array_key_exists($pid, $this->preparedWrites[strval($request->getServerParams()['REMOTE_ADDR'])])
+				|| $this->preparedWrites[strval($request->getServerParams()['REMOTE_ADDR'])][$pid] < $this->dateTimeFactory->getNow()->getTimestamp()
 			) {
 				$timedWriteError = true;
 			}
 
 			if (
-				\array_key_exists(\strval($request->getServerParams()['REMOTE_ADDR']), $this->preparedWrites)
-				&& \array_key_exists($pid, $this->preparedWrites[\strval($request->getServerParams()['REMOTE_ADDR'])])
+				array_key_exists(strval($request->getServerParams()['REMOTE_ADDR']), $this->preparedWrites)
+				&& array_key_exists($pid, $this->preparedWrites[strval($request->getServerParams()['REMOTE_ADDR'])])
 			) {
-				unset($this->preparedWrites[\strval($request->getServerParams()['REMOTE_ADDR'])][$pid]);
+				unset($this->preparedWrites[strval($request->getServerParams()['REMOTE_ADDR'])][$pid]);
 			}
 		}
 
@@ -289,15 +296,15 @@ final class CharacteristicsController extends BaseController
 
 		foreach ($body[Types\Representation::REPR_CHARS] as $setCharacteristic) {
 			if (
-				\is_array($setCharacteristic)
-				&& \array_key_exists(Types\Representation::REPR_AID, $setCharacteristic)
-				&& \array_key_exists(Types\Representation::REPR_IID, $setCharacteristic)
+				is_array($setCharacteristic)
+				&& array_key_exists(Types\Representation::REPR_AID, $setCharacteristic)
+				&& array_key_exists(Types\Representation::REPR_IID, $setCharacteristic)
 			) {
 				$aid = (int) $setCharacteristic[Types\Representation::REPR_AID];
 				$iid = (int) $setCharacteristic[Types\Representation::REPR_IID];
 
-				$value = \array_key_exists(Types\Representation::REPR_VALUE, $setCharacteristic) ? $setCharacteristic[Types\Representation::REPR_VALUE] : null;
-				$events = \array_key_exists(Types\CharacteristicPermission::PERMISSION_NOTIFY, $setCharacteristic) ? (bool) $setCharacteristic[Types\CharacteristicPermission::PERMISSION_NOTIFY] : null;
+				$value = array_key_exists(Types\Representation::REPR_VALUE, $setCharacteristic) ? $setCharacteristic[Types\Representation::REPR_VALUE] : null;
+				$events = array_key_exists(Types\CharacteristicPermission::PERMISSION_NOTIFY, $setCharacteristic) ? (bool) $setCharacteristic[Types\CharacteristicPermission::PERMISSION_NOTIFY] : null;
 
 				$result[Types\Representation::REPR_CHARS][] = $this->writeCharacteristic(
 					$connectorId,
@@ -305,8 +312,8 @@ final class CharacteristicsController extends BaseController
 					$iid,
 					$value,
 					$events,
-					\strval($request->getServerParams()['REMOTE_ADDR']),
-					\intval($request->getServerParams()['REMOTE_PORT']),
+					strval($request->getServerParams()['REMOTE_ADDR']),
+					intval($request->getServerParams()['REMOTE_PORT']),
 					$pid,
 					$timedWriteError
 				);
@@ -325,7 +332,7 @@ final class CharacteristicsController extends BaseController
 
 		foreach ($result[Types\Representation::REPR_CHARS] as $charResult) {
 			if (
-				\array_key_exists(Types\Representation::REPR_STATUS, $charResult)
+				array_key_exists(Types\Representation::REPR_STATUS, $charResult)
 				&& $charResult[Types\Representation::REPR_STATUS] !== Types\ServerStatus::STATUS_SUCCESS
 			) {
 				$anyError = true;
@@ -374,9 +381,9 @@ final class CharacteristicsController extends BaseController
 		}
 
 		if (
-			!\is_array($body)
-			|| !\array_key_exists(Types\Representation::REPR_TTL, $body)
-			|| !\array_key_exists(Types\Representation::REPR_PID, $body)
+			!is_array($body)
+			|| !array_key_exists(Types\Representation::REPR_TTL, $body)
+			|| !array_key_exists(Types\Representation::REPR_PID, $body)
 		) {
 			throw new Exceptions\HapRequestError(
 				$request,
@@ -386,9 +393,9 @@ final class CharacteristicsController extends BaseController
 			);
 		}
 
-		$clientAddress = \strval($request->getServerParams()['REMOTE_ADDR']);
+		$clientAddress = strval($request->getServerParams()['REMOTE_ADDR']);
 
-		if (!\array_key_exists($clientAddress, $this->preparedWrites)) {
+		if (!array_key_exists($clientAddress, $this->preparedWrites)) {
 			$this->preparedWrites[$clientAddress] = [];
 		}
 
@@ -462,11 +469,11 @@ final class CharacteristicsController extends BaseController
 		}
 
 		if ($meta) {
-			$representation = \array_merge($representation, $characteristic->getMeta());
+			$representation = array_merge($representation, $characteristic->getMeta());
 		}
 
 		if ($ev) {
-			$representation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = \in_array(
+			$representation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = in_array(
 				Types\CharacteristicPermission::PERMISSION_NOTIFY,
 				$characteristic->getPermissions(),
 				true

@@ -32,6 +32,8 @@ use React\EventLoop;
 use React\Http as ReactHttp;
 use React\Socket;
 use Throwable;
+use function hex2bin;
+use function is_string;
 
 /**
  * HTTP connector communication server
@@ -127,7 +129,7 @@ final class Http implements Server
 						]
 					);
 
-					$this->socket?->setSharedKey(\is_string($property->getValue()) ? (string) \hex2bin($property->getValue()) : null);
+					$this->socket?->setSharedKey(is_string($property->getValue()) ? (string) hex2bin($property->getValue()) : null);
 				}
 			}
 		);
@@ -154,7 +156,7 @@ final class Http implements Server
 						]
 					);
 
-					$this->socket?->setSharedKey(\is_string($property->getValue()) ? (string) \hex2bin($property->getValue()) : null);
+					$this->socket?->setSharedKey(is_string($property->getValue()) ? (string) hex2bin($property->getValue()) : null);
 				}
 			}
 		);

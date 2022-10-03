@@ -18,6 +18,19 @@ namespace FastyBird\HomeKitConnector\Protocol;
 use Brick\Math;
 use Nette;
 use Throwable;
+use function array_map;
+use function array_slice;
+use function gmp_add;
+use function gmp_mod;
+use function gmp_mul;
+use function gmp_powm;
+use function hash;
+use function implode;
+use function min;
+use function pack;
+use function random_bytes;
+use function strval;
+use function unpack;
 
 /**
  * Server Side Secure Remote Password implementation
@@ -108,14 +121,14 @@ final class Srp
 
 		$gPadded[] = 5;
 
-		$k = Math\BigInteger::fromBytes(\hash('sha512', ($this->n3072->toBytes(false) . \pack('C*', ...$gPadded)), true), false);
-		$x = Math\BigInteger::fromBytes(\hash('sha512', ($this->salt . \hash('sha512', ($username . ':' . $password), true)), true), false);
+		$k = Math\BigInteger::fromBytes(hash('sha512', ($this->n3072->toBytes(false) . pack('C*', ...$gPadded)), true), false);
+		$x = Math\BigInteger::fromBytes(hash('sha512', ($this->salt . hash('sha512', ($username . ':' . $password), true)), true), false);
 
-		$this->serverPasswordVerifier = Math\BigInteger::of(\strval(\gmp_powm((string) self::G, (string) $x, (string) $this->n3072)));
-		$this->serverPublicKey = Math\BigInteger::of(\strval(\gmp_mod(
-			\gmp_add(
-				\gmp_mul((string) $k, (string) $this->serverPasswordVerifier),
-				\gmp_powm((string) self::G, (string) $this->serverPrivateKey, (string) $this->n3072)
+		$this->serverPasswordVerifier = Math\BigInteger::of(strval(gmp_powm((string) self::G, (string) $x, (string) $this->n3072)));
+		$this->serverPublicKey = Math\BigInteger::of(strval(gmp_mod(
+			gmp_add(
+				gmp_mul((string) $k, (string) $this->serverPasswordVerifier),
+				gmp_powm((string) self::G, (string) $this->serverPrivateKey, (string) $this->n3072)
 			),
 			(string) $this->n3072
 		)));
@@ -197,41 +210,41 @@ final class Srp
 			false
 		);
 
-		$this->premasterSecret = Math\BigInteger::of(\strval(\gmp_powm(
-			\gmp_mul(
+		$this->premasterSecret = Math\BigInteger::of(strval(gmp_powm(
+			gmp_mul(
 				(string) $clientPublicKey,
-				\gmp_powm((string) $this->serverPasswordVerifier, (string) $this->randomScramblingParameter, (string) $this->n3072)
+				gmp_powm((string) $this->serverPasswordVerifier, (string) $this->randomScramblingParameter, (string) $this->n3072)
 			),
 			(string) $this->serverPrivateKey,
 			(string) $this->n3072
 		)));
 
-		$this->sessionKey = \hash('sha512', $this->premasterSecret->toBytes(false), true);
+		$this->sessionKey = hash('sha512', $this->premasterSecret->toBytes(false), true);
 
-		$gBytes = \unpack('C*', \hash('sha512', Math\BigInteger::of(self::G)->toBytes(false), true));
-		$n3072Bytes = \unpack('C*', \hash('sha512', $this->n3072->toBytes(false), true));
+		$gBytes = unpack('C*', hash('sha512', Math\BigInteger::of(self::G)->toBytes(false), true));
+		$n3072Bytes = unpack('C*', hash('sha512', $this->n3072->toBytes(false), true));
 
 		if ($gBytes === false || $n3072Bytes === false) {
 			return;
 		}
 
-		$combined = \array_slice(
-			\array_map(null, $gBytes, $n3072Bytes), // Zips values
+		$combined = array_slice(
+			array_map(null, $gBytes, $n3072Bytes), // Zips values
 			0, // Begins selection before first element
-			\min(\array_map('count', [$gBytes, $n3072Bytes])) // Ends after shortest ends
+			min(array_map('count', [$gBytes, $n3072Bytes])) // Ends after shortest ends
 		);
 
-		$combined = \array_map(function (array $row): int {
+		$combined = array_map(function (array $row): int {
 			return $row[0] ^ $row[1];
 		}, $combined);
 
-		$combined = \pack('C*', ...$combined);
+		$combined = pack('C*', ...$combined);
 
-		$this->clientProof = \hash(
+		$this->clientProof = hash(
 			'sha512',
 			(
 				$combined
-				. \hash('sha512', $this->username, true)
+				. hash('sha512', $this->username, true)
 				. $this->salt
 				. $clientPublicKey->toBytes(false)
 				. $this->serverPublicKey->toBytes(false)
@@ -240,7 +253,7 @@ final class Srp
 			true
 		);
 
-		$this->serverProof = \hash(
+		$this->serverProof = hash(
 			'sha512',
 			(
 				$clientPublicKey->toBytes(false) .
@@ -267,18 +280,18 @@ final class Srp
 	private function generateSalt(): string
 	{
 		try {
-			$bytes = \random_bytes(16);
+			$bytes = random_bytes(16);
 		} catch (Throwable) {
 			return '';
 		}
 
-		$unpacked = \unpack('n*', $bytes);
+		$unpacked = unpack('n*', $bytes);
 
 		if ($unpacked === false) {
 			return '';
 		}
 
-		return \implode('', $unpacked);
+		return implode('', $unpacked);
 	}
 
 	/**
@@ -287,18 +300,18 @@ final class Srp
 	private function generatePrivateKey(): Math\BigInteger
 	{
 		try {
-			$bytes = \random_bytes(32);
+			$bytes = random_bytes(32);
 		} catch (Throwable) {
 			return Math\BigInteger::zero();
 		}
 
-		$unpacked = \unpack('n*', $bytes);
+		$unpacked = unpack('n*', $bytes);
 
 		if ($unpacked === false) {
 			return Math\BigInteger::zero();
 		}
 
-		return Math\BigInteger::fromBytes(\implode('', $unpacked), false);
+		return Math\BigInteger::fromBytes(implode('', $unpacked), false);
 	}
 
 }

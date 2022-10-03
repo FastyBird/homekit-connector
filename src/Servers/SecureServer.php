@@ -20,6 +20,7 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use React\Socket;
 use SplObjectStorage;
+use function str_replace;
 
 /**
  * HTTP secured server wrapper
@@ -113,7 +114,7 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 			return null;
 		}
 
-		return \str_replace('tcp://', 'tls://', $address);
+		return str_replace('tcp://', 'tls://', $address);
 	}
 
 	/**

@@ -19,6 +19,8 @@ use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette\Utils;
+use function is_string;
+use function strval;
 
 /**
  * HAP service factory
@@ -69,7 +71,7 @@ final class ServiceFactory
 		if (
 			!$serviceMetadata instanceof Utils\ArrayHash
 			|| !$serviceMetadata->offsetExists('UUID')
-			|| !\is_string($serviceMetadata->offsetGet('UUID'))
+			|| !is_string($serviceMetadata->offsetGet('UUID'))
 			|| !$serviceMetadata->offsetExists('RequiredCharacteristics')
 			|| !$serviceMetadata->offsetGet('RequiredCharacteristics') instanceof Utils\ArrayHash
 		) {
@@ -77,7 +79,7 @@ final class ServiceFactory
 		}
 
 		return new Service(
-			Helpers\Protocol::hapTypeToUuid(\strval($serviceMetadata->offsetGet('UUID'))),
+			Helpers\Protocol::hapTypeToUuid(strval($serviceMetadata->offsetGet('UUID'))),
 			$name,
 			$accessory,
 			$channel,
