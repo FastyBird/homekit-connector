@@ -91,7 +91,7 @@ final class Connector extends Evenement\EventEmitter
 		Uuid\UuidInterface $connectorId,
 		Types\ConnectorPropertyIdentifier $type
 	): float|bool|int|string|null {
-		$configuration = $this->propertiesItemsRepository->findByIdentifier($connectorId, strval($type->getValue()));
+		$configuration = $this->propertiesItemsRepository->findByIdentifier($connectorId, \strval($type->getValue()));
 
 		if ($configuration instanceof MetadataEntities\Modules\DevicesModule\IConnectorStaticPropertyEntity) {
 			if (
@@ -163,7 +163,7 @@ final class Connector extends Evenement\EventEmitter
 			function () use ($connectorId, $type): ?DevicesModuleEntities\Connectors\Properties\StaticProperty {
 				$findConnectorProperty = new DevicesModuleQueries\FindConnectorPropertiesQuery();
 				$findConnectorProperty->byConnectorId($connectorId);
-				$findConnectorProperty->byIdentifier(strval($type->getValue()));
+				$findConnectorProperty->byIdentifier(\strval($type->getValue()));
 
 				/** @var DevicesModuleEntities\Connectors\Properties\StaticProperty|null $property */
 				$property = $this->propertiesEntitiesRepository->findOneBy(
@@ -208,7 +208,7 @@ final class Connector extends Evenement\EventEmitter
 
 						$configuration = $this->propertiesItemsRepository->findByIdentifier(
 							$connectorId,
-							strval($type->getValue())
+							\strval($type->getValue())
 						);
 
 						$this->emit('created', [$connectorId, $type, $configuration]);
@@ -227,7 +227,7 @@ final class Connector extends Evenement\EventEmitter
 
 					$configuration = $this->propertiesItemsRepository->findByIdentifier(
 						$connectorId,
-						strval($type->getValue())
+						\strval($type->getValue())
 					);
 
 					$this->emit('updated', [$connectorId, $type, $configuration]);

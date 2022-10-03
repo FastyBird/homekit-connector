@@ -199,7 +199,6 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
-		var_dump($request->getHeaders());
 
 		$this->logger->debug(
 			'Requested pairing setup',
@@ -212,7 +211,7 @@ final class PairingController extends BaseController
 			]
 		);
 
-		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = \strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -226,13 +225,13 @@ final class PairingController extends BaseController
 			throw new Exceptions\InvalidArgument('Provided TLV content is not valid');
 		}
 
-		$tlvEntry = array_pop($tlv);
+		$tlvEntry = \array_pop($tlv);
 
-		$requestedState = array_key_exists(Types\TlvCode::CODE_STATE, $tlvEntry) ? $tlvEntry[Types\TlvCode::CODE_STATE] : null;
+		$requestedState = \array_key_exists(Types\TlvCode::CODE_STATE, $tlvEntry) ? $tlvEntry[Types\TlvCode::CODE_STATE] : null;
 
 		if (
 			$requestedState === Types\TlvState::STATE_M1
-			&& array_key_exists(Types\TlvCode::CODE_METHOD, $tlvEntry)
+			&& \array_key_exists(Types\TlvCode::CODE_METHOD, $tlvEntry)
 			&& $tlvEntry[Types\TlvCode::CODE_METHOD] === Types\TlvMethod::METHOD_RESERVED
 		) {
 			$result = $this->srpStart($connectorId);
@@ -241,10 +240,10 @@ final class PairingController extends BaseController
 
 		} elseif (
 			$requestedState === Types\TlvState::STATE_M3
-			&& array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
-			&& is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
-			&& array_key_exists(Types\TlvCode::CODE_PROOF, $tlvEntry)
-			&& is_array($tlvEntry[Types\TlvCode::CODE_PROOF])
+			&& \array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
+			&& \is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
+			&& \array_key_exists(Types\TlvCode::CODE_PROOF, $tlvEntry)
+			&& \is_array($tlvEntry[Types\TlvCode::CODE_PROOF])
 		) {
 			$result = $this->srpFinish(
 				$connectorId,
@@ -256,8 +255,8 @@ final class PairingController extends BaseController
 
 		} elseif (
 			$requestedState === Types\TlvState::STATE_M5
-			&& array_key_exists(Types\TlvCode::CODE_ENCRYPTED_DATA, $tlvEntry)
-			&& is_array($tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA])
+			&& \array_key_exists(Types\TlvCode::CODE_ENCRYPTED_DATA, $tlvEntry)
+			&& \is_array($tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA])
 		) {
 			$result = $this->exchange(
 				$connectorId,
@@ -270,7 +269,7 @@ final class PairingController extends BaseController
 			throw new Exceptions\InvalidState('Unknown data received');
 		}
 
-		if (array_key_exists(Types\TlvCode::CODE_ERROR, $result)) {
+		if (\array_key_exists(Types\TlvCode::CODE_ERROR, $result)) {
 			$this->activePairing = false;
 			$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M1);
 		}
@@ -295,7 +294,6 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
-		var_dump($request->getHeaders());
 
 		$this->logger->debug(
 			'Requested pairing verify',
@@ -308,7 +306,7 @@ final class PairingController extends BaseController
 			]
 		);
 
-		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = \strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -335,21 +333,21 @@ final class PairingController extends BaseController
 				throw new Exceptions\InvalidArgument('Provided TLV content is not valid');
 			}
 
-			$tlvEntry = array_pop($tlv);
+			$tlvEntry = \array_pop($tlv);
 
-			$requestedState = array_key_exists(Types\TlvCode::CODE_STATE, $tlvEntry) ? $tlvEntry[Types\TlvCode::CODE_STATE] : null;
+			$requestedState = \array_key_exists(Types\TlvCode::CODE_STATE, $tlvEntry) ? $tlvEntry[Types\TlvCode::CODE_STATE] : null;
 
 			if (
 				$requestedState === Types\TlvState::STATE_M1
-				&& array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
-				&& is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
+				&& \array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
+				&& \is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
 			) {
 				$result = $this->verifyStart($connectorId, $tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]);
 
 			} elseif (
 				$requestedState === Types\TlvState::STATE_M3
-				&& array_key_exists(Types\TlvCode::CODE_ENCRYPTED_DATA, $tlvEntry)
-				&& is_array($tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA])
+				&& \array_key_exists(Types\TlvCode::CODE_ENCRYPTED_DATA, $tlvEntry)
+				&& \is_array($tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA])
 			) {
 				$result = $this->verifyFinish($connectorId, $tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA]);
 
@@ -389,7 +387,7 @@ final class PairingController extends BaseController
 			]
 		);
 
-		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = \strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -431,10 +429,10 @@ final class PairingController extends BaseController
 				throw new Exceptions\InvalidArgument('Provided TLV content is not valid');
 			}
 
-			$tlvEntry = array_pop($tlv);
+			$tlvEntry = \array_pop($tlv);
 
-			$requestedState = array_key_exists(Types\TlvCode::CODE_STATE, $tlvEntry) ? $tlvEntry[Types\TlvCode::CODE_STATE] : null;
-			$method = array_key_exists(Types\TlvCode::CODE_METHOD, $tlvEntry) ? $tlvEntry[Types\TlvCode::CODE_METHOD] : null;
+			$requestedState = \array_key_exists(Types\TlvCode::CODE_STATE, $tlvEntry) ? $tlvEntry[Types\TlvCode::CODE_STATE] : null;
+			$method = \array_key_exists(Types\TlvCode::CODE_METHOD, $tlvEntry) ? $tlvEntry[Types\TlvCode::CODE_METHOD] : null;
 
 			if (
 				$method === Types\TlvMethod::METHOD_LIST_PAIRINGS
@@ -445,12 +443,12 @@ final class PairingController extends BaseController
 			} elseif (
 				$method === Types\TlvMethod::METHOD_ADD_PAIRING
 				&& $requestedState === Types\TlvState::STATE_M1
-				&& array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
-				&& is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
-				&& array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
-				&& is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
-				&& array_key_exists(Types\TlvCode::CODE_PERMISSIONS, $tlvEntry)
-				&& is_int($tlvEntry[Types\TlvCode::CODE_PERMISSIONS])
+				&& \array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
+				&& \is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
+				&& \array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
+				&& \is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
+				&& \array_key_exists(Types\TlvCode::CODE_PERMISSIONS, $tlvEntry)
+				&& \is_int($tlvEntry[Types\TlvCode::CODE_PERMISSIONS])
 			) {
 				$result = $this->addPairing(
 					$connectorId,
@@ -461,8 +459,8 @@ final class PairingController extends BaseController
 			} elseif (
 				$method === Types\TlvMethod::METHOD_REMOVE_PAIRING
 				&& $requestedState === Types\TlvState::STATE_M1
-				&& array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
-				&& is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
+				&& \array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
+				&& \is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
 			) {
 				$result = $this->removePairing(
 					$connectorId,
@@ -598,9 +596,9 @@ final class PairingController extends BaseController
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PIN_CODE)
 		);
 
-		$this->srp = new Protocol\Srp(self::SRP_USERNAME, strval($pinCode));
+		$this->srp = new Protocol\Srp(self::SRP_USERNAME, \strval($pinCode));
 
-		$serverPublicKey = unpack('C*', $this->srp->getServerPublicKey()->toBytes(false));
+		$serverPublicKey = \unpack('C*', $this->srp->getServerPublicKey()->toBytes(false));
 
 		if ($serverPublicKey === false) {
 			$this->logger->error(
@@ -626,7 +624,7 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$salt = unpack('C*', $this->srp->getSalt());
+		$salt = \unpack('C*', $this->srp->getSalt());
 
 		if ($salt === false) {
 			$this->logger->error(
@@ -713,10 +711,10 @@ final class PairingController extends BaseController
 		}
 
 		$this->srp->computeSharedSessionKey(
-			Math\BigInteger::fromBytes(pack('C*', ...$clientPublicKey), false)
+			Math\BigInteger::fromBytes(\pack('C*', ...$clientPublicKey), false)
 		);
 
-		if (!$this->srp->verifyProof(pack('C*', ...$clientProof))) {
+		if (!$this->srp->verifyProof(\pack('C*', ...$clientProof))) {
 			$this->logger->error(
 				'Incorrect pin code, try again',
 				[
@@ -764,7 +762,7 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$serverProof = unpack('C*', $this->srp->getServerProof());
+		$serverProof = \unpack('C*', $this->srp->getServerProof());
 
 		if ($serverProof === false) {
 			$this->logger->error(
@@ -859,9 +857,9 @@ final class PairingController extends BaseController
 
 		try {
 			$decryptedData = sodium_crypto_aead_chacha20poly1305_ietf_decrypt(
-				pack('C*', ...$encryptedData),
+				\pack('C*', ...$encryptedData),
 				'',
-				pack('C*', ...self::NONCE_SETUP_M5),
+				\pack('C*', ...self::NONCE_SETUP_M5),
 				$decryptKey
 			);
 		} catch (SodiumException $ex) {
@@ -951,15 +949,15 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$tlvEntry = array_pop($tlv);
+		$tlvEntry = \array_pop($tlv);
 
 		if (
-			!array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
-			|| !is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
-			|| !array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
-			|| !is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
-			|| !array_key_exists(Types\TlvCode::CODE_SIGNATURE, $tlvEntry)
-			|| !is_array($tlvEntry[Types\TlvCode::CODE_SIGNATURE])
+			!\array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
+			|| !\is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
+			|| !\array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
+			|| !\is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
+			|| !\array_key_exists(Types\TlvCode::CODE_SIGNATURE, $tlvEntry)
+			|| !\is_array($tlvEntry[Types\TlvCode::CODE_SIGNATURE])
 		) {
 			$this->logger->error(
 				'Data in decoded decrypted tlv data are invalid',
@@ -984,7 +982,7 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$iosDeviceX = hash_hkdf(
+		$iosDeviceX = \hash_hkdf(
 			'sha512',
 			(string) $this->srp->getSessionKey(),
 			32,
@@ -994,11 +992,11 @@ final class PairingController extends BaseController
 
 		$iosDeviceInfo = $iosDeviceX
 			. $tlvEntry[Types\TlvCode::CODE_IDENTIFIER]
-			. pack('C*', ...$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]);
+			. \pack('C*', ...$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]);
 
 		if (
 			!$this->edDsa->verify(
-				unpack('C*', $iosDeviceInfo),
+				\unpack('C*', $iosDeviceInfo),
 				$tlvEntry[Types\TlvCode::CODE_SIGNATURE],
 				$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]
 			)
@@ -1050,7 +1048,7 @@ final class PairingController extends BaseController
 			function () use ($tlvEntry, $connectorEntity): Entities\Client {
 				return $this->clientsManager->create(ArrayHash::from([
 					'uid'       => $tlvEntry[Types\TlvCode::CODE_IDENTIFIER],
-					'publicKey' => pack('C*', ...$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]),
+					'publicKey' => \pack('C*', ...$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]),
 					'connector' => $connectorEntity,
 				]));
 			}
@@ -1066,13 +1064,13 @@ final class PairingController extends BaseController
 			self::SALT_ACCESSORY
 		);
 
-		$serverPrivateSecret = $this->connectorHelper->getConfiguration(
+		$serverPrivateSecret = \hex2bin(\strval($this->connectorHelper->getConfiguration(
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET)
-		);
+		)));
 
 		$serverPrivateKey = $this->edDsa->keyFromSecret(
-			unpack('C*', strval($serverPrivateSecret))
+			\unpack('C*', (string) $serverPrivateSecret)
 		);
 		$serverPublicKey = $serverPrivateKey->getPublic();
 
@@ -1081,22 +1079,22 @@ final class PairingController extends BaseController
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS)
 		);
 
-		$serverInfo = $serverX . $macAddress . pack('C*', ...$serverPublicKey);
-		$serverSignature = $serverPrivateKey->sign(unpack('C*', $serverInfo))->toBytes();
+		$serverInfo = $serverX . $macAddress . \pack('C*', ...$serverPublicKey);
+		$serverSignature = $serverPrivateKey->sign(\unpack('C*', $serverInfo))->toBytes();
 
 		$responseInnerData = [
 			[
-				Types\TlvCode::CODE_IDENTIFIER => strval($macAddress),
+				Types\TlvCode::CODE_IDENTIFIER => \strval($macAddress),
 				Types\TlvCode::CODE_PUBLIC_KEY => $serverPublicKey,
 				Types\TlvCode::CODE_SIGNATURE  => $serverSignature,
 			],
 		];
 
 		try {
-			$responseEncryptedData = unpack('C*', sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
+			$responseEncryptedData = \unpack('C*', \sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
 				$this->tlv->encode($responseInnerData),
 				'',
-				pack('C*', ...self::NONCE_SETUP_M6),
+				\pack('C*', ...self::NONCE_SETUP_M6),
 				$decryptKey
 			));
 		} catch (SodiumException $ex) {
@@ -1217,24 +1215,24 @@ final class PairingController extends BaseController
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS)
 		);
 
-		$serverPrivateSecret = $this->connectorHelper->getConfiguration(
+		$serverPrivateSecret = \hex2bin(\strval($this->connectorHelper->getConfiguration(
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET)
-		);
+		)));
 
-		$serverPublicKey = publicKey(strval($serverPrivateSecret));
-		$sharedSecret = sharedKey(strval($serverPrivateSecret), pack('C*', ...$clientPublicKey));
+		$serverPublicKey = publicKey($serverPrivateSecret);
+		$sharedSecret = sharedKey($serverPrivateSecret, \pack('C*', ...$clientPublicKey));
 
-		$serverInfo = $serverPublicKey . $macAddress . pack('C*', ...$clientPublicKey);
+		$serverInfo = $serverPublicKey . $macAddress . \pack('C*', ...$clientPublicKey);
 
 		$serverPrivateKey = $this->edDsa->keyFromSecret(
-			unpack('C*', strval($serverPrivateSecret))
+			\unpack('C*', (string) $serverPrivateSecret)
 		);
-		$serverSignature = $serverPrivateKey->sign(unpack('C*', $serverInfo))->toBytes();
+		$serverSignature = $serverPrivateKey->sign(\unpack('C*', $serverInfo))->toBytes();
 
 		$responseInnerData = [
 			[
-				Types\TlvCode::CODE_IDENTIFIER => strval($macAddress),
+				Types\TlvCode::CODE_IDENTIFIER => \strval($macAddress),
 				Types\TlvCode::CODE_SIGNATURE  => $serverSignature,
 			],
 		];
@@ -1248,10 +1246,10 @@ final class PairingController extends BaseController
 		);
 
 		try {
-			$responseEncryptedData = unpack('C*', sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
+			$responseEncryptedData = \unpack('C*', sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
 				$this->tlv->encode($responseInnerData),
 				'',
-				pack('C*', ...self::NONCE_VERIFY_M2),
+				\pack('C*', ...self::NONCE_VERIFY_M2),
 				$encodeKey
 			));
 		} catch (SodiumException $ex) {
@@ -1306,7 +1304,7 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$serverPublicKey = unpack('C*', $serverPublicKey);
+		$serverPublicKey = \unpack('C*', $serverPublicKey);
 
 		if ($serverPublicKey === false) {
 			$this->logger->error(
@@ -1335,19 +1333,19 @@ final class PairingController extends BaseController
 		$this->connectorHelper->setConfiguration(
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_PUBLIC_KEY),
-			pack('C*', ...$clientPublicKey)
+			\bin2hex(\pack('C*', ...$clientPublicKey))
 		);
 
 		$this->connectorHelper->setConfiguration(
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY),
-			$sharedSecret
+			\bin2hex($sharedSecret)
 		);
 
 		$this->connectorHelper->setConfiguration(
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_HASHING_KEY),
-			$encodeKey
+			\bin2hex($encodeKey)
 		);
 
 		$this->logger->debug(
@@ -1412,13 +1410,13 @@ final class PairingController extends BaseController
 
 		try {
 			$decryptedData = sodium_crypto_aead_chacha20poly1305_ietf_decrypt(
-				pack('C*', ...$encryptedData),
+				\pack('C*', ...$encryptedData),
 				'',
-				pack('C*', ...self::NONCE_VERIFY_M3),
-				strval($this->connectorHelper->getConfiguration(
+				\pack('C*', ...self::NONCE_VERIFY_M3),
+				\hex2bin(\strval($this->connectorHelper->getConfiguration(
 					$connectorId,
 					Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_HASHING_KEY)
-				))
+				)))
 			);
 		} catch (SodiumException $ex) {
 			$this->logger->error(
@@ -1507,13 +1505,13 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$tlvEntry = array_pop($tlv);
+		$tlvEntry = \array_pop($tlv);
 
 		if (
-			!array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
-			|| !is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
-			|| !array_key_exists(Types\TlvCode::CODE_SIGNATURE, $tlvEntry)
-			|| !is_array($tlvEntry[Types\TlvCode::CODE_SIGNATURE])
+			!\array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
+			|| !\is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
+			|| !\array_key_exists(Types\TlvCode::CODE_SIGNATURE, $tlvEntry)
+			|| !\is_array($tlvEntry[Types\TlvCode::CODE_SIGNATURE])
 		) {
 			$this->logger->error(
 				'Data in decoded decrypted tlv data are invalid',
@@ -1538,23 +1536,23 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$serverPrivateSecret = $this->connectorHelper->getConfiguration(
+		$serverPrivateSecret = \hex2bin(\strval($this->connectorHelper->getConfiguration(
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET)
-		);
+		)));
 
-		$iosDeviceInfo = strval($this->connectorHelper->getConfiguration(
+		$iosDeviceInfo = \hex2bin(\strval($this->connectorHelper->getConfiguration(
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_PUBLIC_KEY)
-		))
+		)))
 			. $tlvEntry[Types\TlvCode::CODE_IDENTIFIER]
-			. publicKey(strval($serverPrivateSecret));
+			. publicKey($serverPrivateSecret);
 
 		if (
 			!$this->edDsa->verify(
-				array_values((array) unpack('C*', $iosDeviceInfo)),
+				\array_values((array) \unpack('C*', $iosDeviceInfo)),
 				$tlvEntry[Types\TlvCode::CODE_SIGNATURE],
-				array_values((array) unpack('C*', $this->pairingClient->getPublicKey()))
+				\array_values((array) \unpack('C*', $this->pairingClient->getPublicKey()))
 			)
 		) {
 			$this->logger->error(
@@ -1654,7 +1652,7 @@ final class PairingController extends BaseController
 		foreach ($clients as $client) {
 			$result[] = [
 				Types\TlvCode::CODE_IDENTIFIER  => $client->getUid(),
-				Types\TlvCode::CODE_PUBLIC_KEY  => (array) unpack('C*', $client->getPublicKey()),
+				Types\TlvCode::CODE_PUBLIC_KEY  => (array) \unpack('C*', $client->getPublicKey()),
 				Types\TlvCode::CODE_PERMISSIONS => $client->isAdmin() ? Types\ClientPermission::PERMISSION_ADMIN : Types\ClientPermission::PERMISSION_USER,
 			];
 		}
@@ -1706,7 +1704,7 @@ final class PairingController extends BaseController
 		}
 
 		if ($client !== null) {
-			if ($client->getPublicKey() !== pack('C*', ...$clientPublicKey)) {
+			if ($client->getPublicKey() !== \pack('C*', ...$clientPublicKey)) {
 				$this->logger->error(
 					'Received iOS device public key does not match with previously saved key',
 					[
@@ -1764,7 +1762,7 @@ final class PairingController extends BaseController
 
 						$this->clientsManager->create(ArrayHash::from([
 							'uid'       => $clientUid,
-							'publicKey' => pack('C*', ...$clientPublicKey),
+							'publicKey' => \pack('C*', ...$clientPublicKey),
 							'admin'     => $clientPermission === Types\ClientPermission::PERMISSION_ADMIN,
 							'connector' => $connector,
 						]));

@@ -84,6 +84,29 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 
 		$this->connection = $connection;
 
+		$this->setSharedKey($sharedKey);
+
+		$connection->on(
+			'data',
+			function (string $data): void {
+				$this->securedRequest = false;
+
+				$this->emit('data', [$this->decodeData($data)]);
+			}
+		);
+
+		Stream\Util::forwardEvents($connection, $this, ['end', 'error', 'close', 'pipe', 'drain']);
+
+		$this->logger = $logger ?? new Log\NullLogger();
+	}
+
+	/**
+	 * @param string|null $sharedKey
+	 *
+	 * @return void
+	 */
+	public function setSharedKey(?string $sharedKey): void
+	{
 		if ($sharedKey !== null) {
 			$this->encryptionKey = hash_hkdf(
 				'sha512',
@@ -101,19 +124,6 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				self::SALT_CONTROL
 			);
 		}
-
-		$connection->on(
-			'data',
-			function (string $data): void {
-				$this->securedRequest = false;
-
-				$this->emit('data', [$this->decodeData($data)]);
-			}
-		);
-
-		Stream\Util::forwardEvents($connection, $this, ['end', 'error', 'close', 'pipe', 'drain']);
-
-		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	/**
@@ -153,7 +163,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	 */
 	public function write($data): bool
 	{
-		if (is_string($data) && $this->securedRequest) {
+		if (\is_string($data) && $this->securedRequest) {
 			$data = $this->encodeData($data);
 		}
 
@@ -214,35 +224,35 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 			return $receivedData;
 		}
 
-		$binaryData = unpack('C*', $receivedData);
+		$binaryData = \unpack('C*', $receivedData);
 
-		if (!is_array($binaryData) || count($binaryData) <= (self::ENCRYPTED_DATA_LENGTH + self::AUTH_TAG_LENGTH)) {
+		if (!\is_array($binaryData) || \count($binaryData) <= (self::ENCRYPTED_DATA_LENGTH + self::AUTH_TAG_LENGTH)) {
 			return $receivedData;
 		}
 
-		$dataLength = array_splice($binaryData, 0, self::ENCRYPTED_DATA_LENGTH);
-		$dataLengthFormatted = unpack('v', pack('C*', ...$dataLength));
+		$dataLength = \array_splice($binaryData, 0, self::ENCRYPTED_DATA_LENGTH);
+		$dataLengthFormatted = \unpack('v', \pack('C*', ...$dataLength));
 
 		if ($dataLengthFormatted === false || $dataLengthFormatted === []) {
 			return $receivedData;
 		}
 
-		$dataLengthFormatted = (int) array_pop($dataLengthFormatted);
+		$dataLengthFormatted = (int) \array_pop($dataLengthFormatted);
 
-		if (count($binaryData) !== $dataLengthFormatted + self::AUTH_TAG_LENGTH) {
+		if (\count($binaryData) !== $dataLengthFormatted + self::AUTH_TAG_LENGTH) {
 			return $receivedData;
 		}
 
-		$nonce = array_merge(
+		$nonce = \array_merge(
 			[0, 0, 0, 0],
-			(array_values((array) unpack('C*', pack('v', $this->securedRequestCnt))) + [0, 0, 0, 0, 0, 0, 0, 0])
+			(\array_values((array) \unpack('C*', \pack('v', $this->securedRequestCnt))) + [0, 0, 0, 0, 0, 0, 0, 0])
 		);
 
 		try {
-			$decryptedData = sodium_crypto_aead_chacha20poly1305_ietf_decrypt(
-				pack('C*', ...$binaryData),
-				pack('C*', ...$dataLength),
-				pack('C*', ...$nonce),
+			$decryptedData = \sodium_crypto_aead_chacha20poly1305_ietf_decrypt(
+				\pack('C*', ...$binaryData),
+				\pack('C*', ...$dataLength),
+				\pack('C*', ...$nonce),
 				$this->decryptionKey
 			);
 
@@ -283,34 +293,34 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 			return $data;
 		}
 
-		$binaryData = unpack('C*', $data);
+		$binaryData = \unpack('C*', $data);
 
-		if (!is_array($binaryData) || count($binaryData) <= self::AUTH_TAG_LENGTH) {
+		if (!\is_array($binaryData) || \count($binaryData) <= self::AUTH_TAG_LENGTH) {
 			return $data;
 		}
 
-		$dataLength = unpack('C*', pack('v', count($binaryData)));
+		$dataLength = \unpack('C*', \pack('v', \count($binaryData)));
 
 		if ($dataLength === false) {
 			return $data;
 		}
 
-		$nonce = array_merge(
+		$nonce = \array_merge(
 			[0, 0, 0, 0],
-			(array_values((array) unpack('C*', pack('v', $this->securedResponsesCnt))) + [0, 0, 0, 0, 0, 0, 0, 0])
+			(\array_values((array) \unpack('C*', \pack('v', $this->securedResponsesCnt))) + [0, 0, 0, 0, 0, 0, 0, 0])
 		);
 
 		try {
-			$encryptedData = sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
-				pack('C*', ...$binaryData),
-				pack('C*', ...$dataLength),
-				pack('C*', ...$nonce),
+			$encryptedData = \sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
+				\pack('C*', ...$binaryData),
+				\pack('C*', ...$dataLength),
+				\pack('C*', ...$nonce),
 				$this->encryptionKey
 			);
 
 			$this->securedResponsesCnt++;
 
-			return pack('C*', ...$dataLength) . $encryptedData;
+			return \pack('C*', ...$dataLength) . $encryptedData;
 
 		} catch (SodiumException $ex) {
 			$this->logger->error(

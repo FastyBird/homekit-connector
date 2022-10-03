@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
 <ruleset>
+	<rule ref="SlevomatCodingStandard.PHP.OptimizedFunctionsWithoutUnpacking"/>
+	<rule ref="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions"/>
+	<rule ref="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly"/>
+
 	<rule ref="./vendor/ninjify/coding-standard/ruleset.xml">
 		<exclude name="Generic.Files.LineEndings.InvalidEOLChar"/>
 		<!-- we want brace on same line for multi-line definitions, checked by Squiz.Functions.MultiLineFunctionDeclaration -->

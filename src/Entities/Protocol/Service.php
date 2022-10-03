@@ -136,7 +136,7 @@ class Service
 	 */
 	public function getAllowedCharacteristicsNames(): array
 	{
-		return array_merge($this->requiredCharacteristics, $this->optionalCharacteristics);
+		return \array_merge($this->requiredCharacteristics, $this->optionalCharacteristics);
 	}
 
 	/**
@@ -164,7 +164,7 @@ class Service
 	{
 		if (
 			!in_array($characteristic->getName(), $this->requiredCharacteristics, true)
-			|| !in_array($characteristic->getName(), $this->optionalCharacteristics, true)
+			&& !in_array($characteristic->getName(), $this->optionalCharacteristics, true)
 		) {
 			throw new Exceptions\InvalidArgument(sprintf(
 				'Characteristics: %s is not allowed for service: %s',
@@ -227,7 +227,7 @@ class Service
 		return [
 			Types\Representation::REPR_IID     => $this->accessory->getIidManager()->getIid($this),
 			Types\Representation::REPR_TYPE    => Helpers\Protocol::uuidToHapType($this->getTypeId()),
-			Types\Representation::REPR_CHARS   => array_map(function (Characteristic $characteristic): array {
+			Types\Representation::REPR_CHARS   => \array_map(function (Characteristic $characteristic): array {
 				return $characteristic->toHap();
 			}, $this->getCharacteristics()),
 			Types\Representation::REPR_PRIMARY => $this->primary,
@@ -250,7 +250,7 @@ class Service
 			$characteristics[$characteristic->getName()] = $characteristic->getActualValue();
 		}
 
-		return sprintf(
+		return \sprintf(
 			'<service name=%s chars=%s>',
 			$this->getName(),
 			Nette\Utils\Json::encode($characteristics)

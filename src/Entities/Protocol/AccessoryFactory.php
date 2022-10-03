@@ -87,7 +87,9 @@ final class AccessoryFactory
 			$accessoryProtocolInformation = new Service(
 				Uuid\Uuid::fromString(Service::HAP_PROTOCOL_INFORMATION_SERVICE_UUID),
 				'HAPProtocolInformation',
-				$accessory
+				$accessory,
+				null,
+				['Version']
 			);
 
 			$accessoryProtocolVersion = $this->characteristicsFactory->create('Version', $accessoryProtocolInformation);

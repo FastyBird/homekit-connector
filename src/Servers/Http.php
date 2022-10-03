@@ -127,7 +127,7 @@ final class Http implements Server
 						]
 					);
 
-					$this->socket?->setSharedKey(is_string($property->getValue()) ? $property->getValue() : null);
+					$this->socket?->setSharedKey(\is_string($property->getValue()) ? (string) \hex2bin($property->getValue()) : null);
 				}
 			}
 		);
@@ -154,7 +154,7 @@ final class Http implements Server
 						]
 					);
 
-					$this->socket?->setSharedKey(is_string($property->getValue()) ? $property->getValue() : null);
+					$this->socket?->setSharedKey(\is_string($property->getValue()) ? (string) \hex2bin($property->getValue()) : null);
 				}
 			}
 		);

@@ -134,10 +134,10 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	 */
 	public function getPublicKey(): string
 	{
-		if (is_resource($this->publicKey)) {
-			rewind($this->publicKey);
+		if (\is_resource($this->publicKey)) {
+			\rewind($this->publicKey);
 
-			return strval(stream_get_contents($this->publicKey));
+			return \strval(stream_get_contents($this->publicKey));
 		}
 
 		return $this->publicKey;

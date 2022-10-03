@@ -1,0 +1,84 @@
+[
+  {
+    "aid" : 1,
+    "services" : [
+      {
+        "iid" : 1,
+        "type" : "a2",
+        "characteristics" : [
+          {
+            "iid" : 2,
+            "type" : "37",
+            "perms" : [
+              "pr",
+              "ev"
+            ],
+            "format" : "string",
+            "value" : null,
+            "ev" : true
+          }
+        ],
+        "primary" : false,
+        "hidden" : false
+      },
+      {
+        "iid" : 3,
+        "type" : "3e",
+        "characteristics" : [
+          {
+            "iid" : 4,
+            "type" : "23",
+            "perms" : [
+              "pr"
+            ],
+            "format" : "string",
+            "value" : null,
+            "ev" : false
+          },
+          {
+            "iid" : 5,
+            "type" : "3",
+            "perms" : [
+              "pr"
+            ],
+            "format" : "string",
+            "value" : null,
+            "ev" : false
+          },
+          {
+            "iid" : 6,
+            "type" : "52",
+            "perms" : [
+              "pr"
+            ],
+            "format" : "string",
+            "value" : null,
+            "ev" : false
+          },
+          {
+            "iid" : 7,
+            "type" : "2",
+            "perms" : [
+              "pr"
+            ],
+            "format" : "string",
+            "value" : null,
+            "ev" : false
+          },
+          {
+            "iid" : 8,
+            "type" : "21",
+            "perms" : [
+              "pr"
+            ],
+            "format" : "string",
+            "value" : null,
+            "ev" : false
+          }
+        ],
+        "primary" : false,
+        "hidden" : false
+      }
+    ]
+  }
+]

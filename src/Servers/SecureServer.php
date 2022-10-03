@@ -19,6 +19,7 @@ use Evenement\EventEmitter;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use React\Socket;
+use SplObjectStorage;
 
 /**
  * HTTP secured server wrapper
@@ -32,6 +33,9 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 {
 
 	use Nette\SmartObject;
+
+	/** @var SplObjectStorage<SecureConnection, null> */
+	private SplObjectStorage $activeConnections;
 
 	/** @var string|null */
 	private ?string $sharedKey;
@@ -63,8 +67,18 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 
 		$this->sharedKey = $sharedKey;
 
-		$this->server->on('connection', function ($connection): void {
-			$this->emit('connection', [$this->secureConnectionFactory->create($this->connector, $this->sharedKey, $connection)]);
+		$this->activeConnections = new SplObjectStorage();
+
+		$this->server->on('connection', function (Socket\ConnectionInterface $connection): void {
+			$securedConnection = $this->secureConnectionFactory->create($this->connector, $this->sharedKey, $connection);
+
+			$this->emit('connection', [$securedConnection]);
+
+			$this->activeConnections->attach($securedConnection);
+
+			$securedConnection->on('close', function () use ($securedConnection): void {
+				$this->activeConnections->detach($securedConnection);
+			});
 		});
 
 		$this->server->on('error', function ($error): void {
@@ -80,6 +94,12 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 	public function setSharedKey(?string $sharedKey): void
 	{
 		$this->sharedKey = $sharedKey;
+
+		$this->activeConnections->rewind();
+
+		foreach ($this->activeConnections as $connection) {
+			$connection->setSharedKey($sharedKey);
+		}
 	}
 
 	/**
@@ -93,7 +113,7 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 			return null;
 		}
 
-		return str_replace('tcp://', 'tls://', $address);
+		return \str_replace('tcp://', 'tls://', $address);
 	}
 
 	/**

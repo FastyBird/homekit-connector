@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Connector;
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Servers;
+use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
@@ -88,7 +89,11 @@ final class Connector implements DevicesModuleConnectors\IConnector
 			]
 		);
 
-		$this->accessoryFactory->create($this->connector);
+		$this->accessoryFactory->create(
+			$this->connector,
+			null,
+			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE)
+		);
 
 		foreach ($this->serversFactories as $serverFactory) {
 			$server = $serverFactory->create($this->connector);

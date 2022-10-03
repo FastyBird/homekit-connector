@@ -109,7 +109,7 @@ class Execute extends Console\Command\Command
 
 		if (
 			$input->hasOption('connector')
-			&& is_string($input->getOption('connector'))
+			&& \is_string($input->getOption('connector'))
 			&& $input->getOption('connector') !== ''
 		) {
 			$connectorId = $input->getOption('connector');
@@ -136,14 +136,14 @@ class Execute extends Console\Command\Command
 				$connectors[$connector->getIdentifier()] = $connector->getIdentifier() . $connector->getName() ? ' [' . $connector->getName() . ']' : '';
 			}
 
-			if (count($connectors) === 0) {
+			if (\count($connectors) === 0) {
 				$io->warning('No connectors registered in system');
 
 				return Console\Command\Command::FAILURE;
 			}
 
-			if (count($connectors) === 1) {
-				$connectorIdentifier = array_key_first($connectors);
+			if (\count($connectors) === 1) {
+				$connectorIdentifier = \array_key_first($connectors);
 
 				$connector = $this->connectorsRepository->findByIdentifier($connectorIdentifier);
 
@@ -166,12 +166,12 @@ class Execute extends Console\Command\Command
 			} else {
 				$question = new Console\Question\ChoiceQuestion(
 					'Please select connector to execute',
-					array_values($connectors)
+					\array_values($connectors)
 				);
 
 				$question->setErrorMessage('Selected connector: %s is not valid.');
 
-				$connectorIdentifierKey = array_search($io->askQuestion($question), $connectors);
+				$connectorIdentifierKey = \array_search($io->askQuestion($question), $connectors);
 
 				if ($connectorIdentifierKey === false) {
 					$io->error('Something went wrong, connector could not be loaded');

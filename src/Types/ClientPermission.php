@@ -39,7 +39,7 @@ class ClientPermission extends Consistence\Enum\Enum
 	 */
 	public function __toString(): string
 	{
-		return strval(self::getValue());
+		return \strval(self::getValue());
 	}
 
 }

@@ -69,20 +69,20 @@ final class ServiceFactory
 		if (
 			!$serviceMetadata instanceof Utils\ArrayHash
 			|| !$serviceMetadata->offsetExists('UUID')
-			|| !is_string($serviceMetadata->offsetGet('UUID'))
+			|| !\is_string($serviceMetadata->offsetGet('UUID'))
 			|| !$serviceMetadata->offsetExists('RequiredCharacteristics')
-			|| !is_array($serviceMetadata->offsetGet('RequiredCharacteristics'))
+			|| !$serviceMetadata->offsetGet('RequiredCharacteristics') instanceof Utils\ArrayHash
 		) {
 			throw new Exceptions\InvalidState('Service definition is missing required attributes');
 		}
 
 		return new Service(
-			Helpers\Protocol::hapTypeToUuid(strval($serviceMetadata->offsetGet('UUID'))),
+			Helpers\Protocol::hapTypeToUuid(\strval($serviceMetadata->offsetGet('UUID'))),
 			$name,
 			$accessory,
 			$channel,
-			$serviceMetadata->offsetGet('RequiredCharacteristics'),
-			$serviceMetadata->offsetExists('OptionalCharacteristics') && is_array($serviceMetadata->offsetGet('OptionalCharacteristics')) ? $serviceMetadata->offsetGet('OptionalCharacteristics') : []
+			(array) $serviceMetadata->offsetGet('RequiredCharacteristics'),
+			$serviceMetadata->offsetExists('OptionalCharacteristics') && $serviceMetadata->offsetGet('OptionalCharacteristics') instanceof Utils\ArrayHash ? (array) $serviceMetadata->offsetGet('OptionalCharacteristics') : []
 		);
 	}
 

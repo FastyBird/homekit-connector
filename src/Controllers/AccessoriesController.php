@@ -73,6 +73,7 @@ final class AccessoriesController extends BaseController
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
 		var_dump($request->getHeaders());
+		var_dump($request->getServerParams());
 
 		$this->logger->debug(
 			'Requested list of all registered accessories',
@@ -82,7 +83,7 @@ final class AccessoriesController extends BaseController
 			]
 		);
 
-		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = \strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');
@@ -125,7 +126,7 @@ final class AccessoriesController extends BaseController
 			]
 		);
 
-		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
+		$connectorId = \strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
 
 		if (!Uuid\Uuid::isValid($connectorId)) {
 			throw new Exceptions\InvalidState('Connector id could not be determined');

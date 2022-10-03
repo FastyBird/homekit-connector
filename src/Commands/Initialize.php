@@ -334,7 +334,7 @@ class Initialize extends Console\Command\Command
 			$connectors[$connector->getIdentifier()] = $connector->getIdentifier() . ($connector->getName() ? ' [' . $connector->getName() . ']' : '');
 		}
 
-		if (count($connectors) === 0) {
+		if (\count($connectors) === 0) {
 			$io->warning('No HomeKit connectors registered in system');
 
 			$question = new Console\Question\ConfirmationQuestion(
@@ -353,12 +353,12 @@ class Initialize extends Console\Command\Command
 
 		$question = new Console\Question\ChoiceQuestion(
 			'Please select connector to configure',
-			array_values($connectors)
+			\array_values($connectors)
 		);
 
 		$question->setErrorMessage('Selected connector: "%s" is not valid.');
 
-		$connectorIdentifier = array_search($io->askQuestion($question), $connectors);
+		$connectorIdentifier = \array_search($io->askQuestion($question), $connectors);
 
 		if ($connectorIdentifier === false) {
 			$io->error('Something went wrong, connector could not be loaded');
@@ -479,7 +479,7 @@ class Initialize extends Console\Command\Command
 			$connectors[$connector->getIdentifier()] = $connector->getIdentifier() . ($connector->getName() ? ' [' . $connector->getName() . ']' : '');
 		}
 
-		if (count($connectors) === 0) {
+		if (\count($connectors) === 0) {
 			$io->info('No HomeKit connectors registered in system');
 
 			return;
@@ -487,12 +487,12 @@ class Initialize extends Console\Command\Command
 
 		$question = new Console\Question\ChoiceQuestion(
 			'Please select connector to remove',
-			array_values($connectors)
+			\array_values($connectors)
 		);
 
 		$question->setErrorMessage('Selected connector: "%s" is not valid.');
 
-		$connectorIdentifier = array_search($io->askQuestion($question), $connectors);
+		$connectorIdentifier = \array_search($io->askQuestion($question), $connectors);
 
 		if ($connectorIdentifier === false) {
 			$io->error('Something went wrong, connector could not be loaded');

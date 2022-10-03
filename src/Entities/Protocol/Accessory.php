@@ -130,6 +130,12 @@ abstract class Accessory
 			}
 		}
 
+		$this->iidManager->assign($service);
+
+		foreach ($service->getCharacteristics() as $characteristic) {
+			$this->iidManager->assign($characteristic);
+		}
+
 		$this->services->attach($service);
 	}
 
@@ -151,7 +157,7 @@ abstract class Accessory
 	{
 		return [
 			Types\Representation::REPR_AID      => $this->aid,
-			Types\Representation::REPR_SERVICES => array_map(function (Service $service): array {
+			Types\Representation::REPR_SERVICES => \array_map(function (Service $service): array {
 				return $service->toHap();
 			}, $this->getServices()),
 		];

@@ -82,14 +82,14 @@ final class CharacteristicsFactory
 		if (
 			!$characteristicsMetadata instanceof Utils\ArrayHash
 			|| !$characteristicsMetadata->offsetExists('UUID')
-			|| !is_string($characteristicsMetadata->offsetGet('UUID'))
+			|| !\is_string($characteristicsMetadata->offsetGet('UUID'))
 			|| !$characteristicsMetadata->offsetExists('Format')
-			|| !is_string($characteristicsMetadata->offsetGet('Format'))
-			|| Types\DataType::isValidValue($characteristicsMetadata->offsetGet('Format'))
+			|| !\is_string($characteristicsMetadata->offsetGet('Format'))
+			|| !Types\DataType::isValidValue($characteristicsMetadata->offsetGet('Format'))
 			|| !$characteristicsMetadata->offsetExists('Permissions')
-			|| !is_array($characteristicsMetadata->offsetGet('Permissions'))
+			|| !$characteristicsMetadata->offsetGet('Permissions') instanceof Utils\ArrayHash
 		) {
-			throw new Exceptions\InvalidState('Service definition is missing required attributes');
+			throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
 		}
 
 		if (
@@ -101,26 +101,26 @@ final class CharacteristicsFactory
 		}
 
 		if ($minValue === null && $characteristicsMetadata->offsetExists('MinValue')) {
-			$minValue = floatval(Types\CharacteristicUnit::get($characteristicsMetadata->offsetGet('MinValue')));
+			$minValue = floatval($characteristicsMetadata->offsetGet('MinValue'));
 		}
 
 		if ($maxValue === null && $characteristicsMetadata->offsetExists('MaxValue')) {
-			$maxValue = floatval(Types\CharacteristicUnit::get($characteristicsMetadata->offsetGet('MaxValue')));
+			$maxValue = floatval($characteristicsMetadata->offsetGet('MaxValue'));
 		}
 
 		if ($minStep === null && $characteristicsMetadata->offsetExists('MinStep')) {
-			$minStep = floatval(Types\CharacteristicUnit::get($characteristicsMetadata->offsetGet('MinStep')));
+			$minStep = floatval($characteristicsMetadata->offsetGet('MinStep'));
 		}
 
 		if ($maxLength === null && $characteristicsMetadata->offsetExists('MaximumLength')) {
-			$maxLength = intval(Types\CharacteristicUnit::get($characteristicsMetadata->offsetGet('MaximumLength')));
+			$maxLength = \intval($characteristicsMetadata->offsetGet('MaximumLength'));
 		}
 
 		if ($characteristicsMetadata->offsetExists('ValidValues')) {
-			$defaultValidValues = is_array($characteristicsMetadata->offsetGet('ValidValues')) ? array_values($characteristicsMetadata->offsetGet('ValidValues')) : null;
+			$defaultValidValues = \is_array($characteristicsMetadata->offsetGet('ValidValues')) ? \array_values($characteristicsMetadata->offsetGet('ValidValues')) : null;
 
 			if ($validValues !== null && $defaultValidValues !== null) {
-				$validValues = array_values(array_intersect($validValues, $defaultValidValues));
+				$validValues = \array_values(array_intersect($validValues, $defaultValidValues));
 			} else {
 				$validValues = $defaultValidValues;
 			}
@@ -129,10 +129,10 @@ final class CharacteristicsFactory
 		}
 
 		return new Characteristic(
-			Helpers\Protocol::hapTypeToUuid(strval($characteristicsMetadata->offsetGet('UUID'))),
+			Helpers\Protocol::hapTypeToUuid(\strval($characteristicsMetadata->offsetGet('UUID'))),
 			$name,
 			Types\DataType::get($characteristicsMetadata->offsetGet('Format')),
-			$characteristicsMetadata->offsetGet('Permissions'),
+			(array) $characteristicsMetadata->offsetGet('Permissions'),
 			$service,
 			$property,
 			$validValues,
