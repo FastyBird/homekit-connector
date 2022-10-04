@@ -38,7 +38,7 @@ final class TlvDecodeTest extends BaseTestCase
 		Assert::count(1, $result);
 		Assert::same(
 			[
-				Types\TlvCode::CODE_STATE      => 3,
+				Types\TlvCode::CODE_STATE => 3,
 				Types\TlvCode::CODE_IDENTIFIER => 'hello',
 			],
 			$result[0]
@@ -101,9 +101,9 @@ final class TlvDecodeTest extends BaseTestCase
 		Assert::count(1, $result);
 		Assert::same(
 			[
-				Types\TlvCode::CODE_STATE       => 3,
+				Types\TlvCode::CODE_STATE => 3,
 				Types\TlvCode::CODE_CERTIFICATE => $certificate,
-				Types\TlvCode::CODE_IDENTIFIER  => 'hello',
+				Types\TlvCode::CODE_IDENTIFIER => 'hello',
 			],
 			$result[0]
 		);
@@ -144,14 +144,14 @@ final class TlvDecodeTest extends BaseTestCase
 		Assert::count(2, $result);
 		Assert::same(
 			[
-				Types\TlvCode::CODE_IDENTIFIER  => 'hello',
+				Types\TlvCode::CODE_IDENTIFIER => 'hello',
 				Types\TlvCode::CODE_PERMISSIONS => 0,
 			],
 			$result[0]
 		);
 		Assert::same(
 			[
-				Types\TlvCode::CODE_IDENTIFIER  => 'world',
+				Types\TlvCode::CODE_IDENTIFIER => 'world',
 				Types\TlvCode::CODE_PERMISSIONS => 1,
 			],
 			$result[1]

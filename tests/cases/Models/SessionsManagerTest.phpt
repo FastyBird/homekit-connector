@@ -41,7 +41,7 @@ final class SessionsManagerTest extends DbTestCase
 
 		$entity = $manager->create(Utils\ArrayHash::from([
 			'connector' => $connector,
-			'uid'       => '7e11f659-a130-4eb1-b550-dc96c1160c85',
+			'uid' => '7e11f659-a130-4eb1-b550-dc96c1160c85',
 			'publicKey' => $clientPublicKey,
 		]));
 
