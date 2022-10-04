@@ -64,6 +64,13 @@ final class RouterMiddleware
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
+	/**
+	 * @param ServerRequestInterface $request
+	 *
+	 * @return ResponseInterface
+	 *
+	 * @throws Utils\JsonException
+	 */
 	public function __invoke(ServerRequestInterface $request): ResponseInterface
 	{
 		$this->dispatcher?->dispatch(new Events\Request($request));

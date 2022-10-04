@@ -6,8 +6,10 @@ use FastyBird\DevicesModule\DataStorage as DevicesModuleDataStorage;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Middleware;
+use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Types;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use Fig\Http\Message\RequestMethodInterface;
 use IPub\SlimRouter\Http as SlimRouterHttp;
 use Ramsey\Uuid;
@@ -15,7 +17,6 @@ use React\Http\Message\ServerRequest;
 use Tester\Assert;
 use Tests\Tools;
 use function call_user_func;
-use function is_object;
 
 require_once __DIR__ . '/../../bootstrap.php';
 require_once __DIR__ . '/../DbTestCase.php';
@@ -35,6 +36,22 @@ final class CharacteristicsControllerTest extends DbTestCase
 
 		$writer->write();
 		$reader->read();
+
+		/** @var DevicesModuleModels\DataStorage\ConnectorsRepository $repository */
+		$repository = $this->getContainer()->getByType(DevicesModuleModels\DataStorage\ConnectorsRepository::class);
+
+		/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector */
+		$connector = $repository->findById(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
+
+		/** @var Entities\Protocol\AccessoryFactory $acccessoryFactory */
+		$accessoryFactory = $this->getContainer()->getByType(Entities\Protocol\AccessoryFactory::class);
+
+		$accessory = $accessoryFactory->create($connector, null, Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE));
+
+		/** @var Protocol\Driver $accessoryDriver */
+		$accessoryDriver = $this->getContainer()->getByType(Protocol\Driver::class);
+
+		$accessoryDriver->addBridge($accessory);
 	}
 
 	/**
@@ -46,20 +63,6 @@ final class CharacteristicsControllerTest extends DbTestCase
 	 */
 	public function testRead(string $url, int $statusCode, string $fixture): void
 	{
-		/** @var DevicesModuleModels\DataStorage\ConnectorsRepository $repository */
-		$repository = $this->getContainer()->getByType(DevicesModuleModels\DataStorage\ConnectorsRepository::class);
-
-		$connector = $repository->findById(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
-
-		Assert::true(is_object($connector));
-
-		/** @var Entities\Protocol\AccessoryFactory $acccessoryFactory */
-		$acccessoryFactory = $this->getContainer()->getByType(Entities\Protocol\AccessoryFactory::class);
-
-		$accessory = $acccessoryFactory->create($connector, null, Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE));
-
-		Assert::true(is_object($accessory));
-
 		/** @var Middleware\RouterMiddleware $middleware */
 		$middleware = $this->getContainer()->getByType(Middleware\RouterMiddleware::class);
 

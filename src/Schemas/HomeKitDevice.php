@@ -36,6 +36,9 @@ final class HomeKitDevice extends DevicesModuleSchemas\Devices\DeviceSchema
 	 */
 	public const SCHEMA_TYPE = MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_HOMEKIT . '/device/' . Entities\HomeKitDevice::DEVICE_TYPE;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getEntityClass(): string
 	{
 		return Entities\HomeKitDevice::class;

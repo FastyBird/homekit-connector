@@ -27,16 +27,25 @@ class HomeKitDevice extends DevicesModuleEntities\Devices\Device
 
 	public const DEVICE_TYPE = 'homekit';
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getType(): string
 	{
 		return self::DEVICE_TYPE;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getDiscriminatorName(): string
 	{
 		return self::DEVICE_TYPE;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getSource(): MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType
 	{
 		return MetadataTypes\ConnectorSourceType::get(MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_HOMEKIT);

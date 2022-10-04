@@ -30,6 +30,9 @@ use FastyBird\HomeKitConnector\Entities;
 final class HomeKitConnector extends DevicesModuleHydrators\Connectors\ConnectorHydrator
 {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getEntityName(): string
 	{
 		return Entities\HomeKitConnector::class;

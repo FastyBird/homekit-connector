@@ -238,6 +238,9 @@ final class Mdns implements Server
 			});
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function disconnect(): void
 	{
 		$this->logger->debug(

@@ -44,6 +44,14 @@ class Driver
 	}
 
 	/**
+	 * @return void
+	 */
+	public function reset(): void
+	{
+		$this->accessories = new SplObjectStorage();
+	}
+
+	/**
 	 * @param Uuid\UuidInterface $connectorId
 	 *
 	 * @return Entities\Protocol\Bridge|null

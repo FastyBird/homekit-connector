@@ -18,9 +18,7 @@
 namespace FastyBird\HomeKitConnector\Connector;
 
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
-use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Servers;
-use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
@@ -48,18 +46,19 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Servers\ServerFactory[] $serversFactories
-	 * @param Entities\Protocol\AccessoryFactory $accessoryFactory
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
 		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		private array $serversFactories,
-		private Entities\Protocol\AccessoryFactory $accessoryFactory,
 		Log\LoggerInterface|null $logger = null,
 	) {
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function execute(): void
 	{
 		$this->logger->debug(
@@ -71,12 +70,6 @@ final class Connector implements DevicesModuleConnectors\IConnector
 					'id' => $this->connector->getId()->toString(),
 				],
 			],
-		);
-
-		$this->accessoryFactory->create(
-			$this->connector,
-			null,
-			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE),
 		);
 
 		foreach ($this->serversFactories as $serverFactory) {
@@ -98,6 +91,9 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function terminate(): void
 	{
 		foreach ($this->servers as $server) {
@@ -116,6 +112,9 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function hasUnfinishedTasks(): bool
 	{
 		return false;

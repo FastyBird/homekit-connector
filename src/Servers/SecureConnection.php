@@ -131,21 +131,33 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getLocalAddress(): string|null
 	{
 		return $this->connection->getLocalAddress();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getRemoteAddress(): string|null
 	{
 		return $this->connection->getRemoteAddress();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function isReadable(): bool
 	{
 		return $this->connection->isReadable();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function isWritable(): bool
 	{
 		return $this->connection->isWritable();

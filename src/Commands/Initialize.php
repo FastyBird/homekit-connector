@@ -84,6 +84,9 @@ class Initialize extends Console\Command\Command
 		parent::__construct($name);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	protected function configure(): void
 	{
 		$this

@@ -167,6 +167,9 @@ final class Subscriber
 		}
 	}
 
+	/**
+	 * @return void
+	 */
 	public function publish(): void
 	{
 		// TODO: Implement

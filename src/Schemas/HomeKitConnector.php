@@ -37,6 +37,9 @@ final class HomeKitConnector extends DevicesModuleSchemas\Connectors\ConnectorSc
 	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 	public const SCHEMA_TYPE = MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_HOMEKIT . '/connector/' . Entities\HomeKitConnector::CONNECTOR_TYPE;
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function getEntityClass(): string
 	{
 		return Entities\HomeKitConnector::class;

@@ -41,12 +41,10 @@ final class AccessoryFactory
 	/**
 	 * @param ServiceFactory $serviceFactory
 	 * @param CharacteristicsFactory $characteristicsFactory
-	 * @param HomeKitConnector\Protocol\Driver $driver
 	 */
 	public function __construct(
 		private ServiceFactory $serviceFactory,
 		private CharacteristicsFactory $characteristicsFactory,
-		private HomeKitConnector\Protocol\Driver $driver,
 	) {
 		$this->hashIds = new Hashids\Hashids();
 	}
@@ -136,12 +134,6 @@ final class AccessoryFactory
 		}
 
 		$accessory->addService($accessoryInformation);
-
-		if ($accessory instanceof Bridge) {
-			$this->driver->addBridge($accessory);
-		} else {
-			$this->driver->addBridgedAccessory($accessory);
-		}
 
 		return $accessory;
 	}

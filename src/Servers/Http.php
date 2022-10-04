@@ -19,8 +19,11 @@ use Doctrine\DBAL;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Clients;
+use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Middleware;
+use FastyBird\HomeKitConnector\Protocol;
+use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
@@ -32,6 +35,7 @@ use React\EventLoop;
 use React\Http as ReactHttp;
 use React\Socket;
 use Throwable;
+use function assert;
 use function hex2bin;
 use function is_string;
 use function var_dump;
@@ -69,6 +73,8 @@ final class Http implements Server
 	 * @param Middleware\RouterMiddleware $routerMiddleware
 	 * @param SecureServerFactory $secureServerFactory
 	 * @param Clients\Subscriber $subscriber
+	 * @param Protocol\Driver $accessoriesDriver
+	 * @param Entities\Protocol\AccessoryFactory $accessoryFactory
 	 * @param EventLoop\LoopInterface $eventLoop
 	 * @param Log\LoggerInterface|null $logger
 	 */
@@ -78,6 +84,8 @@ final class Http implements Server
 		private Middleware\RouterMiddleware $routerMiddleware,
 		private SecureServerFactory $secureServerFactory,
 		private Clients\Subscriber $subscriber,
+		private Protocol\Driver $accessoriesDriver,
+		private Entities\Protocol\AccessoryFactory $accessoryFactory,
 		private EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
 	) {
@@ -150,6 +158,16 @@ final class Http implements Server
 	 */
 	public function connect(): void
 	{
+		$bridge = $this->accessoryFactory->create(
+			$this->connector,
+			null,
+			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE),
+		);
+		assert($bridge instanceof Entities\Protocol\Bridge);
+
+		$this->accessoriesDriver->reset();
+		$this->accessoriesDriver->addBridge($bridge);
+
 		$port = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
 			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
@@ -316,6 +334,9 @@ final class Http implements Server
 		});
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public function disconnect(): void
 	{
 		$this->logger->debug(
