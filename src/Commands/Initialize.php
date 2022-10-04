@@ -37,6 +37,7 @@ use Throwable;
 use function array_search;
 use function array_values;
 use function count;
+use function sprintf;
 
 /**
  * Connector initialize command
@@ -50,26 +51,10 @@ class Initialize extends Console\Command\Command
 {
 
 	private const CHOICE_QUESTION_CREATE_CONNECTOR = 'Create new connector configuration';
+
 	private const CHOICE_QUESTION_EDIT_CONNECTOR = 'Edit existing connector configuration';
+
 	private const CHOICE_QUESTION_DELETE_CONNECTOR = 'Delete existing connector configuration';
-
-	/** @var DevicesModuleModels\Connectors\IConnectorsRepository */
-	private DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository;
-
-	/** @var DevicesModuleModels\Connectors\IConnectorsManager */
-	private DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager;
-
-	/** @var DevicesModuleModels\Connectors\Properties\IPropertiesManager */
-	private DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager;
-
-	/** @var DevicesModuleModels\Connectors\Controls\IControlsManager */
-	private DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager;
-
-	/** @var DevicesModuleModels\DataStorage\IConnectorsRepository */
-	private DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsDataStorageRepository;
-
-	/** @var Persistence\ManagerRegistry */
-	private Persistence\ManagerRegistry $managerRegistry;
 
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
@@ -85,32 +70,20 @@ class Initialize extends Console\Command\Command
 	 * @param string|null $name
 	 */
 	public function __construct(
-		DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository,
-		DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager,
-		DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager,
-		DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager,
-		DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsDataStorageRepository,
-		Persistence\ManagerRegistry $managerRegistry,
-		?Log\LoggerInterface $logger = null,
-		?string $name = null
+		private DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository,
+		private DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager,
+		private DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager,
+		private DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager,
+		private DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsDataStorageRepository,
+		private Persistence\ManagerRegistry $managerRegistry,
+		Log\LoggerInterface|null $logger = null,
+		string|null $name = null,
 	) {
-		$this->connectorsRepository = $connectorsRepository;
-		$this->connectorsManager = $connectorsManager;
-		$this->propertiesManager = $propertiesManager;
-		$this->controlsManager = $controlsManager;
-
-		$this->connectorsDataStorageRepository = $connectorsDataStorageRepository;
-
-		$this->managerRegistry = $managerRegistry;
-
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		parent::__construct($name);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	protected function configure(): void
 	{
 		$this
@@ -118,8 +91,13 @@ class Initialize extends Console\Command\Command
 			->setDescription('HomeKit connector initialization')
 			->setDefinition(
 				new Input\InputDefinition([
-					new Input\InputOption('no-confirm', null, Input\InputOption::VALUE_NONE, 'Do not ask for any confirmation'),
-				])
+					new Input\InputOption(
+						'no-confirm',
+						null,
+						Input\InputOption::VALUE_NONE,
+						'Do not ask for any confirmation',
+					),
+				]),
 			);
 	}
 
@@ -139,7 +117,7 @@ class Initialize extends Console\Command\Command
 		if (!$input->getOption('no-confirm')) {
 			$question = new Console\Question\ConfirmationQuestion(
 				'Would you like to continue?',
-				false
+				false,
 			);
 
 			$continue = $io->askQuestion($question);
@@ -155,7 +133,7 @@ class Initialize extends Console\Command\Command
 				0 => self::CHOICE_QUESTION_CREATE_CONNECTOR,
 				1 => self::CHOICE_QUESTION_EDIT_CONNECTOR,
 				2 => self::CHOICE_QUESTION_DELETE_CONNECTOR,
-			]
+			],
 		);
 
 		$question->setErrorMessage('Selected answer: "%s" is not valid.');
@@ -223,67 +201,67 @@ class Initialize extends Console\Command\Command
 			$this->getOrmConnection()->beginTransaction();
 
 			$connector = $this->connectorsManager->create(Utils\ArrayHash::from([
-				'entity'     => Entities\HomeKitConnector::class,
+				'entity' => Entities\HomeKitConnector::class,
 				'identifier' => $identifier,
-				'name'       => $name === '' ? null : $name,
+				'name' => $name === '' ? null : $name,
 			]));
 
 			$this->controlsManager->create(Utils\ArrayHash::from([
-				'name'      => Types\ConnectorControlName::NAME_REBOOT,
+				'name' => Types\ConnectorControlName::NAME_REBOOT,
 				'connector' => $connector,
 			]));
 
 			$this->controlsManager->create(Utils\ArrayHash::from([
-				'name'      => Types\ConnectorControlName::NAME_RESET,
+				'name' => Types\ConnectorControlName::NAME_RESET,
 				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
-				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_UCHAR),
-				'value'      => HomeKitConnector\Constants::DEFAULT_PORT,
-				'connector'  => $connector,
+				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_UCHAR),
+				'value' => HomeKitConnector\Constants::DEFAULT_PORT,
+				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PIN_CODE,
-				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
-				'value'      => Helpers\Protocol::generatePinCode(),
-				'connector'  => $connector,
+				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+				'value' => Helpers\Protocol::generatePinCode(),
+				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS,
-				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
-				'value'      => Helpers\Protocol::generateMacAddress(),
-				'connector'  => $connector,
+				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+				'value' => Helpers\Protocol::generateMacAddress(),
+				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID,
-				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
-				'value'      => Helpers\Protocol::generateSetupId(),
-				'connector'  => $connector,
+				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+				'value' => Helpers\Protocol::generateSetupId(),
+				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION,
-				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_USHORT),
-				'value'      => 1,
-				'connector'  => $connector,
+				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_USHORT),
+				'value' => 1,
+				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED,
-				'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN),
-				'value'      => false,
-				'connector'  => $connector,
+				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN),
+				'value' => false,
+				'connector' => $connector,
 			]));
 
 			// Commit all changes into database
@@ -291,20 +269,20 @@ class Initialize extends Console\Command\Command
 
 			$io->success(sprintf(
 				'New connector "%s" was successfully created',
-				$connector->getName() ?? $connector->getIdentifier()
+				$connector->getName() ?? $connector->getIdentifier(),
 			));
 		} catch (Throwable $ex) {
 			// Log caught exception
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'initialize-cmd',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'initialize-cmd',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
-				]
+				],
 			);
 
 			$io->error('Something went wrong, connector could not be created. Error was logged.');
@@ -334,7 +312,8 @@ class Initialize extends Console\Command\Command
 				continue;
 			}
 
-			$connectors[$connector->getIdentifier()] = $connector->getIdentifier() . ($connector->getName() ? ' [' . $connector->getName() . ']' : '');
+			$connectors[$connector->getIdentifier()] = $connector->getIdentifier()
+				. ($connector->getName() ? ' [' . $connector->getName() . ']' : '');
 		}
 
 		if (count($connectors) === 0) {
@@ -342,7 +321,7 @@ class Initialize extends Console\Command\Command
 
 			$question = new Console\Question\ConfirmationQuestion(
 				'Would you like to create new HomeKit connector configuration?',
-				false
+				false,
 			);
 
 			$continue = $io->askQuestion($question);
@@ -356,12 +335,12 @@ class Initialize extends Console\Command\Command
 
 		$question = new Console\Question\ChoiceQuestion(
 			'Please select connector to configure',
-			array_values($connectors)
+			array_values($connectors),
 		);
 
 		$question->setErrorMessage('Selected connector: "%s" is not valid.');
 
-		$connectorIdentifier = array_search($io->askQuestion($question), $connectors);
+		$connectorIdentifier = array_search($io->askQuestion($question), $connectors, true);
 
 		if ($connectorIdentifier === false) {
 			$io->error('Something went wrong, connector could not be loaded');
@@ -370,8 +349,8 @@ class Initialize extends Console\Command\Command
 				'Connector identifier was not able to get from answer',
 				[
 					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'   => 'initialize-cmd',
-				]
+					'type' => 'initialize-cmd',
+				],
 			);
 
 			return;
@@ -389,8 +368,8 @@ class Initialize extends Console\Command\Command
 				'Connector was not found',
 				[
 					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'   => 'initialize-cmd',
-				]
+					'type' => 'initialize-cmd',
+				],
 			);
 
 			return;
@@ -405,7 +384,7 @@ class Initialize extends Console\Command\Command
 		if ($connector->isEnabled()) {
 			$question = new Console\Question\ConfirmationQuestion(
 				'Do you want to disable connector?',
-				false
+				false,
 			);
 
 			if ($io->askQuestion($question)) {
@@ -414,7 +393,7 @@ class Initialize extends Console\Command\Command
 		} else {
 			$question = new Console\Question\ConfirmationQuestion(
 				'Do you want to enable connector?',
-				false
+				false,
 			);
 
 			if ($io->askQuestion($question)) {
@@ -427,7 +406,7 @@ class Initialize extends Console\Command\Command
 			$this->getOrmConnection()->beginTransaction();
 
 			$connector = $this->connectorsManager->update($connector, Utils\ArrayHash::from([
-				'name'    => $name === '' ? null : $name,
+				'name' => $name === '' ? null : $name,
 				'enabled' => $enabled,
 			]));
 
@@ -436,20 +415,20 @@ class Initialize extends Console\Command\Command
 
 			$io->success(sprintf(
 				'Connector "%s" was successfully updated',
-				$connector->getName() ?? $connector->getIdentifier()
+				$connector->getName() ?? $connector->getIdentifier(),
 			));
 		} catch (Throwable $ex) {
 			// Log caught exception
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'initialize-cmd',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'initialize-cmd',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
-				]
+				],
 			);
 
 			$io->error('Something went wrong, connector could not be updated. Error was logged.');
@@ -479,7 +458,8 @@ class Initialize extends Console\Command\Command
 				continue;
 			}
 
-			$connectors[$connector->getIdentifier()] = $connector->getIdentifier() . ($connector->getName() ? ' [' . $connector->getName() . ']' : '');
+			$connectors[$connector->getIdentifier()] = $connector->getIdentifier()
+				. ($connector->getName() ? ' [' . $connector->getName() . ']' : '');
 		}
 
 		if (count($connectors) === 0) {
@@ -490,12 +470,12 @@ class Initialize extends Console\Command\Command
 
 		$question = new Console\Question\ChoiceQuestion(
 			'Please select connector to remove',
-			array_values($connectors)
+			array_values($connectors),
 		);
 
 		$question->setErrorMessage('Selected connector: "%s" is not valid.');
 
-		$connectorIdentifier = array_search($io->askQuestion($question), $connectors);
+		$connectorIdentifier = array_search($io->askQuestion($question), $connectors, true);
 
 		if ($connectorIdentifier === false) {
 			$io->error('Something went wrong, connector could not be loaded');
@@ -504,8 +484,8 @@ class Initialize extends Console\Command\Command
 				'Connector identifier was not able to get from answer',
 				[
 					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'   => 'initialize-cmd',
-				]
+					'type' => 'initialize-cmd',
+				],
 			);
 
 			return;
@@ -523,8 +503,8 @@ class Initialize extends Console\Command\Command
 				'Connector was not found',
 				[
 					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'   => 'initialize-cmd',
-				]
+					'type' => 'initialize-cmd',
+				],
 			);
 
 			return;
@@ -532,7 +512,7 @@ class Initialize extends Console\Command\Command
 
 		$question = new Console\Question\ConfirmationQuestion(
 			'Would you like to continue?',
-			false
+			false,
 		);
 
 		$continue = $io->askQuestion($question);
@@ -552,20 +532,20 @@ class Initialize extends Console\Command\Command
 
 			$io->success(sprintf(
 				'Connector "%s" was successfully removed',
-				$connector->getName() ?? $connector->getIdentifier()
+				$connector->getName() ?? $connector->getIdentifier(),
 			));
 		} catch (Throwable $ex) {
 			// Log caught exception
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'initialize-cmd',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'initialize-cmd',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
-				]
+				],
 			);
 
 			$io->error('Something went wrong, connector could not be removed. Error was logged.');

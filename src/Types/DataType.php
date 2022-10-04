@@ -16,6 +16,7 @@
 namespace FastyBird\HomeKitConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * HAP data type
@@ -32,14 +33,23 @@ class DataType extends Consistence\Enum\Enum
 	 * Define data types
 	 */
 	public const DATA_TYPE_BOOLEAN = 'bool';
+
 	public const DATA_TYPE_INT = 'int';
+
 	public const DATA_TYPE_FLOAT = 'float';
+
 	public const DATA_TYPE_STRING = 'string';
+
 	public const DATA_TYPE_UINT8 = 'uint8';
+
 	public const DATA_TYPE_UINT16 = 'uint16';
+
 	public const DATA_TYPE_UINT32 = 'uint32';
+
 	public const DATA_TYPE_UINT64 = 'uint64';
+
 	public const DATA_TYPE_DATA = 'data';
+
 	public const DATA_TYPE_TLV8 = 'tlv8';
 
 	/**

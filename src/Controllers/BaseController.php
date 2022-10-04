@@ -39,7 +39,7 @@ abstract class BaseController
 	 *
 	 * @return void
 	 */
-	public function injectLogger(?Log\LoggerInterface $logger): void
+	public function injectLogger(Log\LoggerInterface|null $logger): void
 	{
 		$this->logger = $logger ?? new Log\NullLogger();
 	}

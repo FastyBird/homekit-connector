@@ -32,9 +32,6 @@ use SplObjectStorage;
 class Bridge extends Accessory
 {
 
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
-
 	/** @var SplObjectStorage<Device, null> */
 	private SplObjectStorage $accessories;
 
@@ -44,15 +41,13 @@ class Bridge extends Accessory
 	 */
 	public function __construct(
 		string $name,
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
+		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 	) {
 		parent::__construct(
 			$name,
 			HomeKitConnector\Constants::STANDALONE_AID,
-			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE)
+			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE),
 		);
-
-		$this->connector = $connector;
 
 		$this->accessories = new SplObjectStorage();
 	}
@@ -120,7 +115,7 @@ class Bridge extends Accessory
 	}
 
 	/**
-	 * @return Device[]
+	 * @return Array<Device>
 	 */
 	public function getAccessories(): array
 	{
@@ -140,7 +135,7 @@ class Bridge extends Accessory
 	 *
 	 * @return Device|null
 	 */
-	public function getAccessory(int $aid): ?Device
+	public function getAccessory(int $aid): Device|null
 	{
 		$this->accessories->rewind();
 

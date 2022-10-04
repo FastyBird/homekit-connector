@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Exceptions;
 use Nette\Utils;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * Data structure loader
@@ -40,7 +41,7 @@ final class Loader
 
 		try {
 			return Utils\ArrayHash::from((array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY));
-		} catch (Utils\JsonException $ex) {
+		} catch (Utils\JsonException) {
 			throw new Exceptions\InvalidState('Services metadata could not be loaded');
 		}
 	}
@@ -55,7 +56,7 @@ final class Loader
 
 		try {
 			return Utils\ArrayHash::from((array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY));
-		} catch (Utils\JsonException $ex) {
+		} catch (Utils\JsonException) {
 			throw new Exceptions\InvalidState('Characteristics metadata could not be loaded');
 		}
 	}

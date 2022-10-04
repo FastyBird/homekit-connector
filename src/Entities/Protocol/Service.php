@@ -24,6 +24,7 @@ use Ramsey\Uuid;
 use SplObjectStorage;
 use function array_map;
 use function array_merge;
+use function in_array;
 use function sprintf;
 
 /**
@@ -44,61 +45,30 @@ class Service
 
 	public const HAP_PROTOCOL_INFORMATION_SERVICE_UUID = '000000A2-0000-1000-8000-0026BB765291';
 
-	/** @var Uuid\UuidInterface */
-	private Uuid\UuidInterface $typeId;
-
-	/** @var string */
-	private string $name;
-
-	/** @var bool */
-	private bool $primary;
-
 	/** @var bool */
 	private bool $hidden = false;
 
-	/** @var string[] */
-	private array $requiredCharacteristics;
-
-	/** @var string[] */
-	private array $optionalCharacteristics;
-
 	/** @var SplObjectStorage<Characteristic, null> */
 	private SplObjectStorage $characteristics;
-
-	/** @var Accessory */
-	private Accessory $accessory;
-
-	/** @var MetadataEntities\Modules\DevicesModule\ChannelEntity|null */
-	private ?MetadataEntities\Modules\DevicesModule\ChannelEntity $channel;
 
 	/**
 	 * @param Uuid\UuidInterface $typeId
 	 * @param string $name
 	 * @param Accessory $accessory
 	 * @param MetadataEntities\Modules\DevicesModule\ChannelEntity|null $channel
-	 * @param string[] $requiredCharacteristics
-	 * @param string[] $optionalCharacteristics
+	 * @param Array<string> $requiredCharacteristics
+	 * @param Array<string> $optionalCharacteristics
 	 * @param bool $primary
 	 */
 	public function __construct(
-		Uuid\UuidInterface $typeId,
-		string $name,
-		Accessory $accessory,
-		?MetadataEntities\Modules\DevicesModule\ChannelEntity $channel = null,
-		array $requiredCharacteristics = [],
-		array $optionalCharacteristics = [],
-		bool $primary = false
+		private Uuid\UuidInterface $typeId,
+		private string $name,
+		private Accessory $accessory,
+		private MetadataEntities\Modules\DevicesModule\ChannelEntity|null $channel = null,
+		private array $requiredCharacteristics = [],
+		private array $optionalCharacteristics = [],
+		private bool $primary = false,
 	) {
-		$this->typeId = $typeId;
-		$this->name = $name;
-		$this->primary = $primary;
-
-		$this->requiredCharacteristics = $requiredCharacteristics;
-		$this->optionalCharacteristics = $optionalCharacteristics;
-
-		$this->accessory = $accessory;
-		$this->channel = $channel;
-
 		$this->characteristics = new SplObjectStorage();
 	}
 
@@ -129,13 +99,13 @@ class Service
 	/**
 	 * @return MetadataEntities\Modules\DevicesModule\ChannelEntity|null
 	 */
-	public function getChannel(): ?MetadataEntities\Modules\DevicesModule\ChannelEntity
+	public function getChannel(): MetadataEntities\Modules\DevicesModule\ChannelEntity|null
 	{
 		return $this->channel;
 	}
 
 	/**
-	 * @return string[]
+	 * @return Array<string>
 	 */
 	public function getAllowedCharacteristicsNames(): array
 	{
@@ -143,7 +113,7 @@ class Service
 	}
 
 	/**
-	 * @return Characteristic[]
+	 * @return Array<Characteristic>
 	 */
 	public function getCharacteristics(): array
 	{
@@ -172,7 +142,7 @@ class Service
 			throw new Exceptions\InvalidArgument(sprintf(
 				'Characteristics: %s is not allowed for service: %s',
 				$characteristic->getName(),
-				$this->getName()
+				$this->getName(),
 			));
 		}
 
@@ -223,16 +193,17 @@ class Service
 	 * Create a HAP representation of this Service
 	 * Used for json serialization
 	 *
-	 * @return Array<string, string|int|bool|Array<string, bool|float|int|int[]|string|string[]|null>[]|null>
+	 * @return Array<string, (string|int|bool|Array<Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>>|null)>
 	 */
 	public function toHap(): array
 	{
 		return [
-			Types\Representation::REPR_IID     => $this->accessory->getIidManager()->getIid($this),
-			Types\Representation::REPR_TYPE    => Helpers\Protocol::uuidToHapType($this->getTypeId()),
-			Types\Representation::REPR_CHARS   => array_map(function (Characteristic $characteristic): array {
-				return $characteristic->toHap();
-			}, $this->getCharacteristics()),
+			Types\Representation::REPR_IID => $this->accessory->getIidManager()->getIid($this),
+			Types\Representation::REPR_TYPE => Helpers\Protocol::uuidToHapType($this->getTypeId()),
+			Types\Representation::REPR_CHARS => array_map(
+				static fn (Characteristic $characteristic): array => $characteristic->toHap(),
+				$this->getCharacteristics(),
+			),
 			Types\Representation::REPR_PRIMARY => $this->primary,
 			Types\Representation::REPR_HIDDEN => $this->hidden,
 		];
@@ -256,7 +227,7 @@ class Service
 		return sprintf(
 			'<service name=%s chars=%s>',
 			$this->getName(),
-			Nette\Utils\Json::encode($characteristics)
+			Nette\Utils\Json::encode($characteristics),
 		);
 	}
 

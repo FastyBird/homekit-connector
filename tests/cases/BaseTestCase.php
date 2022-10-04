@@ -13,12 +13,8 @@ use function time;
 abstract class BaseTestCase extends BaseMockeryTestCase
 {
 
-	/** @var DI\Container */
-	protected $container;
+	protected DI\Container $container;
 
-	/**
-	 * {@inheritdoc}
-	 */
 	protected function setUp(): void
 	{
 		parent::setUp();
@@ -26,14 +22,9 @@ abstract class BaseTestCase extends BaseMockeryTestCase
 		$this->container = $this->createContainer();
 	}
 
-	/**
-	 * @param string|null $additionalConfig
-	 *
-	 * @return Nette\DI\Container
-	 */
-	protected function createContainer(?string $additionalConfig = null): Nette\DI\Container
+	protected function createContainer(string|null $additionalConfig = null): Nette\DI\Container
 	{
-		$rootDir = __DIR__ . '/../../';
+		$rootDir = __DIR__ . '/../../tests/';
 
 		$config = new Nette\Configurator();
 		$config->setTempDirectory(TEMP_DIR);
@@ -41,7 +32,7 @@ abstract class BaseTestCase extends BaseMockeryTestCase
 		$config->addParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);
 		$config->addParameters(['appDir' => $rootDir, 'wwwDir' => $rootDir]);
 
-		$config->addConfig(__DIR__ . '/../../common.neon');
+		$config->addConfig(__DIR__ . '/../common.neon');
 
 		if ($additionalConfig && file_exists($additionalConfig)) {
 			$config->addConfig($additionalConfig);
@@ -52,15 +43,9 @@ abstract class BaseTestCase extends BaseMockeryTestCase
 		return $config->createContainer();
 	}
 
-	/**
-	 * @param string $serviceType
-	 * @param object $serviceMock
-	 *
-	 * @return void
-	 */
 	protected function mockContainerService(
 		string $serviceType,
-		object $serviceMock
+		object $serviceMock,
 	): void {
 		$foundServiceNames = $this->container->findByType($serviceType);
 
@@ -69,12 +54,6 @@ abstract class BaseTestCase extends BaseMockeryTestCase
 		}
 	}
 
-	/**
-	 * @param string $serviceName
-	 * @param object $service
-	 *
-	 * @return void
-	 */
 	private function replaceContainerService(string $serviceName, object $service): void
 	{
 		$this->container->removeService($serviceName);

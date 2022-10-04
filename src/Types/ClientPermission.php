@@ -16,6 +16,7 @@
 namespace FastyBird\HomeKitConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * HAP accessory permissions type
@@ -32,6 +33,7 @@ class ClientPermission extends Consistence\Enum\Enum
 	 * Define permissions identifiers
 	 */
 	public const PERMISSION_USER = 0;
+
 	public const PERMISSION_ADMIN = 1;
 
 	/**

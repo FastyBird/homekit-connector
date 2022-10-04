@@ -63,9 +63,6 @@ final class Srp
 	private const G = 5;
 
 	/** @var string */
-	private string $username;
-
-	/** @var string */
 	private string $salt;
 
 	/** @var Math\BigInteger */
@@ -78,19 +75,19 @@ final class Srp
 	private Math\BigInteger $serverPublicKey;
 
 	/** @var Math\BigInteger|null */
-	private ?Math\BigInteger $randomScramblingParameter = null;
+	private Math\BigInteger|null $randomScramblingParameter = null;
 
 	/** @var Math\BigInteger|null */
-	private ?Math\BigInteger $premasterSecret = null;
+	private Math\BigInteger|null $premasterSecret = null;
 
 	/** @var string|null */
-	private ?string $sessionKey = null;
+	private string|null $sessionKey = null;
 
 	/** @var string|null */
-	private ?string $clientProof = null;
+	private string|null $clientProof = null;
 
 	/** @var string|null */
-	private ?string $serverProof = null;
+	private string|null $serverProof = null;
 
 	/** @var Math\BigInteger */
 	private Math\BigInteger $n3072;
@@ -102,12 +99,11 @@ final class Srp
 	 * @param Math\BigInteger|null $serverPrivateKey
 	 */
 	public function __construct(
-		string $username,
+		private string $username,
 		string $password,
-		?string $salt = null,
-		?Math\BigInteger $serverPrivateKey = null
+		string|null $salt = null,
+		Math\BigInteger|null $serverPrivateKey = null,
 	) {
-		$this->username = $username;
 		$this->salt = $salt ?? $this->generateSalt();
 		$this->serverPrivateKey = $serverPrivateKey ?? $this->generatePrivateKey();
 
@@ -121,16 +117,24 @@ final class Srp
 
 		$gPadded[] = 5;
 
-		$k = Math\BigInteger::fromBytes(hash('sha512', ($this->n3072->toBytes(false) . pack('C*', ...$gPadded)), true), false);
-		$x = Math\BigInteger::fromBytes(hash('sha512', ($this->salt . hash('sha512', ($username . ':' . $password), true)), true), false);
+		$k = Math\BigInteger::fromBytes(
+			hash('sha512', $this->n3072->toBytes(false) . pack('C*', ...$gPadded), true),
+			false,
+		);
+		$x = Math\BigInteger::fromBytes(
+			hash('sha512', $this->salt . hash('sha512', ($username . ':' . $password), true), true),
+			false,
+		);
 
-		$this->serverPasswordVerifier = Math\BigInteger::of(strval(gmp_powm((string) self::G, (string) $x, (string) $this->n3072)));
+		$this->serverPasswordVerifier = Math\BigInteger::of(
+			strval(gmp_powm((string) self::G, (string) $x, (string) $this->n3072)),
+		);
 		$this->serverPublicKey = Math\BigInteger::of(strval(gmp_mod(
 			gmp_add(
 				gmp_mul((string) $k, (string) $this->serverPasswordVerifier),
-				gmp_powm((string) self::G, (string) $this->serverPrivateKey, (string) $this->n3072)
+				gmp_powm((string) self::G, (string) $this->serverPrivateKey, (string) $this->n3072),
 			),
-			(string) $this->n3072
+			(string) $this->n3072,
 		)));
 	}
 
@@ -145,7 +149,7 @@ final class Srp
 	/**
 	 * @return string|null
 	 */
-	public function getSessionKey(): ?string
+	public function getSessionKey(): string|null
 	{
 		return $this->sessionKey;
 	}
@@ -153,7 +157,7 @@ final class Srp
 	/**
 	 * @return string|null
 	 */
-	public function getClientProof(): ?string
+	public function getClientProof(): string|null
 	{
 		return $this->clientProof;
 	}
@@ -169,7 +173,7 @@ final class Srp
 	/**
 	 * @return string|null
 	 */
-	public function getServerProof(): ?string
+	public function getServerProof(): string|null
 	{
 		return $this->serverProof;
 	}
@@ -185,7 +189,7 @@ final class Srp
 	/**
 	 * @return Math\BigInteger|null
 	 */
-	public function getRandomScramblingParameter(): ?Math\BigInteger
+	public function getRandomScramblingParameter(): Math\BigInteger|null
 	{
 		return $this->randomScramblingParameter;
 	}
@@ -193,7 +197,7 @@ final class Srp
 	/**
 	 * @return Math\BigInteger|null
 	 */
-	public function getPremasterSecret(): ?Math\BigInteger
+	public function getPremasterSecret(): Math\BigInteger|null
 	{
 		return $this->premasterSecret;
 	}
@@ -206,17 +210,21 @@ final class Srp
 	public function computeSharedSessionKey(Math\BigInteger $clientPublicKey): void
 	{
 		$this->randomScramblingParameter = Math\BigInteger::fromBytes(
-			hash('sha512', ($clientPublicKey->toBytes(false) . $this->serverPublicKey->toBytes(false)), true),
-			false
+			hash('sha512', $clientPublicKey->toBytes(false) . $this->serverPublicKey->toBytes(false), true),
+			false,
 		);
 
 		$this->premasterSecret = Math\BigInteger::of(strval(gmp_powm(
 			gmp_mul(
 				(string) $clientPublicKey,
-				gmp_powm((string) $this->serverPasswordVerifier, (string) $this->randomScramblingParameter, (string) $this->n3072)
+				gmp_powm(
+					(string) $this->serverPasswordVerifier,
+					(string) $this->randomScramblingParameter,
+					(string) $this->n3072,
+				),
 			),
 			(string) $this->serverPrivateKey,
-			(string) $this->n3072
+			(string) $this->n3072,
 		)));
 
 		$this->sessionKey = hash('sha512', $this->premasterSecret->toBytes(false), true);
@@ -231,12 +239,10 @@ final class Srp
 		$combined = array_slice(
 			array_map(null, $gBytes, $n3072Bytes), // Zips values
 			0, // Begins selection before first element
-			min(array_map('count', [$gBytes, $n3072Bytes])) // Ends after shortest ends
+			min(array_map('count', [$gBytes, $n3072Bytes])), // Ends after shortest ends
 		);
 
-		$combined = array_map(function (array $row): int {
-			return $row[0] ^ $row[1];
-		}, $combined);
+		$combined = array_map(static fn (array $row): int => $row[0] ^ $row[1], $combined);
 
 		$combined = pack('C*', ...$combined);
 
@@ -250,7 +256,7 @@ final class Srp
 				. $this->serverPublicKey->toBytes(false)
 				. $this->sessionKey
 			),
-			true
+			true,
 		);
 
 		$this->serverProof = hash(
@@ -260,7 +266,7 @@ final class Srp
 				$this->clientProof .
 				$this->sessionKey
 			),
-			true
+			true,
 		);
 	}
 

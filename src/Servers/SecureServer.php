@@ -20,6 +20,7 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use React\Socket;
 use SplObjectStorage;
+use function str_replace;
 
 /**
  * HTTP secured server wrapper
@@ -37,18 +38,6 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 	/** @var SplObjectStorage<SecureConnection, null> */
 	private SplObjectStorage $activeConnections;
 
-	/** @var string|null */
-	private ?string $sharedKey;
-
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
-
-	/** @var Socket\ServerInterface */
-	private Socket\ServerInterface $server;
-
-	/** @var SecureConnectionFactory */
-	private SecureConnectionFactory $secureConnectionFactory;
-
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Socket\ServerInterface $server
@@ -56,21 +45,19 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 	 * @param string|null $sharedKey
 	 */
 	public function __construct(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		Socket\ServerInterface $server,
-		SecureConnectionFactory $secureConnectionFactory,
-		?string $sharedKey = null
+		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		private Socket\ServerInterface $server,
+		private SecureConnectionFactory $secureConnectionFactory,
+		private string|null $sharedKey = null,
 	) {
-		$this->connector = $connector;
-		$this->server = $server;
-		$this->secureConnectionFactory = $secureConnectionFactory;
-
-		$this->sharedKey = $sharedKey;
-
 		$this->activeConnections = new SplObjectStorage();
 
 		$this->server->on('connection', function (Socket\ConnectionInterface $connection): void {
-			$securedConnection = $this->secureConnectionFactory->create($this->connector, $this->sharedKey, $connection);
+			$securedConnection = $this->secureConnectionFactory->create(
+				$this->connector,
+				$this->sharedKey,
+				$connection,
+			);
 
 			$this->emit('connection', [$securedConnection]);
 
@@ -91,7 +78,7 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 	 *
 	 * @return void
 	 */
-	public function setSharedKey(?string $sharedKey): void
+	public function setSharedKey(string|null $sharedKey): void
 	{
 		$this->sharedKey = $sharedKey;
 
@@ -105,7 +92,7 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 	/**
 	 * @return string|null
 	 */
-	public function getAddress(): ?string
+	public function getAddress(): string|null
 	{
 		$address = $this->server->getAddress();
 

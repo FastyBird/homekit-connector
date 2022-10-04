@@ -23,6 +23,7 @@ use IPub\DoctrineTimestampable;
 use Ramsey\Uuid;
 use function is_resource;
 use function rewind;
+use function stream_get_contents;
 use function strval;
 
 /**
@@ -98,7 +99,7 @@ class Client implements DoctrineCrud\Entities\IEntity,
 		string $uid,
 		string $publicKey,
 		DevicesModuleEntities\Connectors\IConnector $connector,
-		?Uuid\UuidInterface $id = null
+		Uuid\UuidInterface|null $id = null,
 	) {
 		$this->id = $id ?? Uuid\Uuid::uuid4();
 

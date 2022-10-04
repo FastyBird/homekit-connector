@@ -17,6 +17,7 @@ namespace FastyBird\HomeKitConnector\Types;
 
 use Consistence;
 use FastyBird\Metadata\Types as MetadataTypes;
+use function strval;
 
 /**
  * Connector control name types
@@ -33,6 +34,7 @@ class ConnectorControlName extends Consistence\Enum\Enum
 	 * Define device states
 	 */
 	public const NAME_REBOOT = MetadataTypes\ControlNameType::NAME_REBOOT;
+
 	public const NAME_RESET = MetadataTypes\ControlNameType::NAME_RESET;
 
 	/**

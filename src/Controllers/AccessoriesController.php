@@ -27,6 +27,8 @@ use IPub\SlimRouter;
 use Nette\Utils;
 use Psr\Http\Message;
 use Ramsey\Uuid;
+use function strval;
+use function var_dump;
 
 /**
  * Accessories controller
@@ -39,22 +41,14 @@ use Ramsey\Uuid;
 final class AccessoriesController extends BaseController
 {
 
-	/** @var Helpers\Connector */
-	private Helpers\Connector $connectorHelper;
-
-	/** @var Protocol\Driver */
-	private Protocol\Driver $accessoriesDriver;
-
 	/**
 	 * @param Helpers\Connector $connectorHelper
 	 * @param Protocol\Driver $accessoriesDriver
 	 */
 	public function __construct(
-		Helpers\Connector $connectorHelper,
-		Protocol\Driver $accessoriesDriver
+		private Helpers\Connector $connectorHelper,
+		private Protocol\Driver $accessoriesDriver,
 	) {
-		$this->connectorHelper = $connectorHelper;
-		$this->accessoriesDriver = $accessoriesDriver;
 	}
 
 	/**
@@ -69,7 +63,7 @@ final class AccessoriesController extends BaseController
 	 */
 	public function index(
 		Message\ServerRequestInterface $request,
-		Message\ResponseInterface $response
+		Message\ResponseInterface $response,
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
 
@@ -77,8 +71,8 @@ final class AccessoriesController extends BaseController
 			'Requested list of all registered accessories',
 			[
 				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'   => 'accessories-controller',
-			]
+				'type' => 'accessories-controller',
+			],
 		);
 
 		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
@@ -111,7 +105,7 @@ final class AccessoriesController extends BaseController
 	 */
 	public function identify(
 		Message\ServerRequestInterface $request,
-		Message\ResponseInterface $response
+		Message\ResponseInterface $response,
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
 		var_dump($request->getHeaders());
@@ -120,8 +114,8 @@ final class AccessoriesController extends BaseController
 			'Requested accessories identify routine',
 			[
 				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'   => 'accessories-controller',
-			]
+				'type' => 'accessories-controller',
+			],
 		);
 
 		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
@@ -134,7 +128,7 @@ final class AccessoriesController extends BaseController
 
 		$paired = $this->connectorHelper->getConfiguration(
 			$connectorId,
-			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED)
+			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED),
 		);
 
 		if ((bool) $paired) {
@@ -142,15 +136,15 @@ final class AccessoriesController extends BaseController
 				'Paired connector could not trigger identify routine',
 				[
 					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'   => 'accessories-controller',
-				]
+					'type' => 'accessories-controller',
+				],
 			);
 
 			throw new Exceptions\HapRequestError(
 				$request,
 				Types\ServerStatus::get(Types\ServerStatus::STATUS_INSUFFICIENT_PRIVILEGES),
 				'Connector is already paired with client',
-				StatusCodeInterface::STATUS_BAD_REQUEST
+				StatusCodeInterface::STATUS_BAD_REQUEST,
 			);
 		}
 
@@ -171,7 +165,7 @@ final class AccessoriesController extends BaseController
 	 */
 	public function resource(
 		Message\ServerRequestInterface $request,
-		Message\ResponseInterface $response
+		Message\ResponseInterface $response,
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
 		var_dump($request->getHeaders());
@@ -180,8 +174,8 @@ final class AccessoriesController extends BaseController
 			'Requested fetching accessory resource',
 			[
 				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'   => 'accessories-controller',
-			]
+				'type' => 'accessories-controller',
+			],
 		);
 
 		// TODO: Implement

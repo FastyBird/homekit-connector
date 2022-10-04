@@ -37,6 +37,7 @@ use function round;
 use function str_replace;
 use function strlen;
 use function strval;
+use function substr;
 
 /**
  * Value transformers
@@ -59,7 +60,7 @@ final class Transformer
 	public static function fromClient(
 		MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property,
 		Types\DataType $dataType,
-		bool|float|int|string|null $value
+		bool|float|int|string|null $value,
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null {
 		$transformedValue = null;
 
@@ -131,32 +132,35 @@ final class Transformer
 			if ($property->getFormat() instanceof MetadataValueObjects\StringEnumFormat) {
 				$filtered = array_values(array_filter(
 					$property->getFormat()->getItems(),
-					function (string $item) use ($transformedValue): bool {
-						return Utils\Strings::lower(strval($transformedValue)) === $item;
-					}
+					static fn (string $item): bool => Utils\Strings::lower(strval($transformedValue)) === $item,
 				));
 
 				if (count($filtered) === 1) {
 					if ($property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)) {
-						return MetadataTypes\SwitchPayloadType::isValidValue(strval($transformedValue)) ? MetadataTypes\SwitchPayloadType::get(strval($transformedValue)) : null;
-
+						return MetadataTypes\SwitchPayloadType::isValidValue(strval($transformedValue))
+							? MetadataTypes\SwitchPayloadType::get(
+								strval($transformedValue),
+							)
+							: null;
 					} elseif ($property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_BUTTON)) {
-						return MetadataTypes\ButtonPayloadType::isValidValue(strval($transformedValue)) ? MetadataTypes\ButtonPayloadType::get(strval($transformedValue)) : null;
-
+						return MetadataTypes\ButtonPayloadType::isValidValue(strval($transformedValue))
+							? MetadataTypes\ButtonPayloadType::get(
+								strval($transformedValue),
+							)
+							: null;
 					} else {
 						return strval($transformedValue);
 					}
 				}
 
 				return null;
-
 			} elseif ($property->getFormat() instanceof MetadataValueObjects\CombinedEnumFormat) {
 				$filtered = array_values(array_filter(
 					$property->getFormat()->getItems(),
-					function (array $item) use ($transformedValue): bool {
-						return $item[1] !== null
-							&& Utils\Strings::lower(strval($item[1]->getValue())) === Utils\Strings::lower(strval($transformedValue));
-					}
+					static fn (array $item): bool => $item[1] !== null
+							&& Utils\Strings::lower(strval($item[1]->getValue())) === Utils\Strings::lower(
+								strval($transformedValue),
+							),
 				));
 
 				if (
@@ -164,11 +168,17 @@ final class Transformer
 					&& $filtered[0][0] instanceof MetadataValueObjects\CombinedEnumFormatItem
 				) {
 					if ($property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_SWITCH)) {
-						return MetadataTypes\SwitchPayloadType::isValidValue(strval($filtered[0][0]->getValue())) ? MetadataTypes\SwitchPayloadType::get(strval($filtered[0][0]->getValue())) : null;
-
+						return MetadataTypes\SwitchPayloadType::isValidValue(strval($filtered[0][0]->getValue()))
+							? MetadataTypes\SwitchPayloadType::get(
+								strval($filtered[0][0]->getValue()),
+							)
+							: null;
 					} elseif ($property->getDataType()->equalsValue(MetadataTypes\DataTypeType::DATA_TYPE_BUTTON)) {
-						return MetadataTypes\ButtonPayloadType::isValidValue(strval($filtered[0][0]->getValue())) ? MetadataTypes\ButtonPayloadType::get(strval($filtered[0][0]->getValue())) : null;
-
+						return MetadataTypes\ButtonPayloadType::isValidValue(strval($filtered[0][0]->getValue()))
+							? MetadataTypes\ButtonPayloadType::get(
+								strval($filtered[0][0]->getValue()),
+							)
+							: null;
 					} else {
 						return strval($filtered[0][0]->getValue());
 					}
@@ -184,7 +194,7 @@ final class Transformer
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property
 	 * @param Types\DataType $dataType
-	 * @param int[]|null $validValues
+	 * @param Array<int>|null $validValues
 	 * @param int|null $maxLength
 	 * @param float|null $minValue
 	 * @param float|null $maxValue
@@ -196,12 +206,12 @@ final class Transformer
 	public static function toClient(
 		MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property,
 		Types\DataType $dataType,
-		?array $validValues,
-		?int $maxLength,
-		?float $minValue,
-		?float $maxValue,
-		?float $minStep,
-		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value
+		array|null $validValues,
+		int|null $maxLength,
+		float|null $minValue,
+		float|null $maxValue,
+		float|null $minStep,
+		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
 	): bool|float|int|string|null {
 		$transformedValue = null;
 
@@ -216,9 +226,7 @@ final class Transformer
 				if ($property->getFormat() instanceof MetadataValueObjects\StringEnumFormat) {
 					$filtered = array_values(array_filter(
 						$property->getFormat()->getItems(),
-						function (string $item) use ($value): bool {
-							return Utils\Strings::lower(strval($value)) === $item;
-						}
+						static fn (string $item): bool => Utils\Strings::lower(strval($value)) === $item,
 					));
 
 					if (count($filtered) === 1) {
@@ -227,17 +235,21 @@ final class Transformer
 				} elseif ($property->getFormat() instanceof MetadataValueObjects\CombinedEnumFormat) {
 					$filtered = array_values(array_filter(
 						$property->getFormat()->getItems(),
-						function (array $item) use ($value): bool {
-							return $item[0] !== null
-								&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(strval($value));
-						}
+						static fn (array $item): bool => $item[0] !== null
+								&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(
+									strval($value),
+								),
 					));
 
 					if (
 						count($filtered) === 1
 						&& $filtered[0][2] instanceof MetadataValueObjects\CombinedEnumFormatItem
 					) {
-						$transformedValue = is_scalar($filtered[0][2]->getValue()) ? $filtered[0][2]->getValue() : strval($filtered[0][2]->getValue());
+						$transformedValue = is_scalar($filtered[0][2]->getValue())
+							? $filtered[0][2]->getValue()
+							: strval(
+								$filtered[0][2]->getValue(),
+							);
 					}
 				}
 
@@ -287,8 +299,8 @@ final class Transformer
 				$transformedValue = round($minStep * round($transformedValue / $minStep), 14);
 			}
 
-			$transformedValue = (float) min($maxValue ?: $transformedValue, $transformedValue);
-			$transformedValue = (float) max($minValue ?: $transformedValue, $transformedValue);
+			$transformedValue = (float) min($maxValue ?? $transformedValue, $transformedValue);
+			$transformedValue = (float) max($minValue ?? $transformedValue, $transformedValue);
 		} elseif (
 			$dataType->equalsValue(Types\DataType::DATA_TYPE_INT)
 			|| $dataType->equalsValue(Types\DataType::DATA_TYPE_UINT8)
@@ -306,10 +318,14 @@ final class Transformer
 				$transformedValue = round($minStep * round($transformedValue / $minStep), 14);
 			}
 
-			$transformedValue = (int) min($maxValue ?: $transformedValue, $transformedValue);
-			$transformedValue = (int) max($minValue ?: $transformedValue, $transformedValue);
+			$transformedValue = (int) min($maxValue ?? $transformedValue, $transformedValue);
+			$transformedValue = (int) max($minValue ?? $transformedValue, $transformedValue);
 		} elseif ($dataType->equalsValue(Types\DataType::DATA_TYPE_STRING)) {
-			$transformedValue = $value !== null ? substr(strval($value), 0, ($maxLength ?: strlen(strval($value)))) : '';
+			$transformedValue = $value !== null ? substr(
+				strval($value),
+				0,
+				($maxLength ?? strlen(strval($value))),
+			) : '';
 		}
 
 		if ($validValues !== null && !in_array((int) $transformedValue, $validValues, true)) {

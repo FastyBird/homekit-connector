@@ -25,14 +25,20 @@ use function bin2hex;
 use function count;
 use function explode;
 use function implode;
+use function ltrim;
 use function pow;
 use function rand;
 use function random_bytes;
+use function shuffle;
 use function socket_close;
 use function socket_connect;
 use function socket_create;
 use function socket_getsockname;
 use function str_repeat;
+use function strlen;
+use const AF_INET;
+use const SOCK_DGRAM;
+use const SOL_UDP;
 
 /**
  * HAP protocol utilities
@@ -60,7 +66,9 @@ final class Protocol
 			return $longType;
 		}
 
-		return ltrim((explode('-', $uuid->toString(), 2) + [''])[0], '0');
+		$parts = explode('-', $uuid->toString(), 2) + [''];
+
+		return ltrim($parts[0], '0');
 	}
 
 	/**
@@ -76,13 +84,15 @@ final class Protocol
 			return Uuid\Uuid::fromString($type);
 		}
 
-		return Uuid\Uuid::fromString(str_repeat('0', 8 - strlen($type)) . $type . HomeKitConnector\Constants::BASE_UUID);
+		return Uuid\Uuid::fromString(
+			str_repeat('0', 8 - strlen($type)) . $type . HomeKitConnector\Constants::BASE_UUID,
+		);
 	}
 
 	/**
 	 * @return string|null
 	 */
-	public static function getLocalAddress(): ?string
+	public static function getLocalAddress(): string|null
 	{
 		$address = $sock = null;
 
@@ -98,7 +108,6 @@ final class Protocol
 
 		} catch (Throwable) {
 			return null;
-
 		} finally {
 			if ($sock instanceof Socket) {
 				socket_close($sock);

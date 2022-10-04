@@ -21,19 +21,15 @@ use FastyBird\HomeKitConnector\Entities;
 /**
  * HomeKit device entity hydrator
  *
+ * @phpstan-extends DevicesModuleHydrators\Devices\DeviceHydrator<Entities\HomeKitDevice>
+ *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Hydrators
- *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- *
- * @phpstan-extends DevicesModuleHydrators\Devices\DeviceHydrator<Entities\HomeKitDevice>
  */
 final class HomeKitDevice extends DevicesModuleHydrators\Devices\DeviceHydrator
 {
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getEntityName(): string
 	{
 		return Entities\HomeKitDevice::class;

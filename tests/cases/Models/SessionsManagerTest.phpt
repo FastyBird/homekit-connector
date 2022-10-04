@@ -13,7 +13,7 @@ use Tester\Assert;
 use function is_object;
 use function random_bytes;
 
-require_once __DIR__ . '/../../../bootstrap.php';
+require_once __DIR__ . '/../../bootstrap.php';
 require_once __DIR__ . '/../DbTestCase.php';
 
 /**

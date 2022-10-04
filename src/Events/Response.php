@@ -30,22 +30,14 @@ use Symfony\Contracts\EventDispatcher;
 class Response extends EventDispatcher\Event
 {
 
-	/** @var ServerRequestInterface */
-	private ServerRequestInterface $request;
-
-	/** @var ResponseInterface */
-	private ResponseInterface $response;
-
 	/**
 	 * @param ServerRequestInterface $request
 	 * @param ResponseInterface $response
 	 */
 	public function __construct(
-		ServerRequestInterface $request,
-		ResponseInterface $response
+		private ServerRequestInterface $request,
+		private ResponseInterface $response,
 	) {
-		$this->request = $request;
-		$this->response = $response;
 	}
 
 	/**

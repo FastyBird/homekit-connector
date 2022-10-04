@@ -1,20 +1,44 @@
-<ruleset
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="./vendor/squizlabs/php_codesniffer/phpcs.xsd">
-
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="./vendor/squizlabs/php_codesniffer/phpcs.xsd">
     <!-- Show only relevant part of path -->
     <arg name="basepath" value="./"/>
 
-    <!-- Configure cache -->
-    <arg name="cache" value="./var/build-tools/codesniffer.dat"/>
-
     <!-- Import coding-standard -->
-    <rule ref="./vendor/orisai/coding-standard/src/ruleset-8.1.xml"/>
+    <rule ref="./vendor/orisai/coding-standard/src/ruleset-8.1.xml">
+        <exclude name="Generic.Functions.OpeningFunctionBraceBsdAllman.BraceOnSameLine"/>
+
+        <exclude name="SlevomatCodingStandard.Commenting.ForbiddenAnnotations.AnnotationForbidden"/>
+
+        <exclude name="SlevomatCodingStandard.Commenting.DocCommentSpacing.IncorrectLinesCountBetweenDifferentAnnotationsTypes"/>
+        <exclude name="SlevomatCodingStandard.Commenting.DocCommentSpacing.IncorrectAnnotationsGroup"/>
+
+
+        <exclude name="SlevomatCodingStandard.Commenting.UselessFunctionDocComment.UselessDocComment"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.UselessAnnotation"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation"/>
+    </rule>
 
     <!-- Configure PSR-4 rule -->
-    <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName"/>
+    <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
+        <properties>
+            <property name="rootNamespaces" type="array">
+                <element key="src" value="FastyBird\HomeKitConnector"/>
+                <element key="tests/cases" value="Tests\Cases"/>
+                <element key="tests/tools" value="Tests\Tools"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Files.LineLength">
+        <properties>
+            <property name="lineLengthLimit" value="150"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="ignoreImports" value="true"/>
+        </properties>
+    </rule>
 
     <!--Exclude folders -->
     <exclude-pattern>/tests/tmp</exclude-pattern>
-    <exclude-pattern>tests/PHPStan/stubs/*</exclude-pattern>
+    <exclude-pattern>/tests/stubs/*</exclude-pattern>
 </ruleset>

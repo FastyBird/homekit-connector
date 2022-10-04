@@ -48,6 +48,7 @@ class Characteristic
 	use Nette\SmartObject;
 
 	private const DEFAULT_MAX_LENGTH = 64;
+
 	private const ABSOLUTE_MAX_LENGTH = 256;
 
 	private const ALWAYS_NULL = [
@@ -59,42 +60,6 @@ class Characteristic
 		'00000073-0000-1000-8000-0026BB765291', // PROGRAMMABLE SWITCH
 	];
 
-	/** @var Uuid\UuidInterface */
-	private Uuid\UuidInterface $typeId;
-
-	/** @var string */
-	private string $name;
-
-	/** @var Types\DataType */
-	private Types\DataType $dataType;
-
-	/** @var int[]|null */
-	private ?array $validValues;
-
-	/** @var int|null */
-	private ?int $maxLength;
-
-	/** @var float|null */
-	private ?float $minValue;
-
-	/** @var float|null */
-	private ?float $maxValue;
-
-	/** @var float|null */
-	private ?float $minStep;
-
-	/** @var Types\CharacteristicUnit|null */
-	private ?Types\CharacteristicUnit $unit;
-
-	/** @var string[] */
-	private array $permissions;
-
-	/** @var Service */
-	private Service $service;
-
-	/** @var MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null */
-	private MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property;
-
 	/** @var bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null */
 	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $actualValue = null;
 
@@ -105,10 +70,10 @@ class Characteristic
 	 * @param Uuid\UuidInterface $typeId
 	 * @param string $name
 	 * @param Types\DataType $dataType
-	 * @param string[] $permissions
+	 * @param Array<string> $permissions
 	 * @param Service $service
 	 * @param MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property
-	 * @param int[]|null $validValues
+	 * @param Array<int>|null $validValues
 	 * @param int|null $maxLength
 	 * @param float|null $minValue
 	 * @param float|null $maxValue
@@ -116,36 +81,23 @@ class Characteristic
 	 * @param Types\CharacteristicUnit|null $unit
 	 */
 	public function __construct(
-		Uuid\UuidInterface $typeId,
-		string $name,
-		Types\DataType $dataType,
-		array $permissions,
-		Service $service,
-		MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property = null,
-		?array $validValues = [],
-		?int $maxLength = null,
-		?float $minValue = null,
-		?float $maxValue = null,
-		?float $minStep = null,
-		?Types\CharacteristicUnit $unit = null
+		private Uuid\UuidInterface $typeId,
+		private string $name,
+		private Types\DataType $dataType,
+		private array $permissions,
+		private Service $service,
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		private MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property = null,
+		private array|null $validValues = [],
+		private int|null $maxLength = null,
+		private float|null $minValue = null,
+		private float|null $maxValue = null,
+		private float|null $minStep = null,
+		private Types\CharacteristicUnit|null $unit = null,
 	) {
 		if ($maxLength !== null && $maxLength > self::ABSOLUTE_MAX_LENGTH) {
 			throw new Exceptions\InvalidArgument('Characteristic max length exceeded allowed maximum');
 		}
-
-		$this->typeId = $typeId;
-		$this->name = $name;
-		$this->dataType = $dataType;
-		$this->validValues = $validValues;
-		$this->maxLength = $maxLength;
-		$this->minValue = $minValue;
-		$this->maxValue = $maxValue;
-		$this->minStep = $minStep;
-		$this->unit = $unit;
-		$this->permissions = $permissions;
-
-		$this->service = $service;
-		$this->property = $property;
 	}
 
 	/**
@@ -173,7 +125,7 @@ class Characteristic
 	}
 
 	/**
-	 * @return string[]
+	 * @return Array<string>
 	 */
 	public function getPermissions(): array
 	{
@@ -181,9 +133,9 @@ class Characteristic
 	}
 
 	/**
-	 * @return int[]|null
+	 * @return Array<int>|null
 	 */
-	public function getValidValues(): ?array
+	public function getValidValues(): array|null
 	{
 		return $this->validValues;
 	}
@@ -191,7 +143,7 @@ class Characteristic
 	/**
 	 * @return float|null
 	 */
-	public function getMinValue(): ?float
+	public function getMinValue(): float|null
 	{
 		return $this->minValue;
 	}
@@ -199,7 +151,7 @@ class Characteristic
 	/**
 	 * @return float|null
 	 */
-	public function getMaxValue(): ?float
+	public function getMaxValue(): float|null
 	{
 		return $this->maxValue;
 	}
@@ -207,7 +159,7 @@ class Characteristic
 	/**
 	 * @return float|null
 	 */
-	public function getMinStep(): ?float
+	public function getMinStep(): float|null
 	{
 		return $this->minStep;
 	}
@@ -215,7 +167,7 @@ class Characteristic
 	/**
 	 * @return int|null
 	 */
-	public function getMaxLength(): ?int
+	public function getMaxLength(): int|null
 	{
 		return $this->maxLength;
 	}
@@ -223,6 +175,7 @@ class Characteristic
 	/**
 	 * @return MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null
 	 */
+	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 	public function getProperty(): MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null
 	{
 		return $this->property;
@@ -245,7 +198,9 @@ class Characteristic
 	 *
 	 * @return void
 	 */
-	public function setActualValue(bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value): void
+	public function setActualValue(
+		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
+	): void
 	{
 		$this->actualValue = $value;
 
@@ -267,7 +222,9 @@ class Characteristic
 	 *
 	 * @return void
 	 */
-	public function setExpectedValue(bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value): void
+	public function setExpectedValue(
+		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
+	): void
 	{
 		$this->expectedValue = $value;
 	}
@@ -277,7 +234,7 @@ class Characteristic
 	 */
 	public function isAlwaysNull(): bool
 	{
-		return in_array($this->typeId->toString(), self::ALWAYS_NULL);
+		return in_array($this->typeId->toString(), self::ALWAYS_NULL, true);
 	}
 
 	/**
@@ -285,11 +242,11 @@ class Characteristic
 	 */
 	public function immediateNotify(): bool
 	{
-		return in_array($this->typeId->toString(), self::IMMEDIATE_NOTIFY);
+		return in_array($this->typeId->toString(), self::IMMEDIATE_NOTIFY, true);
 	}
 
 	/**
-	 * @return Array<string, int|int[]|float|string>
+	 * @return Array<string, (int|Array<int>|float|string)>
 	 */
 	public function getMeta(): array
 	{
@@ -339,14 +296,14 @@ class Characteristic
 	 * Create a HAP representation of this Characteristic
 	 * Used for json serialization
 	 *
-	 * @return Array<string, bool|float|int|int[]|string|string[]|null>
+	 * @return Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>
 	 */
 	public function toHap(): array
 	{
 		$hapRepresentation = [
-			Types\Representation::REPR_IID    => $this->service->getAccessory()->getIidManager()->getIid($this),
-			Types\Representation::REPR_TYPE   => Helpers\Protocol::uuidToHapType($this->typeId),
-			Types\Representation::REPR_PERM   => $this->permissions,
+			Types\Representation::REPR_IID => $this->service->getAccessory()->getIidManager()->getIid($this),
+			Types\Representation::REPR_TYPE => Helpers\Protocol::uuidToHapType($this->typeId),
+			Types\Representation::REPR_PERM => $this->permissions,
 			Types\Representation::REPR_FORMAT => strval($this->dataType->getValue()),
 		];
 
@@ -361,14 +318,14 @@ class Characteristic
 				$this->minValue,
 				$this->maxValue,
 				$this->minStep,
-				$this->getActualValue()
+				$this->getActualValue(),
 			);
 		}
 
 		$hapRepresentation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = in_array(
 			Types\CharacteristicPermission::PERMISSION_NOTIFY,
 			$this->permissions,
-			true
+			true,
 		);
 
 		return $hapRepresentation;
@@ -410,7 +367,7 @@ class Characteristic
 			'<characteristic name=%s value=%s properties=%s>',
 			$this->name,
 			strval($this->getActualValue()),
-			Nette\Utils\Json::encode($properties)
+			Nette\Utils\Json::encode($properties),
 		);
 	}
 

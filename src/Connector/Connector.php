@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+// phpcs:ignoreFile
+
 /**
  * Connector.php
  *
@@ -37,17 +39,8 @@ final class Connector implements DevicesModuleConnectors\IConnector
 
 	use Nette\SmartObject;
 
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
-
-	/** @var Servers\Server[] */
+	/** @var Array<Servers\Server> */
 	private array $servers = [];
-
-	/** @var Servers\ServerFactory[] */
-	private array $serversFactories;
-
-	/** @var Entities\Protocol\AccessoryFactory */
-	private Entities\Protocol\AccessoryFactory $accessoryFactory;
 
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
@@ -59,40 +52,31 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		array $serversFactories,
-		Entities\Protocol\AccessoryFactory $accessoryFactory,
-		?Log\LoggerInterface $logger = null
+		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		private array $serversFactories,
+		private Entities\Protocol\AccessoryFactory $accessoryFactory,
+		Log\LoggerInterface|null $logger = null,
 	) {
-		$this->connector = $connector;
-
-		$this->serversFactories = $serversFactories;
-
-		$this->accessoryFactory = $accessoryFactory;
-
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function execute(): void
 	{
 		$this->logger->debug(
 			'Registering bridge accessory from connector configuration',
 			[
-				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'      => 'connector',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'connector',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
 				],
-			]
+			],
 		);
 
 		$this->accessoryFactory->create(
 			$this->connector,
 			null,
-			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE)
+			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE),
 		);
 
 		foreach ($this->serversFactories as $serverFactory) {
@@ -105,18 +89,15 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		$this->logger->debug(
 			'Connector has been started',
 			[
-				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'      => 'connector',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'connector',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
 				],
-			]
+			],
 		);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function terminate(): void
 	{
 		foreach ($this->servers as $server) {
@@ -126,18 +107,15 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		$this->logger->debug(
 			'Connector has been terminated',
 			[
-				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'      => 'connector',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'connector',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
 				],
-			]
+			],
 		);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function hasUnfinishedTasks(): bool
 	{
 		return false;

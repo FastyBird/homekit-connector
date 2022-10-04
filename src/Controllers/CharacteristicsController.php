@@ -42,6 +42,7 @@ use function in_array;
 use function intval;
 use function is_array;
 use function strval;
+use function var_dump;
 
 /**
  * Accessories services characteristics controller
@@ -57,27 +58,6 @@ final class CharacteristicsController extends BaseController
 	/** @var Array<string, Array<int, int>> */
 	private array $preparedWrites = [];
 
-	/** @var Protocol\Driver */
-	private Protocol\Driver $accessoryDriver;
-
-	/** @var Clients\Subscriber */
-	private Clients\Subscriber $subscriber;
-
-	/** @var DateTimeFactory\DateTimeFactory */
-	private DateTimeFactory\DateTimeFactory $dateTimeFactory;
-
-	/** @var ExchangeEntities\EntityFactory */
-	private ExchangeEntities\EntityFactory $entityFactory;
-
-	/** @var ExchangePublisher\IPublisher|null */
-	private ?ExchangePublisher\IPublisher $publisher;
-
-	/** @var EventDispatcher\EventDispatcherInterface|null */
-	private ?EventDispatcher\EventDispatcherInterface $dispatcher;
-
-	/** @var DevicesModuleModels\DataStorage\ChannelsRepository */
-	private DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository;
-
 	/**
 	 * @param Protocol\Driver $accessoryDriver
 	 * @param Clients\Subscriber $subscriber
@@ -88,21 +68,14 @@ final class CharacteristicsController extends BaseController
 	 * @param DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository
 	 */
 	public function __construct(
-		Protocol\Driver $accessoryDriver,
-		Clients\Subscriber $subscriber,
-		DateTimeFactory\DateTimeFactory $dateTimeFactory,
-		ExchangeEntities\EntityFactory $entityFactory,
-		?ExchangePublisher\IPublisher $publisher,
-		?EventDispatcher\EventDispatcherInterface $dispatcher,
-		DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
+		private Protocol\Driver $accessoryDriver,
+		private Clients\Subscriber $subscriber,
+		private DateTimeFactory\DateTimeFactory $dateTimeFactory,
+		private ExchangeEntities\EntityFactory $entityFactory,
+		private ExchangePublisher\IPublisher|null $publisher,
+		private EventDispatcher\EventDispatcherInterface|null $dispatcher,
+		private DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
 	) {
-		$this->accessoryDriver = $accessoryDriver;
-		$this->subscriber = $subscriber;
-		$this->dateTimeFactory = $dateTimeFactory;
-		$this->entityFactory = $entityFactory;
-		$this->publisher = $publisher;
-		$this->dispatcher = $dispatcher;
-		$this->channelsRepository = $channelsRepository;
 	}
 
 	/**
@@ -116,19 +89,19 @@ final class CharacteristicsController extends BaseController
 	 */
 	public function index(
 		Message\ServerRequestInterface $request,
-		Message\ResponseInterface $response
+		Message\ResponseInterface $response,
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
 
 		$this->logger->debug(
 			'Requested list of characteristics of selected accessories',
 			[
-				'source'  => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'    => 'characteristics-controller',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'characteristics-controller',
 				'request' => [
 					'query' => $request->getQueryParams(),
 				],
-			]
+			],
 		);
 
 		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
@@ -146,14 +119,26 @@ final class CharacteristicsController extends BaseController
 				$request,
 				Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
 				'Request query does not have required parameters',
-				StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY
+				StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
 			);
 		}
 
-		$meta = array_key_exists(Types\Representation::REPR_META, $queryParams) && (int) $queryParams[Types\Representation::REPR_META] === 1;
-		$perms = array_key_exists(Types\Representation::REPR_PERM, $queryParams) && (int) $queryParams[Types\Representation::REPR_PERM] === 1;
-		$type = array_key_exists(Types\Representation::REPR_TYPE, $queryParams) && (int) $queryParams[Types\Representation::REPR_TYPE] === 1;
-		$ev = array_key_exists(Types\CharacteristicPermission::PERMISSION_NOTIFY, $queryParams) && (int) $queryParams[Types\CharacteristicPermission::PERMISSION_NOTIFY] === 1;
+		$meta = array_key_exists(
+			Types\Representation::REPR_META,
+			$queryParams,
+		) && (int) $queryParams[Types\Representation::REPR_META] === 1;
+		$perms = array_key_exists(
+			Types\Representation::REPR_PERM,
+			$queryParams,
+		) && (int) $queryParams[Types\Representation::REPR_PERM] === 1;
+		$type = array_key_exists(
+			Types\Representation::REPR_TYPE,
+			$queryParams,
+		) && (int) $queryParams[Types\Representation::REPR_TYPE] === 1;
+		$ev = array_key_exists(
+			Types\CharacteristicPermission::PERMISSION_NOTIFY,
+			$queryParams,
+		) && (int) $queryParams[Types\CharacteristicPermission::PERMISSION_NOTIFY] === 1;
 
 		$ids = explode(',', $queryParams['id']);
 
@@ -169,7 +154,7 @@ final class CharacteristicsController extends BaseController
 					$request,
 					Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
 					'Request query has invalid format pro ID parameter',
-					StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY
+					StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
 				);
 			}
 
@@ -183,7 +168,7 @@ final class CharacteristicsController extends BaseController
 				$meta,
 				$perms,
 				$type,
-				$ev
+				$ev,
 			);
 		}
 
@@ -199,7 +184,9 @@ final class CharacteristicsController extends BaseController
 		}
 
 		var_dump($result);
-		$response = $response->withStatus($anyError ? StatusCodeInterface::STATUS_MULTI_STATUS : StatusCodeInterface::STATUS_OK);
+		$response = $response->withStatus(
+			$anyError ? StatusCodeInterface::STATUS_MULTI_STATUS : StatusCodeInterface::STATUS_OK,
+		);
 		$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode($result)));
 
@@ -218,7 +205,7 @@ final class CharacteristicsController extends BaseController
 	 */
 	public function update(
 		Message\ServerRequestInterface $request,
-		Message\ResponseInterface $response
+		Message\ResponseInterface $response,
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
 		var_dump($request->getHeaders());
@@ -226,12 +213,12 @@ final class CharacteristicsController extends BaseController
 		$this->logger->debug(
 			'Requested updating of characteristics of selected accessories',
 			[
-				'source'  => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'    => 'characteristics-controller',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'characteristics-controller',
 				'request' => [
 					'query' => $request->getQueryParams(),
 				],
-			]
+			],
 		);
 
 		$connectorId = strval($request->getAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR));
@@ -252,7 +239,7 @@ final class CharacteristicsController extends BaseController
 				Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
 				'Request body could not be decoded',
 				StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
-				$ex
+				$ex,
 			);
 		}
 
@@ -269,7 +256,9 @@ final class CharacteristicsController extends BaseController
 			);
 		}
 
-		$pid = array_key_exists(Types\Representation::REPR_PID, $body) ? (int) $body[Types\Representation::REPR_PID] : null;
+		$pid = array_key_exists(Types\Representation::REPR_PID, $body)
+			? (int) $body[Types\Representation::REPR_PID]
+			: null;
 
 		$timedWriteError = false;
 
@@ -277,7 +266,9 @@ final class CharacteristicsController extends BaseController
 			if (
 				!array_key_exists(strval($request->getServerParams()['REMOTE_ADDR']), $this->preparedWrites)
 				|| !array_key_exists($pid, $this->preparedWrites[strval($request->getServerParams()['REMOTE_ADDR'])])
-				|| $this->preparedWrites[strval($request->getServerParams()['REMOTE_ADDR'])][$pid] < $this->dateTimeFactory->getNow()->getTimestamp()
+				|| $this->preparedWrites[strval(
+					$request->getServerParams()['REMOTE_ADDR'],
+				)][$pid] < $this->dateTimeFactory->getNow()->getTimestamp()
 			) {
 				$timedWriteError = true;
 			}
@@ -303,8 +294,18 @@ final class CharacteristicsController extends BaseController
 				$aid = (int) $setCharacteristic[Types\Representation::REPR_AID];
 				$iid = (int) $setCharacteristic[Types\Representation::REPR_IID];
 
-				$value = array_key_exists(Types\Representation::REPR_VALUE, $setCharacteristic) ? $setCharacteristic[Types\Representation::REPR_VALUE] : null;
-				$events = array_key_exists(Types\CharacteristicPermission::PERMISSION_NOTIFY, $setCharacteristic) ? (bool) $setCharacteristic[Types\CharacteristicPermission::PERMISSION_NOTIFY] : null;
+				$value = array_key_exists(
+					Types\Representation::REPR_VALUE,
+					$setCharacteristic,
+				)
+					? $setCharacteristic[Types\Representation::REPR_VALUE]
+					: null;
+				$events = array_key_exists(
+					Types\CharacteristicPermission::PERMISSION_NOTIFY,
+					$setCharacteristic,
+				)
+					? (bool) $setCharacteristic[Types\CharacteristicPermission::PERMISSION_NOTIFY]
+					: null;
 
 				$result[Types\Representation::REPR_CHARS][] = $this->writeCharacteristic(
 					$connectorId,
@@ -315,7 +316,7 @@ final class CharacteristicsController extends BaseController
 					strval($request->getServerParams()['REMOTE_ADDR']),
 					intval($request->getServerParams()['REMOTE_PORT']),
 					$pid,
-					$timedWriteError
+					$timedWriteError,
 				);
 
 			} else {
@@ -339,7 +340,9 @@ final class CharacteristicsController extends BaseController
 			}
 		}
 
-		$response = $response->withStatus($anyError ? StatusCodeInterface::STATUS_MULTI_STATUS : StatusCodeInterface::STATUS_NO_CONTENT);
+		$response = $response->withStatus(
+			$anyError ? StatusCodeInterface::STATUS_MULTI_STATUS : StatusCodeInterface::STATUS_NO_CONTENT,
+		);
 
 		if ($anyError) {
 			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
@@ -362,7 +365,7 @@ final class CharacteristicsController extends BaseController
 	 */
 	public function prepare(
 		Message\ServerRequestInterface $request,
-		Message\ResponseInterface $response
+		Message\ResponseInterface $response,
 	): Message\ResponseInterface {
 		var_dump($request->getUri()->getPath());
 
@@ -376,7 +379,7 @@ final class CharacteristicsController extends BaseController
 				Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
 				'Request body could not be decoded',
 				StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
-				$ex
+				$ex,
 			);
 		}
 
@@ -399,7 +402,9 @@ final class CharacteristicsController extends BaseController
 			$this->preparedWrites[$clientAddress] = [];
 		}
 
-		$this->preparedWrites[$clientAddress][(int) $body[Types\Representation::REPR_PID]] = intval($this->dateTimeFactory->getNow()->getTimestamp()) + ((int) $body[Types\Representation::REPR_TTL] / 1000);
+		$this->preparedWrites[$clientAddress][(int) $body[Types\Representation::REPR_PID]] = intval(
+			$this->dateTimeFactory->getNow()->getTimestamp(),
+		) + ((int) $body[Types\Representation::REPR_TTL] / 1_000);
 
 		$result = [
 			Types\Representation::REPR_STATUS => Types\ServerStatus::STATUS_SUCCESS,
@@ -421,7 +426,7 @@ final class CharacteristicsController extends BaseController
 	 * @param bool $type
 	 * @param bool $ev
 	 *
-	 * @return Array<string, bool|int|int[]|float|string|string[]|null>
+	 * @return Array<string, (bool|int|Array<int>|float|string|Array<string>|null)>
 	 */
 	private function readCharacteristic(
 		Uuid\UuidInterface $connectorId,
@@ -430,7 +435,7 @@ final class CharacteristicsController extends BaseController
 		bool $meta,
 		bool $perms,
 		bool $type,
-		bool $ev
+		bool $ev,
 	): array {
 		$representation = $this->getCharacteristicRepresentationSkeleton($aid, $iid);
 
@@ -464,7 +469,7 @@ final class CharacteristicsController extends BaseController
 
 		if ($type) {
 			$representation[Types\Representation::REPR_PERM] = Helpers\Protocol::uuidToHapType(
-				$characteristic->getTypeId()
+				$characteristic->getTypeId(),
 			);
 		}
 
@@ -476,7 +481,7 @@ final class CharacteristicsController extends BaseController
 			$representation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = in_array(
 				Types\CharacteristicPermission::PERMISSION_NOTIFY,
 				$characteristic->getPermissions(),
-				true
+				true,
 			);
 		}
 
@@ -504,11 +509,11 @@ final class CharacteristicsController extends BaseController
 		int $aid,
 		int $iid,
 		int|float|string|bool|null $value,
-		?bool $events,
+		bool|null $events,
 		string $clientAddress,
 		int $clientPort,
-		?int $pid,
-		bool $timedWriteError
+		int|null $pid,
+		bool $timedWriteError,
 	): array {
 		$representation = $this->getCharacteristicRepresentationSkeleton($aid, $iid);
 
@@ -520,8 +525,16 @@ final class CharacteristicsController extends BaseController
 
 		if (
 			!in_array(Types\CharacteristicPermission::PERMISSION_WRITE, $characteristic->getPermissions(), true)
-			&& !in_array(Types\CharacteristicPermission::PERMISSION_TIMED_WRITE, $characteristic->getPermissions(), true)
-			&& !in_array(Types\CharacteristicPermission::PERMISSION_WRITE_RESPONSE, $characteristic->getPermissions(), true)
+			&& !in_array(
+				Types\CharacteristicPermission::PERMISSION_TIMED_WRITE,
+				$characteristic->getPermissions(),
+				true,
+			)
+			&& !in_array(
+				Types\CharacteristicPermission::PERMISSION_WRITE_RESPONSE,
+				$characteristic->getPermissions(),
+				true,
+			)
 		) {
 			$representation[Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_READ_ONLY_CHARACTERISTIC;
 
@@ -530,7 +543,11 @@ final class CharacteristicsController extends BaseController
 
 		if (
 			$pid !== null
-			&& !in_array(Types\CharacteristicPermission::PERMISSION_TIMED_WRITE, $characteristic->getPermissions(), true)
+			&& !in_array(
+				Types\CharacteristicPermission::PERMISSION_TIMED_WRITE,
+				$characteristic->getPermissions(),
+				true,
+			)
 		) {
 			return $representation;
 		}
@@ -557,13 +574,13 @@ final class CharacteristicsController extends BaseController
 				$this->logger->error(
 					'Accessory characteristic is not connected to any property',
 					[
-						'source'         => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-						'type'           => 'characteristics-controller',
+						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'type' => 'characteristics-controller',
 						'characteristic' => [
 							'type' => $characteristic->getTypeId()->toString(),
 							'name' => $characteristic->getName(),
 						],
-					]
+					],
 				);
 			} else {
 				$value = Protocol\Transformer::fromClient(
@@ -579,33 +596,37 @@ final class CharacteristicsController extends BaseController
 				if ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IConnectorDynamicPropertyEntity) {
 					$this->publisher?->publish(
 						Metadata\Types\ModuleSourceType::get(Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES),
-						Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_CONNECTOR_PROPERTY_ACTION),
+						Metadata\Types\RoutingKeyType::get(
+							Metadata\Types\RoutingKeyType::ROUTE_CONNECTOR_PROPERTY_ACTION,
+						),
 						$this->entityFactory->create(
 							Utils\Json::encode([
-								'action'    => Metadata\Types\PropertyActionType::ACTION_SET,
+								'action' => Metadata\Types\PropertyActionType::ACTION_SET,
 								'connector' => $characteristic->getProperty()->getConnector()->toString(),
-								'property'  => $characteristic->getProperty()->getId()->toString(),
+								'property' => $characteristic->getProperty()->getId()->toString(),
 							]),
-							Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_CONNECTOR_PROPERTY_ACTION)
+							Metadata\Types\RoutingKeyType::get(
+								Metadata\Types\RoutingKeyType::ROUTE_CONNECTOR_PROPERTY_ACTION,
+							),
 						),
 					);
 
 					$this->logger->debug(
 						'Apple client requested to set expected value to connector dynamic property',
 						[
-							'source'         => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'           => 'characteristics-controller',
+							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type' => 'characteristics-controller',
 							'characteristic' => [
 								'type' => $characteristic->getTypeId()->toString(),
 								'name' => $characteristic->getName(),
 							],
-							'connector'      => [
+							'connector' => [
 								'id' => $characteristic->getProperty()->getConnector()->toString(),
 							],
-							'property'       => [
+							'property' => [
 								'id' => $characteristic->getProperty()->getId()->toString(),
 							],
-						]
+						],
 					);
 				} elseif ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IDeviceDynamicPropertyEntity) {
 					$this->publisher?->publish(
@@ -613,86 +634,94 @@ final class CharacteristicsController extends BaseController
 						Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_DEVICE_PROPERTY_ACTION),
 						$this->entityFactory->create(
 							Utils\Json::encode([
-								'action'   => Metadata\Types\PropertyActionType::ACTION_SET,
-								'device'   => $characteristic->getProperty()->getDevice()->toString(),
+								'action' => Metadata\Types\PropertyActionType::ACTION_SET,
+								'device' => $characteristic->getProperty()->getDevice()->toString(),
 								'property' => $characteristic->getProperty()->getId()->toString(),
 							]),
-							Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_DEVICE_PROPERTY_ACTION)
+							Metadata\Types\RoutingKeyType::get(
+								Metadata\Types\RoutingKeyType::ROUTE_DEVICE_PROPERTY_ACTION,
+							),
 						),
 					);
 
 					$this->logger->debug(
 						'Apple client requested to set expected value to device dynamic property',
 						[
-							'source'         => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'           => 'characteristics-controller',
+							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type' => 'characteristics-controller',
 							'characteristic' => [
 								'type' => $characteristic->getTypeId()->toString(),
 								'name' => $characteristic->getName(),
 							],
-							'device'         => [
+							'device' => [
 								'id' => $characteristic->getProperty()->getDevice()->toString(),
 							],
-							'property'       => [
+							'property' => [
 								'id' => $characteristic->getProperty()->getId()->toString(),
 							],
-						]
+						],
 					);
 				} elseif ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IChannelDynamicPropertyEntity) {
 					$channel = $this->channelsRepository->findById($characteristic->getProperty()->getChannel());
 
 					if ($channel !== null) {
 						$this->publisher?->publish(
-							Metadata\Types\ModuleSourceType::get(Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES),
-							Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_CHANNEL_PROPERTY_ACTION),
+							Metadata\Types\ModuleSourceType::get(
+								Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES,
+							),
+							Metadata\Types\RoutingKeyType::get(
+								Metadata\Types\RoutingKeyType::ROUTE_CHANNEL_PROPERTY_ACTION,
+							),
 							$this->entityFactory->create(
 								Utils\Json::encode([
-									'action'   => Metadata\Types\PropertyActionType::ACTION_SET,
-									'device'   => $channel->getDevice()->toString(),
-									'channel'  => $characteristic->getProperty()->getChannel()->toString(),
+									'action' => Metadata\Types\PropertyActionType::ACTION_SET,
+									'device' => $channel->getDevice()->toString(),
+									'channel' => $characteristic->getProperty()->getChannel()->toString(),
 									'property' => $characteristic->getProperty()->getId()->toString(),
 								]),
-								Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_CHANNEL_PROPERTY_ACTION)
+								Metadata\Types\RoutingKeyType::get(
+									Metadata\Types\RoutingKeyType::ROUTE_CHANNEL_PROPERTY_ACTION,
+								),
 							),
 						);
 
 						$this->logger->debug(
 							'Apple client requested to set expected value to device channel dynamic property',
 							[
-								'source'         => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-								'type'           => 'characteristics-controller',
+								'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+								'type' => 'characteristics-controller',
 								'characteristic' => [
 									'type' => $characteristic->getTypeId()->toString(),
 									'name' => $characteristic->getName(),
 								],
-								'device'         => [
+								'device' => [
 									'id' => $channel->getDevice()->toString(),
 								],
-								'channel'       => [
+								'channel' => [
 									'id' => $characteristic->getProperty()->getChannel()->toString(),
 								],
-								'property'       => [
+								'property' => [
 									'id' => $characteristic->getProperty()->getId()->toString(),
 								],
-							]
+							],
 						);
 					} else {
 						$this->logger->error(
 							'Channel for characteristic dynamic property was not found',
 							[
-								'source'         => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-								'type'           => 'characteristics-controller',
+								'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+								'type' => 'characteristics-controller',
 								'characteristic' => [
 									'type' => $characteristic->getTypeId()->toString(),
 									'name' => $characteristic->getName(),
 								],
-								'channel'       => [
+								'channel' => [
 									'id' => $characteristic->getProperty()->getChannel()->toString(),
 								],
-								'property'       => [
+								'property' => [
 									'id' => $characteristic->getProperty()->getId()->toString(),
 								],
-							]
+							],
 						);
 					}
 				}
@@ -721,8 +750,8 @@ final class CharacteristicsController extends BaseController
 	private function getCharacteristicRepresentationSkeleton(int $aid, int $iid): array
 	{
 		return [
-			Types\Representation::REPR_AID    => $aid,
-			Types\Representation::REPR_IID    => $iid,
+			Types\Representation::REPR_AID => $aid,
+			Types\Representation::REPR_IID => $iid,
 			Types\Representation::REPR_STATUS => Types\ServerStatus::STATUS_SERVICE_COMMUNICATION_FAILURE,
 		];
 	}
@@ -737,8 +766,8 @@ final class CharacteristicsController extends BaseController
 	private function getCharacteristic(
 		Uuid\UuidInterface $connectorId,
 		int $aid,
-		int $iid
-	): ?Entities\Protocol\Characteristic {
+		int $iid,
+	): Entities\Protocol\Characteristic|null {
 		$bridge = $this->accessoryDriver->getBridge($connectorId);
 
 		if ($bridge === null) {

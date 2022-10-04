@@ -37,7 +37,7 @@ class Router extends Routing\Router
 	public function __construct(
 		Controllers\PairingController $pairingController,
 		Controllers\AccessoriesController $accessoriesController,
-		Controllers\CharacteristicsController $characteristicsController
+		Controllers\CharacteristicsController $characteristicsController,
 	) {
 		parent::__construct();
 
@@ -48,19 +48,19 @@ class Router extends Routing\Router
 
 		$this->group(
 			'/accessories',
-			function (Routing\RouteCollector $group) use ($accessoriesController): void {
+			static function (Routing\RouteCollector $group) use ($accessoriesController): void {
 				$group->get('', [$accessoriesController, 'index']);
-			}
+			},
 		);
 		$this->post('/resource', [$accessoriesController, 'resource']);
 		$this->post('/identify', [$accessoriesController, 'identify']);
 
 		$this->group(
 			'/characteristics',
-			function (Routing\RouteCollector $group) use ($characteristicsController): void {
+			static function (Routing\RouteCollector $group) use ($characteristicsController): void {
 				$group->get('', [$characteristicsController, 'index']);
 				$group->put('', [$characteristicsController, 'update']);
-			}
+			},
 		);
 		$this->put('/prepare', [$characteristicsController, 'prepare']);
 	}

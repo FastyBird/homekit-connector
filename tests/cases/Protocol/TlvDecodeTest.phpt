@@ -7,7 +7,7 @@ use FastyBird\HomeKitConnector\Types;
 use Ninjify\Nunjuck\TestCase\BaseTestCase;
 use Tester\Assert;
 
-require_once __DIR__ . '/../../../bootstrap.php';
+require_once __DIR__ . '/../../bootstrap.php';
 
 /**
  * @testCase

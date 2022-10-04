@@ -19,6 +19,7 @@ use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette\Utils;
+use function is_string;
 use function sprintf;
 use function strval;
 
@@ -33,16 +34,11 @@ use function strval;
 final class ServiceFactory
 {
 
-	/** @var Helpers\Loader */
-	private Helpers\Loader $loader;
-
 	/**
 	 * @param Helpers\Loader $loader
 	 */
-	public function __construct(
-		Helpers\Loader $loader
-	) {
-		$this->loader = $loader;
+	public function __construct(private Helpers\Loader $loader)
+	{
 	}
 
 	/**
@@ -55,14 +51,14 @@ final class ServiceFactory
 	public function create(
 		string $name,
 		Accessory $accessory,
-		?MetadataEntities\Modules\DevicesModule\ChannelEntity $channel = null
+		MetadataEntities\Modules\DevicesModule\ChannelEntity|null $channel = null,
 	): Service {
 		$metadata = $this->loader->loadServices();
 
 		if (!$metadata->offsetExists($name)) {
 			throw new Exceptions\InvalidArgument(sprintf(
 				'Definition for service: %s was not found',
-				$name
+				$name,
 			));
 		}
 
@@ -84,7 +80,11 @@ final class ServiceFactory
 			$accessory,
 			$channel,
 			(array) $serviceMetadata->offsetGet('RequiredCharacteristics'),
-			$serviceMetadata->offsetExists('OptionalCharacteristics') && $serviceMetadata->offsetGet('OptionalCharacteristics') instanceof Utils\ArrayHash ? (array) $serviceMetadata->offsetGet('OptionalCharacteristics') : []
+			$serviceMetadata->offsetExists('OptionalCharacteristics') && $serviceMetadata->offsetGet(
+				'OptionalCharacteristics',
+			) instanceof Utils\ArrayHash ? (array) $serviceMetadata->offsetGet(
+				'OptionalCharacteristics',
+			) : [],
 		);
 	}
 

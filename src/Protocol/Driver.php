@@ -48,7 +48,7 @@ class Driver
 	 *
 	 * @return Entities\Protocol\Bridge|null
 	 */
-	public function getBridge(Uuid\UuidInterface $connectorId): ?Entities\Protocol\Bridge
+	public function getBridge(Uuid\UuidInterface $connectorId): Entities\Protocol\Bridge|null
 	{
 		foreach ($this->getAccessories() as $accessory) {
 			if (
@@ -92,7 +92,9 @@ class Driver
 		foreach ($this->accessories as $existingAccessory) {
 			if ($existingAccessory->getCategory()->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {
 				if (!$existingAccessory instanceof Entities\Protocol\Bridge) {
-					throw new Exceptions\InvalidState('Registered device in bridge category is not instance of bridge accessory');
+					throw new Exceptions\InvalidState(
+						'Registered device in bridge category is not instance of bridge accessory',
+					);
 				}
 
 				if ($existingAccessory->getConnector()->getId()->equals($accessory->getDevice()->getConnector())) {
@@ -157,7 +159,7 @@ class Driver
 	}
 
 	/**
-	 * @return Entities\Protocol\Accessory[]
+	 * @return Array<Entities\Protocol\Accessory>
 	 */
 	public function getAccessories(): array
 	{
@@ -175,7 +177,7 @@ class Driver
 	/**
 	 * @param Uuid\UuidInterface $connectorId
 	 *
-	 * @return Array<string, Array<string, int|Array<string, string|int|bool|Array<string, bool|float|int|int[]|string|string[]|null>[]|null>[]|null>[]>
+	 * @return Array<string, Array<Array<string, (int|Array<Array<string, (string|int|bool|Array<Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>>|null)>>|null)>>>
 	 */
 	public function toHap(Uuid\UuidInterface $connectorId): array
 	{

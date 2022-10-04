@@ -16,6 +16,7 @@
 namespace FastyBird\HomeKitConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * HAP server statuses types
@@ -32,17 +33,28 @@ class ServerStatus extends Consistence\Enum\Enum
 	 * Define statuses
 	 */
 	public const STATUS_SUCCESS = 0;
-	public const STATUS_INSUFFICIENT_PRIVILEGES = -70401;
-	public const STATUS_SERVICE_COMMUNICATION_FAILURE = -70402;
-	public const STATUS_RESOURCE_BUSY = -70403;
-	public const STATUS_READ_ONLY_CHARACTERISTIC = -70404;
-	public const STATUS_WRITE_ONLY_CHARACTERISTIC = -70405;
-	public const STATUS_NOTIFICATION_NOT_SUPPORTED = -70406;
-	public const STATUS_OUT_OF_RESOURCE = -70407;
-	public const STATUS_OPERATION_TIMED_OUT = -70408;
-	public const STATUS_RESOURCE_DOES_NOT_EXIST = -70409;
-	public const STATUS_INVALID_VALUE_IN_REQUEST = -70410;
-	public const STATUS_INSUFFICIENT_AUTHORIZATION = -70411;
+
+	public const STATUS_INSUFFICIENT_PRIVILEGES = -70_401;
+
+	public const STATUS_SERVICE_COMMUNICATION_FAILURE = -70_402;
+
+	public const STATUS_RESOURCE_BUSY = -70_403;
+
+	public const STATUS_READ_ONLY_CHARACTERISTIC = -70_404;
+
+	public const STATUS_WRITE_ONLY_CHARACTERISTIC = -70_405;
+
+	public const STATUS_NOTIFICATION_NOT_SUPPORTED = -70_406;
+
+	public const STATUS_OUT_OF_RESOURCE = -70_407;
+
+	public const STATUS_OPERATION_TIMED_OUT = -70_408;
+
+	public const STATUS_RESOURCE_DOES_NOT_EXIST = -70_409;
+
+	public const STATUS_INVALID_VALUE_IN_REQUEST = -70_410;
+
+	public const STATUS_INSUFFICIENT_AUTHORIZATION = -70_411;
 
 	/**
 	 * @return string

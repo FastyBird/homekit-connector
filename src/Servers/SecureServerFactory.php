@@ -39,7 +39,7 @@ interface SecureServerFactory
 	public function create(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		Socket\ServerInterface $server,
-		?string $sharedKey = null
+		string|null $sharedKey = null,
 	): SecureServer;
 
 }

@@ -29,6 +29,7 @@ use function array_search;
 use function array_values;
 use function count;
 use function is_string;
+use function sprintf;
 
 /**
  * Connector execute command
@@ -41,9 +42,6 @@ use function is_string;
 class Execute extends Console\Command\Command
 {
 
-	/** @var DevicesModuleModels\DataStorage\IConnectorsRepository */
-	private DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository;
-
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
@@ -53,20 +51,15 @@ class Execute extends Console\Command\Command
 	 * @param string|null $name
 	 */
 	public function __construct(
-		DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository,
-		?Log\LoggerInterface $logger = null,
-		?string $name = null
+		private DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository,
+		Log\LoggerInterface|null $logger = null,
+		string|null $name = null,
 	) {
-		$this->connectorsRepository = $connectorsRepository;
-
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		parent::__construct($name);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	protected function configure(): void
 	{
 		$this
@@ -74,9 +67,20 @@ class Execute extends Console\Command\Command
 			->setDescription('HomeKit connector service')
 			->setDefinition(
 				new Input\InputDefinition([
-					new Input\InputOption('connector', 'c', Input\InputOption::VALUE_OPTIONAL, 'Run devices module connector', true),
-					new Input\InputOption('no-confirm', null, Input\InputOption::VALUE_NONE, 'Do not ask for any confirmation'),
-				])
+					new Input\InputOption(
+						'connector',
+						'c',
+						Input\InputOption::VALUE_OPTIONAL,
+						'Run devices module connector',
+						true,
+					),
+					new Input\InputOption(
+						'no-confirm',
+						null,
+						Input\InputOption::VALUE_NONE,
+						'Do not ask for any confirmation',
+					),
+				]),
 			);
 	}
 
@@ -102,7 +106,7 @@ class Execute extends Console\Command\Command
 		if (!$input->getOption('no-confirm')) {
 			$question = new Console\Question\ConfirmationQuestion(
 				'Would you like to continue?',
-				false
+				false,
 			);
 
 			$continue = $io->askQuestion($question);
@@ -119,11 +123,9 @@ class Execute extends Console\Command\Command
 		) {
 			$connectorId = $input->getOption('connector');
 
-			if (Uuid\Uuid::isValid($connectorId)) {
-				$connector = $this->connectorsRepository->findById(Uuid\Uuid::fromString($connectorId));
-			} else {
-				$connector = $this->connectorsRepository->findByIdentifier($connectorId);
-			}
+			$connector = Uuid\Uuid::isValid($connectorId)
+				? $this->connectorsRepository->findById(Uuid\Uuid::fromString($connectorId))
+				: $this->connectorsRepository->findByIdentifier($connectorId);
 
 			if ($connector === null) {
 				$io->warning('Connector was not found in system');
@@ -138,7 +140,9 @@ class Execute extends Console\Command\Command
 					continue;
 				}
 
-				$connectors[$connector->getIdentifier()] = $connector->getIdentifier() . $connector->getName() ? ' [' . $connector->getName() . ']' : '';
+				$connectors[$connector->getIdentifier()] = $connector->getIdentifier() . $connector->getName()
+					? ' [' . $connector->getName() . ']'
+					: '';
 			}
 
 			if (count($connectors) === 0) {
@@ -160,8 +164,11 @@ class Execute extends Console\Command\Command
 
 				if (!$input->getOption('no-confirm')) {
 					$question = new Console\Question\ConfirmationQuestion(
-						sprintf('Would you like to execute "%s" connector', $connector->getName() ?? $connector->getIdentifier()),
-						false
+						sprintf(
+							'Would you like to execute "%s" connector',
+							$connector->getName() ?? $connector->getIdentifier(),
+						),
+						false,
 					);
 
 					if (!$io->askQuestion($question)) {
@@ -171,12 +178,12 @@ class Execute extends Console\Command\Command
 			} else {
 				$question = new Console\Question\ChoiceQuestion(
 					'Please select connector to execute',
-					array_values($connectors)
+					array_values($connectors),
 				);
 
 				$question->setErrorMessage('Selected connector: %s is not valid.');
 
-				$connectorIdentifierKey = array_search($io->askQuestion($question), $connectors);
+				$connectorIdentifierKey = array_search($io->askQuestion($question), $connectors, true);
 
 				if ($connectorIdentifierKey === false) {
 					$io->error('Something went wrong, connector could not be loaded');
@@ -185,8 +192,8 @@ class Execute extends Console\Command\Command
 						'Connector identifier was not able to get from answer',
 						[
 							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'   => 'execute-cmd',
-						]
+							'type' => 'execute-cmd',
+						],
 					);
 
 					return Console\Command\Command::FAILURE;
@@ -202,8 +209,8 @@ class Execute extends Console\Command\Command
 					'Connector was not found',
 					[
 						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-						'type'   => 'execute-cmd',
-					]
+						'type' => 'execute-cmd',
+					],
 				);
 
 				return Console\Command\Command::FAILURE;
@@ -219,9 +226,9 @@ class Execute extends Console\Command\Command
 		$serviceCmd = $symfonyApp->find('fb:devices-module:service');
 
 		$result = $serviceCmd->run(new Input\ArrayInput([
-			'--connector'  => $connector->getId()->toString(),
+			'--connector' => $connector->getId()->toString(),
 			'--no-confirm' => true,
-			'--quiet'      => true,
+			'--quiet' => true,
 		]), $output);
 
 		if ($result !== Console\Command\Command::SUCCESS) {

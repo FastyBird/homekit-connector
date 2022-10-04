@@ -25,21 +25,20 @@ use Ramsey\Uuid;
 /**
  * Find clients entities query
  *
- * @package          FastyBird:HomeKitConnector!
- * @subpackage       Queries
- *
- * @author           Adam Kadlec <adam.kadlec@fastybird.com>
- *
  * @phpstan-template T of Entities\Client
  * @phpstan-extends  DoctrineOrmQuery\QueryObject<T>
+ *
+ * @package          FastyBird:HomeKitConnector!
+ * @subpackage       Queries
+ * @author           Adam Kadlec <adam.kadlec@fastybird.com>
  */
 class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 {
 
-	/** @var Closure[] */
+	/** @var Array<Closure> */
 	private array $filter = [];
 
-	/** @var Closure[] */
+	/** @var Array<Closure> */
 	private array $select = [];
 
 	/**
@@ -49,7 +48,7 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 	 */
 	public function byId(Uuid\UuidInterface $id): void
 	{
-		$this->filter[] = function (ORM\QueryBuilder $qb) use ($id): void {
+		$this->filter[] = static function (ORM\QueryBuilder $qb) use ($id): void {
 			$qb->andWhere('c.id = :id')->setParameter('id', $id, Uuid\Doctrine\UuidBinaryType::NAME);
 		};
 	}
@@ -61,7 +60,7 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 	 */
 	public function byUid(string $uid): void
 	{
-		$this->filter[] = function (ORM\QueryBuilder $qb) use ($uid): void {
+		$this->filter[] = static function (ORM\QueryBuilder $qb) use ($uid): void {
 			$qb->andWhere('c.uid = :uid')->setParameter('uid', $uid);
 		};
 	}
@@ -73,12 +72,12 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 	 */
 	public function byConnectorId(Uuid\UuidInterface $connectorId): void
 	{
-		$this->select[] = function (ORM\QueryBuilder $qb): void {
+		$this->select[] = static function (ORM\QueryBuilder $qb): void {
 			$qb->addSelect('connector');
 			$qb->join('c.connector', 'connector');
 		};
 
-		$this->filter[] = function (ORM\QueryBuilder $qb) use ($connectorId): void {
+		$this->filter[] = static function (ORM\QueryBuilder $qb) use ($connectorId): void {
 			$qb->andWhere('connector.id = :connector')
 				->setParameter('connector', $connectorId, Uuid\Doctrine\UuidBinaryType::NAME);
 		};
@@ -91,23 +90,21 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 	 */
 	public function forConnector(DevicesModuleEntities\Connectors\IConnector $connector): void
 	{
-		$this->select[] = function (ORM\QueryBuilder $qb): void {
+		$this->select[] = static function (ORM\QueryBuilder $qb): void {
 			$qb->addSelect('connector');
 			$qb->join('c.connector', 'connector');
 		};
 
-		$this->filter[] = function (ORM\QueryBuilder $qb) use ($connector): void {
+		$this->filter[] = static function (ORM\QueryBuilder $qb) use ($connector): void {
 			$qb->andWhere('connector.id = :connector')
 				->setParameter('connector', $connector->getId(), Uuid\Doctrine\UuidBinaryType::NAME);
 		};
 	}
 
 	/**
-	 * @param ORM\EntityRepository $repository
+	 * @param ORM\EntityRepository<T> $repository
 	 *
 	 * @return ORM\QueryBuilder
-	 *
-	 * @phpstan-param ORM\EntityRepository<T> $repository
 	 */
 	protected function doCreateQuery(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{
@@ -115,11 +112,9 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 	}
 
 	/**
-	 * @param ORM\EntityRepository $repository
+	 * @param ORM\EntityRepository<T> $repository
 	 *
 	 * @return ORM\QueryBuilder
-	 *
-	 * @phpstan-param ORM\EntityRepository<T> $repository
 	 */
 	private function createBasicDql(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{
@@ -137,11 +132,9 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 	}
 
 	/**
-	 * @param ORM\EntityRepository $repository
+	 * @param ORM\EntityRepository<T> $repository
 	 *
 	 * @return ORM\QueryBuilder
-	 *
-	 * @phpstan-param ORM\EntityRepository<T> $repository
 	 */
 	protected function doCreateCountQuery(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{

@@ -34,6 +34,7 @@ use React\Socket;
 use Throwable;
 use function hex2bin;
 use function is_string;
+use function var_dump;
 
 /**
  * HTTP connector communication server
@@ -51,30 +52,13 @@ final class Http implements Server
 	public const REQUEST_ATTRIBUTE_CONNECTOR = 'connector';
 
 	public const PAIRING_CONTENT_TYPE = 'application/pairing+tlv8';
+
 	public const JSON_CONTENT_TYPE = 'application/hap+json';
 
 	private const LISTENING_ADDRESS = '0.0.0.0';
 
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
-
-	/** @var Helpers\Connector */
-	private Helpers\Connector $connectorHelper;
-
-	/** @var Middleware\RouterMiddleware */
-	private Middleware\RouterMiddleware $routerMiddleware;
-
-	/** @var SecureServerFactory */
-	private SecureServerFactory $secureServerFactory;
-
-	/** @var Clients\Subscriber */
-	private Clients\Subscriber $subscriber;
-
-	/** @var EventLoop\LoopInterface */
-	private EventLoop\LoopInterface $eventLoop;
-
 	/** @var SecureServer|null */
-	private ?SecureServer $socket = null;
+	private SecureServer|null $socket = null;
 
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
@@ -89,22 +73,14 @@ final class Http implements Server
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		Helpers\Connector $connectorHelper,
-		Middleware\RouterMiddleware $routerMiddleware,
-		SecureServerFactory $secureServerFactory,
-		Clients\Subscriber $subscriber,
-		EventLoop\LoopInterface $eventLoop,
-		?Log\LoggerInterface $logger = null
+		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		private Helpers\Connector $connectorHelper,
+		private Middleware\RouterMiddleware $routerMiddleware,
+		private SecureServerFactory $secureServerFactory,
+		private Clients\Subscriber $subscriber,
+		private EventLoop\LoopInterface $eventLoop,
+		Log\LoggerInterface|null $logger = null,
 	) {
-		$this->connector = $connector;
-		$this->connectorHelper = $connectorHelper;
-		$this->routerMiddleware = $routerMiddleware;
-		$this->secureServerFactory = $secureServerFactory;
-		$this->subscriber = $subscriber;
-
-		$this->eventLoop = $eventLoop;
-
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		$this->connectorHelper->on(
@@ -112,7 +88,7 @@ final class Http implements Server
 			function (
 				Uuid\UuidInterface $connectorId,
 				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
-				MetadataEntities\Modules\DevicesModule\ConnectorStaticPropertyEntity $property
+				MetadataEntities\Modules\DevicesModule\ConnectorStaticPropertyEntity $property,
 			): void {
 				if (
 					$this->connector->getId()->equals($connectorId)
@@ -121,17 +97,19 @@ final class Http implements Server
 					$this->logger->debug(
 						'Shared key has been changed',
 						[
-							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'      => 'http-server',
+							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type' => 'http-server',
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
 							],
-						]
+						],
 					);
 
-					$this->socket?->setSharedKey(is_string($property->getValue()) ? (string) hex2bin($property->getValue()) : null);
+					$this->socket?->setSharedKey(
+						is_string($property->getValue()) ? (string) hex2bin($property->getValue()) : null,
+					);
 				}
-			}
+			},
 		);
 
 		$this->connectorHelper->on(
@@ -139,7 +117,7 @@ final class Http implements Server
 			function (
 				Uuid\UuidInterface $connectorId,
 				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
-				MetadataEntities\Modules\DevicesModule\ConnectorStaticPropertyEntity $property
+				MetadataEntities\Modules\DevicesModule\ConnectorStaticPropertyEntity $property,
 			): void {
 				if (
 					$this->connector->getId()->equals($connectorId)
@@ -148,17 +126,19 @@ final class Http implements Server
 					$this->logger->debug(
 						'Shared key has been created',
 						[
-							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'      => 'http-server',
+							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type' => 'http-server',
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
 							],
-						]
+						],
 					);
 
-					$this->socket?->setSharedKey(is_string($property->getValue()) ? (string) hex2bin($property->getValue()) : null);
+					$this->socket?->setSharedKey(
+						is_string($property->getValue()) ? (string) hex2bin($property->getValue()) : null,
+					);
 				}
-			}
+			},
 		);
 	}
 
@@ -173,24 +153,24 @@ final class Http implements Server
 		$port = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
 			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
-				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT
-			)
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
+			),
 		);
 
 		try {
 			$this->logger->debug(
 				'Creating HAP web server',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'http-server',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'http-server',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-					'server'    => [
+					'server' => [
 						'address' => self::LISTENING_ADDRESS,
-						'port'    => $port,
+						'port' => $port,
 					],
-				]
+				],
 			);
 
 			$this->socket = $this->secureServerFactory->create(
@@ -201,34 +181,38 @@ final class Http implements Server
 			$this->logger->error(
 				'Socket server could not be created',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'http-server',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'http-server',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 
-			throw new DevicesModuleExceptions\TerminateException('Socket server could not be created', $ex->getCode(), $ex);
+			throw new DevicesModuleExceptions\TerminateException(
+				'Socket server could not be created',
+				$ex->getCode(),
+				$ex,
+			);
 		}
 
 		$this->socket->on('connection', function (Socket\ConnectionInterface $connection): void {
 			$this->logger->debug(
 				'New client has connected to server',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'http-server',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'http-server',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-					'client'    => [
+					'client' => [
 						'address' => $connection->getRemoteAddress(),
 					],
-				]
+				],
 			);
 
 			$this->subscriber->registerConnection($connection);
@@ -240,15 +224,15 @@ final class Http implements Server
 				$this->logger->debug(
 					'Connected client has closed connection',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-						'type'      => 'http-server',
+						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'type' => 'http-server',
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-						'client'    => [
+						'client' => [
 							'address' => $connection->getRemoteAddress(),
 						],
-					]
+					],
 				);
 
 				$this->subscriber->unregisterConnection($connection);
@@ -262,22 +246,22 @@ final class Http implements Server
 			$this->logger->error(
 				'An error occurred during socket handling',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'http-server',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'http-server',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 
 			throw new DevicesModuleExceptions\TerminateException(
 				'HTTP server was terminated',
 				$ex->getCode(),
-				$ex
+				$ex,
 			);
 		});
 
@@ -285,12 +269,12 @@ final class Http implements Server
 			$this->logger->info(
 				'Server was closed',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'mdns-server',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'mdns-server',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 		});
 
@@ -299,12 +283,12 @@ final class Http implements Server
 			function (ServerRequestInterface $request, callable $next): ResponseInterface {
 				$request = $request->withAttribute(
 					self::REQUEST_ATTRIBUTE_CONNECTOR,
-					$this->connector->getId()->toString()
+					$this->connector->getId()->toString(),
 				);
 
 				return $next($request);
 			},
-			$this->routerMiddleware
+			$this->routerMiddleware,
 		);
 		$server->listen($this->socket);
 
@@ -312,40 +296,37 @@ final class Http implements Server
 			$this->logger->error(
 				'An error occurred during server handling',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'http-server',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'http-server',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 
 			throw new DevicesModuleExceptions\TerminateException(
 				'HTTP server was terminated',
 				$ex->getCode(),
-				$ex
+				$ex,
 			);
 		});
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function disconnect(): void
 	{
 		$this->logger->debug(
 			'Closing HAP web server',
 			[
-				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'      => 'http-server',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'http-server',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
 				],
-			]
+			],
 		);
 
 		$this->socket?->close();

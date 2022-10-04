@@ -22,12 +22,11 @@ use FastyBird\Metadata\Types as MetadataTypes;
 /**
  * HomeKit connector entity schema
  *
+ * @phpstan-extends DevicesModuleSchemas\Connectors\ConnectorSchema<Entities\HomeKitConnector>
+ *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Schemas
- *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
- *
- * @phpstan-extends DevicesModuleSchemas\Connectors\ConnectorSchema<Entities\HomeKitConnector>
  */
 final class HomeKitConnector extends DevicesModuleSchemas\Connectors\ConnectorSchema
 {
@@ -35,11 +34,9 @@ final class HomeKitConnector extends DevicesModuleSchemas\Connectors\ConnectorSc
 	/**
 	 * Define entity schema type string
 	 */
+	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 	public const SCHEMA_TYPE = MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_HOMEKIT . '/connector/' . Entities\HomeKitConnector::CONNECTOR_TYPE;
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getEntityClass(): string
 	{
 		return Entities\HomeKitConnector::class;

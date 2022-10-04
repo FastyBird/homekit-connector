@@ -26,6 +26,7 @@ use SodiumException;
 use function array_merge;
 use function array_pop;
 use function array_splice;
+use function array_values;
 use function count;
 use function hash_hkdf;
 use function is_array;
@@ -49,10 +50,13 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	use Nette\SmartObject;
 
 	private const ENCRYPTED_DATA_LENGTH = 2;
+
 	private const AUTH_TAG_LENGTH = 16;
 
 	private const SALT_CONTROL = 'Control-Salt';
+
 	private const INFO_CONTROL_WRITE = 'Control-Write-Encryption-Key';
+
 	private const INFO_CONTROL_READ = 'Control-Read-Encryption-Key';
 
 	/** @var int */
@@ -65,16 +69,10 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	private bool $securedRequest = false;
 
 	/** @var string|null */
-	private ?string $encryptionKey = null;
+	private string|null $encryptionKey = null;
 
 	/** @var string|null */
-	private ?string $decryptionKey = null;
-
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
-
-	/** @var Socket\ConnectionInterface */
-	private Socket\ConnectionInterface $connection;
+	private string|null $decryptionKey = null;
 
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
@@ -86,15 +84,11 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		?string $sharedKey,
-		Socket\ConnectionInterface $connection,
-		?Log\LoggerInterface $logger = null
+		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		string|null $sharedKey,
+		private Socket\ConnectionInterface $connection,
+		Log\LoggerInterface|null $logger = null,
 	) {
-		$this->connector = $connector;
-
-		$this->connection = $connection;
-
 		$this->setSharedKey($sharedKey);
 
 		$connection->on(
@@ -103,7 +97,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				$this->securedRequest = false;
 
 				$this->emit('data', [$this->decodeData($data)]);
-			}
+			},
 		);
 
 		Stream\Util::forwardEvents($connection, $this, ['end', 'error', 'close', 'pipe', 'drain']);
@@ -116,7 +110,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	 *
 	 * @return void
 	 */
-	public function setSharedKey(?string $sharedKey): void
+	public function setSharedKey(string|null $sharedKey): void
 	{
 		if ($sharedKey !== null) {
 			$this->encryptionKey = hash_hkdf(
@@ -124,7 +118,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				$sharedKey,
 				32,
 				self::INFO_CONTROL_READ,
-				self::SALT_CONTROL
+				self::SALT_CONTROL,
 			);
 
 			$this->decryptionKey = hash_hkdf(
@@ -132,38 +126,26 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				$sharedKey,
 				32,
 				self::INFO_CONTROL_WRITE,
-				self::SALT_CONTROL
+				self::SALT_CONTROL,
 			);
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getLocalAddress(): ?string
+	public function getLocalAddress(): string|null
 	{
 		return $this->connection->getLocalAddress();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getRemoteAddress(): ?string
+	public function getRemoteAddress(): string|null
 	{
 		return $this->connection->getRemoteAddress();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function isReadable(): bool
 	{
 		return $this->connection->isReadable();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function isWritable(): bool
 	{
 		return $this->connection->isWritable();
@@ -215,7 +197,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 
 	/**
 	 * @param Stream\WritableStreamInterface $dest
-	 * @param mixed[] $options
+	 * @param Array<mixed> $options
 	 *
 	 * @return Stream\WritableStreamInterface
 	 */
@@ -237,7 +219,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 
 		$binaryData = unpack('C*', $receivedData);
 
-		if (!is_array($binaryData) || count($binaryData) <= (self::ENCRYPTED_DATA_LENGTH + self::AUTH_TAG_LENGTH)) {
+		if (!is_array($binaryData) || count($binaryData) <= self::ENCRYPTED_DATA_LENGTH + self::AUTH_TAG_LENGTH) {
 			return $receivedData;
 		}
 
@@ -256,7 +238,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 
 		$nonce = array_merge(
 			[0, 0, 0, 0],
-			(array_values((array) unpack('C*', pack('v', $this->securedRequestCnt))) + [0, 0, 0, 0, 0, 0, 0, 0])
+			array_values((array) unpack('C*', pack('v', $this->securedRequestCnt))) + [0, 0, 0, 0, 0, 0, 0, 0],
 		);
 
 		try {
@@ -264,7 +246,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				pack('C*', ...$binaryData),
 				pack('C*', ...$dataLength),
 				pack('C*', ...$nonce),
-				$this->decryptionKey
+				$this->decryptionKey,
 			);
 
 			if ($decryptedData !== false) {
@@ -277,16 +259,16 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 			$this->logger->error(
 				'Data decryption failed',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'secure-connection',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'secure-connection',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 		}
 
@@ -318,7 +300,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 
 		$nonce = array_merge(
 			[0, 0, 0, 0],
-			(array_values((array) unpack('C*', pack('v', $this->securedResponsesCnt))) + [0, 0, 0, 0, 0, 0, 0, 0])
+			array_values((array) unpack('C*', pack('v', $this->securedResponsesCnt))) + [0, 0, 0, 0, 0, 0, 0, 0],
 		);
 
 		try {
@@ -326,27 +308,26 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				pack('C*', ...$binaryData),
 				pack('C*', ...$dataLength),
 				pack('C*', ...$nonce),
-				$this->encryptionKey
+				$this->encryptionKey,
 			);
 
 			$this->securedResponsesCnt++;
 
 			return pack('C*', ...$dataLength) . $encryptedData;
-
 		} catch (SodiumException $ex) {
 			$this->logger->error(
 				'Data encryption failed',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'secure-connection',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'secure-connection',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
-				]
+				],
 			);
 		}
 

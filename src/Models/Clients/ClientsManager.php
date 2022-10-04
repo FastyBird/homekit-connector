@@ -20,6 +20,7 @@ use FastyBird\HomeKitConnector\Models;
 use IPub\DoctrineCrud\Crud;
 use Nette;
 use Nette\Utils;
+use function assert;
 
 /**
  * Clients entities manager
@@ -35,22 +36,10 @@ class ClientsManager
 	use Nette\SmartObject;
 
 	/**
-	 * @var Crud\IEntityCrud
-	 *
-	 * @phpstan-var Crud\IEntityCrud<Entities\Client>
+	 * @param Crud\IEntityCrud<Entities\Client> $entityCrud
 	 */
-	private Crud\IEntityCrud $entityCrud;
-
-	/**
-	 * @param Crud\IEntityCrud $entityCrud
-	 *
-	 * @phpstan-param Crud\IEntityCrud<Entities\Client> $entityCrud
-	 */
-	public function __construct(
-		Crud\IEntityCrud $entityCrud
-	) {
-		// Entity CRUD for handling entities
-		$this->entityCrud = $entityCrud;
+	public function __construct(private Crud\IEntityCrud $entityCrud)
+	{
 	}
 
 	/**
@@ -58,14 +47,13 @@ class ClientsManager
 	 *
 	 * @return Entities\Client
 	 */
-	public function create(
-		Utils\ArrayHash $values
-	): Entities\Client {
+	public function create(Utils\ArrayHash $values): Entities\Client
+	{
 		// Get entity creator
 		$creator = $this->entityCrud->getEntityCreator();
 
-		/** @var Entities\Client $entity */
 		$entity = $creator->create($values);
+		assert($entity instanceof Entities\Client);
 
 		return $entity;
 	}
@@ -78,11 +66,11 @@ class ClientsManager
 	 */
 	public function update(
 		Entities\Client $entity,
-		Utils\ArrayHash $values
+		Utils\ArrayHash $values,
 	): Entities\Client {
-		/** @var Entities\Client $entity */
 		$entity = $this->entityCrud->getEntityUpdater()
 			->update($values, $entity);
+		assert($entity instanceof Entities\Client);
 
 		return $entity;
 	}
@@ -92,9 +80,8 @@ class ClientsManager
 	 *
 	 * @return bool
 	 */
-	public function delete(
-		Entities\Client $entity
-	): bool {
+	public function delete(Entities\Client $entity): bool
+	{
 		// Delete entity from database
 		return $this->entityCrud->getEntityDeleter()
 			->delete($entity);

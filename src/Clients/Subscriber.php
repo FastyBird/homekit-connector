@@ -40,7 +40,7 @@ final class Subscriber
 	/** @var SplObjectStorage<Socket\ConnectionInterface, null> */
 	private SplObjectStorage $connections;
 
-	/** @var Array<string, string[]> */
+	/** @var Array<string, Array<string>> */
 	private array $subscriptions;
 
 	/** @var Log\LoggerInterface */
@@ -49,9 +49,8 @@ final class Subscriber
 	/**
 	 * @param Log\LoggerInterface|null $logger
 	 */
-	public function __construct(
-		?Log\LoggerInterface $logger = null
-	) {
+	public function __construct(Log\LoggerInterface|null $logger = null)
+	{
 		$this->connections = new SplObjectStorage();
 		$this->subscriptions = [];
 
@@ -68,12 +67,12 @@ final class Subscriber
 		$this->logger->debug(
 			'Registering client to subscriber',
 			[
-				'source'     => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'       => 'subscriber',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'subscriber',
 				'connection' => [
 					'address' => $connection->getRemoteAddress(),
 				],
-			]
+			],
 		);
 
 		$this->connections->attach($connection);
@@ -89,12 +88,12 @@ final class Subscriber
 		$this->logger->debug(
 			'Unregistering client from subscriber',
 			[
-				'source'     => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'       => 'subscriber',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'subscriber',
 				'connection' => [
 					'address' => $connection->getRemoteAddress(),
 				],
-			]
+			],
 		);
 
 		$this->connections->rewind();
@@ -120,14 +119,14 @@ final class Subscriber
 		$this->logger->debug(
 			'Subscribing to characteristic',
 			[
-				'source'       => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'         => 'subscriber',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'subscriber',
 				'subscription' => [
-					'aid'     => $aid,
-					'iid'     => $iid,
+					'aid' => $aid,
+					'iid' => $iid,
 					'address' => $address,
 				],
-			]
+			],
 		);
 
 		if (!array_key_exists($aid . '.' . $iid, $this->subscriptions)) {
@@ -149,14 +148,14 @@ final class Subscriber
 		$this->logger->debug(
 			'Unsubscribing from characteristic',
 			[
-				'source'       => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'         => 'subscriber',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'subscriber',
 				'subscription' => [
-					'aid'     => $aid,
-					'iid'     => $iid,
+					'aid' => $aid,
+					'iid' => $iid,
 					'address' => $address,
 				],
-			]
+			],
 		);
 
 		if (!array_key_exists($aid . '.' . $iid, $this->subscriptions)) {

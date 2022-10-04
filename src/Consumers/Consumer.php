@@ -33,13 +33,10 @@ final class Consumer implements ExchangeConsumer\IConsumer
 
 	use Nette\SmartObject;
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function consume(
 		MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source,
 		MetadataTypes\RoutingKeyType $routingKey,
-		?MetadataEntities\IEntity $entity
+		MetadataEntities\IEntity|null $entity,
 	): void {
 		// TODO: Implement
 	}

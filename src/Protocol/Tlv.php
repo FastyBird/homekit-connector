@@ -52,7 +52,7 @@ final class Tlv
 	use Nette\SmartObject;
 
 	/**
-	 * @param Array<int, Array<int, int|int[]|string>> $objects
+	 * @param Array<int, Array<int, (int|Array<int>|string)>> $objects
 	 *
 	 * @return string
 	 */
@@ -95,9 +95,7 @@ final class Tlv
 					$tlvCode->equalsValue(Types\TlvCode::CODE_IDENTIFIER)
 					&& is_string($value)
 				) {
-					$chars = array_map(function (string $char): int {
-						return ord($char);
-					}, str_split($value));
+					$chars = array_map(static fn (string $char): int => ord($char), str_split($value));
 
 					if (count($chars) > 255) {
 						$chars = array_values($chars);
@@ -107,7 +105,7 @@ final class Tlv
 								$row .= pack('C1', 255);
 							} elseif ($i % 255 === 0) {
 								$row .= pack('C1', $code);
-								$row .= pack('C1', (count($chars) - $i));
+								$row .= pack('C1', count($chars) - $i);
 							}
 
 							$row .= pack('C1', $chars[$i]);
@@ -136,7 +134,7 @@ final class Tlv
 								$row .= pack('C1', 255);
 							} elseif ($i % 255 === 0) {
 								$row .= pack('C1', $code);
-								$row .= pack('C1', (count($value) - $i));
+								$row .= pack('C1', count($value) - $i);
 							}
 
 							$row .= pack('C1', $value[$i]);
@@ -161,7 +159,7 @@ final class Tlv
 	/**
 	 * @param string $data
 	 *
-	 * @return Array<int, Array<int, int|int[]|string>>
+	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 */
 	public function decode(string $data): array
 	{
@@ -236,9 +234,13 @@ final class Tlv
 				if ($value === false) {
 					throw new Exceptions\InvalidArgument('Provided data are not valid TLV data');
 				} else {
-					$value = implode('', array_map(function (int $item): string {
-						return mb_check_encoding(chr($item), 'UTF-8') ? chr($item) : '';
-					}, $value));
+					$value = implode(
+						'',
+						array_map(
+							static fn (int $item): string => mb_check_encoding(chr($item), 'UTF-8') ? chr($item) : '',
+							$value,
+						),
+					);
 
 					if ($value === '') {
 						throw new Exceptions\InvalidArgument('Unable to decode string from bytes');
@@ -267,11 +269,12 @@ final class Tlv
 			$position += $length;
 
 			if ($previousCode !== null && $previousCode->equals($tlvCode)) {
-				if (is_array($entry[$tlvCode->getValue()]) && is_array($value)) {
-					$entry[intval($tlvCode->getValue())] = array_merge($entry[$tlvCode->getValue()], $value);
-				} else {
-					$entry[intval($tlvCode->getValue())] = $entry[$tlvCode->getValue()] + $value;
-				}
+				$entry[intval($tlvCode->getValue())] = is_array($entry[$tlvCode->getValue()]) && is_array($value)
+					? array_merge(
+						$entry[$tlvCode->getValue()],
+						$value,
+					)
+					: $entry[$tlvCode->getValue()] + $value;
 			} else {
 				$entry[intval($tlvCode->getValue())] = $value;
 			}

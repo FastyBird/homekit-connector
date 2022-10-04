@@ -20,8 +20,12 @@ use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette\Utils;
+use function array_intersect;
 use function array_values;
 use function floatval;
+use function intval;
+use function is_array;
+use function is_string;
 use function sprintf;
 use function strval;
 
@@ -36,23 +40,18 @@ use function strval;
 final class CharacteristicsFactory
 {
 
-	/** @var Helpers\Loader */
-	private Helpers\Loader $loader;
-
 	/**
 	 * @param Helpers\Loader $loader
 	 */
-	public function __construct(
-		Helpers\Loader $loader
-	) {
-		$this->loader = $loader;
+	public function __construct(private Helpers\Loader $loader)
+	{
 	}
 
 	/**
 	 * @param string $name
 	 * @param Service $service
 	 * @param MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property
-	 * @param int[]|null $validValues
+	 * @param Array<int>|null $validValues
 	 * @param int|null $maxLength
 	 * @param float|null $minValue
 	 * @param float|null $maxValue
@@ -64,20 +63,21 @@ final class CharacteristicsFactory
 	public function create(
 		string $name,
 		Service $service,
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 		MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property = null,
-		?array $validValues = [],
-		?int $maxLength = null,
-		?float $minValue = null,
-		?float $maxValue = null,
-		?float $minStep = null,
-		?Types\CharacteristicUnit $unit = null
+		array|null $validValues = [],
+		int|null $maxLength = null,
+		float|null $minValue = null,
+		float|null $maxValue = null,
+		float|null $minStep = null,
+		Types\CharacteristicUnit|null $unit = null,
 	): Characteristic {
 		$metadata = $this->loader->loadCharacteristics();
 
 		if (!$metadata->offsetExists($name)) {
 			throw new Exceptions\InvalidArgument(sprintf(
 				'Definition for characteristic: %s was not found',
-				$name
+				$name,
 			));
 		}
 
@@ -121,13 +121,17 @@ final class CharacteristicsFactory
 		}
 
 		if ($characteristicsMetadata->offsetExists('ValidValues')) {
-			$defaultValidValues = is_array($characteristicsMetadata->offsetGet('ValidValues')) ? array_values($characteristicsMetadata->offsetGet('ValidValues')) : null;
+			$defaultValidValues = is_array($characteristicsMetadata->offsetGet('ValidValues'))
+				? array_values(
+					$characteristicsMetadata->offsetGet('ValidValues'),
+				)
+				: null;
 
-			if ($validValues !== null && $defaultValidValues !== null) {
-				$validValues = array_values(array_intersect($validValues, $defaultValidValues));
-			} else {
-				$validValues = $defaultValidValues;
-			}
+			$validValues = $validValues !== null && $defaultValidValues !== null
+				? array_values(
+					array_intersect($validValues, $defaultValidValues),
+				)
+				: $defaultValidValues;
 		} else {
 			$validValues = null;
 		}
@@ -144,7 +148,7 @@ final class CharacteristicsFactory
 			$minValue,
 			$maxValue,
 			$minStep,
-			$unit
+			$unit,
 		);
 	}
 

@@ -53,7 +53,7 @@ final class IidManager
 	 * @return void
 	 */
 	public function assign(
-		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object
+		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object,
 	): void {
 		if ($this->storage->contains($object)) {
 			return;
@@ -71,7 +71,7 @@ final class IidManager
 	 * @return Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic|null
 	 */
 	public function getObject(
-		int $iid
+		int $iid,
 	): Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic|null {
 		$this->storage->rewind();
 
@@ -92,8 +92,8 @@ final class IidManager
 	 * @return int|null
 	 */
 	public function getIid(
-		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object
-	): ?int {
+		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object,
+	): int|null {
 		$this->storage->rewind();
 
 		if ($this->storage->contains($object)) {
@@ -111,8 +111,8 @@ final class IidManager
 	 * @return int|null
 	 */
 	public function removeObject(
-		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object
-	): ?int {
+		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object,
+	): int|null {
 		$iid = $this->getIid($object);
 
 		if ($iid !== null) {
@@ -130,7 +130,7 @@ final class IidManager
 	 * @return Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic|null
 	 */
 	public function removeIid(
-		int $iid
+		int $iid,
 	): Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic|null {
 		$object = $this->getObject($iid);
 

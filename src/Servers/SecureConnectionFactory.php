@@ -38,8 +38,8 @@ interface SecureConnectionFactory
 	 */
 	public function create(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		?string $sharedKey,
-		Socket\ConnectionInterface $connection
+		string|null $sharedKey,
+		Socket\ConnectionInterface $connection,
 	): SecureConnection;
 
 }

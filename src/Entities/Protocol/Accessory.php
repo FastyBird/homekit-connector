@@ -35,15 +35,6 @@ abstract class Accessory
 
 	use Nette\SmartObject;
 
-	/** @var int|null */
-	protected ?int $aid;
-
-	/** @var string */
-	protected string $name;
-
-	/** @var Types\AccessoryCategory */
-	protected Types\AccessoryCategory $category;
-
 	/** @var SplObjectStorage<Service, null> */
 	protected SplObjectStorage $services;
 
@@ -56,14 +47,10 @@ abstract class Accessory
 	 * @param Types\AccessoryCategory $category
 	 */
 	public function __construct(
-		string $name,
-		?int $aid,
-		Types\AccessoryCategory $category
+		protected string $name,
+		protected int|null $aid,
+		protected Types\AccessoryCategory $category,
 	) {
-		$this->name = $name;
-		$this->aid = $aid;
-		$this->category = $category;
-
 		$this->services = new SplObjectStorage();
 
 		$this->iidManager = new Helpers\IidManager();
@@ -80,7 +67,7 @@ abstract class Accessory
 	/**
 	 * @return int|null
 	 */
-	public function getAid(): ?int
+	public function getAid(): int|null
 	{
 		return $this->aid;
 	}
@@ -102,7 +89,7 @@ abstract class Accessory
 	}
 
 	/**
-	 * @return Service[]
+	 * @return Array<Service>
 	 */
 	public function getServices(): array
 	{
@@ -153,15 +140,16 @@ abstract class Accessory
 	 * Create a HAP representation of this Service
 	 * Used for json serialization
 	 *
-	 * @return Array<string, int|Array<string, string|int|bool|Array<string, bool|float|int|int[]|string|string[]|null>[]|null>[]|null>
+	 * @return Array<string, (int|Array<Array<string, (string|int|bool|Array<Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>>|null)>>|null)>
 	 */
 	public function toHap(): array
 	{
 		return [
-			Types\Representation::REPR_AID      => $this->aid,
-			Types\Representation::REPR_SERVICES => array_map(function (Service $service): array {
-				return $service->toHap();
-			}, $this->getServices()),
+			Types\Representation::REPR_AID => $this->aid,
+			Types\Representation::REPR_SERVICES => array_map(
+				static fn (Service $service): array => $service->toHap(),
+				$this->getServices(),
+			),
 		];
 	}
 
@@ -183,7 +171,7 @@ abstract class Accessory
 		return sprintf(
 			'<accessory name=%s chars=%s>',
 			$this->getName(),
-			Nette\Utils\Json::encode($services)
+			Nette\Utils\Json::encode($services),
 		);
 	}
 

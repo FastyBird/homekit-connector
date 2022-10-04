@@ -34,7 +34,9 @@ use function array_map;
 use function array_merge;
 use function array_unique;
 use function base64_encode;
+use function hash;
 use function is_array;
+use function mt_rand;
 use function preg_replace;
 use function React\Async\async;
 use function str_replace;
@@ -55,24 +57,21 @@ final class Mdns implements Server
 	use Nette\SmartObject;
 
 	private const DNS_ADDRESS = '224.0.0.251';
-	private const DNS_PORT = 5353;
+
+	private const DNS_PORT = 5_353;
 
 	private const DNS_BROADCAST_INTERVAL = 60;
 
 	private const HAP_SERVICE_TYPE = '_hap._tcp.local';
 
 	private const VALID_MDNS_REGEX = '/[^A-Za-z0-9\-]+/';
+
 	private const LEADING_TRAILING_SPACE_DASH = '/^[ -]+|[ -]+$/';
+
 	private const DASH_REGEX = '/[-]+/';
 
-	/** @var Array<string, Array<int, Array<int, Dns\Model\Record[]>>> */
+	/** @var Array<string, Array<int, Array<int, Array<Dns\Model\Record>>>> */
 	private array $resourceRecords = [];
-
-	/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity */
-	private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector;
-
-	/** @var Helpers\Connector */
-	private Helpers\Connector $connectorHelper;
 
 	/** @var Dns\Protocol\Parser */
 	private Dns\Protocol\Parser $parser;
@@ -80,11 +79,8 @@ final class Mdns implements Server
 	/** @var Dns\Protocol\BinaryDumper */
 	private Dns\Protocol\BinaryDumper $dumper;
 
-	/** @var EventLoop\LoopInterface */
-	private EventLoop\LoopInterface $eventLoop;
-
 	/** @var Datagram\SocketInterface|null */
-	private ?Datagram\SocketInterface $server = null;
+	private Datagram\SocketInterface|null $server = null;
 
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
@@ -96,16 +92,11 @@ final class Mdns implements Server
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		Helpers\Connector $connectorHelper,
-		EventLoop\LoopInterface $eventLoop,
-		?Log\LoggerInterface $logger = null
+		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		private Helpers\Connector $connectorHelper,
+		private EventLoop\LoopInterface $eventLoop,
+		Log\LoggerInterface|null $logger = null,
 	) {
-		$this->connector = $connector;
-		$this->connectorHelper = $connectorHelper;
-
-		$this->eventLoop = $eventLoop;
-
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		$this->parser = new Dns\Protocol\Parser();
@@ -115,7 +106,7 @@ final class Mdns implements Server
 			'updated',
 			function (
 				Uuid\UuidInterface $connectorId,
-				HomeKitConnector\Types\ConnectorPropertyIdentifier $type
+				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
 			): void {
 				if (
 					$this->connector->getId()->equals($connectorId)
@@ -124,18 +115,18 @@ final class Mdns implements Server
 					$this->logger->debug(
 						'Paired status has been changed',
 						[
-							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'      => 'mdns-server',
+							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type' => 'mdns-server',
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
 							],
-						]
+						],
 					);
 
 					$this->createZone();
 					$this->broadcastZone();
 				}
-			}
+			},
 		);
 	}
 
@@ -151,12 +142,12 @@ final class Mdns implements Server
 		$this->logger->debug(
 			'Creating mDNS server',
 			[
-				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'      => 'mdns-server',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'mdns-server',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
 				],
-			]
+			],
 		);
 
 		$factory = new Datagram\Factory($this->eventLoop);
@@ -178,7 +169,7 @@ final class Mdns implements Server
 
 					$this->server?->send(
 						$this->dumper->toBinary($response),
-						self::DNS_ADDRESS . ':' . self::DNS_PORT
+						self::DNS_ADDRESS . ':' . self::DNS_PORT,
 					);
 				});
 
@@ -186,22 +177,22 @@ final class Mdns implements Server
 					$this->logger->error(
 						'An error occurred during server handling',
 						[
-							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'      => 'mdns-server',
+							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type' => 'mdns-server',
 							'exception' => [
 								'message' => $ex->getMessage(),
-								'code'    => $ex->getCode(),
+								'code' => $ex->getCode(),
 							],
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
 							],
-						]
+						],
 					);
 
 					throw new DevicesModuleExceptions\TerminateException(
 						'Discovery broadcast server was terminated',
 						$ex->getCode(),
-						$ex
+						$ex,
 					);
 				});
 
@@ -209,12 +200,12 @@ final class Mdns implements Server
 					$this->logger->info(
 						'Server was closed',
 						[
-							'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-							'type'      => 'mdns-server',
+							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'type' => 'mdns-server',
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
 							],
-						]
+						],
 					);
 				});
 
@@ -226,41 +217,38 @@ final class Mdns implements Server
 					self::DNS_BROADCAST_INTERVAL,
 					async(function (): void {
 						$this->broadcastZone();
-					})
+					}),
 				);
 			})
 			->otherwise(function (Throwable $ex): void {
 				$this->logger->error(
 					'Could not create mDNS discovery server',
 					[
-						'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-						'type'      => 'mdns-server',
+						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'type' => 'mdns-server',
 						'exception' => [
 							'message' => $ex->getMessage(),
-							'code'    => $ex->getCode(),
+							'code' => $ex->getCode(),
 						],
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
-					]
+					],
 				);
 			});
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function disconnect(): void
 	{
 		$this->logger->debug(
 			'Closing mDNS server',
 			[
-				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'      => 'mdns-server',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'mdns-server',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
 				],
-			]
+			],
 		);
 
 		$this->server?->close();
@@ -274,12 +262,12 @@ final class Mdns implements Server
 		$this->logger->debug(
 			'Broadcasting connector DNS zone',
 			[
-				'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-				'type'      => 'mdns-server',
+				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'type' => 'mdns-server',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
 				],
-			]
+			],
 		);
 
 		$message = new Dns\Model\Message();
@@ -290,7 +278,7 @@ final class Mdns implements Server
 			new Dns\Query\Query(
 				'',
 				Dns\Model\Message::TYPE_ANY,
-				Dns\Model\Message::CLASS_IN
+				Dns\Model\Message::CLASS_IN,
 			),
 		]);
 
@@ -300,7 +288,7 @@ final class Mdns implements Server
 
 		$this->server?->send(
 			$this->dumper->toBinary($message),
-			self::DNS_ADDRESS . ':' . self::DNS_PORT
+			self::DNS_ADDRESS . ':' . self::DNS_PORT,
 		);
 	}
 
@@ -317,8 +305,8 @@ final class Mdns implements Server
 			strval(preg_replace(
 				self::VALID_MDNS_REGEX,
 				' ',
-				$this->connector->getName() ?? $this->connector->getIdentifier()
-			))
+				$this->connector->getName() ?? $this->connector->getIdentifier(),
+			)),
 		);
 
 		$hostName = preg_replace(
@@ -332,26 +320,26 @@ final class Mdns implements Server
 						strval(preg_replace(
 							self::VALID_MDNS_REGEX,
 							' ',
-							$this->connector->getName() ?? $this->connector->getIdentifier()
-						))
-					)
+							$this->connector->getName() ?? $this->connector->getIdentifier(),
+						)),
+					),
 				),
-				'-'
-			)
+				'-',
+			),
 		);
 
 		$port = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
 			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
-				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT
-			)
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
+			),
 		);
 
 		$macAddress = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
 			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
-				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS
-			)
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS,
+			),
 		);
 
 		$shortMacAddress = str_replace(':', '', Utils\Strings::substring((string) $macAddress, -8));
@@ -359,28 +347,28 @@ final class Mdns implements Server
 		$version = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
 			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
-				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION
-			)
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION,
+			),
 		);
 
 		$paired = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
 			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
-				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED
-			)
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED,
+			),
 		);
 
 		$setupId = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
 			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
-				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID
-			)
+				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID,
+			),
 		);
 
 		$setupHash = substr(
-			base64_encode(hash('sha512', ((string) $setupId . (string) $macAddress), true)),
+			base64_encode(hash('sha512', (string) $setupId . (string) $macAddress, true)),
 			0,
-			4
+			4,
 		);
 
 		$resourceRecords = [];
@@ -389,7 +377,7 @@ final class Mdns implements Server
 			self::HAP_SERVICE_TYPE,
 			Dns\Model\Message::TYPE_PTR,
 			Dns\Model\Message::CLASS_IN,
-			4500,
+			4_500,
 			$name . ' ' . $shortMacAddress . '.' . self::HAP_SERVICE_TYPE,
 		);
 
@@ -401,7 +389,7 @@ final class Mdns implements Server
 				Dns\Model\Message::TYPE_A,
 				Dns\Model\Message::CLASS_IN,
 				120,
-				$localIpAddress
+				$localIpAddress,
 			);
 		}
 
@@ -412,17 +400,17 @@ final class Mdns implements Server
 			120,
 			[
 				'priority' => '0',
-				'weight'   => '0',
-				'port'     => (string) $port,
-				'target'   => $hostName . '-' . $shortMacAddress . '.local',
-			]
+				'weight' => '0',
+				'port' => (string) $port,
+				'target' => $hostName . '-' . $shortMacAddress . '.local',
+			],
 		);
 
 		$resourceRecords[] = new Dns\Model\Record(
 			$name . ' ' . $shortMacAddress . '.' . self::HAP_SERVICE_TYPE,
 			Dns\Model\Message::TYPE_TXT,
 			Dns\Model\Message::CLASS_IN,
-			4500,
+			4_500,
 			[
 				'md=' . $name,
 				'pv=' . HomeKitConnector\Constants::HAP_PROTOCOL_SHORT_VERSION,
@@ -437,7 +425,7 @@ final class Mdns implements Server
 				// 'sf == 1' means "discoverable by HomeKit iOS clients"
 				'sf=' . ((bool) $paired === true ? 0 : 1),
 				'sh=' . $setupHash,
-			]
+			],
 		);
 
 		$this->resourceRecords = [];
@@ -448,9 +436,9 @@ final class Mdns implements Server
 	}
 
 	/**
-	 * @param Dns\Query\Query[] $queries
+	 * @param Array<Dns\Query\Query> $queries
 	 *
-	 * @return Dns\Model\Record[]
+	 * @return Array<Dns\Model\Record>
 	 */
 	private function getAnswers(array $queries): array
 	{
@@ -482,9 +470,9 @@ final class Mdns implements Server
 	/**
 	 * Populate the additional records of a message if required
 	 *
-	 * @param Dns\Model\Record[] $answers
+	 * @param Array<Dns\Model\Record> $answers
 	 *
-	 * @return Dns\Model\Record[]
+	 * @return Array<Dns\Model\Record>
 	 */
 	private function getAdditional(array $answers): array
 	{
@@ -513,15 +501,13 @@ final class Mdns implements Server
 		// To populate the A and AAAA records, we need to get a set of unique
 		// targets from the SRV record
 		$srvRecordTargets = array_map(
-			function (Dns\Model\Record $record): string {
-				return is_array($record->data) ? strval($record->data['target']) : '';
-			},
+			static fn (Dns\Model\Record $record): string => is_array($record->data) ? strval(
+				$record->data['target'],
+			) : '',
 			array_filter(
 				$additional,
-				function (Dns\Model\Record $record): bool {
-					return $record->type === Dns\Model\Message::TYPE_SRV;
-				}
-			)
+				static fn (Dns\Model\Record $record): bool => $record->type === Dns\Model\Message::TYPE_SRV,
+			),
 		);
 		$srvRecordTargets = array_unique($srvRecordTargets);
 

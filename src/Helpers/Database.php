@@ -36,16 +36,11 @@ final class Database
 
 	use Nette\SmartObject;
 
-	/** @var Persistence\ManagerRegistry */
-	private Persistence\ManagerRegistry $managerRegistry;
-
 	/**
 	 * @param Persistence\ManagerRegistry $managerRegistry
 	 */
-	public function __construct(
-		Persistence\ManagerRegistry $managerRegistry
-	) {
-		$this->managerRegistry = $managerRegistry;
+	public function __construct(private Persistence\ManagerRegistry $managerRegistry)
+	{
 	}
 
 	/**
@@ -63,7 +58,6 @@ final class Database
 			$this->pingAndReconnect();
 
 			return $callback();
-
 		} catch (Throwable $ex) {
 			throw new Exceptions\InvalidState('An error occurred: ' . $ex->getMessage(), $ex->getCode(), $ex);
 		}
@@ -92,7 +86,6 @@ final class Database
 			$this->getConnection()->commit();
 
 			return $result;
-
 		} catch (Throwable $ex) {
 			// Revert all changes when error occur
 			if ($this->getConnection()->isTransactionActive()) {
@@ -184,7 +177,7 @@ final class Database
 	/**
 	 * @return ORM\EntityManagerInterface|null
 	 */
-	private function getEntityManager(): ?ORM\EntityManagerInterface
+	private function getEntityManager(): ORM\EntityManagerInterface|null
 	{
 		$em = $this->managerRegistry->getManager();
 

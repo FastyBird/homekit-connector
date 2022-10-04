@@ -35,15 +35,6 @@ use function preg_match;
 final class AccessoryFactory
 {
 
-	/** @var ServiceFactory */
-	private ServiceFactory $serviceFactory;
-
-	/** @var CharacteristicsFactory */
-	private CharacteristicsFactory $characteristicsFactory;
-
-	/** @var HomeKitConnector\Protocol\Driver */
-	private HomeKitConnector\Protocol\Driver $driver;
-
 	/** @var Hashids\Hashids */
 	private Hashids\Hashids $hashIds;
 
@@ -53,14 +44,10 @@ final class AccessoryFactory
 	 * @param HomeKitConnector\Protocol\Driver $driver
 	 */
 	public function __construct(
-		ServiceFactory $serviceFactory,
-		CharacteristicsFactory $characteristicsFactory,
-		HomeKitConnector\Protocol\Driver $driver
+		private ServiceFactory $serviceFactory,
+		private CharacteristicsFactory $characteristicsFactory,
+		private HomeKitConnector\Protocol\Driver $driver,
 	) {
-		$this->serviceFactory = $serviceFactory;
-		$this->characteristicsFactory = $characteristicsFactory;
-
-		$this->driver = $driver;
 		$this->hashIds = new Hashids\Hashids();
 	}
 
@@ -73,24 +60,24 @@ final class AccessoryFactory
 	 */
 	public function create(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity|MetadataEntities\Modules\DevicesModule\IDeviceEntity $owner,
-		?int $aid = null,
-		?Types\AccessoryCategory $category = null
+		int|null $aid = null,
+		Types\AccessoryCategory|null $category = null,
 	): Accessory {
-		$category = $category ?? Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_OTHER);
+		$category ??= Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_OTHER);
 
 		if ($category->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {
 			if (!$owner instanceof MetadataEntities\Modules\DevicesModule\ConnectorEntity) {
 				throw new Exceptions\InvalidArgument('Bridge accessory owner have to be connector item instance');
 			}
 
-			$accessory = new Bridge($owner->getName() ?: $owner->getIdentifier(), $owner);
+			$accessory = new Bridge($owner->getName() ?? $owner->getIdentifier(), $owner);
 
 			$accessoryProtocolInformation = new Service(
 				Uuid\Uuid::fromString(Service::HAP_PROTOCOL_INFORMATION_SERVICE_UUID),
 				'HAPProtocolInformation',
 				$accessory,
 				null,
-				['Version']
+				['Version'],
 			);
 
 			$accessoryProtocolVersion = $this->characteristicsFactory->create('Version', $accessoryProtocolInformation);
@@ -104,13 +91,13 @@ final class AccessoryFactory
 				throw new Exceptions\InvalidArgument('Device accessory owner have to be device item instance');
 			}
 
-			$accessory = new Device($owner->getName() ?: $owner->getIdentifier(), $aid, $category, $owner);
+			$accessory = new Device($owner->getName() ?? $owner->getIdentifier(), $aid, $category, $owner);
 		}
 
 		$accessoryInformation = $this->serviceFactory->create('AccessoryInformation', $accessory);
 
 		$accessoryName = $this->characteristicsFactory->create('Name', $accessoryInformation);
-		$accessoryName->setActualValue($owner->getName() ?: $owner->getIdentifier());
+		$accessoryName->setActualValue($owner->getName() ?? $owner->getIdentifier());
 
 		$accessoryInformation->addCharacteristic($accessoryName);
 
@@ -125,8 +112,8 @@ final class AccessoryFactory
 		$accessoryFirmwareRevision->setActualValue(
 			$packageRevision !== null && preg_match(
 				HomeKitConnector\Constants::VERSION_REGEXP,
-				$packageRevision
-			) === 1 ? $packageRevision : '0.0.0'
+				$packageRevision,
+			) === 1 ? $packageRevision : '0.0.0',
 		);
 
 		$accessoryInformation->addCharacteristic($accessoryFirmwareRevision);

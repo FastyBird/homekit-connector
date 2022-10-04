@@ -29,22 +29,14 @@ use Symfony\Contracts\EventDispatcher;
 class ClientWriteCharacteristic extends EventDispatcher\Event
 {
 
-	/** @var Entities\Protocol\Characteristic */
-	private Entities\Protocol\Characteristic $characteristic;
-
-	/** @var bool|float|int|string|null */
-	private bool|float|int|string|null $value;
-
 	/**
 	 * @param Entities\Protocol\Characteristic $characteristic
 	 * @param bool|float|int|string|null $value
 	 */
 	public function __construct(
-		Entities\Protocol\Characteristic $characteristic,
-		bool|float|int|string|null $value
+		private Entities\Protocol\Characteristic $characteristic,
+		private bool|float|int|string|null $value,
 	) {
-		$this->characteristic = $characteristic;
-		$this->value = $value;
 	}
 
 	/**

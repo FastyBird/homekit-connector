@@ -43,12 +43,6 @@ use Throwable;
 final class RouterMiddleware
 {
 
-	/** @var EventDispatcher\EventDispatcherInterface|null */
-	private ?EventDispatcher\EventDispatcherInterface $dispatcher;
-
-	/** @var SlimRouterRouting\IRouter */
-	private SlimRouterRouting\IRouter $router;
-
 	/** @var SlimRouterHttp\ResponseFactory */
 	private SlimRouterHttp\ResponseFactory $responseFactory;
 
@@ -61,13 +55,10 @@ final class RouterMiddleware
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
-		SlimRouterRouting\IRouter $router,
-		?EventDispatcher\EventDispatcherInterface $dispatcher = null,
-		?Log\LoggerInterface $logger = null
+		private SlimRouterRouting\IRouter $router,
+		private EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
+		Log\LoggerInterface|null $logger = null,
 	) {
-		$this->router = $router;
-		$this->dispatcher = $dispatcher;
-
 		$this->responseFactory = new SlimRouterHttp\ResponseFactory();
 
 		$this->logger = $logger ?? new Log\NullLogger();
@@ -83,17 +74,17 @@ final class RouterMiddleware
 			$this->logger->warning(
 				'Request ended with error',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'router-middleware',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'router-middleware',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
-					'request'   => [
+					'request' => [
 						'method' => $request->getMethod(),
-						'path'   => $request->getUri()->getPath(),
+						'path' => $request->getUri()->getPath(),
 					],
-				]
+				],
 			);
 
 			$response = $this->responseFactory->createResponse($ex->getCode());
@@ -106,17 +97,17 @@ final class RouterMiddleware
 			$this->logger->warning(
 				'Received invalid HTTP request',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'router-middleware',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'router-middleware',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
-					'request'   => [
+					'request' => [
 						'method' => $request->getMethod(),
-						'path'   => $request->getUri()->getPath(),
+						'path' => $request->getUri()->getPath(),
 					],
-				]
+				],
 			);
 
 			$response = $this->responseFactory->createResponse($ex->getCode());
@@ -129,13 +120,13 @@ final class RouterMiddleware
 			$this->logger->error(
 				'An unhandled error occurred during handling server HTTP request',
 				[
-					'source'    => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
-					'type'      => 'router-middleware',
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'router-middleware',
 					'exception' => [
 						'message' => $ex->getMessage(),
-						'code'    => $ex->getCode(),
+						'code' => $ex->getCode(),
 					],
-				]
+				],
 			);
 
 			$response = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR);

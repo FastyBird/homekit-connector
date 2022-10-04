@@ -17,13 +17,13 @@ use Tests\Tools;
 use function call_user_func;
 use function is_object;
 
-require_once __DIR__ . '/../../../bootstrap.php';
+require_once __DIR__ . '/../../bootstrap.php';
 require_once __DIR__ . '/../DbTestCase.php';
 
 /**
  * @testCase
  */
-final class CharacteristicsControllerTest extends DbTestCase
+final class AccessoriesControllerTest extends DbTestCase
 {
 
 	public function setUp(): void
@@ -42,7 +42,7 @@ final class CharacteristicsControllerTest extends DbTestCase
 	 * @param int $statusCode
 	 * @param string $fixture
 	 *
-	 * @dataProvider ./../../../fixtures/Controllers/characteristicsRead.php
+	 * @dataProvider ./../../fixtures/Controllers/accessoriesRead.php
 	 */
 	public function testRead(string $url, int $statusCode, string $fixture): void
 	{
@@ -85,5 +85,5 @@ final class CharacteristicsControllerTest extends DbTestCase
 
 }
 
-$test_case = new CharacteristicsControllerTest();
+$test_case = new AccessoriesControllerTest();
 $test_case->run();

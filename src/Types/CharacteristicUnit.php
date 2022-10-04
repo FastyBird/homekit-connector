@@ -16,6 +16,7 @@
 namespace FastyBird\HomeKitConnector\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * HAP accessory permissions type
@@ -32,9 +33,13 @@ class CharacteristicUnit extends Consistence\Enum\Enum
 	 * Define permissions identifiers
 	 */
 	public const UNIT_CELSIUS = 'celsius';
+
 	public const UNIT_PERCENTAGE = 'percentage';
+
 	public const UNIT_ARCDEGREES = 'arcdegrees';
+
 	public const UNIT_LUX = 'lux';
+
 	public const UNIT_SECONDS = 'seconds';
 
 	/**

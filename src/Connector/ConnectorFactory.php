@@ -36,7 +36,7 @@ interface ConnectorFactory extends DevicesModuleConnectors\IConnectorFactory
 	 * @return Connector\Connector
 	 */
 	public function create(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
+		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 	): Connector\Connector;
 
 }

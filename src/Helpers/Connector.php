@@ -28,6 +28,7 @@ use FastyBird\Metadata\Types as MetadataTypes;
 use Nette;
 use Nette\Utils;
 use Ramsey\Uuid;
+use function assert;
 use function strval;
 
 /**
@@ -43,21 +44,6 @@ final class Connector extends Evenement\EventEmitter
 
 	use Nette\SmartObject;
 
-	/** @var Database */
-	private Database $databaseHelper;
-
-	/** @var DevicesModuleModels\Connectors\ConnectorsRepository */
-	private DevicesModuleModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository;
-
-	/** @var DevicesModuleModels\Connectors\Properties\IPropertiesRepository */
-	private DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesEntitiesRepository;
-
-	/** @var DevicesModuleModels\Connectors\Properties\IPropertiesManager */
-	private DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesEntitiesManagers;
-
-	/** @var DevicesModuleModels\DataStorage\IConnectorPropertiesRepository */
-	private DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesItemsRepository;
-
 	/**
 	 * @param Database $databaseHelper
 	 * @param DevicesModuleModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository
@@ -66,18 +52,12 @@ final class Connector extends Evenement\EventEmitter
 	 * @param DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesItemsRepository
 	 */
 	public function __construct(
-		Database $databaseHelper,
-		DevicesModuleModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository,
-		DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesEntitiesRepository,
-		DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesEntitiesManagers,
-		DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesItemsRepository
+		private Database $databaseHelper,
+		private DevicesModuleModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository,
+		private DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesEntitiesRepository,
+		private DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesEntitiesManagers,
+		private DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesItemsRepository,
 	) {
-		$this->databaseHelper = $databaseHelper;
-
-		$this->connectorsEntitiesRepository = $connectorsEntitiesRepository;
-		$this->propertiesEntitiesRepository = $propertiesEntitiesRepository;
-		$this->propertiesEntitiesManagers = $propertiesEntitiesManagers;
-		$this->propertiesItemsRepository = $propertiesItemsRepository;
 	}
 
 	/**
@@ -90,7 +70,7 @@ final class Connector extends Evenement\EventEmitter
 	 */
 	public function getConfiguration(
 		Uuid\UuidInterface $connectorId,
-		Types\ConnectorPropertyIdentifier $type
+		Types\ConnectorPropertyIdentifier $type,
 	): float|bool|int|string|null {
 		$configuration = $this->propertiesItemsRepository->findByIdentifier($connectorId, strval($type->getValue()));
 
@@ -115,11 +95,7 @@ final class Connector extends Evenement\EventEmitter
 			) {
 				$serverSecret = Protocol::generateSignKey();
 
-				$this->setConfiguration(
-					$connectorId,
-					$type,
-					$serverSecret
-				);
+				$this->setConfiguration($connectorId, $type, $serverSecret);
 
 				return $serverSecret;
 			}
@@ -134,11 +110,7 @@ final class Connector extends Evenement\EventEmitter
 		if ($type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET) {
 			$serverSecret = Protocol::generateSignKey();
 
-			$this->setConfiguration(
-				$connectorId,
-				$type,
-				$serverSecret
-			);
+			$this->setConfiguration($connectorId, $type, $serverSecret);
 
 			return $serverSecret;
 		}
@@ -158,22 +130,24 @@ final class Connector extends Evenement\EventEmitter
 	public function setConfiguration(
 		Uuid\UuidInterface $connectorId,
 		Types\ConnectorPropertyIdentifier $type,
-		string|int|float|bool|null $value = null
+		string|int|float|bool|null $value = null,
 	): void {
 		$property = $this->databaseHelper->query(
-			function () use ($connectorId, $type): ?DevicesModuleEntities\Connectors\Properties\StaticProperty {
+			function () use ($connectorId, $type): DevicesModuleEntities\Connectors\Properties\StaticProperty|null {
 				$findConnectorProperty = new DevicesModuleQueries\FindConnectorPropertiesQuery();
 				$findConnectorProperty->byConnectorId($connectorId);
 				$findConnectorProperty->byIdentifier(strval($type->getValue()));
 
-				/** @var DevicesModuleEntities\Connectors\Properties\StaticProperty|null $property */
 				$property = $this->propertiesEntitiesRepository->findOneBy(
 					$findConnectorProperty,
-					DevicesModuleEntities\Connectors\Properties\StaticProperty::class
+					DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				);
+				assert(
+					$property instanceof DevicesModuleEntities\Connectors\Properties\StaticProperty || $property === null,
 				);
 
 				return $property;
-			}
+			},
 		);
 
 		if ($property === null) {
@@ -190,30 +164,34 @@ final class Connector extends Evenement\EventEmitter
 
 						$connector = $this->connectorsEntitiesRepository->findOneBy(
 							$findConnectorQuery,
-							HomeKitConnector\Entities\HomeKitConnector::class
+							HomeKitConnector\Entities\HomeKitConnector::class,
 						);
 
 						if ($connector === null) {
-							throw new Exceptions\InvalidState('Connector for storing configuration could not be loaded');
+							throw new Exceptions\InvalidState(
+								'Connector for storing configuration could not be loaded',
+							);
 						}
 
 						$this->propertiesEntitiesManagers->create(
 							Utils\ArrayHash::from([
-								'entity'     => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+								'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
 								'identifier' => $type->getValue(),
-								'dataType'   => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
-								'value'      => $value,
-								'connector'  => $connector,
-							])
+								'dataType' => MetadataTypes\DataTypeType::get(
+									MetadataTypes\DataTypeType::DATA_TYPE_STRING,
+								),
+								'value' => $value,
+								'connector' => $connector,
+							]),
 						);
 
 						$configuration = $this->propertiesItemsRepository->findByIdentifier(
 							$connectorId,
-							strval($type->getValue())
+							strval($type->getValue()),
 						);
 
 						$this->emit('created', [$connectorId, $type, $configuration]);
-					}
+					},
 				);
 			} else {
 				throw new Exceptions\InvalidState('Connector property could not be loaded');
@@ -223,16 +201,16 @@ final class Connector extends Evenement\EventEmitter
 				function () use ($connectorId, $property, $type, $value): void {
 					$this->propertiesEntitiesManagers->update(
 						$property,
-						Utils\ArrayHash::from(['value' => $value])
+						Utils\ArrayHash::from(['value' => $value]),
 					);
 
 					$configuration = $this->propertiesItemsRepository->findByIdentifier(
 						$connectorId,
-						strval($type->getValue())
+						strval($type->getValue()),
 					);
 
 					$this->emit('updated', [$connectorId, $type, $configuration]);
-				}
+				},
 			);
 		}
 	}

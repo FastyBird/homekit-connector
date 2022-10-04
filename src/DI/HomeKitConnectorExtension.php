@@ -37,7 +37,9 @@ use Nette\PhpGenerator;
 use Nette\Schema;
 use React\EventLoop;
 use stdClass;
+use function assert;
 use function ucfirst;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * HomeKit connector
@@ -58,35 +60,32 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 	 */
 	public static function register(
 		Nette\Configurator $config,
-		string $extensionName = 'fbHomeKitConnector'
+		string $extensionName = 'fbHomeKitConnector',
 	): void {
-		$config->onCompile[] = function (
+		$config->onCompile[] = static function (
 			Nette\Configurator $config,
-			DI\Compiler $compiler
+			DI\Compiler $compiler,
 		) use ($extensionName): void {
 			$compiler->addExtension($extensionName, new HomeKitConnectorExtension());
 		};
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getConfigSchema(): Schema\Schema
 	{
 		return Schema\Expect::structure([
-			'loop' => Schema\Expect::anyOf(Schema\Expect::string(), Schema\Expect::type(DI\Definitions\Statement::class))
+			'loop' => Schema\Expect::anyOf(
+				Schema\Expect::string(),
+				Schema\Expect::type(DI\Definitions\Statement::class),
+			)
 				->nullable(),
 		]);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
-		/** @var stdClass $configuration */
 		$configuration = $this->getConfig();
+		assert($configuration instanceof stdClass);
 
 		if ($configuration->loop === null && $builder->getByType(EventLoop\LoopInterface::class) === null) {
 			$builder->addDefinition($this->prefix('client.loop'), new DI\Definitions\ServiceDefinition())
@@ -99,7 +98,7 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->setImplement(Connector\ConnectorFactory::class)
 			->addTag(
 				DevicesModuleDI\DevicesModuleExtension::CONNECTOR_TYPE_TAG,
-				Entities\HomeKitConnector::CONNECTOR_TYPE
+				Entities\HomeKitConnector::CONNECTOR_TYPE,
 			)
 			->getResultDefinition()
 			->setType(Connector\Connector::class);
@@ -162,7 +161,10 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->setType(Controllers\AccessoriesController::class)
 			->addTag('nette.inject');
 
-		$builder->addDefinition($this->prefix('http.controllers.characteristics'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition(
+			$this->prefix('http.controllers.characteristics'),
+			new DI\Definitions\ServiceDefinition(),
+		)
 			->setType(Controllers\CharacteristicsController::class)
 			->addTag('nette.inject');
 
@@ -208,9 +210,6 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->setType(Commands\Execute::class);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function beforeCompile(): void
 	{
 		parent::beforeCompile();
@@ -224,10 +223,15 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		$ormAnnotationDriverService = $builder->getDefinition('nettrineOrmAnnotations.annotationDriver');
 
 		if ($ormAnnotationDriverService instanceof DI\Definitions\ServiceDefinition) {
-			$ormAnnotationDriverService->addSetup('addPaths', [[__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Entities']]);
+			$ormAnnotationDriverService->addSetup(
+				'addPaths',
+				[[__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Entities']],
+			);
 		}
 
-		$ormAnnotationDriverChainService = $builder->getDefinitionByType(Persistence\Mapping\Driver\MappingDriverChain::class);
+		$ormAnnotationDriverChainService = $builder->getDefinitionByType(
+			Persistence\Mapping\Driver\MappingDriverChain::class,
+		);
 
 		if ($ormAnnotationDriverChainService instanceof DI\Definitions\ServiceDefinition) {
 			$ormAnnotationDriverChainService->addSetup('addDriver', [
@@ -237,18 +241,17 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function afterCompile(
-		PhpGenerator\ClassType $class
-	): void {
+	public function afterCompile(PhpGenerator\ClassType $class): void
+	{
 		$builder = $this->getContainerBuilder();
 
 		$entityFactoryServiceName = $builder->getByType(DoctrineCrud\Crud\IEntityCrudFactory::class, true);
 
 		$devicesManagerService = $class->getMethod('createService' . ucfirst($this->name) . '__models__clientsManager');
-		$devicesManagerService->setBody('return new ' . Models\Clients\ClientsManager::class . '($this->getService(\'' . $entityFactoryServiceName . '\')->create(\'' . Entities\Client::class . '\'));');
+		$devicesManagerService->setBody(
+			'return new ' . Models\Clients\ClientsManager::class
+			. '($this->getService(\'' . $entityFactoryServiceName . '\')->create(\'' . Entities\Client::class . '\'));',
+		);
 	}
 
 }
