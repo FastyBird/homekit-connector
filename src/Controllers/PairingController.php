@@ -87,65 +87,69 @@ final class PairingController extends BaseController
 
 	private const INFO_VERIFY = 'Pair-Verify-Encrypt-Info';
 
-	private const NONCE_SETUP_M5 = [
-		0, // 0
-		0, // 0
-		0, // 0
-		0, // 0
-		80, // P
-		83, // S
-		45, // -
-		77, // M
-		115, // s
-		103, // g
-		48, // 0
-		53, // 5
-	];
+	private const NONCE_SETUP_M5
+		= [
+			0, // 0
+			0, // 0
+			0, // 0
+			0, // 0
+			80, // P
+			83, // S
+			45, // -
+			77, // M
+			115, // s
+			103, // g
+			48, // 0
+			53, // 5
+		];
 
-	private const NONCE_SETUP_M6 = [
-		0, // 0
-		0, // 0
-		0, // 0
-		0, // 0
-		80, // P
-		83, // S
-		45, // -
-		77, // M
-		115, // s
-		103, // g
-		48, // 0
-		54, // 6
-	];
+	private const NONCE_SETUP_M6
+		= [
+			0, // 0
+			0, // 0
+			0, // 0
+			0, // 0
+			80, // P
+			83, // S
+			45, // -
+			77, // M
+			115, // s
+			103, // g
+			48, // 0
+			54, // 6
+		];
 
-	private const NONCE_VERIFY_M2 = [
-		0, // 0
-		0, // 0
-		0, // 0
-		0, // 0
-		80, // P
-		86, // V
-		45, // -
-		77, // M
-		115, // s
-		103, // g
-		48, // 0
-		50, // 2
-	];
+	private const NONCE_VERIFY_M2
+		= [
+			0, // 0
+			0, // 0
+			0, // 0
+			0, // 0
+			80, // P
+			86, // V
+			45, // -
+			77, // M
+			115, // s
+			103, // g
+			48, // 0
+			50, // 2
+		];
 
-	private const NONCE_VERIFY_M3 = [
-		0, // 0
-		0, // 0
-		0, // 0
-		0, // 0
-		80, // P
-		86, // V
-		45, // -
-		77, // M
-		115, // s
-		103, // g
-		48, // 0
-		51, // 3
-	];
+	private const NONCE_VERIFY_M3
+		= [
+			0, // 0
+			0, // 0
+			0, // 0
+			0, // 0
+			80, // P
+			86, // V
+			45, // -
+			77, // M
+			115, // s
+			103, // g
+			48, // 0
+			51, // 3
+		];
 
 	/** @var bool */
 	private bool $activePairing = false;

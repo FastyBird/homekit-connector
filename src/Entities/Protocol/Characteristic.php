@@ -51,14 +51,16 @@ class Characteristic
 
 	private const ABSOLUTE_MAX_LENGTH = 256;
 
-	private const ALWAYS_NULL = [
-		'00000073-0000-1000-8000-0026BB765291', // PROGRAMMABLE SWITCH
-	];
+	private const ALWAYS_NULL
+		= [
+			'00000073-0000-1000-8000-0026BB765291', // PROGRAMMABLE SWITCH
+		];
 
-	private const IMMEDIATE_NOTIFY = [
-		'00000126-0000-1000-8000-0026BB765291', // BUTTON
-		'00000073-0000-1000-8000-0026BB765291', // PROGRAMMABLE SWITCH
-	];
+	private const IMMEDIATE_NOTIFY
+		= [
+			'00000126-0000-1000-8000-0026BB765291', // BUTTON
+			'00000073-0000-1000-8000-0026BB765291', // PROGRAMMABLE SWITCH
+		];
 
 	/** @var bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null */
 	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $actualValue = null;
@@ -200,8 +202,7 @@ class Characteristic
 	 */
 	public function setActualValue(
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
-	): void
-	{
+	): void {
 		$this->actualValue = $value;
 
 		if ($this->actualValue === $this->expectedValue) {
@@ -224,8 +225,7 @@ class Characteristic
 	 */
 	public function setExpectedValue(
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
-	): void
-	{
+	): void {
 		$this->expectedValue = $value;
 	}
 

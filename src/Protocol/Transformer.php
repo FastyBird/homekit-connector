@@ -158,9 +158,9 @@ final class Transformer
 				$filtered = array_values(array_filter(
 					$property->getFormat()->getItems(),
 					static fn (array $item): bool => $item[1] !== null
-							&& Utils\Strings::lower(strval($item[1]->getValue())) === Utils\Strings::lower(
-								strval($transformedValue),
-							),
+						&& Utils\Strings::lower(strval($item[1]->getValue())) === Utils\Strings::lower(
+							strval($transformedValue),
+						),
 				));
 
 				if (
@@ -236,9 +236,9 @@ final class Transformer
 					$filtered = array_values(array_filter(
 						$property->getFormat()->getItems(),
 						static fn (array $item): bool => $item[0] !== null
-								&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(
-									strval($value),
-								),
+							&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(
+								strval($value),
+							),
 					));
 
 					if (
