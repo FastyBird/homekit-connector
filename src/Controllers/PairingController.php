@@ -1578,10 +1578,11 @@ final class PairingController extends BaseController
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET),
 		)));
 
-		$iosDeviceInfo = hex2bin(strval($this->connectorHelper->getConfiguration(
-			$connectorId,
-			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_PUBLIC_KEY),
-		)))
+		$iosDeviceInfo
+			= hex2bin(strval($this->connectorHelper->getConfiguration(
+				$connectorId,
+				Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_PUBLIC_KEY),
+			)))
 			. $tlvEntry[Types\TlvCode::CODE_IDENTIFIER]
 			. publicKey($serverPrivateSecret);
 

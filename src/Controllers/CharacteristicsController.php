@@ -123,22 +123,21 @@ final class CharacteristicsController extends BaseController
 			);
 		}
 
-		$meta = array_key_exists(
-			Types\Representation::REPR_META,
-			$queryParams,
-		) && (int) $queryParams[Types\Representation::REPR_META] === 1;
-		$perms = array_key_exists(
-			Types\Representation::REPR_PERM,
-			$queryParams,
-		) && (int) $queryParams[Types\Representation::REPR_PERM] === 1;
-		$type = array_key_exists(
-			Types\Representation::REPR_TYPE,
-			$queryParams,
-		) && (int) $queryParams[Types\Representation::REPR_TYPE] === 1;
-		$ev = array_key_exists(
-			Types\CharacteristicPermission::PERMISSION_NOTIFY,
-			$queryParams,
-		) && (int) $queryParams[Types\CharacteristicPermission::PERMISSION_NOTIFY] === 1;
+		$meta
+			= array_key_exists(Types\Representation::REPR_META, $queryParams)
+			&& (int) $queryParams[Types\Representation::REPR_META] === 1;
+		$perms
+			= array_key_exists(Types\Representation::REPR_PERM, $queryParams)
+			&& (int) $queryParams[Types\Representation::REPR_PERM] === 1;
+		$type
+			= array_key_exists(Types\Representation::REPR_TYPE, $queryParams)
+			&& (int) $queryParams[Types\Representation::REPR_TYPE] === 1;
+		$ev
+			= array_key_exists(
+				Types\CharacteristicPermission::PERMISSION_NOTIFY,
+				$queryParams,
+			)
+			&& (int) $queryParams[Types\CharacteristicPermission::PERMISSION_NOTIFY] === 1;
 
 		$ids = explode(',', $queryParams['id']);
 
@@ -402,9 +401,9 @@ final class CharacteristicsController extends BaseController
 			$this->preparedWrites[$clientAddress] = [];
 		}
 
-		$this->preparedWrites[$clientAddress][(int) $body[Types\Representation::REPR_PID]] = intval(
-			$this->dateTimeFactory->getNow()->getTimestamp(),
-		) + ((int) $body[Types\Representation::REPR_TTL] / 1_000);
+		$this->preparedWrites[$clientAddress][(int) $body[Types\Representation::REPR_PID]]
+			= intval($this->dateTimeFactory->getNow()->getTimestamp())
+			+ ((int) $body[Types\Representation::REPR_TTL] / 1_000);
 
 		$result = [
 			Types\Representation::REPR_STATUS => Types\ServerStatus::STATUS_SUCCESS,
