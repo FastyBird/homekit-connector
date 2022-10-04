@@ -21,9 +21,8 @@ use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette\Utils;
 use function array_values;
-use function intval;
-use function is_array;
-use function is_string;
+use function floatval;
+use function sprintf;
 use function strval;
 
 /**

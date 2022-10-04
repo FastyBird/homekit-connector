@@ -8,6 +8,8 @@ use FastyBird\HomeKitConnector\Schemas;
 use Nette;
 use Ninjify\Nunjuck\TestCase\BaseTestCase;
 use Tester\Assert;
+use function md5;
+use function time;
 
 require_once __DIR__ . '/../../../bootstrap.php';
 

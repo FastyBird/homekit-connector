@@ -17,7 +17,6 @@ namespace FastyBird\HomeKitConnector\Types;
 
 use Consistence;
 use FastyBird\Metadata\Types as MetadataTypes;
-use function strval;
 
 /**
  * Connector control name types

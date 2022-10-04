@@ -21,6 +21,7 @@ use Doctrine\Persistence;
 use FastyBird\HomeKitConnector\Exceptions;
 use Nette;
 use Throwable;
+use function gc_collect_cycles;
 
 /**
  * Useful database helpers

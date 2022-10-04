@@ -24,6 +24,7 @@ use Nette\Utils;
 use function array_filter;
 use function array_values;
 use function count;
+use function in_array;
 use function is_bool;
 use function is_float;
 use function is_int;
@@ -36,7 +37,6 @@ use function round;
 use function str_replace;
 use function strlen;
 use function strval;
-use function substr;
 
 /**
  * Value transformers

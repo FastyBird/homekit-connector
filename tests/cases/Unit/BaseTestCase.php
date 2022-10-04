@@ -6,6 +6,9 @@ use FastyBird\HomeKitConnector;
 use Nette;
 use Nette\DI;
 use Ninjify\Nunjuck\TestCase\BaseMockeryTestCase;
+use function file_exists;
+use function md5;
+use function time;
 
 abstract class BaseTestCase extends BaseMockeryTestCase
 {

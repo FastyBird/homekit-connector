@@ -14,6 +14,8 @@ use Ramsey\Uuid;
 use React\Http\Message\ServerRequest;
 use Tester\Assert;
 use Tests\Tools;
+use function call_user_func;
+use function is_object;
 
 require_once __DIR__ . '/../../../bootstrap.php';
 require_once __DIR__ . '/../DbTestCase.php';

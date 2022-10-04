@@ -7,6 +7,7 @@ use Nette\StaticClass;
 use Nette\Utils;
 use Tester\Assert;
 use Tester\AssertException;
+use function sprintf;
 
 class JsonAssert
 {

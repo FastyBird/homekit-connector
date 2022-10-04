@@ -20,7 +20,6 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use React\Socket;
 use SplObjectStorage;
-use function str_replace;
 
 /**
  * HTTP secured server wrapper

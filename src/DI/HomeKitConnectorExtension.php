@@ -37,6 +37,7 @@ use Nette\PhpGenerator;
 use Nette\Schema;
 use React\EventLoop;
 use stdClass;
+use function ucfirst;
 
 /**
  * HomeKit connector

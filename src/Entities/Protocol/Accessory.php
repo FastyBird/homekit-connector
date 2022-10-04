@@ -20,6 +20,7 @@ use FastyBird\HomeKitConnector\Types;
 use Nette;
 use SplObjectStorage;
 use function array_map;
+use function sprintf;
 
 /**
  * HAP accessory

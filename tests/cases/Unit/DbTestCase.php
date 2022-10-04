@@ -13,6 +13,20 @@ use Nette;
 use Nettrine\ORM as NettrineORM;
 use Ninjify\Nunjuck\TestCase\BaseMockeryTestCase;
 use RuntimeException;
+use function array_reverse;
+use function fclose;
+use function feof;
+use function fgets;
+use function fopen;
+use function in_array;
+use function md5;
+use function rtrim;
+use function set_time_limit;
+use function sprintf;
+use function strlen;
+use function substr;
+use function time;
+use function trim;
 
 abstract class DbTestCase extends BaseMockeryTestCase
 {

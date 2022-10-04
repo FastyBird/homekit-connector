@@ -19,7 +19,7 @@ use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette\Utils;
-use function is_string;
+use function sprintf;
 use function strval;
 
 /**

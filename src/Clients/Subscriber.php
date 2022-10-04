@@ -22,6 +22,7 @@ use React\Socket;
 use SplObjectStorage;
 use function array_diff;
 use function array_key_exists;
+use function in_array;
 
 /**
  * HTTP clients exchange subscriber

@@ -21,9 +21,17 @@ use Nette\Utils;
 use Ramsey\Uuid;
 use Socket;
 use Throwable;
+use function bin2hex;
 use function count;
+use function explode;
 use function implode;
-use function ltrim;
+use function pow;
+use function rand;
+use function random_bytes;
+use function socket_close;
+use function socket_connect;
+use function socket_create;
+use function socket_getsockname;
 use function str_repeat;
 
 /**

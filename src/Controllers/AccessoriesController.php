@@ -27,7 +27,6 @@ use IPub\SlimRouter;
 use Nette\Utils;
 use Psr\Http\Message;
 use Ramsey\Uuid;
-use function strval;
 
 /**
  * Accessories controller

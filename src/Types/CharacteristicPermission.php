@@ -16,7 +16,6 @@
 namespace FastyBird\HomeKitConnector\Types;
 
 use Consistence;
-use function strval;
 
 /**
  * HAP accessory permissions type

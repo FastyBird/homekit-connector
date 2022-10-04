@@ -22,6 +22,7 @@ use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Hashids;
 use Ramsey\Uuid;
+use function preg_match;
 
 /**
  * HAP accessory factory
