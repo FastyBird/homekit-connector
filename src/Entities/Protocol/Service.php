@@ -55,7 +55,7 @@ class Service
 	 * @param Uuid\UuidInterface $typeId
 	 * @param string $name
 	 * @param Accessory $accessory
-	 * @param MetadataEntities\Modules\DevicesModule\ChannelEntity|null $channel
+	 * @param MetadataEntities\Modules\DevicesModule\IChannelEntity|null $channel
 	 * @param Array<string> $requiredCharacteristics
 	 * @param Array<string> $optionalCharacteristics
 	 * @param bool $primary
@@ -64,7 +64,7 @@ class Service
 		private Uuid\UuidInterface $typeId,
 		private string $name,
 		private Accessory $accessory,
-		private MetadataEntities\Modules\DevicesModule\ChannelEntity|null $channel = null,
+		private MetadataEntities\Modules\DevicesModule\IChannelEntity|null $channel = null,
 		private array $requiredCharacteristics = [],
 		private array $optionalCharacteristics = [],
 		private bool $primary = false,
@@ -98,9 +98,9 @@ class Service
 	}
 
 	/**
-	 * @return MetadataEntities\Modules\DevicesModule\ChannelEntity|null
+	 * @return MetadataEntities\Modules\DevicesModule\IChannelEntity|null
 	 */
-	public function getChannel(): MetadataEntities\Modules\DevicesModule\ChannelEntity|null
+	public function getChannel(): MetadataEntities\Modules\DevicesModule\IChannelEntity|null
 	{
 		return $this->channel;
 	}

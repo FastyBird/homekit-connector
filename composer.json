@@ -1,13 +1,14 @@
 {
   "name" : "fastybird/homekit-connector",
   "type" : "connector",
-  "description" : "FastyBird IoT connector for HomeKit devices",
+  "description" : "FastyBird IoT connector for HomeKit Accessory Protocol",
   "keywords" : [
     "fastybird",
     "fb",
     "iot",
     "homekit",
     "apple",
+    "hap",
     "connector"
   ],
 

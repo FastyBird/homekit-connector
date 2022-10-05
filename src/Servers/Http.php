@@ -17,9 +17,11 @@ namespace FastyBird\HomeKitConnector\Servers;
 
 use Doctrine\DBAL;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
+use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Clients;
 use FastyBird\HomeKitConnector\Entities;
+use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Middleware;
 use FastyBird\HomeKitConnector\Protocol;
@@ -75,6 +77,11 @@ final class Http implements Server
 	 * @param Clients\Subscriber $subscriber
 	 * @param Protocol\Driver $accessoriesDriver
 	 * @param Entities\Protocol\AccessoryFactory $accessoryFactory
+	 * @param Entities\Protocol\ServiceFactory $serviceFactory
+	 * @param Entities\Protocol\CharacteristicsFactory $characteristicsFactory
+	 * @param DevicesModuleModels\DataStorage\DevicesRepository $devicesRepository
+	 * @param DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository
+	 * @param DevicesModuleModels\DataStorage\ChannelPropertiesRepository $channelPropertiesRepository
 	 * @param EventLoop\LoopInterface $eventLoop
 	 * @param Log\LoggerInterface|null $logger
 	 */
@@ -86,6 +93,11 @@ final class Http implements Server
 		private Clients\Subscriber $subscriber,
 		private Protocol\Driver $accessoriesDriver,
 		private Entities\Protocol\AccessoryFactory $accessoryFactory,
+		private Entities\Protocol\ServiceFactory $serviceFactory,
+		private Entities\Protocol\CharacteristicsFactory $characteristicsFactory,
+		private DevicesModuleModels\DataStorage\DevicesRepository $devicesRepository,
+		private DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
+		private DevicesModuleModels\DataStorage\ChannelPropertiesRepository $channelPropertiesRepository,
 		private EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
 	)
@@ -156,6 +168,7 @@ final class Http implements Server
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesModuleExceptions\TerminateException
+	 * @throws Metadata\Exceptions\FileNotFoundException
 	 */
 	public function connect(): void
 	{
@@ -168,6 +181,42 @@ final class Http implements Server
 
 		$this->accessoriesDriver->reset();
 		$this->accessoriesDriver->addBridge($bridge);
+
+		foreach ($this->devicesRepository->findAllByConnector($this->connector->getId()) as $device) {
+			$accessory = $this->accessoryFactory->create($device);
+			assert($accessory instanceof Entities\Protocol\Device);
+
+			foreach ($this->channelsRepository->findAllByDevice($device->getId()) as $channel) {
+				if ($channel->getName() === null) {
+					throw new Exceptions\InvalidState('Channel name is not configured');
+				}
+
+				$service = $this->serviceFactory->create(
+					$channel->getName(),
+					$accessory,
+					$channel,
+				);
+
+				foreach ($this->channelPropertiesRepository->findAllByChannel($channel->getId()) as $property) {
+					if ($property instanceof MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity) {
+						if ($property->getName() === null) {
+							throw new Exceptions\InvalidState('Channel property name is not configured');
+						}
+
+						$characteristic = $this->characteristicsFactory->create(
+							$property->getName(),
+							$service,
+						);
+
+						$service->addCharacteristic($characteristic);
+					}
+				}
+
+				$accessory->addService($service);
+			}
+
+			$this->accessoriesDriver->addBridgedAccessory($accessory);
+		}
 
 		$port = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),

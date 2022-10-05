@@ -44,14 +44,14 @@ final class ServiceFactory
 	/**
 	 * @param string $name
 	 * @param Accessory $accessory
-	 * @param MetadataEntities\Modules\DevicesModule\ChannelEntity|null $channel
+	 * @param MetadataEntities\Modules\DevicesModule\IChannelEntity|null $channel
 	 *
 	 * @return Service
 	 */
 	public function create(
 		string $name,
 		Accessory $accessory,
-		MetadataEntities\Modules\DevicesModule\ChannelEntity|null $channel = null,
+		MetadataEntities\Modules\DevicesModule\IChannelEntity|null $channel = null,
 	): Service
 	{
 		$metadata = $this->loader->loadServices();

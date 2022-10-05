@@ -50,7 +50,7 @@ final class CharacteristicsFactory
 	/**
 	 * @param string $name
 	 * @param Service $service
-	 * @param MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property
+	 * @param MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property
 	 * @param Array<int>|null $validValues
 	 * @param int|null $maxLength
 	 * @param float|null $minValue
