@@ -74,7 +74,7 @@ class Characteristic
 	 * @param Types\DataType $dataType
 	 * @param Array<string> $permissions
 	 * @param Service $service
-	 * @param MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property
+	 * @param MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property
 	 * @param Array<int>|null $validValues
 	 * @param int|null $maxLength
 	 * @param float|null $minValue
@@ -88,8 +88,7 @@ class Characteristic
 		private Types\DataType $dataType,
 		private array $permissions,
 		private Service $service,
-		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		private MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null $property = null,
+		private MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property = null,
 		private array|null $validValues = [],
 		private int|null $maxLength = null,
 		private float|null $minValue = null,
@@ -176,10 +175,9 @@ class Characteristic
 	}
 
 	/**
-	 * @return MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|null
+	 * @return MetadataEntities\Modules\DevicesModule\PropertyEntity|null
 	 */
-	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-	public function getProperty(): MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null
+	public function getProperty(): MetadataEntities\Modules\DevicesModule\PropertyEntity|null
 	{
 		return $this->property;
 	}

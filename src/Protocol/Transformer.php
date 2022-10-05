@@ -51,14 +51,14 @@ final class Transformer
 {
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property
+	 * @param MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property
 	 * @param Types\DataType $dataType
 	 * @param bool|float|int|string|null $value
 	 *
 	 * @return bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
 	 */
 	public static function fromClient(
-		MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property,
+		MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property,
 		Types\DataType $dataType,
 		bool|float|int|string|null $value,
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
@@ -193,7 +193,7 @@ final class Transformer
 	}
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property
+	 * @param MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property
 	 * @param Types\DataType $dataType
 	 * @param Array<int>|null $validValues
 	 * @param int|null $maxLength
@@ -205,7 +205,7 @@ final class Transformer
 	 * @return bool|float|int|string|null
 	 */
 	public static function toClient(
-		MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property,
+		MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property,
 		Types\DataType $dataType,
 		array|null $validValues,
 		int|null $maxLength,
