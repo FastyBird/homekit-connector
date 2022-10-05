@@ -88,7 +88,8 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		string|null $sharedKey,
 		private Socket\ConnectionInterface $connection,
 		Log\LoggerInterface|null $logger = null,
-	) {
+	)
+	{
 		$this->setSharedKey($sharedKey);
 
 		$connection->on(

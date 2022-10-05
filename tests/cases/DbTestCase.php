@@ -69,7 +69,8 @@ abstract class DbTestCase extends BaseMockeryTestCase
 	protected function mockContainerService(
 		string $serviceType,
 		object $serviceMock,
-	): void {
+	): void
+	{
 		$container = $this->getContainer();
 		$foundServiceNames = $container->findByType($serviceType);
 

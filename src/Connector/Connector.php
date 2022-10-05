@@ -50,7 +50,8 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		private array $serversFactories,
 		Log\LoggerInterface|null $logger = null,
-	) {
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 

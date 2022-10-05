@@ -42,7 +42,8 @@ class Bridge extends Accessory
 	public function __construct(
 		string $name,
 		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-	) {
+	)
+	{
 		parent::__construct(
 			$name,
 			HomeKitConnector\Constants::STANDALONE_AID,

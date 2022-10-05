@@ -96,7 +96,8 @@ final class Mdns implements Server
 		private Helpers\Connector $connectorHelper,
 		private EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
-	) {
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		$this->parser = new Dns\Protocol\Parser();

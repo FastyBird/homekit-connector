@@ -40,7 +40,8 @@ final class Consumer implements ExchangeConsumer\IConsumer
 		MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source,
 		MetadataTypes\RoutingKeyType $routingKey,
 		MetadataEntities\IEntity|null $entity,
-	): void {
+	): void
+	{
 		// TODO: Implement
 	}
 

@@ -46,7 +46,8 @@ abstract class BaseTestCase extends BaseMockeryTestCase
 	protected function mockContainerService(
 		string $serviceType,
 		object $serviceMock,
-	): void {
+	): void
+	{
 		$foundServiceNames = $this->container->findByType($serviceType);
 
 		foreach ($foundServiceNames as $serviceName) {

@@ -104,7 +104,8 @@ final class Srp
 		string $password,
 		string|null $salt = null,
 		Math\BigInteger|null $serverPrivateKey = null,
-	) {
+	)
+	{
 		$this->salt = $salt ?? $this->generateSalt();
 		$this->serverPrivateKey = $serverPrivateKey ?? $this->generatePrivateKey();
 

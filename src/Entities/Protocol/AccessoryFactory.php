@@ -45,7 +45,8 @@ final class AccessoryFactory
 	public function __construct(
 		private ServiceFactory $serviceFactory,
 		private CharacteristicsFactory $characteristicsFactory,
-	) {
+	)
+	{
 		$this->hashIds = new Hashids\Hashids();
 	}
 
@@ -60,7 +61,8 @@ final class AccessoryFactory
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity|MetadataEntities\Modules\DevicesModule\IDeviceEntity $owner,
 		int|null $aid = null,
 		Types\AccessoryCategory|null $category = null,
-	): Accessory {
+	): Accessory
+	{
 		$category ??= Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_OTHER);
 
 		if ($category->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {

@@ -25,7 +25,8 @@ class ConnectionWrapper extends DBAL\Connection
 		Driver $driver,
 		Configuration|null $config = null,
 		EventManager|null $eventManager = null,
-	) {
+	)
+	{
 		$this->dbName = 'fb_test_' . getmypid();
 
 		unset($params['dbname']);

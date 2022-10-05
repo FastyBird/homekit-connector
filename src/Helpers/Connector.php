@@ -57,7 +57,8 @@ final class Connector extends Evenement\EventEmitter
 		private DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesEntitiesRepository,
 		private DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesEntitiesManagers,
 		private DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesItemsRepository,
-	) {
+	)
+	{
 	}
 
 	/**
@@ -71,7 +72,8 @@ final class Connector extends Evenement\EventEmitter
 	public function getConfiguration(
 		Uuid\UuidInterface $connectorId,
 		Types\ConnectorPropertyIdentifier $type,
-	): float|bool|int|string|null {
+	): float|bool|int|string|null
+	{
 		$configuration = $this->propertiesItemsRepository->findByIdentifier($connectorId, strval($type->getValue()));
 
 		if ($configuration instanceof MetadataEntities\Modules\DevicesModule\IConnectorStaticPropertyEntity) {
@@ -131,7 +133,8 @@ final class Connector extends Evenement\EventEmitter
 		Uuid\UuidInterface $connectorId,
 		Types\ConnectorPropertyIdentifier $type,
 		string|int|float|bool|null $value = null,
-	): void {
+	): void
+	{
 		$property = $this->databaseHelper->query(
 			function () use ($connectorId, $type): DevicesModuleEntities\Connectors\Properties\StaticProperty|null {
 				$findConnectorProperty = new DevicesModuleQueries\FindConnectorPropertiesQuery();

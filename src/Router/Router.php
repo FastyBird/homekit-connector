@@ -38,7 +38,8 @@ class Router extends Routing\Router
 		Controllers\PairingController $pairingController,
 		Controllers\AccessoriesController $accessoriesController,
 		Controllers\CharacteristicsController $characteristicsController,
-	) {
+	)
+	{
 		parent::__construct();
 
 		// Pairing process requests

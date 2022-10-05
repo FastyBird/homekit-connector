@@ -36,7 +36,8 @@ class ClientWriteCharacteristic extends EventDispatcher\Event
 	public function __construct(
 		private Entities\Protocol\Characteristic $characteristic,
 		private bool|float|int|string|null $value,
-	) {
+	)
+	{
 	}
 
 	/**

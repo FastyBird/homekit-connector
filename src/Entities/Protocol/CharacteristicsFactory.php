@@ -71,7 +71,8 @@ final class CharacteristicsFactory
 		float|null $maxValue = null,
 		float|null $minStep = null,
 		Types\CharacteristicUnit|null $unit = null,
-	): Characteristic {
+	): Characteristic
+	{
 		$metadata = $this->loader->loadCharacteristics();
 
 		if (!$metadata->offsetExists($name)) {

@@ -61,7 +61,8 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 	public static function register(
 		Nette\Configurator $config,
 		string $extensionName = 'fbHomeKitConnector',
-	): void {
+	): void
+	{
 		$config->onCompile[] = static function (
 			Nette\Configurator $config,
 			DI\Compiler $compiler,

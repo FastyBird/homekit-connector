@@ -36,7 +36,8 @@ class HapRequestError extends SlimRouterExceptions\HttpException implements Exce
 		string $message = '',
 		int $code = 0,
 		Throwable|null $previous = null,
-	) {
+	)
+	{
 		parent::__construct($request, $message, $code, $previous);
 	}
 

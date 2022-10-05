@@ -40,7 +40,8 @@ final class Device extends Accessory
 		int|null $aid,
 		Types\AccessoryCategory $category,
 		private MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
-	) {
+	)
+	{
 		parent::__construct($name, $aid, $category);
 	}
 

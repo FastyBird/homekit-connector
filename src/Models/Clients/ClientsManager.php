@@ -67,7 +67,8 @@ class ClientsManager
 	public function update(
 		Entities\Client $entity,
 		Utils\ArrayHash $values,
-	): Entities\Client {
+	): Entities\Client
+	{
 		$entity = $this->entityCrud->getEntityUpdater()
 			->update($values, $entity);
 		assert($entity instanceof Entities\Client);

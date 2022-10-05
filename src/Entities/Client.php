@@ -100,7 +100,8 @@ class Client implements DoctrineCrud\Entities\IEntity,
 		string $publicKey,
 		DevicesModuleEntities\Connectors\IConnector $connector,
 		Uuid\UuidInterface|null $id = null,
-	) {
+	)
+	{
 		$this->id = $id ?? Uuid\Uuid::uuid4();
 
 		$this->uid = $uid;

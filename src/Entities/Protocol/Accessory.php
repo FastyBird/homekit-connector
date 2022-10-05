@@ -50,7 +50,8 @@ abstract class Accessory
 		protected string $name,
 		protected int|null $aid,
 		protected Types\AccessoryCategory $category,
-	) {
+	)
+	{
 		$this->services = new SplObjectStorage();
 
 		$this->iidManager = new Helpers\IidManager();

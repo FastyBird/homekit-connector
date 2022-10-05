@@ -88,7 +88,8 @@ final class Http implements Server
 		private Entities\Protocol\AccessoryFactory $accessoryFactory,
 		private EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
-	) {
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		$this->connectorHelper->on(

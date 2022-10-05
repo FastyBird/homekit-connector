@@ -78,7 +78,8 @@ class Initialize extends Console\Command\Command
 		private Persistence\ManagerRegistry $managerRegistry,
 		Log\LoggerInterface|null $logger = null,
 		string|null $name = null,
-	) {
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		parent::__construct($name);

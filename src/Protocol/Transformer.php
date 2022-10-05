@@ -61,7 +61,8 @@ final class Transformer
 		MetadataEntities\Modules\DevicesModule\StaticPropertyEntity|MetadataEntities\Modules\DevicesModule\DynamicPropertyEntity|null $property,
 		Types\DataType $dataType,
 		bool|float|int|string|null $value,
-	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null {
+	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
+	{
 		$transformedValue = null;
 
 		// HAP transformation
@@ -212,7 +213,8 @@ final class Transformer
 		float|null $maxValue,
 		float|null $minStep,
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
-	): bool|float|int|string|null {
+	): bool|float|int|string|null
+	{
 		$transformedValue = null;
 
 		// Connector transformation

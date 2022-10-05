@@ -75,7 +75,8 @@ final class CharacteristicsController extends BaseController
 		private ExchangePublisher\IPublisher|null $publisher,
 		private EventDispatcher\EventDispatcherInterface|null $dispatcher,
 		private DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
-	) {
+	)
+	{
 	}
 
 	/**
@@ -90,7 +91,8 @@ final class CharacteristicsController extends BaseController
 	public function index(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,
-	): Message\ResponseInterface {
+	): Message\ResponseInterface
+	{
 		var_dump($request->getUri()->getPath());
 
 		$this->logger->debug(
@@ -205,7 +207,8 @@ final class CharacteristicsController extends BaseController
 	public function update(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,
-	): Message\ResponseInterface {
+	): Message\ResponseInterface
+	{
 		var_dump($request->getUri()->getPath());
 		var_dump($request->getHeaders());
 
@@ -365,7 +368,8 @@ final class CharacteristicsController extends BaseController
 	public function prepare(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,
-	): Message\ResponseInterface {
+	): Message\ResponseInterface
+	{
 		var_dump($request->getUri()->getPath());
 
 		$body = $request->getBody()->getContents();
@@ -435,7 +439,8 @@ final class CharacteristicsController extends BaseController
 		bool $perms,
 		bool $type,
 		bool $ev,
-	): array {
+	): array
+	{
 		$representation = $this->getCharacteristicRepresentationSkeleton($aid, $iid);
 
 		$characteristic = $this->getCharacteristic($connectorId, $aid, $iid);
@@ -513,7 +518,8 @@ final class CharacteristicsController extends BaseController
 		int $clientPort,
 		int|null $pid,
 		bool $timedWriteError,
-	): array {
+	): array
+	{
 		$representation = $this->getCharacteristicRepresentationSkeleton($aid, $iid);
 
 		$characteristic = $this->getCharacteristic($connectorId, $aid, $iid);
@@ -766,7 +772,8 @@ final class CharacteristicsController extends BaseController
 		Uuid\UuidInterface $connectorId,
 		int $aid,
 		int $iid,
-	): Entities\Protocol\Characteristic|null {
+	): Entities\Protocol\Characteristic|null
+	{
 		$bridge = $this->accessoryDriver->getBridge($connectorId);
 
 		if ($bridge === null) {

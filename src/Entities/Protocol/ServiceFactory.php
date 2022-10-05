@@ -52,7 +52,8 @@ final class ServiceFactory
 		string $name,
 		Accessory $accessory,
 		MetadataEntities\Modules\DevicesModule\ChannelEntity|null $channel = null,
-	): Service {
+	): Service
+	{
 		$metadata = $this->loader->loadServices();
 
 		if (!$metadata->offsetExists($name)) {

@@ -37,7 +37,8 @@ class Response extends EventDispatcher\Event
 	public function __construct(
 		private ServerRequestInterface $request,
 		private ResponseInterface $response,
-	) {
+	)
+	{
 	}
 
 	/**

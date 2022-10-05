@@ -181,7 +181,8 @@ final class PairingController extends BaseController
 		private Models\Clients\ClientsRepository $clientsRepository,
 		private Models\Clients\ClientsManager $clientsManager,
 		private DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository,
-	) {
+	)
+	{
 		$this->edDsa = new EdDSA('ed25519');
 
 		$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M1);
@@ -198,7 +199,8 @@ final class PairingController extends BaseController
 	public function setup(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,
-	): Message\ResponseInterface {
+	): Message\ResponseInterface
+	{
 		var_dump($request->getUri()->getPath());
 
 		$this->logger->debug(
@@ -313,7 +315,8 @@ final class PairingController extends BaseController
 	public function verify(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,
-	): Message\ResponseInterface {
+	): Message\ResponseInterface
+	{
 		var_dump($request->getUri()->getPath());
 
 		$this->logger->debug(
@@ -398,7 +401,8 @@ final class PairingController extends BaseController
 	public function pairings(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,
-	): Message\ResponseInterface {
+	): Message\ResponseInterface
+	{
 		var_dump($request->getUri()->getPath());
 		var_dump($request->getHeaders());
 
@@ -717,7 +721,8 @@ final class PairingController extends BaseController
 		Uuid\UuidInterface $connectorId,
 		array $clientPublicKey,
 		array $clientProof,
-	): array {
+	): array
+	{
 		if ($this->srp === null || !$this->expectedState->equalsValue(Types\TlvState::STATE_M3)) {
 			$this->logger->error(
 				'Unexpected pairing setup state. Expected is M3',
@@ -854,7 +859,8 @@ final class PairingController extends BaseController
 	public function exchange(
 		Uuid\UuidInterface $connectorId,
 		array $encryptedData,
-	): array {
+	): array
+	{
 		if ($this->srp === null || !$this->expectedState->equalsValue(Types\TlvState::STATE_M5)) {
 			$this->logger->error(
 				'Unexpected pairing setup state. Expected is M5',
@@ -1236,7 +1242,8 @@ final class PairingController extends BaseController
 	private function verifyStart(
 		Uuid\UuidInterface $connectorId,
 		array $clientPublicKey,
-	): array {
+	): array
+	{
 		$macAddress = $this->connectorHelper->getConfiguration(
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS),
@@ -1410,7 +1417,8 @@ final class PairingController extends BaseController
 	private function verifyFinish(
 		Uuid\UuidInterface $connectorId,
 		array $encryptedData,
-	): array {
+	): array
+	{
 		try {
 			$decryptedData = sodium_crypto_aead_chacha20poly1305_ietf_decrypt(
 				pack('C*', ...$encryptedData),
@@ -1704,7 +1712,8 @@ final class PairingController extends BaseController
 		string $clientUid,
 		array $clientPublicKey,
 		int $clientPermission,
-	): array {
+	): array
+	{
 		$this->logger->debug(
 			'Requested add new pairing',
 			[
@@ -1826,7 +1835,8 @@ final class PairingController extends BaseController
 	private function removePairing(
 		Uuid\UuidInterface $connectorId,
 		string $clientUid,
-	): array {
+	): array
+	{
 		$this->logger->debug(
 			'Requested remove pairing',
 			[

@@ -58,7 +58,8 @@ final class RouterMiddleware
 		private SlimRouterRouting\IRouter $router,
 		private EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
 		Log\LoggerInterface|null $logger = null,
-	) {
+	)
+	{
 		$this->responseFactory = new SlimRouterHttp\ResponseFactory();
 
 		$this->logger = $logger ?? new Log\NullLogger();

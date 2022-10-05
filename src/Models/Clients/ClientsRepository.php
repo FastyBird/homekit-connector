@@ -54,7 +54,8 @@ final class ClientsRepository
 	 */
 	public function findOneBy(
 		Queries\FindClientsQuery $queryObject,
-	): Entities\Client|null {
+	): Entities\Client|null
+	{
 		/** @var mixed $client */
 		$client = $queryObject->fetchOne($this->getRepository());
 		assert($client instanceof Entities\Client || $client === null);
@@ -69,7 +70,8 @@ final class ClientsRepository
 	 */
 	public function getResultSet(
 		Queries\FindClientsQuery $queryObject,
-	): DoctrineOrmQuery\ResultSet {
+	): DoctrineOrmQuery\ResultSet
+	{
 		$result = $queryObject->fetch($this->getRepository());
 
 		if (!$result instanceof DoctrineOrmQuery\ResultSet) {

@@ -96,7 +96,8 @@ class Characteristic
 		private float|null $maxValue = null,
 		private float|null $minStep = null,
 		private Types\CharacteristicUnit|null $unit = null,
-	) {
+	)
+	{
 		if ($maxLength !== null && $maxLength > self::ABSOLUTE_MAX_LENGTH) {
 			throw new Exceptions\InvalidArgument('Characteristic max length exceeded allowed maximum');
 		}
@@ -202,7 +203,8 @@ class Characteristic
 	 */
 	public function setActualValue(
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
-	): void {
+	): void
+	{
 		$this->actualValue = $value;
 
 		if ($this->actualValue === $this->expectedValue) {
@@ -225,7 +227,8 @@ class Characteristic
 	 */
 	public function setExpectedValue(
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
-	): void {
+	): void
+	{
 		$this->expectedValue = $value;
 	}
 

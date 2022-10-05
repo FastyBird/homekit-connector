@@ -48,7 +48,8 @@ final class AccessoriesController extends BaseController
 	public function __construct(
 		private Helpers\Connector $connectorHelper,
 		private Protocol\Driver $accessoriesDriver,
-	) {
+	)
+	{
 	}
 
 	/**
@@ -64,7 +65,8 @@ final class AccessoriesController extends BaseController
 	public function index(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,
-	): Message\ResponseInterface {
+	): Message\ResponseInterface
+	{
 		var_dump($request->getUri()->getPath());
 
 		$this->logger->debug(
@@ -106,7 +108,8 @@ final class AccessoriesController extends BaseController
 	public function identify(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,
-	): Message\ResponseInterface {
+	): Message\ResponseInterface
+	{
 		var_dump($request->getUri()->getPath());
 		var_dump($request->getHeaders());
 
@@ -166,7 +169,8 @@ final class AccessoriesController extends BaseController
 	public function resource(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,
-	): Message\ResponseInterface {
+	): Message\ResponseInterface
+	{
 		var_dump($request->getUri()->getPath());
 		var_dump($request->getHeaders());
 

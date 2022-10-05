@@ -54,7 +54,8 @@ class Execute extends Console\Command\Command
 		private DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository,
 		Log\LoggerInterface|null $logger = null,
 		string|null $name = null,
-	) {
+	)
+	{
 		$this->logger = $logger ?? new Log\NullLogger();
 
 		parent::__construct($name);

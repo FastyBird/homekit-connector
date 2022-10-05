@@ -49,7 +49,8 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 		private Socket\ServerInterface $server,
 		private SecureConnectionFactory $secureConnectionFactory,
 		private string|null $sharedKey = null,
-	) {
+	)
+	{
 		$this->activeConnections = new SplObjectStorage();
 
 		$this->server->on('connection', function (Socket\ConnectionInterface $connection): void {

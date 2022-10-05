@@ -68,7 +68,8 @@ class Service
 		private array $requiredCharacteristics = [],
 		private array $optionalCharacteristics = [],
 		private bool $primary = false,
-	) {
+	)
+	{
 		$this->characteristics = new SplObjectStorage();
 	}
 
