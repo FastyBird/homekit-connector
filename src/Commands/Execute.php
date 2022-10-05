@@ -86,8 +86,6 @@ class Execute extends Console\Command\Command
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
 	 * @throws Console\Exception\ExceptionInterface
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int

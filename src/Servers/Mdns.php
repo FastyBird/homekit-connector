@@ -132,8 +132,6 @@ final class Mdns implements Server
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
 	 * @throws DBAL\Exception
 	 */
 	public function connect(): void
@@ -239,9 +237,6 @@ final class Mdns implements Server
 			});
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function disconnect(): void
 	{
 		$this->logger->debug(

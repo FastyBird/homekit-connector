@@ -39,9 +39,6 @@ final class HomeKitConnector extends DevicesModuleSchemas\Connectors\ConnectorSc
 		. '/connector/'
 		. Entities\HomeKitConnector::CONNECTOR_TYPE;
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getEntityClass(): string
 	{
 		return Entities\HomeKitConnector::class;

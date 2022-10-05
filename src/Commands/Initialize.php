@@ -85,9 +85,6 @@ class Initialize extends Console\Command\Command
 		parent::__construct($name);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	protected function configure(): void
 	{
 		$this
@@ -106,8 +103,6 @@ class Initialize extends Console\Command\Command
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
 	 * @throws DBAL\Exception
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int

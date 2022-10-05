@@ -71,9 +71,6 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		};
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getConfigSchema(): Schema\Schema
 	{
 		return Schema\Expect::structure([
@@ -85,9 +82,6 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		]);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
@@ -220,9 +214,6 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->setType(Commands\Execute::class);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function beforeCompile(): void
 	{
 		parent::beforeCompile();
@@ -254,9 +245,6 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function afterCompile(PhpGenerator\ClassType $class): void
 	{
 		$builder = $this->getContainerBuilder();

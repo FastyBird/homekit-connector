@@ -164,8 +164,6 @@ final class Http implements Server
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesModuleExceptions\TerminateException
 	 * @throws Metadata\Exceptions\FileNotFoundException
@@ -384,9 +382,6 @@ final class Http implements Server
 		});
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function disconnect(): void
 	{
 		$this->logger->debug(

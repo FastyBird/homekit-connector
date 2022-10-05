@@ -55,9 +55,6 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function execute(): void
 	{
 		$this->logger->debug(
@@ -90,9 +87,6 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function terminate(): void
 	{
 		foreach ($this->servers as $server) {
@@ -111,9 +105,6 @@ final class Connector implements DevicesModuleConnectors\IConnector
 		);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function hasUnfinishedTasks(): bool
 	{
 		return false;

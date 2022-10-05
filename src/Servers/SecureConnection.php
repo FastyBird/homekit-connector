@@ -132,41 +132,26 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getLocalAddress(): string|null
 	{
 		return $this->connection->getLocalAddress();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getRemoteAddress(): string|null
 	{
 		return $this->connection->getRemoteAddress();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function isReadable(): bool
 	{
 		return $this->connection->isReadable();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function isWritable(): bool
 	{
 		return $this->connection->isWritable();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function write($data): bool
 	{
 		if (is_string($data) && $this->securedRequest) {
@@ -176,33 +161,21 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		return $this->connection->write($data);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function pause()
 	{
 		$this->connection->pause();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function resume()
 	{
 		$this->connection->resume();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function end($data = null)
 	{
 		$this->connection->end($data);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function close()
 	{
 		$this->connection->close();
