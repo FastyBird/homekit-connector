@@ -44,9 +44,6 @@ class TlvMethod extends Consistence\Enum\Enum
 
 	public const METHOD_LIST_PAIRINGS = 5;
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

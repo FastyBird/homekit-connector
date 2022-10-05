@@ -102,25 +102,16 @@ class Characteristic
 		}
 	}
 
-	/**
-	 * @return Uuid\UuidInterface
-	 */
 	public function getTypeId(): Uuid\UuidInterface
 	{
 		return $this->typeId;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName(): string
 	{
 		return $this->name;
 	}
 
-	/**
-	 * @return Types\DataType
-	 */
 	public function getDataType(): Types\DataType
 	{
 		return $this->dataType;
@@ -142,41 +133,26 @@ class Characteristic
 		return $this->validValues;
 	}
 
-	/**
-	 * @return float|null
-	 */
 	public function getMinValue(): float|null
 	{
 		return $this->minValue;
 	}
 
-	/**
-	 * @return float|null
-	 */
 	public function getMaxValue(): float|null
 	{
 		return $this->maxValue;
 	}
 
-	/**
-	 * @return float|null
-	 */
 	public function getMinStep(): float|null
 	{
 		return $this->minStep;
 	}
 
-	/**
-	 * @return int|null
-	 */
 	public function getMaxLength(): int|null
 	{
 		return $this->maxLength;
 	}
 
-	/**
-	 * @return MetadataEntities\Modules\DevicesModule\PropertyEntity|null
-	 */
 	public function getProperty(): MetadataEntities\Modules\DevicesModule\PropertyEntity|null
 	{
 		return $this->property;
@@ -230,17 +206,11 @@ class Characteristic
 		$this->expectedValue = $value;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isAlwaysNull(): bool
 	{
 		return in_array($this->typeId->toString(), self::ALWAYS_NULL, true);
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function immediateNotify(): bool
 	{
 		return in_array($this->typeId->toString(), self::IMMEDIATE_NOTIFY, true);

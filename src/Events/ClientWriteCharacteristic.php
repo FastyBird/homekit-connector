@@ -40,9 +40,6 @@ class ClientWriteCharacteristic extends EventDispatcher\Event
 	{
 	}
 
-	/**
-	 * @return Entities\Protocol\Characteristic
-	 */
 	public function getCharacteristic(): Entities\Protocol\Characteristic
 	{
 		return $this->characteristic;

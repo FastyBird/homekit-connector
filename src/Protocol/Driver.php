@@ -43,19 +43,11 @@ class Driver
 		$this->accessories = new SplObjectStorage();
 	}
 
-	/**
-	 * @return void
-	 */
 	public function reset(): void
 	{
 		$this->accessories = new SplObjectStorage();
 	}
 
-	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 *
-	 * @return Entities\Protocol\Bridge|null
-	 */
 	public function getBridge(Uuid\UuidInterface $connectorId): Entities\Protocol\Bridge|null
 	{
 		foreach ($this->getAccessories() as $accessory) {
@@ -70,11 +62,6 @@ class Driver
 		return null;
 	}
 
-	/**
-	 * @param Entities\Protocol\Bridge $accessory
-	 *
-	 * @return void
-	 */
 	public function addBridge(Entities\Protocol\Bridge $accessory): void
 	{
 		$this->accessories->rewind();
@@ -88,11 +75,6 @@ class Driver
 		$this->addAccessory($accessory);
 	}
 
-	/**
-	 * @param Entities\Protocol\Device $accessory
-	 *
-	 * @return void
-	 */
 	public function addBridgedAccessory(Entities\Protocol\Device $accessory): void
 	{
 		$this->accessories->rewind();
@@ -120,11 +102,6 @@ class Driver
 		throw new Exceptions\InvalidState('Bridge for given device accessory is not registered. Register it first');
 	}
 
-	/**
-	 * @param Entities\Protocol\Accessory $accessory
-	 *
-	 * @return void
-	 */
 	public function addAccessory(Entities\Protocol\Accessory $accessory): void
 	{
 		if ($accessory->getAid() === null) {

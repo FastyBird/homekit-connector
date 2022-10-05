@@ -56,9 +56,6 @@ class ServerStatus extends Consistence\Enum\Enum
 
 	public const STATUS_INSUFFICIENT_AUTHORIZATION = -70_411;
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

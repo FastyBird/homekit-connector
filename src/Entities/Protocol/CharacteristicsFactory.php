@@ -40,9 +40,6 @@ use function strval;
 final class CharacteristicsFactory
 {
 
-	/**
-	 * @param Helpers\Loader $loader
-	 */
 	public function __construct(private Helpers\Loader $loader)
 	{
 	}

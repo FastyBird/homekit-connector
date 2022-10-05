@@ -38,10 +38,6 @@ final class AccessoryFactory
 	/** @var Hashids\Hashids */
 	private Hashids\Hashids $hashIds;
 
-	/**
-	 * @param ServiceFactory $serviceFactory
-	 * @param CharacteristicsFactory $characteristicsFactory
-	 */
 	public function __construct(
 		private ServiceFactory $serviceFactory,
 		private CharacteristicsFactory $characteristicsFactory,
@@ -50,13 +46,6 @@ final class AccessoryFactory
 		$this->hashIds = new Hashids\Hashids();
 	}
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity|MetadataEntities\Modules\DevicesModule\IDeviceEntity $owner
-	 * @param int|null $aid
-	 * @param Types\AccessoryCategory|null $category
-	 *
-	 * @return Accessory
-	 */
 	public function create(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity|MetadataEntities\Modules\DevicesModule\IDeviceEntity $owner,
 		int|null $aid = null,

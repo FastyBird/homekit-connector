@@ -85,12 +85,6 @@ final class Mdns implements Server
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param Helpers\Connector $connectorHelper
-	 * @param EventLoop\LoopInterface $eventLoop
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(
 		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		private Helpers\Connector $connectorHelper,
@@ -253,9 +247,6 @@ final class Mdns implements Server
 		$this->server?->close();
 	}
 
-	/**
-	 * @return void
-	 */
 	private function broadcastZone(): void
 	{
 		$this->logger->debug(

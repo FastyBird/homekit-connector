@@ -34,11 +34,6 @@ abstract class BaseController
 	/** @var Log\LoggerInterface */
 	protected Log\LoggerInterface $logger;
 
-	/**
-	 * @param Log\LoggerInterface|null $logger
-	 *
-	 * @return void
-	 */
 	public function injectLogger(Log\LoggerInterface|null $logger): void
 	{
 		$this->logger = $logger ?? new Log\NullLogger();

@@ -52,12 +52,6 @@ use const DIRECTORY_SEPARATOR;
 class HomeKitConnectorExtension extends DI\CompilerExtension
 {
 
-	/**
-	 * @param Nette\Configurator $config
-	 * @param string $extensionName
-	 *
-	 * @return void
-	 */
 	public static function register(
 		Nette\Configurator $config,
 		string $extensionName = 'fbHomeKitConnector',

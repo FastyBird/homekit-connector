@@ -29,13 +29,6 @@ use React\Socket;
 interface SecureConnectionFactory
 {
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param string|null $sharedKey
-	 * @param Socket\ConnectionInterface $connection
-	 *
-	 * @return SecureConnection
-	 */
 	public function create(
 		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		string|null $sharedKey,

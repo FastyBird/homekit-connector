@@ -52,9 +52,6 @@ class DataType extends Consistence\Enum\Enum
 
 	public const DATA_TYPE_TLV8 = 'tlv8';
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

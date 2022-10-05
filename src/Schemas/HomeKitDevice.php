@@ -41,9 +41,6 @@ final class HomeKitDevice extends DevicesModuleSchemas\Devices\DeviceSchema
 		return Entities\HomeKitDevice::class;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getType(): string
 	{
 		return self::SCHEMA_TYPE;

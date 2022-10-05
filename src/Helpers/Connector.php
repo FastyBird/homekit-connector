@@ -44,13 +44,6 @@ final class Connector extends Evenement\EventEmitter
 
 	use Nette\SmartObject;
 
-	/**
-	 * @param Database $databaseHelper
-	 * @param DevicesModuleModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository
-	 * @param DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesEntitiesRepository
-	 * @param DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesEntitiesManagers
-	 * @param DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesItemsRepository
-	 */
 	public function __construct(
 		private Database $databaseHelper,
 		private DevicesModuleModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository,

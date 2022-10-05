@@ -36,9 +36,6 @@ class ClientPermission extends Consistence\Enum\Enum
 
 	public const PERMISSION_ADMIN = 1;
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

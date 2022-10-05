@@ -42,11 +42,6 @@ class ClientsManager
 	{
 	}
 
-	/**
-	 * @param Utils\ArrayHash $values
-	 *
-	 * @return Entities\Client
-	 */
 	public function create(Utils\ArrayHash $values): Entities\Client
 	{
 		// Get entity creator
@@ -58,12 +53,6 @@ class ClientsManager
 		return $entity;
 	}
 
-	/**
-	 * @param Entities\Client $entity
-	 * @param Utils\ArrayHash $values
-	 *
-	 * @return Entities\Client
-	 */
 	public function update(
 		Entities\Client $entity,
 		Utils\ArrayHash $values,
@@ -76,11 +65,6 @@ class ClientsManager
 		return $entity;
 	}
 
-	/**
-	 * @param Entities\Client $entity
-	 *
-	 * @return bool
-	 */
 	public function delete(Entities\Client $entity): bool
 	{
 		// Delete entity from database

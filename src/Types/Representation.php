@@ -78,9 +78,6 @@ class Representation extends Consistence\Enum\Enum
 
 	public const REPR_META = 'meta';
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

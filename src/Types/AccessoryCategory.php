@@ -90,9 +90,6 @@ class AccessoryCategory extends Consistence\Enum\Enum
 
 	public const CATEGORY_TARGET_CONTROLLER = 32; // Remote Controller
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

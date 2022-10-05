@@ -35,10 +35,6 @@ class Bridge extends Accessory
 	/** @var SplObjectStorage<Device, null> */
 	private SplObjectStorage $accessories;
 
-	/**
-	 * @param string $name
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 */
 	public function __construct(
 		string $name,
 		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
@@ -53,19 +49,11 @@ class Bridge extends Accessory
 		$this->accessories = new SplObjectStorage();
 	}
 
-	/**
-	 * @return MetadataEntities\Modules\DevicesModule\IConnectorEntity
-	 */
 	public function getConnector(): MetadataEntities\Modules\DevicesModule\IConnectorEntity
 	{
 		return $this->connector;
 	}
 
-	/**
-	 * @param Device $accessory
-	 *
-	 * @return void
-	 */
 	public function addAccessory(Device $accessory): void
 	{
 		if ($accessory->getCategory()->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {
@@ -131,11 +119,6 @@ class Bridge extends Accessory
 		return $accessories;
 	}
 
-	/**
-	 * @param int $aid
-	 *
-	 * @return Device|null
-	 */
 	public function getAccessory(int $aid): Device|null
 	{
 		$this->accessories->rewind();

@@ -28,11 +28,6 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 interface HttpFactory extends ServerFactory
 {
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 *
-	 * @return Http
-	 */
 	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Http;
 
 }

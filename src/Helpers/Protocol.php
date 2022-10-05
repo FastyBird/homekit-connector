@@ -89,9 +89,6 @@ final class Protocol
 		);
 	}
 
-	/**
-	 * @return string|null
-	 */
 	public static function getLocalAddress(): string|null
 	{
 		$address = $sock = null;
@@ -117,9 +114,6 @@ final class Protocol
 		return $address;
 	}
 
-	/**
-	 * @return string
-	 */
 	public static function generateSetupId(): string
 	{
 		try {
@@ -131,9 +125,6 @@ final class Protocol
 		return bin2hex($bytes);
 	}
 
-	/**
-	 * @return string
-	 */
 	public static function generatePinCode(): string
 	{
 		return rand(pow(10, 2), pow(10, 3) - 1)
@@ -141,9 +132,6 @@ final class Protocol
 			. '-' . rand(pow(10, 2), pow(10, 3) - 1);
 	}
 
-	/**
-	 * @return string
-	 */
 	public static function generateSignKey(): string
 	{
 		try {
@@ -155,9 +143,6 @@ final class Protocol
 		return bin2hex($bytes);
 	}
 
-	/**
-	 * @return string
-	 */
 	public static function generateMacAddress(): string
 	{
 		$allowedValues = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];

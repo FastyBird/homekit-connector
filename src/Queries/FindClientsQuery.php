@@ -41,11 +41,6 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 	/** @var Array<Closure> */
 	private array $select = [];
 
-	/**
-	 * @param Uuid\UuidInterface $id
-	 *
-	 * @return void
-	 */
 	public function byId(Uuid\UuidInterface $id): void
 	{
 		$this->filter[] = static function (ORM\QueryBuilder $qb) use ($id): void {
@@ -53,11 +48,6 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 		};
 	}
 
-	/**
-	 * @param string $uid
-	 *
-	 * @return void
-	 */
 	public function byUid(string $uid): void
 	{
 		$this->filter[] = static function (ORM\QueryBuilder $qb) use ($uid): void {
@@ -65,11 +55,6 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 		};
 	}
 
-	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 *
-	 * @return void
-	 */
 	public function byConnectorId(Uuid\UuidInterface $connectorId): void
 	{
 		$this->select[] = static function (ORM\QueryBuilder $qb): void {
@@ -83,11 +68,6 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 		};
 	}
 
-	/**
-	 * @param DevicesModuleEntities\Connectors\IConnector $connector
-	 *
-	 * @return void
-	 */
 	public function forConnector(DevicesModuleEntities\Connectors\IConnector $connector): void
 	{
 		$this->select[] = static function (ORM\QueryBuilder $qb): void {

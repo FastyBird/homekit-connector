@@ -62,9 +62,6 @@ class TlvCode extends Consistence\Enum\Enum
 
 	public const CODE_SEPARATOR = 0xff; // zero-length tlv that separates different tlvs in a list
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

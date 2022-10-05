@@ -46,9 +46,6 @@ final class Subscriber
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(Log\LoggerInterface|null $logger = null)
 	{
 		$this->connections = new SplObjectStorage();
@@ -57,11 +54,6 @@ final class Subscriber
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
-	/**
-	 * @param Socket\ConnectionInterface $connection
-	 *
-	 * @return void
-	 */
 	public function registerConnection(Socket\ConnectionInterface $connection): void
 	{
 		$this->logger->debug(
@@ -78,11 +70,6 @@ final class Subscriber
 		$this->connections->attach($connection);
 	}
 
-	/**
-	 * @param Socket\ConnectionInterface $connection
-	 *
-	 * @return void
-	 */
 	public function unregisterConnection(Socket\ConnectionInterface $connection): void
 	{
 		$this->logger->debug(
@@ -107,13 +94,6 @@ final class Subscriber
 		}
 	}
 
-	/**
-	 * @param int $aid
-	 * @param int $iid
-	 * @param string $address
-	 *
-	 * @return void
-	 */
 	public function subscribe(int $aid, int $iid, string $address): void
 	{
 		$this->logger->debug(
@@ -136,13 +116,6 @@ final class Subscriber
 		$this->subscriptions[$aid . '.' . $iid][] = $address;
 	}
 
-	/**
-	 * @param int $aid
-	 * @param int $iid
-	 * @param string $address
-	 *
-	 * @return void
-	 */
 	public function unsubscribe(int $aid, int $iid, string $address): void
 	{
 		$this->logger->debug(
@@ -167,9 +140,6 @@ final class Subscriber
 		}
 	}
 
-	/**
-	 * @return void
-	 */
 	public function publish(): void
 	{
 		// TODO: Implement

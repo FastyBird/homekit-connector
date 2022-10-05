@@ -73,33 +73,21 @@ class Service
 		$this->characteristics = new SplObjectStorage();
 	}
 
-	/**
-	 * @return Uuid\UuidInterface
-	 */
 	public function getTypeId(): Uuid\UuidInterface
 	{
 		return $this->typeId;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName(): string
 	{
 		return $this->name;
 	}
 
-	/**
-	 * @return Accessory
-	 */
 	public function getAccessory(): Accessory
 	{
 		return $this->accessory;
 	}
 
-	/**
-	 * @return MetadataEntities\Modules\DevicesModule\IChannelEntity|null
-	 */
 	public function getChannel(): MetadataEntities\Modules\DevicesModule\IChannelEntity|null
 	{
 		return $this->channel;
@@ -129,11 +117,6 @@ class Service
 		return $characteristics;
 	}
 
-	/**
-	 * @param Characteristic $characteristic
-	 *
-	 * @return void
-	 */
 	public function addCharacteristic(Characteristic $characteristic): void
 	{
 		if (
@@ -158,33 +141,21 @@ class Service
 		$this->characteristics->attach($characteristic);
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isPrimary(): bool
 	{
 		return $this->primary;
 	}
 
-	/**
-	 * @param bool $primary
-	 */
 	public function setPrimary(bool $primary): void
 	{
 		$this->primary = $primary;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isHidden(): bool
 	{
 		return $this->hidden;
 	}
 
-	/**
-	 * @param bool $hidden
-	 */
 	public function setHidden(bool $hidden): void
 	{
 		$this->hidden = $hidden;

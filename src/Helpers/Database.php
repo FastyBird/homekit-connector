@@ -36,9 +36,6 @@ final class Database
 
 	use Nette\SmartObject;
 
-	/**
-	 * @param Persistence\ManagerRegistry $managerRegistry
-	 */
 	public function __construct(private Persistence\ManagerRegistry $managerRegistry)
 	{
 	}
@@ -96,9 +93,6 @@ final class Database
 		}
 	}
 
-	/**
-	 * @return DBAL\Connection
-	 */
 	public function getConnection(): DBAL\Connection
 	{
 		$em = $this->getEntityManager();
@@ -110,9 +104,6 @@ final class Database
 		throw new Exceptions\Runtime('Entity manager could not be loaded');
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function ping(): bool
 	{
 		$connection = $this->getConnection();
@@ -174,9 +165,6 @@ final class Database
 		}
 	}
 
-	/**
-	 * @return ORM\EntityManagerInterface|null
-	 */
 	private function getEntityManager(): ORM\EntityManagerInterface|null
 	{
 		$em = $this->managerRegistry->getManager();

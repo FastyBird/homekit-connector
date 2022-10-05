@@ -45,11 +45,6 @@ class Execute extends Console\Command\Command
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository
-	 * @param Log\LoggerInterface|null $logger
-	 * @param string|null $name
-	 */
 	public function __construct(
 		private DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository,
 		Log\LoggerInterface|null $logger = null,

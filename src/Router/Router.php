@@ -29,11 +29,6 @@ use IPub\SlimRouter\Routing;
 class Router extends Routing\Router
 {
 
-	/**
-	 * @param Controllers\PairingController $pairingController
-	 * @param Controllers\AccessoriesController $accessoriesController
-	 * @param Controllers\CharacteristicsController $characteristicsController
-	 */
 	public function __construct(
 		Controllers\PairingController $pairingController,
 		Controllers\AccessoriesController $accessoriesController,

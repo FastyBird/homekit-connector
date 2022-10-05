@@ -58,15 +58,6 @@ final class CharacteristicsController extends BaseController
 	/** @var Array<string, Array<int, int>> */
 	private array $preparedWrites = [];
 
-	/**
-	 * @param Protocol\Driver $accessoryDriver
-	 * @param Clients\Subscriber $subscriber
-	 * @param DateTimeFactory\DateTimeFactory $dateTimeFactory
-	 * @param ExchangeEntities\EntityFactory $entityFactory
-	 * @param ExchangePublisher\IPublisher|null $publisher
-	 * @param EventDispatcher\EventDispatcherInterface|null $dispatcher
-	 * @param DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository
-	 */
 	public function __construct(
 		private Protocol\Driver $accessoryDriver,
 		private Clients\Subscriber $subscriber,
@@ -761,13 +752,6 @@ final class CharacteristicsController extends BaseController
 		];
 	}
 
-	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 * @param int $aid
-	 * @param int $iid
-	 *
-	 * @return Entities\Protocol\Characteristic|null
-	 */
 	private function getCharacteristic(
 		Uuid\UuidInterface $connectorId,
 		int $aid,

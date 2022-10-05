@@ -93,12 +93,6 @@ final class Srp
 	/** @var Math\BigInteger */
 	private Math\BigInteger $n3072;
 
-	/**
-	 * @param string $username
-	 * @param string $password
-	 * @param string|null $salt
-	 * @param Math\BigInteger|null $serverPrivateKey
-	 */
 	public function __construct(
 		private string $username,
 		string $password,
@@ -140,75 +134,46 @@ final class Srp
 		)));
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getSalt(): string
 	{
 		return $this->salt;
 	}
 
-	/**
-	 * @return string|null
-	 */
 	public function getSessionKey(): string|null
 	{
 		return $this->sessionKey;
 	}
 
-	/**
-	 * @return string|null
-	 */
 	public function getClientProof(): string|null
 	{
 		return $this->clientProof;
 	}
 
-	/**
-	 * @return Math\BigInteger
-	 */
 	public function getServerPublicKey(): Math\BigInteger
 	{
 		return $this->serverPublicKey;
 	}
 
-	/**
-	 * @return string|null
-	 */
 	public function getServerProof(): string|null
 	{
 		return $this->serverProof;
 	}
 
-	/**
-	 * @return Math\BigInteger
-	 */
 	public function getServerPasswordVerifier(): Math\BigInteger
 	{
 		return $this->serverPasswordVerifier;
 	}
 
-	/**
-	 * @return Math\BigInteger|null
-	 */
 	public function getRandomScramblingParameter(): Math\BigInteger|null
 	{
 		return $this->randomScramblingParameter;
 	}
 
-	/**
-	 * @return Math\BigInteger|null
-	 */
 	public function getPremasterSecret(): Math\BigInteger|null
 	{
 		return $this->premasterSecret;
 	}
 
-	/**
-	 * @param Math\BigInteger $clientPublicKey
-	 *
-	 * @return void
-	 */
 	public function computeSharedSessionKey(Math\BigInteger $clientPublicKey): void
 	{
 		$this->randomScramblingParameter = Math\BigInteger::fromBytes(
@@ -272,19 +237,11 @@ final class Srp
 		);
 	}
 
-	/**
-	 * @param string $clientProof
-	 *
-	 * @return bool
-	 */
 	public function verifyProof(string $clientProof): bool
 	{
 		return $this->clientProof === $clientProof;
 	}
 
-	/**
-	 * @return string
-	 */
 	private function generateSalt(): string
 	{
 		try {
@@ -302,9 +259,6 @@ final class Srp
 		return implode('', $unpacked);
 	}
 
-	/**
-	 * @return Math\BigInteger
-	 */
 	private function generatePrivateKey(): Math\BigInteger
 	{
 		try {

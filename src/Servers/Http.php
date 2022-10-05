@@ -69,22 +69,6 @@ final class Http implements Server
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param Helpers\Connector $connectorHelper
-	 * @param Middleware\RouterMiddleware $routerMiddleware
-	 * @param SecureServerFactory $secureServerFactory
-	 * @param Clients\Subscriber $subscriber
-	 * @param Protocol\Driver $accessoriesDriver
-	 * @param Entities\Protocol\AccessoryFactory $accessoryFactory
-	 * @param Entities\Protocol\ServiceFactory $serviceFactory
-	 * @param Entities\Protocol\CharacteristicsFactory $characteristicsFactory
-	 * @param DevicesModuleModels\DataStorage\DevicesRepository $devicesRepository
-	 * @param DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository
-	 * @param DevicesModuleModels\DataStorage\ChannelPropertiesRepository $channelPropertiesRepository
-	 * @param EventLoop\LoopInterface $eventLoop
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(
 		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		private Helpers\Connector $connectorHelper,

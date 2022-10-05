@@ -166,14 +166,6 @@ final class PairingController extends BaseController
 	/** @var EdDSA */
 	private EdDSA $edDsa;
 
-	/**
-	 * @param Helpers\Connector $connectorHelper
-	 * @param Helpers\Database $databaseHelper
-	 * @param Protocol\Tlv $tlv
-	 * @param Models\Clients\ClientsRepository $clientsRepository
-	 * @param Models\Clients\ClientsManager $clientsManager
-	 * @param DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository
-	 */
 	public function __construct(
 		private Helpers\Connector $connectorHelper,
 		private Helpers\Database $databaseHelper,
@@ -392,12 +384,6 @@ final class PairingController extends BaseController
 		return $response;
 	}
 
-	/**
-	 * @param Message\ServerRequestInterface $request
-	 * @param Message\ResponseInterface $response
-	 *
-	 * @return Message\ResponseInterface
-	 */
 	public function pairings(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,

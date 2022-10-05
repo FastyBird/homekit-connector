@@ -42,9 +42,6 @@ class CharacteristicUnit extends Consistence\Enum\Enum
 
 	public const UNIT_SECONDS = 'seconds';
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

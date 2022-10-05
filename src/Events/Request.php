@@ -29,16 +29,10 @@ use Symfony\Contracts\EventDispatcher;
 class Request extends EventDispatcher\Event
 {
 
-	/**
-	 * @param ServerRequestInterface $request
-	 */
 	public function __construct(private ServerRequestInterface $request)
 	{
 	}
 
-	/**
-	 * @return ServerRequestInterface
-	 */
 	public function getRequest(): ServerRequestInterface
 	{
 		return $this->request;

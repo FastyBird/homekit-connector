@@ -40,9 +40,6 @@ final class ClientsRepository
 	/** @var ORM\EntityRepository<Entities\Client>|null */
 	private ORM\EntityRepository|null $repository = null;
 
-	/**
-	 * @param Persistence\ManagerRegistry $managerRegistry
-	 */
 	public function __construct(private Persistence\ManagerRegistry $managerRegistry)
 	{
 	}

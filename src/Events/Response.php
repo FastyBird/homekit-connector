@@ -30,10 +30,6 @@ use Symfony\Contracts\EventDispatcher;
 class Response extends EventDispatcher\Event
 {
 
-	/**
-	 * @param ServerRequestInterface $request
-	 * @param ResponseInterface $response
-	 */
 	public function __construct(
 		private ServerRequestInterface $request,
 		private ResponseInterface $response,
@@ -41,17 +37,11 @@ class Response extends EventDispatcher\Event
 	{
 	}
 
-	/**
-	 * @return ServerRequestInterface
-	 */
 	public function getRequest(): ServerRequestInterface
 	{
 		return $this->request;
 	}
 
-	/**
-	 * @return ResponseInterface
-	 */
 	public function getResponse(): ResponseInterface
 	{
 		return $this->response;

@@ -44,9 +44,6 @@ class TlvState extends Consistence\Enum\Enum
 
 	public const STATE_M6 = 0x06;
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

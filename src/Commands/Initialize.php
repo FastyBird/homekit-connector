@@ -59,16 +59,6 @@ class Initialize extends Console\Command\Command
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository
-	 * @param DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager
-	 * @param DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager
-	 * @param DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager
-	 * @param DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsDataStorageRepository
-	 * @param Persistence\ManagerRegistry $managerRegistry
-	 * @param Log\LoggerInterface|null $logger
-	 * @param string|null $name
-	 */
 	public function __construct(
 		private DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository,
 		private DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager,
@@ -556,9 +546,6 @@ class Initialize extends Console\Command\Command
 		}
 	}
 
-	/**
-	 * @return DBAL\Connection
-	 */
 	private function getOrmConnection(): DBAL\Connection
 	{
 		$connection = $this->managerRegistry->getConnection();

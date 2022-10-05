@@ -44,9 +44,6 @@ final class HomeKitConnector extends DevicesModuleSchemas\Connectors\ConnectorSc
 		return Entities\HomeKitConnector::class;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getType(): string
 	{
 		return self::SCHEMA_TYPE;

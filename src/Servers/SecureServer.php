@@ -38,12 +38,6 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 	/** @var SplObjectStorage<SecureConnection, null> */
 	private SplObjectStorage $activeConnections;
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param Socket\ServerInterface $server
-	 * @param SecureConnectionFactory $secureConnectionFactory
-	 * @param string|null $sharedKey
-	 */
 	public function __construct(
 		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		private Socket\ServerInterface $server,
@@ -74,11 +68,6 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 		});
 	}
 
-	/**
-	 * @param string|null $sharedKey
-	 *
-	 * @return void
-	 */
 	public function setSharedKey(string|null $sharedKey): void
 	{
 		$this->sharedKey = $sharedKey;
@@ -90,9 +79,6 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 		}
 	}
 
-	/**
-	 * @return string|null
-	 */
 	public function getAddress(): string|null
 	{
 		$address = $this->server->getAddress();
@@ -104,25 +90,16 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 		return str_replace('tcp://', 'tls://', $address);
 	}
 
-	/**
-	 * @return void
-	 */
 	public function pause(): void
 	{
 		$this->server->pause();
 	}
 
-	/**
-	 * @return void
-	 */
 	public function resume(): void
 	{
 		$this->server->resume();
 	}
 
-	/**
-	 * @return void
-	 */
 	public function close(): void
 	{
 		$this->server->close();

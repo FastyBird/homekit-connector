@@ -41,11 +41,6 @@ abstract class Accessory
 	/** @var Helpers\IidManager */
 	protected Helpers\IidManager $iidManager;
 
-	/**
-	 * @param string $name
-	 * @param int|null $aid
-	 * @param Types\AccessoryCategory $category
-	 */
 	public function __construct(
 		protected string $name,
 		protected int|null $aid,
@@ -57,33 +52,21 @@ abstract class Accessory
 		$this->iidManager = new Helpers\IidManager();
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName(): string
 	{
 		return $this->name;
 	}
 
-	/**
-	 * @return int|null
-	 */
 	public function getAid(): int|null
 	{
 		return $this->aid;
 	}
 
-	/**
-	 * @param int $aid
-	 */
 	public function setAid(int $aid): void
 	{
 		$this->aid = $aid;
 	}
 
-	/**
-	 * @return Types\AccessoryCategory
-	 */
 	public function getCategory(): Types\AccessoryCategory
 	{
 		return $this->category;
@@ -105,11 +88,6 @@ abstract class Accessory
 		return $services;
 	}
 
-	/**
-	 * @param Service $service
-	 *
-	 * @return void
-	 */
 	public function addService(Service $service): void
 	{
 		$this->services->rewind();
@@ -129,9 +107,6 @@ abstract class Accessory
 		$this->services->attach($service);
 	}
 
-	/**
-	 * @return Helpers\IidManager
-	 */
 	public function getIidManager(): Helpers\IidManager
 	{
 		return $this->iidManager;

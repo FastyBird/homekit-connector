@@ -23,13 +23,6 @@ use Throwable;
 class HapRequestError extends SlimRouterExceptions\HttpException implements Exception
 {
 
-	/**
-	 * @param ServerRequestInterface $request
-	 * @param Types\ServerStatus $error
-	 * @param string $message
-	 * @param int $code
-	 * @param Throwable|null $previous
-	 */
 	public function __construct(
 		ServerRequestInterface $request,
 		private Types\ServerStatus $error,
@@ -41,9 +34,6 @@ class HapRequestError extends SlimRouterExceptions\HttpException implements Exce
 		parent::__construct($request, $message, $code, $previous);
 	}
 
-	/**
-	 * @return Types\ServerStatus
-	 */
 	public function getError(): Types\ServerStatus
 	{
 		return $this->error;

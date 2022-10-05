@@ -49,11 +49,6 @@ final class RouterMiddleware
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param SlimRouterRouting\IRouter $router
-	 * @param EventDispatcher\EventDispatcherInterface|null $dispatcher
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(
 		private SlimRouterRouting\IRouter $router,
 		private EventDispatcher\EventDispatcherInterface|null $dispatcher = null,

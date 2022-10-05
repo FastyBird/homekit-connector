@@ -46,9 +46,6 @@ class TlvError extends Consistence\Enum\Enum
 
 	public const ERROR_BUSY = 0x07; // server busy and cannot accept pairing request at this time
 
-	/**
-	 * @return string
-	 */
 	public function __toString(): string
 	{
 		return strval(self::getValue());

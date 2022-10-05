@@ -31,9 +31,6 @@ use const DIRECTORY_SEPARATOR;
 final class Loader
 {
 
-	/**
-	 * @return Utils\ArrayHash
-	 */
 	public function loadServices(): Utils\ArrayHash
 	{
 		$metadata = HomeKitConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'services.json';
@@ -46,9 +43,6 @@ final class Loader
 		}
 	}
 
-	/**
-	 * @return Utils\ArrayHash
-	 */
 	public function loadCharacteristics(): Utils\ArrayHash
 	{
 		$metadata = HomeKitConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'characteristics.json';

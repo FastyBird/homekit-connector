@@ -89,12 +89,6 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	 */
 	private bool $admin = true;
 
-	/**
-	 * @param string $uid
-	 * @param string $publicKey
-	 * @param DevicesModuleEntities\Connectors\IConnector $connector
-	 * @param Uuid\UuidInterface|null $id
-	 */
 	public function __construct(
 		string $uid,
 		string $publicKey,
@@ -110,33 +104,21 @@ class Client implements DoctrineCrud\Entities\IEntity,
 		$this->connector = $connector;
 	}
 
-	/**
-	 * @return Uuid\UuidInterface
-	 */
 	public function getId(): Uuid\UuidInterface
 	{
 		return $this->id;
 	}
 
-	/**
-	 * @return DevicesModuleEntities\Connectors\IConnector
-	 */
 	public function getConnector(): DevicesModuleEntities\Connectors\IConnector
 	{
 		return $this->connector;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getUid(): string
 	{
 		return $this->uid;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getPublicKey(): string
 	{
 		if (is_resource($this->publicKey)) {
@@ -148,25 +130,16 @@ class Client implements DoctrineCrud\Entities\IEntity,
 		return $this->publicKey;
 	}
 
-	/**
-	 * @param string $publicKey
-	 */
 	public function setPublicKey(string $publicKey): void
 	{
 		$this->publicKey = $publicKey;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isAdmin(): bool
 	{
 		return $this->admin;
 	}
 
-	/**
-	 * @param bool $admin
-	 */
 	public function setAdmin(bool $admin): void
 	{
 		$this->admin = $admin;

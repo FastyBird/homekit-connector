@@ -41,10 +41,6 @@ use function var_dump;
 final class AccessoriesController extends BaseController
 {
 
-	/**
-	 * @param Helpers\Connector $connectorHelper
-	 * @param Protocol\Driver $accessoriesDriver
-	 */
 	public function __construct(
 		private Helpers\Connector $connectorHelper,
 		private Protocol\Driver $accessoriesDriver,

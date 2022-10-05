@@ -77,12 +77,6 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param string|null $sharedKey
-	 * @param Socket\ConnectionInterface $connection
-	 * @param Log\LoggerInterface|null $logger
-	 */
 	public function __construct(
 		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
 		string|null $sharedKey,
@@ -106,11 +100,6 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
-	/**
-	 * @param string|null $sharedKey
-	 *
-	 * @return void
-	 */
 	public function setSharedKey(string|null $sharedKey): void
 	{
 		if ($sharedKey !== null) {
@@ -161,22 +150,22 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		return $this->connection->write($data);
 	}
 
-	public function pause()
+	public function pause(): void
 	{
 		$this->connection->pause();
 	}
 
-	public function resume()
+	public function resume(): void
 	{
 		$this->connection->resume();
 	}
 
-	public function end($data = null)
+	public function end($data = null): void
 	{
 		$this->connection->end($data);
 	}
 
-	public function close()
+	public function close(): void
 	{
 		$this->connection->close();
 	}
@@ -192,11 +181,6 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		return $this->connection->pipe($dest, $options);
 	}
 
-	/**
-	 * @param string $receivedData
-	 *
-	 * @return string
-	 */
 	private function decodeData(string $receivedData): string
 	{
 		if ($this->decryptionKey === null) {
@@ -261,11 +245,6 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		return $receivedData;
 	}
 
-	/**
-	 * @param string $data
-	 *
-	 * @return string
-	 */
 	private function encodeData(string $data): string
 	{
 		if ($this->encryptionKey === null) {

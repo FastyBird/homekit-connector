@@ -34,20 +34,10 @@ use function strval;
 final class ServiceFactory
 {
 
-	/**
-	 * @param Helpers\Loader $loader
-	 */
 	public function __construct(private Helpers\Loader $loader)
 	{
 	}
 
-	/**
-	 * @param string $name
-	 * @param Accessory $accessory
-	 * @param MetadataEntities\Modules\DevicesModule\IChannelEntity|null $channel
-	 *
-	 * @return Service
-	 */
 	public function create(
 		string $name,
 		Accessory $accessory,
