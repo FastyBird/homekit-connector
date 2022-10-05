@@ -51,13 +51,8 @@ class Service
 	private SplObjectStorage $characteristics;
 
 	/**
-	 * @param Uuid\UuidInterface $typeId
-	 * @param string $name
-	 * @param Accessory $accessory
-	 * @param MetadataEntities\Modules\DevicesModule\IChannelEntity|null $channel
 	 * @param Array<string> $requiredCharacteristics
 	 * @param Array<string> $optionalCharacteristics
-	 * @param bool $primary
 	 */
 	public function __construct(
 		private Uuid\UuidInterface $typeId,

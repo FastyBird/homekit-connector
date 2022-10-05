@@ -50,11 +50,6 @@ use function substr;
 final class Transformer
 {
 
-	/**
-	 * @param MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property
-	 * @param Types\DataType $dataType
-	 * @param bool|float|int|string|null $value
-	 */
 	public static function fromClient(
 		MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property,
 		Types\DataType $dataType,
@@ -191,14 +186,7 @@ final class Transformer
 	}
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property
-	 * @param Types\DataType $dataType
 	 * @param Array<int>|null $validValues
-	 * @param int|null $maxLength
-	 * @param float|null $minValue
-	 * @param float|null $maxValue
-	 * @param float|null $minStep
-	 * @param bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value
 	 */
 	public static function toClient(
 		MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property,

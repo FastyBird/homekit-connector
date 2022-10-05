@@ -155,8 +155,6 @@ final class Tlv
 	}
 
 	/**
-	 * @param string $data
-	 *
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 */
 	public function decode(string $data): array

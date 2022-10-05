@@ -165,7 +165,6 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	}
 
 	/**
-	 * @param Stream\WritableStreamInterface $dest
 	 * @param Array<mixed> $options
 	 */
 	public function pipe(Stream\WritableStreamInterface $dest, array $options = []): Stream\WritableStreamInterface

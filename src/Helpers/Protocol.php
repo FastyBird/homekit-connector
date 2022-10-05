@@ -53,8 +53,6 @@ final class Protocol
 
 	/**
 	 * Convert a UUID to a HAP type
-	 *
-	 * @param Uuid\UuidInterface $uuid
 	 */
 	public static function uuidToHapType(Uuid\UuidInterface $uuid): string
 	{
@@ -71,8 +69,6 @@ final class Protocol
 
 	/**
 	 * Convert a HAP type to a UUID
-	 *
-	 * @param string $type
 	 */
 	public static function hapTypeToUuid(string $type): Uuid\UuidInterface
 	{

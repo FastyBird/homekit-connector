@@ -29,10 +29,6 @@ use Symfony\Contracts\EventDispatcher;
 class ClientWriteCharacteristic extends EventDispatcher\Event
 {
 
-	/**
-	 * @param Entities\Protocol\Characteristic $characteristic
-	 * @param bool|float|int|string|null $value
-	 */
 	public function __construct(
 		private Entities\Protocol\Characteristic $characteristic,
 		private bool|float|int|string|null $value,

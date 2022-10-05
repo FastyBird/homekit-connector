@@ -46,8 +46,6 @@ final class IidManager
 
 	/**
 	 * Assign an IID to given object. Print warning if already assigned
-	 *
-	 * @param Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object
 	 */
 	public function assign(
 		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object,
@@ -63,8 +61,6 @@ final class IidManager
 
 	/**
 	 * Get the object that is assigned the given IID
-	 *
-	 * @param int $iid
 	 */
 	public function getObject(
 		int $iid,
@@ -83,8 +79,6 @@ final class IidManager
 
 	/**
 	 * Get the IID assigned to the given object
-	 *
-	 * @param Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object
 	 */
 	public function getIid(
 		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object,
@@ -101,8 +95,6 @@ final class IidManager
 
 	/**
 	 * Remove an object from the IID list
-	 *
-	 * @param Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object
 	 */
 	public function removeObject(
 		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object,
@@ -119,8 +111,6 @@ final class IidManager
 
 	/**
 	 * Remove an object with an IID from the IID list
-	 *
-	 * @param int $iid
 	 */
 	public function removeIid(
 		int $iid,

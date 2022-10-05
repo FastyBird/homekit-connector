@@ -160,8 +160,6 @@ class Driver
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 *
 	 * @return Array<string, Array<Array<string, (int|Array<Array<string, (string|int|bool|Array<Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>>|null)>>|null)>>>
 	 */
 	public function toHap(Uuid\UuidInterface $connectorId): array

@@ -142,8 +142,6 @@ class Initialize extends Console\Command\Command
 	}
 
 	/**
-	 * @param Style\SymfonyStyle $io
-	 *
 	 * @throws DBAL\Exception
 	 */
 	private function createNewConfiguration(Style\SymfonyStyle $io): void
@@ -281,8 +279,6 @@ class Initialize extends Console\Command\Command
 	}
 
 	/**
-	 * @param Style\SymfonyStyle $io
-	 *
 	 * @throws DBAL\Exception
 	 */
 	private function editExistingConfiguration(Style\SymfonyStyle $io): void
@@ -425,8 +421,6 @@ class Initialize extends Console\Command\Command
 	}
 
 	/**
-	 * @param Style\SymfonyStyle $io
-	 *
 	 * @throws DBAL\Exception
 	 */
 	private function deleteExistingConfiguration(Style\SymfonyStyle $io): void

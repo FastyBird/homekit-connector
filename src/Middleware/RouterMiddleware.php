@@ -59,8 +59,6 @@ final class RouterMiddleware
 	}
 
 	/**
-	 * @param ServerRequestInterface $request
-	 *
 	 * @throws Utils\JsonException
 	 */
 	public function __invoke(ServerRequestInterface $request): ResponseInterface

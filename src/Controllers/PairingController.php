@@ -176,9 +176,6 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Message\ServerRequestInterface $request
-	 * @param Message\ResponseInterface $response
-	 *
 	 * @throws DBAL\Exception
 	 */
 	public function setup(
@@ -290,9 +287,6 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Message\ServerRequestInterface $request
-	 * @param Message\ResponseInterface $response
-	 *
 	 * @throws DBAL\Exception
 	 */
 	public function verify(
@@ -493,8 +487,6 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 *
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
@@ -688,7 +680,6 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
 	 * @param Array<int> $clientPublicKey
 	 * @param Array<int> $clientProof
 	 *
@@ -826,7 +817,6 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
 	 * @param Array<int> $encryptedData
 	 *
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
@@ -1209,7 +1199,6 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
 	 * @param Array<int> $clientPublicKey
 	 *
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
@@ -1384,7 +1373,6 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
 	 * @param Array<int> $encryptedData
 	 *
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
@@ -1624,8 +1612,6 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 *
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 */
 	private function listPairings(Uuid\UuidInterface $connectorId): array
@@ -1677,10 +1663,7 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 * @param string $clientUid
 	 * @param Array<int> $clientPublicKey
-	 * @param int $clientPermission
 	 *
 	 * @return Array<int, Array<int, int>>
 	 */
@@ -1804,9 +1787,6 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 * @param string $clientUid
-	 *
 	 * @return Array<int, Array<int, int>>
 	 */
 	private function removePairing(

@@ -71,9 +71,6 @@ final class CharacteristicsController extends BaseController
 	}
 
 	/**
-	 * @param Message\ServerRequestInterface $request
-	 * @param Message\ResponseInterface $response
-	 *
 	 * @throws Exceptions\HapRequestError
 	 * @throws Utils\JsonException
 	 */
@@ -184,9 +181,6 @@ final class CharacteristicsController extends BaseController
 	}
 
 	/**
-	 * @param Message\ServerRequestInterface $request
-	 * @param Message\ResponseInterface $response
-	 *
 	 * @throws Exceptions\HapRequestError
 	 * @throws Metadata\Exceptions\FileNotFoundException
 	 * @throws Utils\JsonException
@@ -344,9 +338,6 @@ final class CharacteristicsController extends BaseController
 	/**
 	 * Handles a client request to prepare to write
 	 *
-	 * @param Message\ServerRequestInterface $request
-	 * @param Message\ResponseInterface $response
-	 *
 	 * @throws Exceptions\HapRequestError
 	 * @throws Utils\JsonException
 	 */
@@ -406,14 +397,6 @@ final class CharacteristicsController extends BaseController
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 * @param int $aid
-	 * @param int $iid
-	 * @param bool $meta
-	 * @param bool $perms
-	 * @param bool $type
-	 * @param bool $ev
-	 *
 	 * @return Array<string, (bool|int|Array<int>|float|string|Array<string>|null)>
 	 */
 	private function readCharacteristic(
@@ -478,16 +461,6 @@ final class CharacteristicsController extends BaseController
 	}
 
 	/**
-	 * @param Uuid\UuidInterface $connectorId
-	 * @param int $aid
-	 * @param int $iid
-	 * @param int|float|string|bool|null $value
-	 * @param bool|null $events
-	 * @param string $clientAddress
-	 * @param int $clientPort
-	 * @param int|null $pid
-	 * @param bool $timedWriteError
-	 *
 	 * @return Array<string, int>
 	 *
 	 * @throws Metadata\Exceptions\FileNotFoundException
@@ -732,9 +705,6 @@ final class CharacteristicsController extends BaseController
 	}
 
 	/**
-	 * @param int $aid
-	 * @param int $iid
-	 *
 	 * @return Array<string, int>
 	 */
 	private function getCharacteristicRepresentationSkeleton(int $aid, int $iid): array

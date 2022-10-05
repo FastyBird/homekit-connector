@@ -45,15 +45,7 @@ final class CharacteristicsFactory
 	}
 
 	/**
-	 * @param string $name
-	 * @param Service $service
-	 * @param MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property
 	 * @param Array<int>|null $validValues
-	 * @param int|null $maxLength
-	 * @param float|null $minValue
-	 * @param float|null $maxValue
-	 * @param float|null $minStep
-	 * @param Types\CharacteristicUnit|null $unit
 	 */
 	public function create(
 		string $name,

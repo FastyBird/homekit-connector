@@ -51,9 +51,6 @@ final class AccessoriesController extends BaseController
 	/**
 	 * Handles a client request to get the accessories
 	 *
-	 * @param Message\ServerRequestInterface $request
-	 * @param Message\ResponseInterface $response
-	 *
 	 * @throws Utils\JsonException
 	 */
 	public function index(
@@ -90,9 +87,6 @@ final class AccessoriesController extends BaseController
 
 	/**
 	 * Help user to locate accessory
-	 *
-	 * @param Message\ServerRequestInterface $request
-	 * @param Message\ResponseInterface $response
 	 *
 	 * @throws DBAL\Exception
 	 * @throws SlimRouter\Exceptions\HttpException
@@ -152,9 +146,6 @@ final class AccessoriesController extends BaseController
 
 	/**
 	 * Get a snapshot from the camera or other resource from accessory
-	 *
-	 * @param Message\ServerRequestInterface $request
-	 * @param Message\ResponseInterface $response
 	 */
 	public function resource(
 		Message\ServerRequestInterface $request,

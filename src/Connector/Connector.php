@@ -41,9 +41,7 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	private Log\LoggerInterface $logger;
 
 	/**
-	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
 	 * @param Array<Servers\ServerFactory> $serversFactories
-	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(
 		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
