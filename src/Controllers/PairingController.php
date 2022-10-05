@@ -179,8 +179,6 @@ final class PairingController extends BaseController
 	 * @param Message\ServerRequestInterface $request
 	 * @param Message\ResponseInterface $response
 	 *
-	 * @return Message\ResponseInterface
-	 *
 	 * @throws DBAL\Exception
 	 */
 	public function setup(
@@ -294,8 +292,6 @@ final class PairingController extends BaseController
 	/**
 	 * @param Message\ServerRequestInterface $request
 	 * @param Message\ResponseInterface $response
-	 *
-	 * @return Message\ResponseInterface
 	 *
 	 * @throws DBAL\Exception
 	 */

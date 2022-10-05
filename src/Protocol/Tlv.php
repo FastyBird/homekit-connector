@@ -53,8 +53,6 @@ final class Tlv
 
 	/**
 	 * @param Array<int, Array<int, (int|Array<int>|string)>> $objects
-	 *
-	 * @return string
 	 */
 	public function encode(array $objects): string
 	{

@@ -45,9 +45,6 @@ class ClientWriteCharacteristic extends EventDispatcher\Event
 		return $this->characteristic;
 	}
 
-	/**
-	 * @return bool|float|int|string|null
-	 */
 	public function getValue(): float|bool|int|string|null
 	{
 		return $this->value;

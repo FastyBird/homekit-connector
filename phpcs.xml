@@ -10,7 +10,6 @@
         <exclude name="SlevomatCodingStandard.Commenting.DocCommentSpacing.IncorrectAnnotationsGroup"/>
 
         <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation"/>
-        <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation"/>
     </rule>
 
     <!-- Configure PSR-4 rule -->

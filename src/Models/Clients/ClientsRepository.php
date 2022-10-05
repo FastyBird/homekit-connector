@@ -46,8 +46,6 @@ final class ClientsRepository
 
 	/**
 	 * @param Queries\FindClientsQuery<Entities\Client> $queryObject
-	 *
-	 * @return Entities\Client|null
 	 */
 	public function findOneBy(
 		Queries\FindClientsQuery $queryObject,

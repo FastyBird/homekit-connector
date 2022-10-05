@@ -129,8 +129,6 @@ abstract class Accessory
 	}
 
 	/**
-	 * @return string
-	 *
 	 * @throws Nette\Utils\JsonException
 	 */
 	public function __toString(): string

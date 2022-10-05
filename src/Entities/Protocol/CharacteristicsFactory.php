@@ -54,8 +54,6 @@ final class CharacteristicsFactory
 	 * @param float|null $maxValue
 	 * @param float|null $minStep
 	 * @param Types\CharacteristicUnit|null $unit
-	 *
-	 * @return Characteristic
 	 */
 	public function create(
 		string $name,

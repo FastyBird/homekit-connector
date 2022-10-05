@@ -279,8 +279,6 @@ final class Mdns implements Server
 	}
 
 	/**
-	 * @return void
-	 *
 	 * @throws DBAL\Exception
 	 */
 	private function createZone(): void

@@ -54,8 +54,6 @@ final class AccessoriesController extends BaseController
 	 * @param Message\ServerRequestInterface $request
 	 * @param Message\ResponseInterface $response
 	 *
-	 * @return Message\ResponseInterface
-	 *
 	 * @throws Utils\JsonException
 	 */
 	public function index(
@@ -95,8 +93,6 @@ final class AccessoriesController extends BaseController
 	 *
 	 * @param Message\ServerRequestInterface $request
 	 * @param Message\ResponseInterface $response
-	 *
-	 * @return Message\ResponseInterface
 	 *
 	 * @throws DBAL\Exception
 	 * @throws SlimRouter\Exceptions\HttpException
@@ -159,8 +155,6 @@ final class AccessoriesController extends BaseController
 	 *
 	 * @param Message\ServerRequestInterface $request
 	 * @param Message\ResponseInterface $response
-	 *
-	 * @return Message\ResponseInterface
 	 */
 	public function resource(
 		Message\ServerRequestInterface $request,

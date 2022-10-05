@@ -181,8 +181,6 @@ class Service
 	}
 
 	/**
-	 * @return string
-	 *
 	 * @throws Nette\Utils\JsonException
 	 */
 	public function __toString(): string

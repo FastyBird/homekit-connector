@@ -28,15 +28,11 @@ interface Server
 
 	/**
 	 * Create server
-	 *
-	 * @return void
 	 */
 	public function connect(): void;
 
 	/**
 	 * Destroy server
-	 *
-	 * @return void
 	 */
 	public function disconnect(): void;
 

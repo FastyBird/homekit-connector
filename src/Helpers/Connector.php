@@ -58,8 +58,6 @@ final class Connector extends Evenement\EventEmitter
 	 * @param Uuid\UuidInterface $connectorId
 	 * @param Types\ConnectorPropertyIdentifier $type
 	 *
-	 * @return float|bool|int|string|null
-	 *
 	 * @throws DBAL\Exception
 	 */
 	public function getConfiguration(
@@ -117,8 +115,6 @@ final class Connector extends Evenement\EventEmitter
 	 * @param Uuid\UuidInterface $connectorId
 	 * @param Types\ConnectorPropertyIdentifier $type
 	 * @param string|int|float|bool|null $value
-	 *
-	 * @return void
 	 *
 	 * @throws DBAL\Exception
 	 */

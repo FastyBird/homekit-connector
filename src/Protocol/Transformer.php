@@ -54,8 +54,6 @@ final class Transformer
 	 * @param MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property
 	 * @param Types\DataType $dataType
 	 * @param bool|float|int|string|null $value
-	 *
-	 * @return bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
 	 */
 	public static function fromClient(
 		MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property,
@@ -201,8 +199,6 @@ final class Transformer
 	 * @param float|null $maxValue
 	 * @param float|null $minStep
 	 * @param bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value
-	 *
-	 * @return bool|float|int|string|null
 	 */
 	public static function toClient(
 		MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property,

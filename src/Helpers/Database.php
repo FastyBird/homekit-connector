@@ -120,8 +120,6 @@ final class Database
 	}
 
 	/**
-	 * @return void
-	 *
 	 * @throws DBAL\Exception
 	 */
 	public function reconnect(): void
@@ -133,8 +131,6 @@ final class Database
 	}
 
 	/**
-	 * @return void
-	 *
 	 * @throws DBAL\Exception
 	 */
 	private function pingAndReconnect(): void

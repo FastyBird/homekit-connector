@@ -156,9 +156,6 @@ class Characteristic
 		return $this->property;
 	}
 
-	/**
-	 * @return bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
-	 */
 	public function getActualValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
 	{
 		if ($this->expectedValue !== null) {
@@ -170,8 +167,6 @@ class Characteristic
 
 	/**
 	 * @param bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value
-	 *
-	 * @return void
 	 */
 	public function setActualValue(
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
@@ -184,9 +179,6 @@ class Characteristic
 		}
 	}
 
-	/**
-	 * @return bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
-	 */
 	public function getExpectedValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
 	{
 		return $this->expectedValue;
@@ -194,8 +186,6 @@ class Characteristic
 
 	/**
 	 * @param bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value
-	 *
-	 * @return void
 	 */
 	public function setExpectedValue(
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
@@ -301,8 +291,6 @@ class Characteristic
 	}
 
 	/**
-	 * @return string
-	 *
 	 * @throws Nette\Utils\JsonException
 	 */
 	public function __toString(): string

@@ -74,8 +74,6 @@ final class CharacteristicsController extends BaseController
 	 * @param Message\ServerRequestInterface $request
 	 * @param Message\ResponseInterface $response
 	 *
-	 * @return Message\ResponseInterface
-	 *
 	 * @throws Exceptions\HapRequestError
 	 * @throws Utils\JsonException
 	 */
@@ -188,8 +186,6 @@ final class CharacteristicsController extends BaseController
 	/**
 	 * @param Message\ServerRequestInterface $request
 	 * @param Message\ResponseInterface $response
-	 *
-	 * @return Message\ResponseInterface
 	 *
 	 * @throws Exceptions\HapRequestError
 	 * @throws Metadata\Exceptions\FileNotFoundException
@@ -350,8 +346,6 @@ final class CharacteristicsController extends BaseController
 	 *
 	 * @param Message\ServerRequestInterface $request
 	 * @param Message\ResponseInterface $response
-	 *
-	 * @return Message\ResponseInterface
 	 *
 	 * @throws Exceptions\HapRequestError
 	 * @throws Utils\JsonException
