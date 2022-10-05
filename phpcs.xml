@@ -30,14 +30,6 @@
         </properties>
     </rule>
 
-    <rule ref="SlevomatCodingStandard.Files.LineLength">
-        <properties>
-            <property name="lineLengthLimit" value="150"/>
-            <property name="ignoreComments" value="true"/>
-            <property name="ignoreImports" value="true"/>
-        </properties>
-    </rule>
-
     <!--Exclude folders -->
     <exclude-pattern>/tests/tmp</exclude-pattern>
     <exclude-pattern>/tests/stubs/*</exclude-pattern>

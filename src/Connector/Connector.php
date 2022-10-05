@@ -1,7 +1,5 @@
 <?php declare(strict_types = 1);
 
-// phpcs:ignoreFile
-
 /**
  * Connector.php
  *
@@ -45,7 +43,7 @@ final class Connector implements DevicesModuleConnectors\IConnector
 
 	/**
 	 * @param MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector
-	 * @param Servers\ServerFactory[] $serversFactories
+	 * @param Array<Servers\ServerFactory> $serversFactories
 	 * @param Log\LoggerInterface|null $logger
 	 */
 	public function __construct(

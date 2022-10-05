@@ -107,7 +107,10 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 				Entities\HomeKitConnector::CONNECTOR_TYPE,
 			)
 			->getResultDefinition()
-			->setType(Connector\Connector::class);
+			->setType(Connector\Connector::class)
+			->setArguments([
+				'serversFactories' => $builder->findByType(Servers\ServerFactory::class),
+			]);
 
 		// Servers
 		$builder->addFactoryDefinition($this->prefix('server.mdns'))
