@@ -48,8 +48,6 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	use DoctrineTimestampable\Entities\TEntityUpdated;
 
 	/**
-	 * @var Uuid\UuidInterface
-	 *
 	 * @ORM\Id
 	 * @ORM\Column(type="uuid_binary", name="client_id")
 	 * @ORM\CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
@@ -57,8 +55,6 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	private Uuid\UuidInterface $id;
 
 	/**
-	 * @var DevicesModuleEntities\Connectors\IConnector
-	 *
 	 * @IPubDoctrine\Crud(is="required")
 	 * @ORM\ManyToOne(targetEntity="FastyBird\DevicesModule\Entities\Connectors\Connector")
 	 * @ORM\JoinColumn(name="connector_id", referencedColumnName="connector_id")
@@ -66,8 +62,6 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	private DevicesModuleEntities\Connectors\IConnector $connector;
 
 	/**
-	 * @var string
-	 *
 	 * @IPubDoctrine\Crud(is="required")
 	 * @ORM\Column(type="string", name="client_uid", length=255, nullable=false)
 	 */
@@ -82,8 +76,6 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	private $publicKey;
 
 	/**
-	 * @var bool
-	 *
 	 * @IPubDoctrine\Crud(is="writable")
 	 * @ORM\Column(type="boolean", name="client_admin", length=1, nullable=false, options={"default": true})
 	 */

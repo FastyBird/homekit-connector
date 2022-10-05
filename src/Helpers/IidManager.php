@@ -32,7 +32,6 @@ final class IidManager
 
 	use Nette\SmartObject;
 
-	/** @var int */
 	private int $counter;
 
 	/** @var SplObjectStorage<Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic, int> */

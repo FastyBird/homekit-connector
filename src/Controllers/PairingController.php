@@ -151,19 +151,14 @@ final class PairingController extends BaseController
 			51, // 3
 		];
 
-	/** @var bool */
 	private bool $activePairing = false;
 
-	/** @var int */
 	private int $pairingAttempts = 0;
 
-	/** @var Protocol\Srp|null */
 	private Protocol\Srp|null $srp = null;
 
-	/** @var Types\TlvState */
 	private Types\TlvState $expectedState;
 
-	/** @var EdDSA */
 	private EdDSA $edDsa;
 
 	public function __construct(

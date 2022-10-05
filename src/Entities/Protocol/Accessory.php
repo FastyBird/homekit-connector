@@ -38,7 +38,6 @@ abstract class Accessory
 	/** @var SplObjectStorage<Service, null> */
 	protected SplObjectStorage $services;
 
-	/** @var Helpers\IidManager */
 	protected Helpers\IidManager $iidManager;
 
 	public function __construct(

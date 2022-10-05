@@ -63,10 +63,8 @@ final class Http implements Server
 
 	private const LISTENING_ADDRESS = '0.0.0.0';
 
-	/** @var SecureServer|null */
 	private SecureServer|null $socket = null;
 
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(

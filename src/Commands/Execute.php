@@ -42,7 +42,6 @@ use function sprintf;
 class Execute extends Console\Command\Command
 {
 
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(

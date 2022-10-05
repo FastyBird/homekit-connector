@@ -43,7 +43,6 @@ final class Subscriber
 	/** @var Array<string, Array<string>> */
 	private array $subscriptions;
 
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(Log\LoggerInterface|null $logger = null)

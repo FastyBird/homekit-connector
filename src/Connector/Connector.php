@@ -38,7 +38,6 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	/** @var Array<Servers\Server> */
 	private array $servers = [];
 
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	/**

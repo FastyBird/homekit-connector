@@ -63,34 +63,24 @@ final class Srp
 
 	private const G = 5;
 
-	/** @var string */
 	private string $salt;
 
-	/** @var Math\BigInteger */
 	private Math\BigInteger $serverPrivateKey;
 
-	/** @var Math\BigInteger */
 	private Math\BigInteger $serverPasswordVerifier;
 
-	/** @var Math\BigInteger */
 	private Math\BigInteger $serverPublicKey;
 
-	/** @var Math\BigInteger|null */
 	private Math\BigInteger|null $randomScramblingParameter = null;
 
-	/** @var Math\BigInteger|null */
 	private Math\BigInteger|null $premasterSecret = null;
 
-	/** @var string|null */
 	private string|null $sessionKey = null;
 
-	/** @var string|null */
 	private string|null $clientProof = null;
 
-	/** @var string|null */
 	private string|null $serverProof = null;
 
-	/** @var Math\BigInteger */
 	private Math\BigInteger $n3072;
 
 	public function __construct(

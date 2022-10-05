@@ -73,16 +73,12 @@ final class Mdns implements Server
 	/** @var Array<string, Array<int, Array<int, Array<Dns\Model\Record>>>> */
 	private array $resourceRecords = [];
 
-	/** @var Dns\Protocol\Parser */
 	private Dns\Protocol\Parser $parser;
 
-	/** @var Dns\Protocol\BinaryDumper */
 	private Dns\Protocol\BinaryDumper $dumper;
 
-	/** @var Datagram\SocketInterface|null */
 	private Datagram\SocketInterface|null $server = null;
 
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(

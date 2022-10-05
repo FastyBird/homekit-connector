@@ -59,22 +59,16 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 
 	private const INFO_CONTROL_READ = 'Control-Read-Encryption-Key';
 
-	/** @var int */
 	private int $securedRequestCnt = 0;
 
-	/** @var int */
 	private int $securedResponsesCnt = 0;
 
-	/** @var bool */
 	private bool $securedRequest = false;
 
-	/** @var string|null */
 	private string|null $encryptionKey = null;
 
-	/** @var string|null */
 	private string|null $decryptionKey = null;
 
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(

@@ -31,7 +31,6 @@ abstract class BaseController
 
 	use Nette\SmartObject;
 
-	/** @var Log\LoggerInterface */
 	protected Log\LoggerInterface $logger;
 
 	public function injectLogger(Log\LoggerInterface|null $logger): void

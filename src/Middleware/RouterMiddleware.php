@@ -43,10 +43,8 @@ use Throwable;
 final class RouterMiddleware
 {
 
-	/** @var SlimRouterHttp\ResponseFactory */
 	private SlimRouterHttp\ResponseFactory $responseFactory;
 
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(

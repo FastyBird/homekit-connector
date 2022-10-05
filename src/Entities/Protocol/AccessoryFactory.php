@@ -35,7 +35,6 @@ use function preg_match;
 final class AccessoryFactory
 {
 
-	/** @var Hashids\Hashids */
 	private Hashids\Hashids $hashIds;
 
 	public function __construct(

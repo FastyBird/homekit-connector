@@ -45,7 +45,6 @@ class Service
 
 	public const HAP_PROTOCOL_INFORMATION_SERVICE_UUID = '000000A2-0000-1000-8000-0026BB765291';
 
-	/** @var bool */
 	private bool $hidden = false;
 
 	/** @var SplObjectStorage<Characteristic, null> */

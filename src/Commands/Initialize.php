@@ -56,7 +56,6 @@ class Initialize extends Console\Command\Command
 
 	private const CHOICE_QUESTION_DELETE_CONNECTOR = 'Delete existing connector configuration';
 
-	/** @var Log\LoggerInterface */
 	private Log\LoggerInterface $logger;
 
 	public function __construct(

@@ -62,10 +62,8 @@ class Characteristic
 			'00000073-0000-1000-8000-0026BB765291', // PROGRAMMABLE SWITCH
 		];
 
-	/** @var bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null */
 	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $actualValue = null;
 
-	/** @var bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null */
 	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $expectedValue = null;
 
 	/**
