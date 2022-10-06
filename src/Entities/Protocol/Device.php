@@ -17,6 +17,7 @@ namespace FastyBird\HomeKitConnector\Entities\Protocol;
 
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use Ramsey\Uuid;
 
 /**
  * HAP bridge accessory
@@ -37,6 +38,11 @@ final class Device extends Accessory
 	)
 	{
 		parent::__construct($name, $aid, $category);
+	}
+
+	public function getId(): Uuid\UuidInterface
+	{
+		return $this->device->getId();
 	}
 
 	public function getDevice(): MetadataEntities\Modules\DevicesModule\IDeviceEntity

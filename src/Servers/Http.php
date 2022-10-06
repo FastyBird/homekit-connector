@@ -39,7 +39,6 @@ use Throwable;
 use function assert;
 use function hex2bin;
 use function is_string;
-use function var_dump;
 
 /**
  * HTTP connector communication server
@@ -276,9 +275,6 @@ final class Http implements Server
 
 			$this->subscriber->registerConnection($connection);
 
-			var_dump('CONNECTED CLIENT');
-			var_dump($connection->getRemoteAddress());
-
 			$connection->on('close', function () use ($connection): void {
 				$this->logger->debug(
 					'Connected client has closed connection',
@@ -295,9 +291,6 @@ final class Http implements Server
 				);
 
 				$this->subscriber->unregisterConnection($connection);
-
-				var_dump('DISCONNECTED CLIENT');
-				var_dump($connection->getRemoteAddress());
 			});
 		});
 

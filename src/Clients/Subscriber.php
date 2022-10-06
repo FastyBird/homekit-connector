@@ -15,6 +15,7 @@
 
 namespace FastyBird\HomeKitConnector\Clients;
 
+use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use Nette;
@@ -136,11 +137,11 @@ final class Subscriber
 			],
 		);
 
-		if (!array_key_exists($aid . '.' . $iid, $this->subscriptions)) {
-			$this->subscriptions[$aid . '.' . $iid] = [];
+		if (!array_key_exists($this->getTopic($aid, $iid), $this->subscriptions)) {
+			$this->subscriptions[$this->getTopic($aid, $iid)] = [];
 		}
 
-		$this->subscriptions[$aid . '.' . $iid][] = $address;
+		$this->subscriptions[$this->getTopic($aid, $iid)][] = $address;
 	}
 
 	public function unsubscribe(int $aid, int $iid, string $address): void
@@ -158,12 +159,15 @@ final class Subscriber
 			],
 		);
 
-		if (!array_key_exists($aid . '.' . $iid, $this->subscriptions)) {
+		if (!array_key_exists($this->getTopic($aid, $iid), $this->subscriptions)) {
 			return;
 		}
 
-		if (in_array($address, $this->subscriptions[$aid . '.' . $iid], true)) {
-			$this->subscriptions[$aid . '.' . $iid] = array_diff($this->subscriptions[$aid . '.' . $iid], [$address]);
+		if (in_array($address, $this->subscriptions[$this->getTopic($aid, $iid)], true)) {
+			$this->subscriptions[$this->getTopic($aid, $iid)] = array_diff(
+				$this->subscriptions[$this->getTopic($aid, $iid)],
+				[$address],
+			);
 		}
 	}
 
@@ -198,6 +202,10 @@ final class Subscriber
 
 	private function sendToClients(int $aid, int $iid, bool|float|int|string $value, string|null $senderAddress): void
 	{
+		if (!array_key_exists($this->getTopic($aid, $iid), $this->subscriptions)) {
+			return;
+		}
+
 		$data = $this->buildEvent($aid, $iid, $value);
 
 		if ($data === null) {
@@ -220,7 +228,13 @@ final class Subscriber
 		$this->connections->rewind();
 
 		foreach ($this->connections as $connection) {
-			if ($senderAddress === null || $connection->getRemoteAddress() !== $senderAddress) {
+			$ip = $this->connections[$connection];
+
+			if (!in_array($ip, $this->subscriptions[$this->getTopic($aid, $iid)], true)) {
+				continue;
+			}
+
+			if ($senderAddress === null || $ip !== $senderAddress) {
 				$connection->write($data);
 			}
 		}
@@ -228,21 +242,28 @@ final class Subscriber
 
 	private function buildEvent(int $aid, int $iid, bool|float|int|string $value): string|null
 	{
-		$body = "EVENT/1.0 200 OK\r\nContent-Type: application/hap+json\r\nContent-Length: %d\r\n\r\n%s\n";
+		$body = "EVENT/1.0 200 OK\r\nContent-Type: %s\r\nContent-Length: %d\r\n\r\n%s";
 
 		try {
 			$content = Utils\Json::encode([
 				Types\Representation::REPR_CHARS => [
-					Types\Representation::REPR_AID => $aid,
-					Types\Representation::REPR_IID => $iid,
-					Types\Representation::REPR_VALUE => $value,
+					[
+						Types\Representation::REPR_AID => $aid,
+						Types\Representation::REPR_IID => $iid,
+						Types\Representation::REPR_VALUE => $value,
+					],
 				],
 			]);
 		} catch (Utils\JsonException) {
 			return null;
 		}
 
-		return sprintf($body, strlen($content), $content);
+		return sprintf($body, Servers\Http::JSON_CONTENT_TYPE, strlen($content), $content);
+	}
+
+	private function getTopic(int $aid, int $iid): string
+	{
+		return $aid . '.' . $iid;
 	}
 
 }

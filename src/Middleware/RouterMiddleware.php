@@ -67,6 +67,8 @@ final class RouterMiddleware
 
 		try {
 			$response = $this->router->handle($request);
+			$response = $response->withHeader('Server', 'FastyBird HomeKit Connector');
+
 		} catch (Exceptions\HapRequestError $ex) {
 			$this->logger->warning(
 				'Request ended with error',

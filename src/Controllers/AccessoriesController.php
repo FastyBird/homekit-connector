@@ -28,7 +28,6 @@ use Nette\Utils;
 use Psr\Http\Message;
 use Ramsey\Uuid;
 use function strval;
-use function var_dump;
 
 /**
  * Accessories controller
@@ -58,13 +57,15 @@ final class AccessoriesController extends BaseController
 		Message\ResponseInterface $response,
 	): Message\ResponseInterface
 	{
-		var_dump($request->getUri()->getPath());
-
 		$this->logger->debug(
 			'Requested list of all registered accessories',
 			[
 				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 				'type' => 'accessories-controller',
+				'request' => [
+					'address' => $request->getServerParams()['REMOTE_ADDR'],
+					'path' => $request->getUri()->getPath(),
+				],
 			],
 		);
 
@@ -96,13 +97,15 @@ final class AccessoriesController extends BaseController
 		Message\ResponseInterface $response,
 	): Message\ResponseInterface
 	{
-		var_dump($request->getUri()->getPath());
-
 		$this->logger->debug(
 			'Requested accessories identify routine',
 			[
 				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 				'type' => 'accessories-controller',
+				'request' => [
+					'address' => $request->getServerParams()['REMOTE_ADDR'],
+					'path' => $request->getUri()->getPath(),
+				],
 			],
 		);
 
@@ -125,6 +128,10 @@ final class AccessoriesController extends BaseController
 				[
 					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 					'type' => 'accessories-controller',
+					'request' => [
+						'address' => $request->getServerParams()['REMOTE_ADDR'],
+						'path' => $request->getUri()->getPath(),
+					],
 				],
 			);
 
@@ -151,13 +158,15 @@ final class AccessoriesController extends BaseController
 		Message\ResponseInterface $response,
 	): Message\ResponseInterface
 	{
-		var_dump($request->getUri()->getPath());
-
 		$this->logger->debug(
 			'Requested fetching accessory resource',
 			[
 				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
 				'type' => 'accessories-controller',
+				'request' => [
+					'address' => $request->getServerParams()['REMOTE_ADDR'],
+					'path' => $request->getUri()->getPath(),
+				],
 			],
 		);
 

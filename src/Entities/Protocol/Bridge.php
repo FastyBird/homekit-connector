@@ -19,6 +19,7 @@ use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use Ramsey\Uuid;
 use SplObjectStorage;
 
 /**
@@ -47,6 +48,11 @@ class Bridge extends Accessory
 		);
 
 		$this->accessories = new SplObjectStorage();
+	}
+
+	public function getId(): Uuid\UuidInterface
+	{
+		return $this->connector->getId();
 	}
 
 	public function getConnector(): MetadataEntities\Modules\DevicesModule\IConnectorEntity

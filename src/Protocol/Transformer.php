@@ -250,6 +250,8 @@ final class Transformer
 				) {
 					$transformedValue = strval($value->getValue());
 				}
+			} else {
+				$transformedValue = $value;
 			}
 		} else {
 			$transformedValue = $value;

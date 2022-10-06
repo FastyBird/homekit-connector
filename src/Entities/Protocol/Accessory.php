@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Entities\Protocol;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
 use Nette;
+use Ramsey\Uuid;
 use SplObjectStorage;
 use function array_map;
 use function sprintf;
@@ -50,6 +51,8 @@ abstract class Accessory
 
 		$this->iidManager = new Helpers\IidManager();
 	}
+
+	abstract public function getId(): Uuid\UuidInterface;
 
 	public function getName(): string
 	{

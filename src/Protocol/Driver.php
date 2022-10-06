@@ -159,6 +159,27 @@ class Driver
 		return $accessories;
 	}
 
+	public function findAccessory(Uuid\UuidInterface $id): Entities\Protocol\Accessory|null
+	{
+		$this->accessories->rewind();
+
+		foreach ($this->accessories as $accessory) {
+			if ($accessory->getId()->equals($id)) {
+				return $accessory;
+			}
+
+			if ($accessory instanceof Entities\Protocol\Bridge) {
+				foreach ($accessory->getAccessories() as $bridgeAccessory) {
+					if ($bridgeAccessory->getId()->equals($id)) {
+						return $bridgeAccessory;
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
 	/**
 	 * @return Array<string, Array<Array<string, (int|Array<Array<string, (string|int|bool|Array<Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>>|null)>>|null)>>>
 	 */
