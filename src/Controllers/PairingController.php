@@ -54,7 +54,6 @@ use function sodium_crypto_aead_chacha20poly1305_ietf_decrypt;
 use function sodium_crypto_aead_chacha20poly1305_ietf_encrypt;
 use function strval;
 use function unpack;
-use function var_dump;
 
 /**
  * Connector pairing process controller
@@ -183,8 +182,6 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response,
 	): Message\ResponseInterface
 	{
-		var_dump($request->getUri()->getPath());
-
 		$this->logger->debug(
 			'Requested pairing setup',
 			[
@@ -294,8 +291,6 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response,
 	): Message\ResponseInterface
 	{
-		var_dump($request->getUri()->getPath());
-
 		$this->logger->debug(
 			'Requested pairing verify',
 			[
@@ -374,9 +369,6 @@ final class PairingController extends BaseController
 		Message\ResponseInterface $response,
 	): Message\ResponseInterface
 	{
-		var_dump($request->getUri()->getPath());
-		var_dump($request->getHeaders());
-
 		$this->logger->debug(
 			'Requested clients pairing update',
 			[

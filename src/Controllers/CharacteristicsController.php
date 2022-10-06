@@ -170,7 +170,14 @@ final class CharacteristicsController extends BaseController
 			}
 		}
 
-		var_dump($result);
+		if ($anyError) {
+			foreach ($result[Types\Representation::REPR_CHARS] as $key => $charResult) {
+				if (!array_key_exists(Types\Representation::REPR_STATUS, $charResult)) {
+					$result[Types\Representation::REPR_CHARS][$key][Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_SUCCESS;
+				}
+			}
+		}
+
 		$response = $response->withStatus(
 			$anyError ? StatusCodeInterface::STATUS_MULTI_STATUS : StatusCodeInterface::STATUS_OK,
 		);
@@ -191,7 +198,6 @@ final class CharacteristicsController extends BaseController
 	): Message\ResponseInterface
 	{
 		var_dump($request->getUri()->getPath());
-		var_dump($request->getHeaders());
 
 		$this->logger->debug(
 			'Requested updating of characteristics of selected accessories',
@@ -229,7 +235,7 @@ final class CharacteristicsController extends BaseController
 		if (
 			!is_array($body)
 			|| !array_key_exists(Types\Representation::REPR_CHARS, $body)
-			|| is_array($body[Types\Representation::REPR_CHARS])
+			|| !is_array($body[Types\Representation::REPR_CHARS])
 		) {
 			throw new Exceptions\HapRequestError(
 				$request,
@@ -457,6 +463,13 @@ final class CharacteristicsController extends BaseController
 			);
 		}
 
+		if (
+			array_key_exists(Types\Representation::REPR_STATUS, $representation)
+			&& $representation[Types\Representation::REPR_STATUS] === Types\ServerStatus::STATUS_SUCCESS
+		) {
+			unset($representation[Types\Representation::REPR_STATUS]);
+		}
+
 		return $representation;
 	}
 
@@ -487,7 +500,12 @@ final class CharacteristicsController extends BaseController
 		}
 
 		if (
-			!in_array(Types\CharacteristicPermission::PERMISSION_WRITE, $characteristic->getPermissions(), true)
+			$value !== null
+			&& !in_array(
+				Types\CharacteristicPermission::PERMISSION_WRITE,
+				$characteristic->getPermissions(),
+				true,
+			)
 			&& !in_array(
 				Types\CharacteristicPermission::PERMISSION_TIMED_WRITE,
 				$characteristic->getPermissions(),
@@ -692,10 +710,24 @@ final class CharacteristicsController extends BaseController
 		}
 
 		if ($events !== null) {
-			if ($events) {
-				$this->subscriber->subscribe($aid, $iid, $clientAddress);
+			if ($clientAddress !== '') {
+				if ($events) {
+					$this->subscriber->subscribe($aid, $iid, $clientAddress);
+				} else {
+					$this->subscriber->unsubscribe($aid, $iid, $clientAddress);
+				}
 			} else {
-				$this->subscriber->unsubscribe($aid, $iid, $clientAddress);
+				$this->logger->warning(
+					'Connected client is without defined IP address and could not subscribe for events',
+					[
+						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'type' => 'characteristics-controller',
+						'characteristic' => [
+							'type' => $characteristic->getTypeId()->toString(),
+							'name' => $characteristic->getName(),
+						],
+					],
+				);
 			}
 		}
 

@@ -27,7 +27,9 @@ use function intval;
 use function is_array;
 use function is_string;
 use function sprintf;
+use function str_replace;
 use function strval;
+use function ucwords;
 
 /**
  * HAP service characteristics factory
@@ -59,6 +61,8 @@ final class CharacteristicsFactory
 		Types\CharacteristicUnit|null $unit = null,
 	): Characteristic
 	{
+		$name = str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));
+
 		$metadata = $this->loader->loadCharacteristics();
 
 		if (!$metadata->offsetExists($name)) {

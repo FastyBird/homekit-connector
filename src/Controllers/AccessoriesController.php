@@ -77,7 +77,7 @@ final class AccessoriesController extends BaseController
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
 		$result = $this->accessoriesDriver->toHap($connectorId);
-		var_dump($result);
+
 		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
 		$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 		$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode($result)));
@@ -97,7 +97,6 @@ final class AccessoriesController extends BaseController
 	): Message\ResponseInterface
 	{
 		var_dump($request->getUri()->getPath());
-		var_dump($request->getHeaders());
 
 		$this->logger->debug(
 			'Requested accessories identify routine',
@@ -153,7 +152,6 @@ final class AccessoriesController extends BaseController
 	): Message\ResponseInterface
 	{
 		var_dump($request->getUri()->getPath());
-		var_dump($request->getHeaders());
 
 		$this->logger->debug(
 			'Requested fetching accessory resource',

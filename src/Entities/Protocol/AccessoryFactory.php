@@ -68,7 +68,10 @@ final class AccessoryFactory
 				['Version'],
 			);
 
-			$accessoryProtocolVersion = $this->characteristicsFactory->create('Version', $accessoryProtocolInformation);
+			$accessoryProtocolVersion = $this->characteristicsFactory->create(
+				Types\ChannelPropertyIdentifier::IDENTIFIER_VERSION,
+				$accessoryProtocolInformation,
+			);
 			$accessoryProtocolVersion->setActualValue(HomeKitConnector\Constants::HAP_PROTOCOL_VERSION);
 
 			$accessoryProtocolInformation->addCharacteristic($accessoryProtocolVersion);
@@ -82,21 +85,33 @@ final class AccessoryFactory
 			$accessory = new Device($owner->getName() ?? $owner->getIdentifier(), $aid, $category, $owner);
 		}
 
-		$accessoryInformation = $this->serviceFactory->create('AccessoryInformation', $accessory);
+		$accessoryInformation = $this->serviceFactory->create(
+			Types\ChannelIdentifier::IDENTIFIER_ACCESSORY_INFORMATION,
+			$accessory,
+		);
 
-		$accessoryName = $this->characteristicsFactory->create('Name', $accessoryInformation);
+		$accessoryName = $this->characteristicsFactory->create(
+			Types\ChannelPropertyIdentifier::IDENTIFIER_NAME,
+			$accessoryInformation,
+		);
 		$accessoryName->setActualValue($owner->getName() ?? $owner->getIdentifier());
 
 		$accessoryInformation->addCharacteristic($accessoryName);
 
-		$accessorySerialNumber = $this->characteristicsFactory->create('SerialNumber', $accessoryInformation);
+		$accessorySerialNumber = $this->characteristicsFactory->create(
+			Types\ChannelPropertyIdentifier::IDENTIFIER_SERIAL_NUMBER,
+			$accessoryInformation,
+		);
 		$accessorySerialNumber->setActualValue($this->hashIds->encode((int) $owner->getId()->getInteger()->toString()));
 
 		$accessoryInformation->addCharacteristic($accessorySerialNumber);
 
 		$packageRevision = Composer\InstalledVersions::getVersion(HomeKitConnector\Constants::PACKAGE_NAME);
 
-		$accessoryFirmwareRevision = $this->characteristicsFactory->create('FirmwareRevision', $accessoryInformation);
+		$accessoryFirmwareRevision = $this->characteristicsFactory->create(
+			Types\ChannelPropertyIdentifier::IDENTIFIER_FIRMWARE_REVISION,
+			$accessoryInformation,
+		);
 		$accessoryFirmwareRevision->setActualValue(
 			$packageRevision !== null && preg_match(
 				HomeKitConnector\Constants::VERSION_REGEXP,
@@ -106,18 +121,27 @@ final class AccessoryFactory
 
 		$accessoryInformation->addCharacteristic($accessoryFirmwareRevision);
 
-		$accessoryManufacturer = $this->characteristicsFactory->create('Manufacturer', $accessoryInformation);
+		$accessoryManufacturer = $this->characteristicsFactory->create(
+			Types\ChannelPropertyIdentifier::IDENTIFIER_MANUFACTURER,
+			$accessoryInformation,
+		);
 		$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_MANUFACTURER);
 
 		$accessoryInformation->addCharacteristic($accessoryManufacturer);
 
 		if ($accessory instanceof Bridge) {
-			$accessoryManufacturer = $this->characteristicsFactory->create('Model', $accessoryInformation);
+			$accessoryManufacturer = $this->characteristicsFactory->create(
+				Types\ChannelPropertyIdentifier::IDENTIFIER_MODEL,
+				$accessoryInformation,
+			);
 			$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_BRIDGE_MODEL);
 
 			$accessoryInformation->addCharacteristic($accessoryManufacturer);
 		} else {
-			$accessoryManufacturer = $this->characteristicsFactory->create('Model', $accessoryInformation);
+			$accessoryManufacturer = $this->characteristicsFactory->create(
+				Types\ChannelPropertyIdentifier::IDENTIFIER_MODEL,
+				$accessoryInformation,
+			);
 			$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_DEVICE_MODEL);
 
 			$accessoryInformation->addCharacteristic($accessoryManufacturer);

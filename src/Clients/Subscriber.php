@@ -23,6 +23,10 @@ use SplObjectStorage;
 use function array_diff;
 use function array_key_exists;
 use function in_array;
+use function parse_url;
+use function strval;
+use function trim;
+use const PHP_URL_HOST;
 
 /**
  * HTTP clients exchange subscriber
@@ -37,7 +41,7 @@ final class Subscriber
 
 	use Nette\SmartObject;
 
-	/** @var SplObjectStorage<Socket\ConnectionInterface, null> */
+	/** @var SplObjectStorage<Socket\ConnectionInterface, string> */
 	private SplObjectStorage $connections;
 
 	/** @var Array<string, Array<string>> */
@@ -55,6 +59,18 @@ final class Subscriber
 
 	public function registerConnection(Socket\ConnectionInterface $connection): void
 	{
+		if ($connection->getRemoteAddress() === null) {
+			$this->logger->warning(
+				'Connected client is without defined IP address and could not be registered to subscriber',
+				[
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'subscriber',
+				],
+			);
+
+			return;
+		}
+
 		$this->logger->debug(
 			'Registering client to subscriber',
 			[
@@ -66,7 +82,9 @@ final class Subscriber
 			],
 		);
 
-		$this->connections->attach($connection);
+		$ip = trim(strval(parse_url(strval($connection->getRemoteAddress()), PHP_URL_HOST)), '[]');
+
+		$this->connections->attach($connection, $ip);
 	}
 
 	public function unregisterConnection(Socket\ConnectionInterface $connection): void

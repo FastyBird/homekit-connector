@@ -88,19 +88,6 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 				->setFactory('React\EventLoop\Factory::create');
 		}
 
-		// Service factory
-		$builder->addFactoryDefinition($this->prefix('executor.factory'))
-			->setImplement(Connector\ConnectorFactory::class)
-			->addTag(
-				DevicesModuleDI\DevicesModuleExtension::CONNECTOR_TYPE_TAG,
-				Entities\HomeKitConnector::CONNECTOR_TYPE,
-			)
-			->getResultDefinition()
-			->setType(Connector\Connector::class)
-			->setArguments([
-				'serversFactories' => $builder->findByType(Servers\ServerFactory::class),
-			]);
-
 		// Servers
 		$builder->addFactoryDefinition($this->prefix('server.mdns'))
 			->setImplement(Servers\MdnsFactory::class)
@@ -199,6 +186,19 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('models.clientsManager'), new DI\Definitions\ServiceDefinition())
 			->setType(Models\Clients\ClientsManager::class)
 			->setArgument('entityCrud', '__placeholder__');
+
+		// Service factory
+		$builder->addFactoryDefinition($this->prefix('executor.factory'))
+			->setImplement(Connector\ConnectorFactory::class)
+			->addTag(
+				DevicesModuleDI\DevicesModuleExtension::CONNECTOR_TYPE_TAG,
+				Entities\HomeKitConnector::CONNECTOR_TYPE,
+			)
+			->getResultDefinition()
+			->setType(Connector\Connector::class)
+			->setArguments([
+				'serversFactories' => $builder->findByType(Servers\ServerFactory::class),
+			]);
 
 		// Console commands
 		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())

@@ -21,7 +21,6 @@ use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Clients;
 use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Middleware;
 use FastyBird\HomeKitConnector\Protocol;
@@ -163,34 +162,38 @@ final class Http implements Server
 		$this->accessoriesDriver->addBridge($bridge);
 
 		foreach ($this->devicesRepository->findAllByConnector($this->connector->getId()) as $device) {
-			$accessory = $this->accessoryFactory->create($device);
+			$accessory = $this->accessoryFactory->create(
+				$device,
+				null,
+				Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_OUTLET),
+			);
 			assert($accessory instanceof Entities\Protocol\Device);
 
 			foreach ($this->channelsRepository->findAllByDevice($device->getId()) as $channel) {
-				if ($channel->getName() === null) {
-					throw new Exceptions\InvalidState('Channel name is not configured');
-				}
-
 				$service = $this->serviceFactory->create(
-					$channel->getName(),
+					$channel->getIdentifier(),
 					$accessory,
 					$channel,
 				);
 
 				foreach ($this->channelPropertiesRepository->findAllByChannel($channel->getId()) as $property) {
-					if ($property instanceof MetadataEntities\Modules\DevicesModule\IChannelDynamicPropertyEntity) {
-						if ($property->getName() === null) {
-							throw new Exceptions\InvalidState('Channel property name is not configured');
-						}
-
+					if ($property instanceof MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity) {
 						$characteristic = $this->characteristicsFactory->create(
-							$property->getName(),
+							$property->getIdentifier(),
 							$service,
 						);
 
 						$service->addCharacteristic($characteristic);
 					}
 				}
+
+				$characteristic = $this->characteristicsFactory->create(
+					'OutletInUse',
+					$service,
+				);
+				$characteristic->setActualValue(true);
+
+				$service->addCharacteristic($characteristic);
 
 				$accessory->addService($service);
 			}
