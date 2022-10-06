@@ -15,15 +15,20 @@
 
 namespace FastyBird\HomeKitConnector\Clients;
 
+use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use Nette;
+use Nette\Utils;
 use Psr\Log;
+use React\EventLoop;
 use React\Socket;
 use SplObjectStorage;
 use function array_diff;
 use function array_key_exists;
 use function in_array;
 use function parse_url;
+use function sprintf;
+use function strlen;
 use function strval;
 use function trim;
 use const PHP_URL_HOST;
@@ -41,6 +46,8 @@ final class Subscriber
 
 	use Nette\SmartObject;
 
+	private const PUBLISH_EVENT_DELAY = 0.5;
+
 	/** @var SplObjectStorage<Socket\ConnectionInterface, string> */
 	private SplObjectStorage $connections;
 
@@ -49,7 +56,10 @@ final class Subscriber
 
 	private Log\LoggerInterface $logger;
 
-	public function __construct(Log\LoggerInterface|null $logger = null)
+	public function __construct(
+		private EventLoop\LoopInterface $eventLoop,
+		Log\LoggerInterface|null $logger = null,
+	)
 	{
 		$this->connections = new SplObjectStorage();
 		$this->subscriptions = [];
@@ -157,9 +167,82 @@ final class Subscriber
 		}
 	}
 
-	public function publish(): void
+	public function publish(
+		int $aid,
+		int $iid,
+		bool|float|int|string|null $value,
+		bool $immediate,
+		string|null $senderAddress,
+	): void
 	{
-		// TODO: Implement
+		// Skip invalid value
+		if ($value === null) {
+			return;
+		}
+
+		if ($immediate) {
+			$this->eventLoop->futureTick(
+				function () use ($aid, $iid, $value, $senderAddress): void {
+					$this->sendToClients($aid, $iid, $value, $senderAddress);
+				},
+			);
+		} else {
+			$this->eventLoop->addTimer(
+				self::PUBLISH_EVENT_DELAY,
+				function () use ($aid, $iid, $value, $senderAddress): void {
+					$this->sendToClients($aid, $iid, $value, $senderAddress);
+				},
+			);
+		}
+	}
+
+	private function sendToClients(int $aid, int $iid, bool|float|int|string $value, string|null $senderAddress): void
+	{
+		$data = $this->buildEvent($aid, $iid, $value);
+
+		if ($data === null) {
+			$this->logger->error(
+				'Event message could not be created',
+				[
+					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'type' => 'subscriber',
+					'data' => [
+						'aid' => $aid,
+						'iid' => $iid,
+						'value' => $value,
+					],
+				],
+			);
+
+			return;
+		}
+
+		$this->connections->rewind();
+
+		foreach ($this->connections as $connection) {
+			if ($senderAddress === null || $connection->getRemoteAddress() !== $senderAddress) {
+				$connection->write($data);
+			}
+		}
+	}
+
+	private function buildEvent(int $aid, int $iid, bool|float|int|string $value): string|null
+	{
+		$body = "EVENT/1.0 200 OK\r\nContent-Type: application/hap+json\r\nContent-Length: %d\r\n\r\n%s\n";
+
+		try {
+			$content = Utils\Json::encode([
+				Types\Representation::REPR_CHARS => [
+					Types\Representation::REPR_AID => $aid,
+					Types\Representation::REPR_IID => $iid,
+					Types\Representation::REPR_VALUE => $value,
+				],
+			]);
+		} catch (Utils\JsonException) {
+			return null;
+		}
+
+		return sprintf($body, strlen($content), $content);
 	}
 
 }

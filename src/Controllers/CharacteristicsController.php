@@ -295,6 +295,9 @@ final class CharacteristicsController extends BaseController
 				)
 					? (bool) $setCharacteristic[Types\CharacteristicPermission::PERMISSION_NOTIFY]
 					: null;
+				$includeValue = array_key_exists('r', $setCharacteristic)
+					? (bool) $setCharacteristic[Types\CharacteristicPermission::PERMISSION_NOTIFY]
+					: null;
 
 				$result[Types\Representation::REPR_CHARS][] = $this->writeCharacteristic(
 					$connectorId,
@@ -302,8 +305,8 @@ final class CharacteristicsController extends BaseController
 					$iid,
 					$value,
 					$events,
+					$includeValue,
 					strval($request->getServerParams()['REMOTE_ADDR']),
-					intval($request->getServerParams()['REMOTE_PORT']),
 					$pid,
 					$timedWriteError,
 				);
@@ -474,7 +477,7 @@ final class CharacteristicsController extends BaseController
 	}
 
 	/**
-	 * @return Array<string, int>
+	 * @return Array<string, bool|float|int|string|null>
 	 *
 	 * @throws Metadata\Exceptions\FileNotFoundException
 	 * @throws Utils\JsonException
@@ -485,8 +488,8 @@ final class CharacteristicsController extends BaseController
 		int $iid,
 		int|float|string|bool|null $value,
 		bool|null $events,
+		bool|null $includeValue,
 		string $clientAddress,
-		int $clientPort,
 		int|null $pid,
 		bool $timedWriteError,
 	): array
@@ -574,7 +577,7 @@ final class CharacteristicsController extends BaseController
 					$characteristic->setExpectedValue($value);
 				}
 
-				if ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IConnectorDynamicPropertyEntity) {
+				if ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IConnectorMappedPropertyEntity) {
 					$this->publisher?->publish(
 						Metadata\Types\ModuleSourceType::get(Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES),
 						Metadata\Types\RoutingKeyType::get(
@@ -585,6 +588,7 @@ final class CharacteristicsController extends BaseController
 								'action' => Metadata\Types\PropertyActionType::ACTION_SET,
 								'connector' => $characteristic->getProperty()->getConnector()->toString(),
 								'property' => $characteristic->getProperty()->getId()->toString(),
+								'expected_value' => $characteristic->getExpectedValue(),
 							]),
 							Metadata\Types\RoutingKeyType::get(
 								Metadata\Types\RoutingKeyType::ROUTE_CONNECTOR_PROPERTY_ACTION,
@@ -609,7 +613,7 @@ final class CharacteristicsController extends BaseController
 							],
 						],
 					);
-				} elseif ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IDeviceDynamicPropertyEntity) {
+				} elseif ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IDeviceMappedPropertyEntity) {
 					$this->publisher?->publish(
 						Metadata\Types\ModuleSourceType::get(Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES),
 						Metadata\Types\RoutingKeyType::get(Metadata\Types\RoutingKeyType::ROUTE_DEVICE_PROPERTY_ACTION),
@@ -618,6 +622,7 @@ final class CharacteristicsController extends BaseController
 								'action' => Metadata\Types\PropertyActionType::ACTION_SET,
 								'device' => $characteristic->getProperty()->getDevice()->toString(),
 								'property' => $characteristic->getProperty()->getId()->toString(),
+								'expected_value' => $characteristic->getExpectedValue(),
 							]),
 							Metadata\Types\RoutingKeyType::get(
 								Metadata\Types\RoutingKeyType::ROUTE_DEVICE_PROPERTY_ACTION,
@@ -642,7 +647,7 @@ final class CharacteristicsController extends BaseController
 							],
 						],
 					);
-				} elseif ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IChannelDynamicPropertyEntity) {
+				} elseif ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IChannelMappedPropertyEntity) {
 					$channel = $this->channelsRepository->findById($characteristic->getProperty()->getChannel());
 
 					if ($channel !== null) {
@@ -659,6 +664,7 @@ final class CharacteristicsController extends BaseController
 									'device' => $channel->getDevice()->toString(),
 									'channel' => $characteristic->getProperty()->getChannel()->toString(),
 									'property' => $characteristic->getProperty()->getId()->toString(),
+									'expected_value' => $characteristic->getExpectedValue(),
 								]),
 								Metadata\Types\RoutingKeyType::get(
 									Metadata\Types\RoutingKeyType::ROUTE_CHANNEL_PROPERTY_ACTION,
@@ -707,6 +713,36 @@ final class CharacteristicsController extends BaseController
 					}
 				}
 			}
+
+			if ($includeValue === true) {
+				$representation[Types\Representation::REPR_VALUE] = Protocol\Transformer::toClient(
+					$characteristic->getProperty(),
+					$characteristic->getDataType(),
+					$characteristic->getValidValues(),
+					$characteristic->getMaxLength(),
+					$characteristic->getMinValue(),
+					$characteristic->getMaxValue(),
+					$characteristic->getMinStep(),
+					$characteristic->getActualValue(),
+				);
+			}
+
+			$this->subscriber->publish(
+				$aid,
+				$iid,
+				Protocol\Transformer::toClient(
+					$characteristic->getProperty(),
+					$characteristic->getDataType(),
+					$characteristic->getValidValues(),
+					$characteristic->getMaxLength(),
+					$characteristic->getMinValue(),
+					$characteristic->getMaxValue(),
+					$characteristic->getMinStep(),
+					$characteristic->getActualValue(),
+				),
+				$characteristic->immediateNotify(),
+				$clientAddress,
+			);
 		}
 
 		if ($events !== null) {
