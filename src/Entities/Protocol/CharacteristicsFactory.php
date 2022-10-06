@@ -52,7 +52,7 @@ final class CharacteristicsFactory
 	public function create(
 		string $name,
 		Service $service,
-		MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property = null,
+		MetadataEntities\Modules\DevicesModule\IPropertyEntity|null $property = null,
 		array|null $validValues = [],
 		int|null $maxLength = null,
 		float|null $minValue = null,

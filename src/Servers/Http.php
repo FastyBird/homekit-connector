@@ -177,11 +177,19 @@ final class Http implements Server
 				);
 
 				foreach ($this->channelPropertiesRepository->findAllByChannel($channel->getId()) as $property) {
-					if ($property instanceof MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity) {
+					if (
+						$property instanceof MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity
+						|| $property instanceof MetadataEntities\Modules\DevicesModule\IChannelStaticPropertyEntity
+					) {
 						$characteristic = $this->characteristicsFactory->create(
 							$property->getIdentifier(),
 							$service,
+							$property,
 						);
+
+						if ($property instanceof MetadataEntities\Modules\DevicesModule\IChannelStaticPropertyEntity) {
+							$characteristic->setActualValue($property->getValue());
+						}
 
 						$service->addCharacteristic($characteristic);
 					}

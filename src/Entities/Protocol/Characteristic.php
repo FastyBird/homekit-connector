@@ -76,7 +76,7 @@ class Characteristic
 		private Types\DataType $dataType,
 		private array $permissions,
 		private Service $service,
-		private MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property = null,
+		private MetadataEntities\Modules\DevicesModule\IPropertyEntity|null $property = null,
 		private array|null $validValues = [],
 		private int|null $maxLength = null,
 		private float|null $minValue = null,
@@ -141,7 +141,7 @@ class Characteristic
 		return $this->maxLength;
 	}
 
-	public function getProperty(): MetadataEntities\Modules\DevicesModule\PropertyEntity|null
+	public function getProperty(): MetadataEntities\Modules\DevicesModule\IPropertyEntity|null
 	{
 		return $this->property;
 	}

@@ -51,7 +51,7 @@ final class Transformer
 {
 
 	public static function fromClient(
-		MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property,
+		MetadataEntities\Modules\DevicesModule\IPropertyEntity|null $property,
 		Types\DataType $dataType,
 		bool|float|int|string|null $value,
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
@@ -189,7 +189,7 @@ final class Transformer
 	 * @param Array<int>|null $validValues
 	 */
 	public static function toClient(
-		MetadataEntities\Modules\DevicesModule\PropertyEntity|null $property,
+		MetadataEntities\Modules\DevicesModule\IPropertyEntity|null $property,
 		Types\DataType $dataType,
 		array|null $validValues,
 		int|null $maxLength,
