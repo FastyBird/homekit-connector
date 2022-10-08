@@ -38,7 +38,7 @@ class Bridge extends Accessory
 
 	public function __construct(
 		string $name,
-		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
 	)
 	{
 		parent::__construct(
@@ -55,7 +55,7 @@ class Bridge extends Accessory
 		return $this->connector->getId();
 	}
 
-	public function getConnector(): MetadataEntities\Modules\DevicesModule\IConnectorEntity
+	public function getConnector(): MetadataEntities\DevicesModule\Connector
 	{
 		return $this->connector;
 	}

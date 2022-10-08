@@ -39,9 +39,9 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 	private SplObjectStorage $activeConnections;
 
 	public function __construct(
-		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		private Socket\ServerInterface $server,
-		private SecureConnectionFactory $secureConnectionFactory,
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly Socket\ServerInterface $server,
+		private readonly SecureConnectionFactory $secureConnectionFactory,
 		private string|null $sharedKey = null,
 	)
 	{

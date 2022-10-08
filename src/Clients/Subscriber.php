@@ -58,7 +58,7 @@ final class Subscriber
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private EventLoop\LoopInterface $eventLoop,
+		private readonly EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{

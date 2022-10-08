@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases;
+namespace Tests\Cases\Unit;
 
 use DateTimeImmutable;
 use Doctrine\DBAL;
@@ -44,17 +44,17 @@ abstract class DbTestCase extends BaseMockeryTestCase
 
 	public function setUp(): void
 	{
-		$this->registerDatabaseSchemaFile(__DIR__ . '/../sql/dummy.data.sql');
+		$this->registerDatabaseSchemaFile(__DIR__ . '/../../sql/dummy.data.sql');
 
 		parent::setUp();
 
-		$dateTimeFactory = Mockery::mock(DateTimeFactory\DateTimeFactory::class);
+		$dateTimeFactory = Mockery::mock(DateTimeFactory\Factory::class);
 		$dateTimeFactory
 			->shouldReceive('getNow')
 			->andReturn(new DateTimeImmutable('2020-04-01T12:00:00+00:00'));
 
 		$this->mockContainerService(
-			DateTimeFactory\DateTimeFactory::class,
+			DateTimeFactory\Factory::class,
 			$dateTimeFactory,
 		);
 	}
@@ -90,7 +90,7 @@ abstract class DbTestCase extends BaseMockeryTestCase
 
 	private function createContainer(): Nette\DI\Container
 	{
-		$rootDir = __DIR__ . '/../../tests';
+		$rootDir = __DIR__ . '/../../../tests';
 
 		$config = new Nette\Configurator();
 		$config->setTempDirectory(TEMP_DIR);
@@ -98,7 +98,7 @@ abstract class DbTestCase extends BaseMockeryTestCase
 		$config->addParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);
 		$config->addParameters(['appDir' => $rootDir, 'wwwDir' => $rootDir]);
 
-		$config->addConfig(__DIR__ . '/../common.neon');
+		$config->addConfig(__DIR__ . '/../../common.neon');
 
 		foreach ($this->neonFiles as $neonFile) {
 			$config->addConfig($neonFile);

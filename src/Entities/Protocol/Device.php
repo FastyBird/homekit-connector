@@ -34,7 +34,7 @@ final class Device extends Accessory
 		string $name,
 		int|null $aid,
 		Types\AccessoryCategory $category,
-		private MetadataEntities\Modules\DevicesModule\IDeviceEntity $device,
+		private readonly MetadataEntities\DevicesModule\Device $device,
 	)
 	{
 		parent::__construct($name, $aid, $category);
@@ -45,7 +45,7 @@ final class Device extends Accessory
 		return $this->device->getId();
 	}
 
-	public function getDevice(): MetadataEntities\Modules\DevicesModule\IDeviceEntity
+	public function getDevice(): MetadataEntities\DevicesModule\Device
 	{
 		return $this->device;
 	}

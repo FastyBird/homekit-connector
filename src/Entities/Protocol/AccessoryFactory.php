@@ -38,15 +38,15 @@ final class AccessoryFactory
 	private Hashids\Hashids $hashIds;
 
 	public function __construct(
-		private ServiceFactory $serviceFactory,
-		private CharacteristicsFactory $characteristicsFactory,
+		private readonly ServiceFactory $serviceFactory,
+		private readonly CharacteristicsFactory $characteristicsFactory,
 	)
 	{
 		$this->hashIds = new Hashids\Hashids();
 	}
 
 	public function create(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity|MetadataEntities\Modules\DevicesModule\IDeviceEntity $owner,
+		MetadataEntities\DevicesModule\Connector|MetadataEntities\DevicesModule\Device $owner,
 		int|null $aid = null,
 		Types\AccessoryCategory|null $category = null,
 	): Accessory
@@ -54,7 +54,7 @@ final class AccessoryFactory
 		$category ??= Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_OTHER);
 
 		if ($category->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {
-			if (!$owner instanceof MetadataEntities\Modules\DevicesModule\ConnectorEntity) {
+			if (!$owner instanceof MetadataEntities\DevicesModule\Connector) {
 				throw new Exceptions\InvalidArgument('Bridge accessory owner have to be connector item instance');
 			}
 
@@ -78,7 +78,7 @@ final class AccessoryFactory
 
 			$accessory->addService($accessoryProtocolInformation);
 		} else {
-			if (!$owner instanceof MetadataEntities\Modules\DevicesModule\DeviceEntity) {
+			if (!$owner instanceof MetadataEntities\DevicesModule\Device) {
 				throw new Exceptions\InvalidArgument('Device accessory owner have to be device item instance');
 			}
 
@@ -129,23 +129,18 @@ final class AccessoryFactory
 
 		$accessoryInformation->addCharacteristic($accessoryManufacturer);
 
+		$accessoryManufacturer = $this->characteristicsFactory->create(
+			Types\ChannelPropertyIdentifier::IDENTIFIER_MODEL,
+			$accessoryInformation,
+		);
+
 		if ($accessory instanceof Bridge) {
-			$accessoryManufacturer = $this->characteristicsFactory->create(
-				Types\ChannelPropertyIdentifier::IDENTIFIER_MODEL,
-				$accessoryInformation,
-			);
 			$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_BRIDGE_MODEL);
-
-			$accessoryInformation->addCharacteristic($accessoryManufacturer);
 		} else {
-			$accessoryManufacturer = $this->characteristicsFactory->create(
-				Types\ChannelPropertyIdentifier::IDENTIFIER_MODEL,
-				$accessoryInformation,
-			);
 			$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_DEVICE_MODEL);
-
-			$accessoryInformation->addCharacteristic($accessoryManufacturer);
 		}
+
+		$accessoryInformation->addCharacteristic($accessoryManufacturer);
 
 		$accessory->addService($accessoryInformation);
 

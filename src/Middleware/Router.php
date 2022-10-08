@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * RouterMiddleware.php
+ * Router.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -40,7 +40,7 @@ use Throwable;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class RouterMiddleware
+final class Router
 {
 
 	private SlimRouterHttp\ResponseFactory $responseFactory;
@@ -48,8 +48,8 @@ final class RouterMiddleware
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private SlimRouterRouting\IRouter $router,
-		private EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
+		private readonly SlimRouterRouting\IRouter $router,
+		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{

@@ -31,6 +31,7 @@ use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Entities as MetadataEntities;
 use Fig\Http\Message\StatusCodeInterface;
 use IPub\SlimRouter;
 use Nette\Utils;
@@ -60,20 +61,20 @@ final class CharacteristicsController extends BaseController
 	private array $preparedWrites = [];
 
 	public function __construct(
-		private Protocol\Driver $accessoryDriver,
-		private Clients\Subscriber $subscriber,
-		private Helpers\Database $databaseHelper,
-		private DateTimeFactory\DateTimeFactory $dateTimeFactory,
-		private ExchangeEntities\EntityFactory $entityFactory,
-		private ExchangePublisher\IPublisher|null $publisher,
-		private EventDispatcher\EventDispatcherInterface|null $dispatcher,
-		private DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
-		private DevicesModuleModels\Connectors\Properties\IPropertiesRepository $connectorsPropertiesRepository,
-		private DevicesModuleModels\Connectors\Properties\IPropertiesManager $connectorsPropertiesManager,
-		private DevicesModuleModels\Devices\Properties\IPropertiesRepository $devicesPropertiesRepository,
-		private DevicesModuleModels\Devices\Properties\IPropertiesManager $devicesPropertiesManager,
-		private DevicesModuleModels\Channels\Properties\IPropertiesRepository $channelsPropertiesRepository,
-		private DevicesModuleModels\Channels\Properties\IPropertiesManager $channelsPropertiesManager,
+		private readonly Protocol\Driver $accessoryDriver,
+		private readonly Clients\Subscriber $subscriber,
+		private readonly Helpers\Database $databaseHelper,
+		private readonly DateTimeFactory\Factory $dateTimeFactory,
+		private readonly ExchangeEntities\EntityFactory $entityFactory,
+		private readonly ExchangePublisher\Container|null $publisher,
+		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher,
+		private readonly DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
+		private readonly DevicesModuleModels\Connectors\Properties\PropertiesRepository $connectorsPropertiesRepository,
+		private readonly DevicesModuleModels\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
+		private readonly DevicesModuleModels\Devices\Properties\PropertiesRepository $devicesPropertiesRepository,
+		private readonly DevicesModuleModels\Devices\Properties\PropertiesManager $devicesPropertiesManager,
+		private readonly DevicesModuleModels\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
+		private readonly DevicesModuleModels\Channels\Properties\PropertiesManager $channelsPropertiesManager,
 	)
 	{
 	}
@@ -196,8 +197,9 @@ final class CharacteristicsController extends BaseController
 	}
 
 	/**
+	 * @throws DBAL\Exception
 	 * @throws Exceptions\HapRequestError
-	 * @throws Metadata\Exceptions\FileNotFoundException
+	 * @throws Metadata\Exceptions\FileNotFound
 	 * @throws Utils\JsonException
 	 */
 	public function update(
@@ -489,7 +491,7 @@ final class CharacteristicsController extends BaseController
 	 * @return Array<string, bool|float|int|string|null>
 	 *
 	 * @throws DBAL\Exception
-	 * @throws Metadata\Exceptions\FileNotFoundException
+	 * @throws Metadata\Exceptions\FileNotFound
 	 * @throws Utils\JsonException
 	 */
 	public function writeCharacteristic(
@@ -588,32 +590,32 @@ final class CharacteristicsController extends BaseController
 				}
 
 				if (
-					$characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IConnectorMappedPropertyEntity
-					|| $characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IConnectorStaticPropertyEntity
+					$characteristic->getProperty() instanceof MetadataEntities\DevicesModule\ConnectorMappedProperty
+					|| $characteristic->getProperty() instanceof MetadataEntities\DevicesModule\ConnectorVariableProperty
 				) {
-					if ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IConnectorMappedPropertyEntity) {
+					if ($characteristic->getProperty() instanceof MetadataEntities\DevicesModule\ConnectorMappedProperty) {
 						$this->publisher?->publish(
-							Metadata\Types\ModuleSourceType::get(
-								Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES,
+							Metadata\Types\ModuleSource::get(
+								Metadata\Types\ModuleSource::SOURCE_MODULE_DEVICES,
 							),
-							Metadata\Types\RoutingKeyType::get(
-								Metadata\Types\RoutingKeyType::ROUTE_CONNECTOR_PROPERTY_ACTION,
+							Metadata\Types\RoutingKey::get(
+								Metadata\Types\RoutingKey::ROUTE_CONNECTOR_PROPERTY_ACTION,
 							),
 							$this->entityFactory->create(
 								Utils\Json::encode([
-									'action' => Metadata\Types\PropertyActionType::ACTION_SET,
+									'action' => Metadata\Types\PropertyAction::ACTION_SET,
 									'connector' => $characteristic->getProperty()->getConnector()->toString(),
 									'property' => $characteristic->getProperty()->getId()->toString(),
 									'expected_value' => $characteristic->getExpectedValue(),
 								]),
-								Metadata\Types\RoutingKeyType::get(
-									Metadata\Types\RoutingKeyType::ROUTE_CONNECTOR_PROPERTY_ACTION,
+								Metadata\Types\RoutingKey::get(
+									Metadata\Types\RoutingKey::ROUTE_CONNECTOR_PROPERTY_ACTION,
 								),
 							),
 						);
 					} else {
 						$this->databaseHelper->transaction(function () use ($characteristic): void {
-							$findPropertyQuery = new DevicesModuleQueries\FindConnectorPropertiesQuery();
+							$findPropertyQuery = new DevicesModuleQueries\FindConnectorProperties();
 							$findPropertyQuery->byId($characteristic->getProperty()->getId());
 
 							$property = $this->connectorsPropertiesRepository->findOneBy($findPropertyQuery);
@@ -667,32 +669,32 @@ final class CharacteristicsController extends BaseController
 						],
 					);
 				} elseif (
-					$characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IDeviceMappedPropertyEntity
-					|| $characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IDeviceStaticPropertyEntity
+					$characteristic->getProperty() instanceof MetadataEntities\DevicesModule\DeviceMappedProperty
+					|| $characteristic->getProperty() instanceof MetadataEntities\DevicesModule\DeviceVariableProperty
 				) {
-					if ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IDeviceMappedPropertyEntity) {
+					if ($characteristic->getProperty() instanceof MetadataEntities\DevicesModule\DeviceMappedProperty) {
 						$this->publisher?->publish(
-							Metadata\Types\ModuleSourceType::get(
-								Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES,
+							Metadata\Types\ModuleSource::get(
+								Metadata\Types\ModuleSource::SOURCE_MODULE_DEVICES,
 							),
-							Metadata\Types\RoutingKeyType::get(
-								Metadata\Types\RoutingKeyType::ROUTE_DEVICE_PROPERTY_ACTION,
+							Metadata\Types\RoutingKey::get(
+								Metadata\Types\RoutingKey::ROUTE_DEVICE_PROPERTY_ACTION,
 							),
 							$this->entityFactory->create(
 								Utils\Json::encode([
-									'action' => Metadata\Types\PropertyActionType::ACTION_SET,
+									'action' => Metadata\Types\PropertyAction::ACTION_SET,
 									'device' => $characteristic->getProperty()->getDevice()->toString(),
 									'property' => $characteristic->getProperty()->getId()->toString(),
 									'expected_value' => $characteristic->getExpectedValue(),
 								]),
-								Metadata\Types\RoutingKeyType::get(
-									Metadata\Types\RoutingKeyType::ROUTE_DEVICE_PROPERTY_ACTION,
+								Metadata\Types\RoutingKey::get(
+									Metadata\Types\RoutingKey::ROUTE_DEVICE_PROPERTY_ACTION,
 								),
 							),
 						);
 					} else {
 						$this->databaseHelper->transaction(function () use ($characteristic): void {
-							$findPropertyQuery = new DevicesModuleQueries\FindDevicePropertiesQuery();
+							$findPropertyQuery = new DevicesModuleQueries\FindDeviceProperties();
 							$findPropertyQuery->byId($characteristic->getProperty()->getId());
 
 							$property = $this->devicesPropertiesRepository->findOneBy($findPropertyQuery);
@@ -743,36 +745,36 @@ final class CharacteristicsController extends BaseController
 						],
 					);
 				} elseif (
-					$characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IChannelMappedPropertyEntity
-					|| $characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IChannelStaticPropertyEntity
+					$characteristic->getProperty() instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
+					|| $characteristic->getProperty() instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
 				) {
 					$channel = $this->channelsRepository->findById($characteristic->getProperty()->getChannel());
 
 					if ($channel !== null) {
-						if ($characteristic->getProperty() instanceof Metadata\Entities\Modules\DevicesModule\IChannelMappedPropertyEntity) {
+						if ($characteristic->getProperty() instanceof MetadataEntities\DevicesModule\ChannelMappedProperty) {
 							$this->publisher?->publish(
-								Metadata\Types\ModuleSourceType::get(
-									Metadata\Types\ModuleSourceType::SOURCE_MODULE_DEVICES,
+								Metadata\Types\ModuleSource::get(
+									Metadata\Types\ModuleSource::SOURCE_MODULE_DEVICES,
 								),
-								Metadata\Types\RoutingKeyType::get(
-									Metadata\Types\RoutingKeyType::ROUTE_CHANNEL_PROPERTY_ACTION,
+								Metadata\Types\RoutingKey::get(
+									Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
 								),
 								$this->entityFactory->create(
 									Utils\Json::encode([
-										'action' => Metadata\Types\PropertyActionType::ACTION_SET,
+										'action' => Metadata\Types\PropertyAction::ACTION_SET,
 										'device' => $channel->getDevice()->toString(),
 										'channel' => $characteristic->getProperty()->getChannel()->toString(),
 										'property' => $characteristic->getProperty()->getId()->toString(),
 										'expected_value' => $characteristic->getExpectedValue(),
 									]),
-									Metadata\Types\RoutingKeyType::get(
-										Metadata\Types\RoutingKeyType::ROUTE_CHANNEL_PROPERTY_ACTION,
+									Metadata\Types\RoutingKey::get(
+										Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
 									),
 								),
 							);
 						} else {
 							$this->databaseHelper->transaction(function () use ($characteristic, $channel): void {
-								$findPropertyQuery = new DevicesModuleQueries\FindChannelPropertiesQuery();
+								$findPropertyQuery = new DevicesModuleQueries\FindChannelProperties();
 								$findPropertyQuery->byId($characteristic->getProperty()->getId());
 
 								$property = $this->channelsPropertiesRepository->findOneBy($findPropertyQuery);

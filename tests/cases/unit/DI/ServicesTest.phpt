@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases;
+namespace Tests\Cases\Unit;
 
 use FastyBird\HomeKitConnector\DI;
 use FastyBird\HomeKitConnector\Hydrators;
@@ -11,7 +11,7 @@ use Tester\Assert;
 use function md5;
 use function time;
 
-require_once __DIR__ . '/../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 
 /**
  * @testCase
@@ -35,7 +35,7 @@ final class ServicesTest extends BaseTestCase
 	 */
 	protected function createContainer(): Nette\DI\Container
 	{
-		$rootDir = __DIR__ . '/../../../tests/';
+		$rootDir = __DIR__ . '/../../../../tests/';
 
 		$config = new Nette\Configurator();
 		$config->setTempDirectory(TEMP_DIR);
@@ -43,7 +43,7 @@ final class ServicesTest extends BaseTestCase
 		$config->addParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);
 		$config->addParameters(['appDir' => $rootDir, 'wwwDir' => $rootDir]);
 
-		$config->addConfig(__DIR__ . '/../../common.neon');
+		$config->addConfig(__DIR__ . '/../../../common.neon');
 
 		DI\HomeKitConnectorExtension::register($config);
 

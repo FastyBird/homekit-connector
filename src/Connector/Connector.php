@@ -30,7 +30,7 @@ use Psr\Log;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Connector implements DevicesModuleConnectors\IConnector
+final class Connector implements DevicesModuleConnectors\Connector
 {
 
 	use Nette\SmartObject;
@@ -44,8 +44,8 @@ final class Connector implements DevicesModuleConnectors\IConnector
 	 * @param Array<Servers\ServerFactory> $serversFactories
 	 */
 	public function __construct(
-		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		private array $serversFactories,
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly array $serversFactories,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{

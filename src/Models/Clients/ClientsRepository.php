@@ -22,7 +22,6 @@ use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Queries;
 use IPub\DoctrineOrmQuery;
 use Nette;
-use function assert;
 
 /**
  * Clients repository
@@ -40,31 +39,27 @@ final class ClientsRepository
 	/** @var ORM\EntityRepository<Entities\Client>|null */
 	private ORM\EntityRepository|null $repository = null;
 
-	public function __construct(private Persistence\ManagerRegistry $managerRegistry)
+	public function __construct(private readonly Persistence\ManagerRegistry $managerRegistry)
 	{
 	}
 
 	/**
-	 * @param Queries\FindClientsQuery<Entities\Client> $queryObject
+	 * @phpstan-param Queries\FindClients<Entities\Client> $queryObject
 	 */
 	public function findOneBy(
-		Queries\FindClientsQuery $queryObject,
+		Queries\FindClients $queryObject,
 	): Entities\Client|null
 	{
-		/** @var mixed $client */
-		$client = $queryObject->fetchOne($this->getRepository());
-		assert($client instanceof Entities\Client || $client === null);
-
-		return $client;
+		return $queryObject->fetchOne($this->getRepository());
 	}
 
 	/**
-	 * @param Queries\FindClientsQuery<Entities\Client> $queryObject
+	 * @param Queries\FindClients<Entities\Client> $queryObject
 	 *
 	 * @return DoctrineOrmQuery\ResultSet<Entities\Client>
 	 */
 	public function getResultSet(
-		Queries\FindClientsQuery $queryObject,
+		Queries\FindClients $queryObject,
 	): DoctrineOrmQuery\ResultSet
 	{
 		$result = $queryObject->fetch($this->getRepository());

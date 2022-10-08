@@ -36,14 +36,14 @@ use function ucwords;
 final class ServiceFactory
 {
 
-	public function __construct(private Helpers\Loader $loader)
+	public function __construct(private readonly Helpers\Loader $loader)
 	{
 	}
 
 	public function create(
 		string $name,
 		Accessory $accessory,
-		MetadataEntities\Modules\DevicesModule\IChannelEntity|null $channel = null,
+		MetadataEntities\DevicesModule\Channel|null $channel = null,
 	): Service
 	{
 		$name = str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));

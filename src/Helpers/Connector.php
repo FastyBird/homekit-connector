@@ -24,6 +24,7 @@ use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Types as MetadataTypes;
 use Nette;
 use Nette\Utils;
@@ -45,17 +46,18 @@ final class Connector extends Evenement\EventEmitter
 	use Nette\SmartObject;
 
 	public function __construct(
-		private Database $databaseHelper,
-		private DevicesModuleModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository,
-		private DevicesModuleModels\Connectors\Properties\IPropertiesRepository $propertiesEntitiesRepository,
-		private DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesEntitiesManagers,
-		private DevicesModuleModels\DataStorage\IConnectorPropertiesRepository $propertiesItemsRepository,
+		private readonly Database $databaseHelper,
+		private readonly DevicesModuleModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository,
+		private readonly DevicesModuleModels\Connectors\Properties\PropertiesRepository $propertiesEntitiesRepository,
+		private readonly DevicesModuleModels\Connectors\Properties\PropertiesManager $propertiesEntitiesManagers,
+		private readonly DevicesModuleModels\DataStorage\ConnectorPropertiesRepository $propertiesItemsRepository,
 	)
 	{
 	}
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws MetadataExceptions\FileNotFound
 	 */
 	public function getConfiguration(
 		Uuid\UuidInterface $connectorId,
@@ -64,7 +66,7 @@ final class Connector extends Evenement\EventEmitter
 	{
 		$configuration = $this->propertiesItemsRepository->findByIdentifier($connectorId, strval($type->getValue()));
 
-		if ($configuration instanceof MetadataEntities\Modules\DevicesModule\IConnectorStaticPropertyEntity) {
+		if ($configuration instanceof MetadataEntities\DevicesModule\ConnectorVariableProperty) {
 			if (
 				$type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT
 				&& $configuration->getValue() === null
@@ -118,17 +120,17 @@ final class Connector extends Evenement\EventEmitter
 	): void
 	{
 		$property = $this->databaseHelper->query(
-			function () use ($connectorId, $type): DevicesModuleEntities\Connectors\Properties\StaticProperty|null {
-				$findConnectorProperty = new DevicesModuleQueries\FindConnectorPropertiesQuery();
+			function () use ($connectorId, $type): DevicesModuleEntities\Connectors\Properties\Variable|null {
+				$findConnectorProperty = new DevicesModuleQueries\FindConnectorProperties();
 				$findConnectorProperty->byConnectorId($connectorId);
 				$findConnectorProperty->byIdentifier(strval($type->getValue()));
 
 				$property = $this->propertiesEntitiesRepository->findOneBy(
 					$findConnectorProperty,
-					DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+					DevicesModuleEntities\Connectors\Properties\Variable::class,
 				);
 				assert(
-					$property instanceof DevicesModuleEntities\Connectors\Properties\StaticProperty || $property === null,
+					$property instanceof DevicesModuleEntities\Connectors\Properties\Variable || $property === null,
 				);
 
 				return $property;
@@ -144,7 +146,7 @@ final class Connector extends Evenement\EventEmitter
 			) {
 				$this->databaseHelper->transaction(
 					function () use ($connectorId, $type, $value): void {
-						$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
+						$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
 						$findConnectorQuery->byId($connectorId);
 
 						$connector = $this->connectorsEntitiesRepository->findOneBy(
@@ -160,10 +162,10 @@ final class Connector extends Evenement\EventEmitter
 
 						$this->propertiesEntitiesManagers->create(
 							Utils\ArrayHash::from([
-								'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+								'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
 								'identifier' => $type->getValue(),
-								'dataType' => MetadataTypes\DataTypeType::get(
-									MetadataTypes\DataTypeType::DATA_TYPE_STRING,
+								'dataType' => MetadataTypes\DataType::get(
+									MetadataTypes\DataType::DATA_TYPE_STRING,
 								),
 								'value' => $value,
 								'connector' => $connector,

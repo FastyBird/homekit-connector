@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases;
+namespace Tests\Cases\Unit;
 
 use FastyBird\HomeKitConnector;
 use Nette;
@@ -24,7 +24,7 @@ abstract class BaseTestCase extends BaseMockeryTestCase
 
 	protected function createContainer(string|null $additionalConfig = null): Nette\DI\Container
 	{
-		$rootDir = __DIR__ . '/../../tests/';
+		$rootDir = __DIR__ . '/../../../tests/';
 
 		$config = new Nette\Configurator();
 		$config->setTempDirectory(TEMP_DIR);
@@ -32,7 +32,7 @@ abstract class BaseTestCase extends BaseMockeryTestCase
 		$config->addParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);
 		$config->addParameters(['appDir' => $rootDir, 'wwwDir' => $rootDir]);
 
-		$config->addConfig(__DIR__ . '/../common.neon');
+		$config->addConfig(__DIR__ . '/../../common.neon');
 
 		if ($additionalConfig && file_exists($additionalConfig)) {
 			$config->addConfig($additionalConfig);

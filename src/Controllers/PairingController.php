@@ -161,12 +161,12 @@ final class PairingController extends BaseController
 	private EdDSA $edDsa;
 
 	public function __construct(
-		private Helpers\Connector $connectorHelper,
-		private Helpers\Database $databaseHelper,
-		private Protocol\Tlv $tlv,
-		private Models\Clients\ClientsRepository $clientsRepository,
-		private Models\Clients\ClientsManager $clientsManager,
-		private DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository,
+		private readonly Helpers\Connector $connectorHelper,
+		private readonly Helpers\Database $databaseHelper,
+		private readonly Protocol\Tlv $tlv,
+		private readonly Models\Clients\ClientsRepository $clientsRepository,
+		private readonly Models\Clients\ClientsManager $clientsManager,
+		private readonly DevicesModuleModels\Connectors\ConnectorsRepository $connectorsRepository,
 	)
 	{
 		$this->edDsa = new EdDSA('ed25519');
@@ -176,6 +176,7 @@ final class PairingController extends BaseController
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function setup(
 		Message\ServerRequestInterface $request,
@@ -285,6 +286,7 @@ final class PairingController extends BaseController
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function verify(
 		Message\ServerRequestInterface $request,
@@ -482,6 +484,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	private function srpStart(Uuid\UuidInterface $connectorId): array
 	{
@@ -814,6 +817,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function exchange(
 		Uuid\UuidInterface $connectorId,
@@ -1024,7 +1028,7 @@ final class PairingController extends BaseController
 		/** @var mixed $connectorEntity */
 		$connectorEntity = $this->databaseHelper->query(
 			function () use ($connectorId): Entities\HomeKitConnector|null {
-				$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
+				$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
 				$findConnectorQuery->byId($connectorId);
 
 				$connector = $this->connectorsRepository->findOneBy(
@@ -1044,7 +1048,7 @@ final class PairingController extends BaseController
 
 		$this->databaseHelper->transaction(
 			function () use ($tlvEntry, $connectorEntity): void {
-				$findClientQuery = new Queries\FindClientsQuery();
+				$findClientQuery = new Queries\FindClients();
 				$findClientQuery->forConnector($connectorEntity);
 				$findClientQuery->byUid($tlvEntry[Types\TlvCode::CODE_IDENTIFIER]);
 
@@ -1196,6 +1200,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	private function verifyStart(
 		Uuid\UuidInterface $connectorId,
@@ -1370,6 +1375,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	private function verifyFinish(
 		Uuid\UuidInterface $connectorId,
@@ -1506,7 +1512,7 @@ final class PairingController extends BaseController
 
 		$client = $this->databaseHelper->query(
 			function () use ($tlvEntry, $connectorId) {
-				$findClientQuery = new Queries\FindClientsQuery();
+				$findClientQuery = new Queries\FindClients();
 				$findClientQuery->byConnectorId($connectorId);
 				$findClientQuery->byUid($tlvEntry[Types\TlvCode::CODE_IDENTIFIER]);
 
@@ -1628,7 +1634,7 @@ final class PairingController extends BaseController
 		try {
 			/** @var DoctrineOrmQuery\ResultSet<Entities\Client> $clients */
 			$clients = $this->databaseHelper->query(function () use ($connectorId): DoctrineOrmQuery\ResultSet {
-				$findClientsQuery = new Queries\FindClientsQuery();
+				$findClientsQuery = new Queries\FindClients();
 				$findClientsQuery->byConnectorId($connectorId);
 
 				return $this->clientsRepository->getResultSet($findClientsQuery);
@@ -1680,7 +1686,7 @@ final class PairingController extends BaseController
 		try {
 			/** @var mixed $client */
 			$client = $this->databaseHelper->query(function () use ($connectorId, $clientUid): Entities\Client|null {
-				$findClientQuery = new Queries\FindClientsQuery();
+				$findClientQuery = new Queries\FindClients();
 				$findClientQuery->byUid($clientUid);
 				$findClientQuery->byConnectorId($connectorId);
 
@@ -1741,7 +1747,7 @@ final class PairingController extends BaseController
 			try {
 				$this->databaseHelper->transaction(
 					function () use ($connectorId, $clientUid, $clientPublicKey, $clientPermission): void {
-						$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
+						$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
 						$findConnectorQuery->byId($connectorId);
 
 						$connector = $this->connectorsRepository->findOneBy(
@@ -1799,7 +1805,7 @@ final class PairingController extends BaseController
 
 		try {
 			$this->databaseHelper->transaction(function () use ($connectorId, $clientUid): void {
-				$findClientQuery = new Queries\FindClientsQuery();
+				$findClientQuery = new Queries\FindClients();
 				$findClientQuery->byUid($clientUid);
 				$findClientQuery->byConnectorId($connectorId);
 
@@ -1809,7 +1815,7 @@ final class PairingController extends BaseController
 					$this->clientsManager->delete($client);
 				}
 
-				$findClientsQuery = new Queries\FindClientsQuery();
+				$findClientsQuery = new Queries\FindClients();
 				$findClientsQuery->byConnectorId($connectorId);
 
 				$clients = $this->clientsRepository->getResultSet($findClientsQuery);

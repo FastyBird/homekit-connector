@@ -15,7 +15,8 @@
         <properties>
             <property name="rootNamespaces" type="array">
                 <element key="src" value="FastyBird\HomeKitConnector"/>
-                <element key="tests/cases" value="Tests\Cases"/>
+                <element key="tests/cases/unit" value="Tests\Cases\Unit"/>
+                <element key="tests/fixtures" value="Tests\Fixtures"/>
                 <element key="tests/tools" value="Tests\Tools"/>
             </property>
         </properties>

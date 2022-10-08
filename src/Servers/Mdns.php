@@ -82,9 +82,9 @@ final class Mdns implements Server
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		private Helpers\Connector $connectorHelper,
-		private EventLoop\LoopInterface $eventLoop,
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly Helpers\Connector $connectorHelper,
+		private readonly EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{
@@ -123,6 +123,7 @@ final class Mdns implements Server
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function connect(): void
 	{
@@ -178,7 +179,7 @@ final class Mdns implements Server
 						],
 					);
 
-					throw new DevicesModuleExceptions\TerminateException(
+					throw new DevicesModuleExceptions\Terminate(
 						'Discovery broadcast server was terminated',
 						$ex->getCode(),
 						$ex,
@@ -280,6 +281,7 @@ final class Mdns implements Server
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	private function createZone(): void
 	{

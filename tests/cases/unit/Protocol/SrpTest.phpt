@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases;
+namespace Tests\Cases\Unit;
 
 use Brick\Math;
 use Exception;
@@ -8,7 +8,7 @@ use FastyBird\HomeKitConnector\Protocol;
 use Ninjify\Nunjuck\TestCase\BaseTestCase;
 use Tester\Assert;
 
-require_once __DIR__ . '/../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 
 /**
  * @testCase

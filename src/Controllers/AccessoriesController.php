@@ -41,8 +41,8 @@ final class AccessoriesController extends BaseController
 {
 
 	public function __construct(
-		private Helpers\Connector $connectorHelper,
-		private Protocol\Driver $accessoriesDriver,
+		private readonly Helpers\Connector $connectorHelper,
+		private readonly Protocol\Driver $accessoriesDriver,
 	)
 	{
 	}
@@ -90,7 +90,8 @@ final class AccessoriesController extends BaseController
 	 * Help user to locate accessory
 	 *
 	 * @throws DBAL\Exception
-	 * @throws SlimRouter\Exceptions\HttpException
+	 * @throws Exceptions\HapRequestError
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function identify(
 		Message\ServerRequestInterface $request,

@@ -62,27 +62,27 @@ class Characteristic
 			'00000073-0000-1000-8000-0026BB765291', // PROGRAMMABLE SWITCH
 		];
 
-	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $actualValue = null;
+	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null $actualValue = null;
 
-	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $expectedValue = null;
+	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null $expectedValue = null;
 
 	/**
 	 * @param Array<string> $permissions
 	 * @param Array<int>|null $validValues
 	 */
 	public function __construct(
-		private Uuid\UuidInterface $typeId,
-		private string $name,
-		private Types\DataType $dataType,
-		private array $permissions,
-		private Service $service,
-		private MetadataEntities\Modules\DevicesModule\IPropertyEntity|null $property = null,
-		private array|null $validValues = [],
-		private int|null $maxLength = null,
-		private float|null $minValue = null,
-		private float|null $maxValue = null,
-		private float|null $minStep = null,
-		private Types\CharacteristicUnit|null $unit = null,
+		private readonly Uuid\UuidInterface $typeId,
+		private readonly string $name,
+		private readonly Types\DataType $dataType,
+		private readonly array $permissions,
+		private readonly Service $service,
+		private readonly MetadataEntities\DevicesModule\Property|null $property = null,
+		private readonly array|null $validValues = [],
+		private readonly int|null $maxLength = null,
+		private readonly float|null $minValue = null,
+		private readonly float|null $maxValue = null,
+		private readonly float|null $minStep = null,
+		private readonly Types\CharacteristicUnit|null $unit = null,
 	)
 	{
 		if ($maxLength !== null && $maxLength > self::ABSOLUTE_MAX_LENGTH) {
@@ -141,12 +141,12 @@ class Characteristic
 		return $this->maxLength;
 	}
 
-	public function getProperty(): MetadataEntities\Modules\DevicesModule\IPropertyEntity|null
+	public function getProperty(): MetadataEntities\DevicesModule\Property|null
 	{
 		return $this->property;
 	}
 
-	public function getActualValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
+	public function getActualValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null
 	{
 		if ($this->expectedValue !== null) {
 			return $this->expectedValue;
@@ -156,7 +156,7 @@ class Characteristic
 	}
 
 	public function setActualValue(
-		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
+		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null $value,
 	): void
 	{
 		$this->actualValue = $value;
@@ -166,13 +166,13 @@ class Characteristic
 		}
 	}
 
-	public function getExpectedValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null
+	public function getExpectedValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null
 	{
 		return $this->expectedValue;
 	}
 
 	public function setExpectedValue(
-		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayloadType|MetadataTypes\SwitchPayloadType|null $value,
+		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null $value,
 	): void
 	{
 		$this->expectedValue = $value;

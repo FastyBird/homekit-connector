@@ -27,11 +27,11 @@ use FastyBird\Metadata\Entities as MetadataEntities;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface ConnectorFactory extends DevicesModuleConnectors\IConnectorFactory
+interface ConnectorFactory extends DevicesModuleConnectors\ConnectorFactory
 {
 
 	public function create(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		MetadataEntities\DevicesModule\Connector $connector,
 	): Connector\Connector;
 
 }

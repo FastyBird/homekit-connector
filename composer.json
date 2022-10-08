@@ -47,8 +47,8 @@
     "brick/math" : "^0.10.2",
     "cweagans/composer-patches" : "^1.7",
     "fastybird/devices-module" : "dev-main as 0.75.0",
-    "fastybird/json-api" : "^0.11",
-    "fastybird/metadata" : "^0.76",
+    "fastybird/json-api" : "^0.13",
+    "fastybird/metadata" : "^0.77",
     "hashids/hashids" : "^4.1",
     "ipub/slim-router" : "^0.2.0",
     "leigh/curve25519" : "^0.1.0",
@@ -85,7 +85,7 @@
 
   "autoload-dev" : {
     "psr-4" : {
-      "Tests\\Cases\\" : "tests/cases",
+      "Tests\\Cases\\Unit\\" : "tests/cases/unit",
       "Tests\\Fixtures\\" : "tests/fixtures",
       "Tests\\Tools\\" : "tests/tools"
     }

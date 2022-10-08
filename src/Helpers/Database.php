@@ -36,14 +36,14 @@ final class Database
 
 	use Nette\SmartObject;
 
-	public function __construct(private Persistence\ManagerRegistry $managerRegistry)
+	public function __construct(private readonly Persistence\ManagerRegistry $managerRegistry)
 	{
 	}
 
 	/**
 	 * @param callable(): T $callback
 	 *
-	 * @return T
+	 * @return T|null
 	 *
 	 * @throws DBAL\Exception
 	 *

@@ -72,9 +72,9 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
 		string|null $sharedKey,
-		private Socket\ConnectionInterface $connection,
+		private readonly Socket\ConnectionInterface $connection,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{

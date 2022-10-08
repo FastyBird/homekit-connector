@@ -25,7 +25,7 @@ class HapRequestError extends SlimRouterExceptions\HttpException implements Exce
 
 	public function __construct(
 		ServerRequestInterface $request,
-		private Types\ServerStatus $error,
+		private readonly Types\ServerStatus $error,
 		string $message = '',
 		int $code = 0,
 		Throwable|null $previous = null,

@@ -42,7 +42,7 @@ use function ucwords;
 final class CharacteristicsFactory
 {
 
-	public function __construct(private Helpers\Loader $loader)
+	public function __construct(private readonly Helpers\Loader $loader)
 	{
 	}
 
@@ -52,7 +52,7 @@ final class CharacteristicsFactory
 	public function create(
 		string $name,
 		Service $service,
-		MetadataEntities\Modules\DevicesModule\IPropertyEntity|null $property = null,
+		MetadataEntities\DevicesModule\Property|null $property = null,
 		array|null $validValues = [],
 		int|null $maxLength = null,
 		float|null $minValue = null,

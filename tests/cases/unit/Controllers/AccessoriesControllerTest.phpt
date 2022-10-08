@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases;
+namespace Tests\Cases\Unit;
 
 use FastyBird\DevicesModule\DataStorage as DevicesModuleDataStorage;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
@@ -18,7 +18,7 @@ use Tester\Assert;
 use Tests\Tools;
 use function call_user_func;
 
-require_once __DIR__ . '/../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 require_once __DIR__ . '/../DbTestCase.php';
 
 /**
@@ -40,7 +40,7 @@ final class AccessoriesControllerTest extends DbTestCase
 		/** @var DevicesModuleModels\DataStorage\ConnectorsRepository $repository */
 		$repository = $this->getContainer()->getByType(DevicesModuleModels\DataStorage\ConnectorsRepository::class);
 
-		/** @var MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector */
+		/** @var MetadataEntities\DevicesModule\Connector $connector */
 		$connector = $repository->findById(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
 
 		/** @var Entities\Protocol\AccessoryFactory $acccessoryFactory */
@@ -59,19 +59,24 @@ final class AccessoriesControllerTest extends DbTestCase
 	 * @param int $statusCode
 	 * @param string $fixture
 	 *
-	 * @dataProvider ./../../fixtures/Controllers/accessoriesRead.php
+	 * @dataProvider ./../../../fixtures/Controllers/accessoriesRead.php
 	 */
 	public function testRead(string $url, int $statusCode, string $fixture): void
 	{
-		/** @var Middleware\RouterMiddleware $middleware */
-		$middleware = $this->getContainer()->getByType(Middleware\RouterMiddleware::class);
+		/** @var Middleware\Router $middleware */
+		$middleware = $this->getContainer()->getByType(Middleware\Router::class);
 
 		$headers = [];
 
 		$request = new ServerRequest(
 			RequestMethodInterface::METHOD_GET,
 			$url,
-			$headers
+			$headers,
+			'',
+			'1.1',
+			[
+				'REMOTE_ADDR' => '127.0.0.1'
+			],
 		);
 
 		$request = $request->withAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR, 'f5a8691b-4917-4866-878f-5217193cf14b');

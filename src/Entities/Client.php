@@ -59,7 +59,7 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	 * @ORM\ManyToOne(targetEntity="FastyBird\DevicesModule\Entities\Connectors\Connector")
 	 * @ORM\JoinColumn(name="connector_id", referencedColumnName="connector_id")
 	 */
-	private DevicesModuleEntities\Connectors\IConnector $connector;
+	private DevicesModuleEntities\Connectors\Connector $connector;
 
 	/**
 	 * @IPubDoctrine\Crud(is="required")
@@ -84,7 +84,7 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	public function __construct(
 		string $uid,
 		string $publicKey,
-		DevicesModuleEntities\Connectors\IConnector $connector,
+		DevicesModuleEntities\Connectors\Connector $connector,
 		Uuid\UuidInterface|null $id = null,
 	)
 	{
@@ -101,7 +101,7 @@ class Client implements DoctrineCrud\Entities\IEntity,
 		return $this->id;
 	}
 
-	public function getConnector(): DevicesModuleEntities\Connectors\IConnector
+	public function getConnector(): DevicesModuleEntities\Connectors\Connector
 	{
 		return $this->connector;
 	}

@@ -25,6 +25,7 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Types as MetadataTypes;
 use Nette;
 use Psr\Log;
+use Throwable;
 use function intval;
 
 /**
@@ -35,7 +36,7 @@ use function intval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Consumer implements ExchangeConsumer\IConsumer
+final class Consumer implements ExchangeConsumer\Consumer
 {
 
 	use Nette\SmartObject;
@@ -43,9 +44,9 @@ final class Consumer implements ExchangeConsumer\IConsumer
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private Protocol\Driver $accessoryDriver,
-		private Clients\Subscriber $subscriber,
-		private DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
+		private readonly Protocol\Driver $accessoryDriver,
+		private readonly Clients\Subscriber $subscriber,
+		private readonly DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{
@@ -53,23 +54,24 @@ final class Consumer implements ExchangeConsumer\IConsumer
 	}
 
 	/**
-	 * @throws Metadata\Exceptions\FileNotFoundException
+	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws Throwable
 	 */
 	public function consume(
-		MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType $source,
-		MetadataTypes\RoutingKeyType $routingKey,
-		MetadataEntities\IEntity|null $entity,
+		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource $source,
+		MetadataTypes\RoutingKey $routingKey,
+		MetadataEntities\Entity|null $entity,
 	): void
 	{
 		if (
-			$entity instanceof MetadataEntities\Modules\DevicesModule\IDeviceMappedPropertyEntity
-			|| $entity instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
-			|| $entity instanceof MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity
-			|| $entity instanceof MetadataEntities\Modules\DevicesModule\IChannelStaticPropertyEntity
+			$entity instanceof MetadataEntities\DevicesModule\DeviceMappedProperty
+			|| $entity instanceof MetadataEntities\DevicesModule\DeviceVariableProperty
+			|| $entity instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
+			|| $entity instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
 		) {
 			if (
-				$entity instanceof MetadataEntities\Modules\DevicesModule\IDeviceMappedPropertyEntity
-				|| $entity instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
+				$entity instanceof MetadataEntities\DevicesModule\DeviceMappedProperty
+				|| $entity instanceof MetadataEntities\DevicesModule\DeviceVariableProperty
 			) {
 				$accessory = $this->accessoryDriver->findAccessory($entity->getDevice());
 			} else {
@@ -119,7 +121,7 @@ final class Consumer implements ExchangeConsumer\IConsumer
 	}
 
 	private function processProperty(
-		MetadataEntities\Modules\DevicesModule\IPropertyEntity $entity,
+		MetadataEntities\DevicesModule\Property $entity,
 		Entities\Protocol\Accessory $accessory,
 	): void
 	{
@@ -130,13 +132,13 @@ final class Consumer implements ExchangeConsumer\IConsumer
 					&& $characteristic->getProperty()->getId()->equals($entity->getId())
 				) {
 					if (
-						$entity instanceof MetadataEntities\Modules\DevicesModule\IDeviceMappedPropertyEntity
-						|| $entity instanceof MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity
+						$entity instanceof MetadataEntities\DevicesModule\DeviceMappedProperty
+						|| $entity instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
 					) {
 						$characteristic->setActualValue($entity->getActualValue());
 					} elseif (
-						$entity instanceof MetadataEntities\Modules\DevicesModule\IDeviceStaticPropertyEntity
-						|| $entity instanceof MetadataEntities\Modules\DevicesModule\IChannelStaticPropertyEntity
+						$entity instanceof MetadataEntities\DevicesModule\DeviceVariableProperty
+						|| $entity instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
 					) {
 						$characteristic->setActualValue($entity->getValue());
 					}

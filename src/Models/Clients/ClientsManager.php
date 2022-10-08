@@ -38,7 +38,7 @@ class ClientsManager
 	/**
 	 * @param Crud\IEntityCrud<Entities\Client> $entityCrud
 	 */
-	public function __construct(private Crud\IEntityCrud $entityCrud)
+	public function __construct(private readonly Crud\IEntityCrud $entityCrud)
 	{
 	}
 

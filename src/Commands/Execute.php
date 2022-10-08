@@ -45,7 +45,7 @@ class Execute extends Console\Command\Command
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsRepository,
+		private readonly DevicesModuleModels\DataStorage\ConnectorsRepository $connectorsRepository,
 		Log\LoggerInterface|null $logger = null,
 		string|null $name = null,
 	)
@@ -81,6 +81,7 @@ class Execute extends Console\Command\Command
 
 	/**
 	 * @throws Console\Exception\ExceptionInterface
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int
 	{

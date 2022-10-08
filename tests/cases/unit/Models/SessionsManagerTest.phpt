@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases;
+namespace Tests\Cases\Unit;
 
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
@@ -13,7 +13,7 @@ use Tester\Assert;
 use function is_object;
 use function random_bytes;
 
-require_once __DIR__ . '/../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 require_once __DIR__ . '/../DbTestCase.php';
 
 /**
@@ -27,7 +27,7 @@ final class SessionsManagerTest extends DbTestCase
 		/** @var DevicesModuleModels\Connectors\ConnectorsRepository $repository */
 		$repository = $this->getContainer()->getByType(DevicesModuleModels\Connectors\ConnectorsRepository::class);
 
-		$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
+		$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
 		$findConnectorQuery->byId(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
 
 		$connector = $repository->findOneBy($findConnectorQuery);
@@ -59,7 +59,7 @@ final class SessionsManagerTest extends DbTestCase
 		/** @var Models\Clients\ClientsRepository $repository */
 		$repository = $this->getContainer()->getByType(Models\Clients\ClientsRepository::class);
 
-		$findQuery = new Queries\FindClientsQuery();
+		$findQuery = new Queries\FindClients();
 		$findQuery->byUid('e348f5fc-42de-459e-926e-2f4cd039c665');
 
 		$entity = $repository->findOneBy($findQuery);

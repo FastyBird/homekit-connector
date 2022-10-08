@@ -55,12 +55,12 @@ class Service
 	 * @param Array<string> $optionalCharacteristics
 	 */
 	public function __construct(
-		private Uuid\UuidInterface $typeId,
-		private string $name,
-		private Accessory $accessory,
-		private MetadataEntities\Modules\DevicesModule\IChannelEntity|null $channel = null,
-		private array $requiredCharacteristics = [],
-		private array $optionalCharacteristics = [],
+		private readonly Uuid\UuidInterface $typeId,
+		private readonly string $name,
+		private readonly Accessory $accessory,
+		private readonly MetadataEntities\DevicesModule\Channel|null $channel = null,
+		private readonly array $requiredCharacteristics = [],
+		private readonly array $optionalCharacteristics = [],
 		private bool $primary = false,
 	)
 	{
@@ -82,7 +82,7 @@ class Service
 		return $this->accessory;
 	}
 
-	public function getChannel(): MetadataEntities\Modules\DevicesModule\IChannelEntity|null
+	public function getChannel(): MetadataEntities\DevicesModule\Channel|null
 	{
 		return $this->channel;
 	}

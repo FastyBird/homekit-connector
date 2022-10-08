@@ -28,6 +28,6 @@ use FastyBird\Metadata\Entities as MetadataEntities;
 interface MdnsFactory extends ServerFactory
 {
 
-	public function create(MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector): Mdns;
+	public function create(MetadataEntities\DevicesModule\Connector $connector): Mdns;
 
 }

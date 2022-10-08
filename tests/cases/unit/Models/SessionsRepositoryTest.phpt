@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases;
+namespace Tests\Cases\Unit;
 
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Models;
@@ -9,7 +9,7 @@ use IPub\DoctrineOrmQuery;
 use Tester\Assert;
 use function is_object;
 
-require_once __DIR__ . '/../../bootstrap.php';
+require_once __DIR__ . '/../../../bootstrap.php';
 require_once __DIR__ . '/../DbTestCase.php';
 
 /**
@@ -23,7 +23,7 @@ final class SessionsRepositoryTest extends DbTestCase
 		/** @var Models\Clients\ClientsRepository $repository */
 		$repository = $this->getContainer()->getByType(Models\Clients\ClientsRepository::class);
 
-		$findQuery = new Queries\FindClientsQuery();
+		$findQuery = new Queries\FindClients();
 		$findQuery->byUid('e348f5fc-42de-459e-926e-2f4cd039c665');
 
 		$entity = $repository->findOneBy($findQuery);
@@ -38,7 +38,7 @@ final class SessionsRepositoryTest extends DbTestCase
 		/** @var Models\Clients\ClientsRepository $repository */
 		$repository = $this->getContainer()->getByType(Models\Clients\ClientsRepository::class);
 
-		$findQuery = new Queries\FindClientsQuery();
+		$findQuery = new Queries\FindClients();
 
 		$resultSet = $repository->getResultSet($findQuery);
 

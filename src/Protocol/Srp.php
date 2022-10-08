@@ -84,7 +84,7 @@ final class Srp
 	private Math\BigInteger $n3072;
 
 	public function __construct(
-		private string $username,
+		private readonly string $username,
 		string $password,
 		string|null $salt = null,
 		Math\BigInteger|null $serverPrivateKey = null,

@@ -59,12 +59,12 @@ class Initialize extends Console\Command\Command
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private DevicesModuleModels\Connectors\IConnectorsRepository $connectorsRepository,
-		private DevicesModuleModels\Connectors\IConnectorsManager $connectorsManager,
-		private DevicesModuleModels\Connectors\Properties\IPropertiesManager $propertiesManager,
-		private DevicesModuleModels\Connectors\Controls\IControlsManager $controlsManager,
-		private DevicesModuleModels\DataStorage\IConnectorsRepository $connectorsDataStorageRepository,
-		private Persistence\ManagerRegistry $managerRegistry,
+		private readonly DevicesModuleModels\Connectors\ConnectorsRepository $connectorsRepository,
+		private readonly DevicesModuleModels\Connectors\ConnectorsManager $connectorsManager,
+		private readonly DevicesModuleModels\Connectors\Properties\PropertiesManager $propertiesManager,
+		private readonly DevicesModuleModels\Connectors\Controls\ControlsManager $controlsManager,
+		private readonly DevicesModuleModels\DataStorage\ConnectorsRepository $connectorsDataStorageRepository,
+		private readonly Persistence\ManagerRegistry $managerRegistry,
 		Log\LoggerInterface|null $logger = null,
 		string|null $name = null,
 	)
@@ -93,6 +93,7 @@ class Initialize extends Console\Command\Command
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int
 	{
@@ -143,6 +144,7 @@ class Initialize extends Console\Command\Command
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	private function createNewConfiguration(Style\SymfonyStyle $io): void
 	{
@@ -201,49 +203,49 @@ class Initialize extends Console\Command\Command
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
-				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_UCHAR),
+				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
 				'value' => HomeKitConnector\Constants::DEFAULT_PORT,
 				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PIN_CODE,
-				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 				'value' => Helpers\Protocol::generatePinCode(),
 				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS,
-				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 				'value' => Helpers\Protocol::generateMacAddress(),
 				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID,
-				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_STRING),
+				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 				'value' => Helpers\Protocol::generateSetupId(),
 				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION,
-				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_USHORT),
+				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_USHORT),
 				'value' => 1,
 				'connector' => $connector,
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\StaticProperty::class,
+				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED,
-				'dataType' => MetadataTypes\DataTypeType::get(MetadataTypes\DataTypeType::DATA_TYPE_BOOLEAN),
+				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_BOOLEAN),
 				'value' => false,
 				'connector' => $connector,
 			]));
@@ -280,6 +282,7 @@ class Initialize extends Console\Command\Command
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	private function editExistingConfiguration(Style\SymfonyStyle $io): void
 	{
@@ -336,7 +339,7 @@ class Initialize extends Console\Command\Command
 			return;
 		}
 
-		$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
+		$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
 		$findConnectorQuery->byIdentifier($connectorIdentifier);
 
 		$connector = $this->connectorsRepository->findOneBy($findConnectorQuery);
@@ -467,7 +470,7 @@ class Initialize extends Console\Command\Command
 			return;
 		}
 
-		$findConnectorQuery = new DevicesModuleQueries\FindConnectorsQuery();
+		$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
 		$findConnectorQuery->byIdentifier($connectorIdentifier);
 
 		$connector = $this->connectorsRepository->findOneBy($findConnectorQuery);

@@ -139,7 +139,7 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->setAutowired(false);
 
 		$builder->addDefinition($this->prefix('http.middleware.router'), new DI\Definitions\ServiceDefinition())
-			->setType(Middleware\RouterMiddleware::class)
+			->setType(Middleware\Router::class)
 			->setArguments(['router' => $router]);
 
 		$builder->addDefinition($this->prefix('http.controllers.accessories'), new DI\Definitions\ServiceDefinition())

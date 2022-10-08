@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * FindClientsQuery.php
+ * FindClients.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -25,14 +25,14 @@ use Ramsey\Uuid;
 /**
  * Find clients entities query
  *
- * @phpstan-template T of Entities\Client
- * @phpstan-extends  DoctrineOrmQuery\QueryObject<T>
+ * @template T of Entities\Client
+ * @extends  DoctrineOrmQuery\QueryObject<T>
  *
  * @package          FastyBird:HomeKitConnector!
  * @subpackage       Queries
  * @author           Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class FindClientsQuery extends DoctrineOrmQuery\QueryObject
+class FindClients extends DoctrineOrmQuery\QueryObject
 {
 
 	/** @var Array<Closure> */
@@ -68,7 +68,7 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 		};
 	}
 
-	public function forConnector(DevicesModuleEntities\Connectors\IConnector $connector): void
+	public function forConnector(DevicesModuleEntities\Connectors\Connector $connector): void
 	{
 		$this->select[] = static function (ORM\QueryBuilder $qb): void {
 			$qb->addSelect('connector');
@@ -82,7 +82,7 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 	}
 
 	/**
-	 * @param ORM\EntityRepository<T> $repository
+	 * @phpstan-param ORM\EntityRepository<T> $repository
 	 */
 	protected function doCreateQuery(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{
@@ -90,7 +90,7 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 	}
 
 	/**
-	 * @param ORM\EntityRepository<T> $repository
+	 * @phpstan-param ORM\EntityRepository<T> $repository
 	 */
 	private function createBasicDql(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{
@@ -108,7 +108,7 @@ class FindClientsQuery extends DoctrineOrmQuery\QueryObject
 	}
 
 	/**
-	 * @param ORM\EntityRepository<T> $repository
+	 * @phpstan-param ORM\EntityRepository<T> $repository
 	 */
 	protected function doCreateCountQuery(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{

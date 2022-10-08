@@ -66,19 +66,19 @@ final class Http implements Server
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
-		private Helpers\Connector $connectorHelper,
-		private Middleware\RouterMiddleware $routerMiddleware,
-		private SecureServerFactory $secureServerFactory,
-		private Clients\Subscriber $subscriber,
-		private Protocol\Driver $accessoriesDriver,
-		private Entities\Protocol\AccessoryFactory $accessoryFactory,
-		private Entities\Protocol\ServiceFactory $serviceFactory,
-		private Entities\Protocol\CharacteristicsFactory $characteristicsFactory,
-		private DevicesModuleModels\DataStorage\DevicesRepository $devicesRepository,
-		private DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
-		private DevicesModuleModels\DataStorage\ChannelPropertiesRepository $channelPropertiesRepository,
-		private EventLoop\LoopInterface $eventLoop,
+		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly Helpers\Connector $connectorHelper,
+		private readonly Middleware\Router $routerMiddleware,
+		private readonly SecureServerFactory $secureServerFactory,
+		private readonly Clients\Subscriber $subscriber,
+		private readonly Protocol\Driver $accessoriesDriver,
+		private readonly Entities\Protocol\AccessoryFactory $accessoryFactory,
+		private readonly Entities\Protocol\ServiceFactory $serviceFactory,
+		private readonly Entities\Protocol\CharacteristicsFactory $characteristicsFactory,
+		private readonly DevicesModuleModels\DataStorage\DevicesRepository $devicesRepository,
+		private readonly DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
+		private readonly DevicesModuleModels\DataStorage\ChannelPropertiesRepository $channelPropertiesRepository,
+		private readonly EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{
@@ -89,7 +89,7 @@ final class Http implements Server
 			function (
 				Uuid\UuidInterface $connectorId,
 				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
-				MetadataEntities\Modules\DevicesModule\ConnectorStaticPropertyEntity $property,
+				MetadataEntities\DevicesModule\ConnectorVariableProperty $property,
 			): void {
 				if (
 					$this->connector->getId()->equals($connectorId)
@@ -118,7 +118,7 @@ final class Http implements Server
 			function (
 				Uuid\UuidInterface $connectorId,
 				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
-				MetadataEntities\Modules\DevicesModule\ConnectorStaticPropertyEntity $property,
+				MetadataEntities\DevicesModule\ConnectorVariableProperty $property,
 			): void {
 				if (
 					$this->connector->getId()->equals($connectorId)
@@ -145,8 +145,8 @@ final class Http implements Server
 
 	/**
 	 * @throws DBAL\Exception
-	 * @throws DevicesModuleExceptions\TerminateException
-	 * @throws Metadata\Exceptions\FileNotFoundException
+	 * @throws DevicesModuleExceptions\Terminate
+	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function connect(): void
 	{
@@ -177,8 +177,8 @@ final class Http implements Server
 
 				foreach ($this->channelPropertiesRepository->findAllByChannel($channel->getId()) as $property) {
 					if (
-						$property instanceof MetadataEntities\Modules\DevicesModule\IChannelMappedPropertyEntity
-						|| $property instanceof MetadataEntities\Modules\DevicesModule\IChannelStaticPropertyEntity
+						$property instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
+						|| $property instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
 					) {
 						$characteristic = $this->characteristicsFactory->create(
 							$property->getIdentifier(),
@@ -186,7 +186,7 @@ final class Http implements Server
 							$property,
 						);
 
-						if ($property instanceof MetadataEntities\Modules\DevicesModule\IChannelStaticPropertyEntity) {
+						if ($property instanceof MetadataEntities\DevicesModule\ChannelVariableProperty) {
 							$characteristic->setActualValue($property->getValue());
 						}
 
@@ -251,7 +251,7 @@ final class Http implements Server
 				],
 			);
 
-			throw new DevicesModuleExceptions\TerminateException(
+			throw new DevicesModuleExceptions\Terminate(
 				'Socket server could not be created',
 				$ex->getCode(),
 				$ex,
@@ -310,7 +310,7 @@ final class Http implements Server
 				],
 			);
 
-			throw new DevicesModuleExceptions\TerminateException(
+			throw new DevicesModuleExceptions\Terminate(
 				'HTTP server was terminated',
 				$ex->getCode(),
 				$ex,
@@ -360,7 +360,7 @@ final class Http implements Server
 				],
 			);
 
-			throw new DevicesModuleExceptions\TerminateException(
+			throw new DevicesModuleExceptions\Terminate(
 				'HTTP server was terminated',
 				$ex->getCode(),
 				$ex,

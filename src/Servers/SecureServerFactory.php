@@ -30,7 +30,7 @@ interface SecureServerFactory
 {
 
 	public function create(
-		MetadataEntities\Modules\DevicesModule\IConnectorEntity $connector,
+		MetadataEntities\DevicesModule\Connector $connector,
 		Socket\ServerInterface $server,
 		string|null $sharedKey = null,
 	): SecureServer;
