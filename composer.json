@@ -48,7 +48,7 @@
     "cweagans/composer-patches" : "^1.7",
     "fastybird/devices-module" : "dev-main as 0.75.0",
     "fastybird/json-api" : "^0.13",
-    "fastybird/metadata" : "^0.77",
+    "fastybird/metadata" : "^1.1",
     "hashids/hashids" : "^4.1",
     "ipub/slim-router" : "^0.2.0",
     "leigh/curve25519" : "^0.1.0",

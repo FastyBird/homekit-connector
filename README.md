@@ -1,7 +1,5 @@
 # FastyBird IoT HomeKit connector
 
-***
-
 [![Build Status](https://badgen.net/github/checks/FastyBird/homekit-connector/master?cache=300&style=flat-square)](https://github.com/FastyBird/homekit-connector/actions)
 [![Licence](https://badgen.net/github/license/FastyBird/homekit-connector?cache=300&style=flat-square)](https://github.com/FastyBird/homekit-connector/blob/master/LICENSE.md)
 [![Code coverage](https://badgen.net/coveralls/c/github/FastyBird/homekit-connector?cache=300&style=flat-square)](https://coveralls.io/r/FastyBird/homekit-connector)
