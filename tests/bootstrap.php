@@ -1,14 +1,16 @@
 <?php declare(strict_types = 1);
 
+// phpcs:ignoreFile
+
 use Ninjify\Nunjuck\Environment;
+
+define('FB_TEMP_DIR', __DIR__ . '/tmp');
+define('FB_RESOURCES_DIR', __DIR__ . '/../resources');
 
 if (@!include __DIR__ . '/../vendor/autoload.php') {
 	echo 'Install Nette Tester using `composer update --dev`';
 	exit(1);
 }
-
-define('FB_TEMP_DIR', __DIR__ . '/tmp');
-define('FB_RESOURCES_DIR', __DIR__ . '/../resources');
 
 Tester\Environment::bypassFinals();
 

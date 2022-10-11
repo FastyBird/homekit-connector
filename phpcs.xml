@@ -1,0 +1,28 @@
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="./vendor/squizlabs/php_codesniffer/phpcs.xsd">
+    <!-- Show only relevant part of path -->
+    <arg name="basepath" value="./"/>
+
+    <!-- Import coding-standard -->
+    <rule ref="./vendor/orisai/coding-standard/src/ruleset-8.1.xml">
+        <exclude name="SlevomatCodingStandard.Commenting.ForbiddenAnnotations.AnnotationForbidden"/>
+
+        <exclude name="SlevomatCodingStandard.Commenting.DocCommentSpacing.IncorrectLinesCountBetweenDifferentAnnotationsTypes"/>
+        <exclude name="SlevomatCodingStandard.Commenting.DocCommentSpacing.IncorrectAnnotationsGroup"/>
+    </rule>
+
+    <!-- Configure PSR-4 rule -->
+    <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
+        <properties>
+            <property name="rootNamespaces" type="array">
+                <element key="src" value="FastyBird\HomeKitConnector"/>
+                <element key="tests/cases/unit" value="Tests\Cases\Unit"/>
+                <element key="tests/fixtures" value="Tests\Fixtures"/>
+                <element key="tests/tools" value="Tests\Tools"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!--Exclude folders -->
+    <exclude-pattern>/tests/tmp</exclude-pattern>
+    <exclude-pattern>/tests/stubs/*</exclude-pattern>
+</ruleset>

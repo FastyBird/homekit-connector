@@ -22,60 +22,24 @@ use FastyBird\Metadata\Types as MetadataTypes;
 /**
  * @ORM\Entity
  */
-class HomeKitConnector extends DevicesModuleEntities\Connectors\Connector implements IHomeKitConnector
+class HomeKitConnector extends DevicesModuleEntities\Connectors\Connector
 {
 
 	public const CONNECTOR_TYPE = 'homekit';
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getType(): string
 	{
 		return self::CONNECTOR_TYPE;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getPort(): int
-	{
-		$property = $this->findProperty(MetadataTypes\ConnectorPropertyIdentifierType::IDENTIFIER_PORT);
-
-		if (
-			!$property instanceof DevicesModuleEntities\Connectors\Properties\IStaticProperty
-			|| !is_numeric($property->getValue())
-		) {
-			return 51826;
-		}
-
-		return intval($property->getValue());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function toArray(): array
-	{
-		return array_merge(parent::toArray(), [
-			'port' => $this->getPort(),
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getDiscriminatorName(): string
 	{
 		return self::CONNECTOR_TYPE;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getSource(): MetadataTypes\ModuleSourceType|MetadataTypes\PluginSourceType|MetadataTypes\ConnectorSourceType
+	public function getSource(): MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource
 	{
-		return MetadataTypes\ConnectorSourceType::get(MetadataTypes\ConnectorSourceType::SOURCE_CONNECTOR_HOMEKIT);
+		return MetadataTypes\ConnectorSource::get(MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT);
 	}
 
 }

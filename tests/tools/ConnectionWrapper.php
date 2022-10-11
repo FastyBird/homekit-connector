@@ -6,27 +6,27 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver;
+use function getmypid;
+use function register_shutdown_function;
+use function sprintf;
 
 class ConnectionWrapper extends DBAL\Connection
 {
 
-	/** @var string */
-	private $dbName;
+	private string $dbName;
 
 	/**
-	 * @param mixed[] $params
-	 * @param Driver $driver
-	 * @param Configuration|null $config
-	 * @param EventManager|null $eventManager
+	 * @param Array<mixed> $params
 	 *
 	 * @throws DBAL\DBALException
 	 */
 	public function __construct(
 		array $params,
 		Driver $driver,
-		?Configuration $config = null,
-		?EventManager $eventManager = null
-	) {
+		Configuration|null $config = null,
+		EventManager|null $eventManager = null,
+	)
+	{
 		$this->dbName = 'fb_test_' . getmypid();
 
 		unset($params['dbname']);
@@ -45,7 +45,7 @@ class ConnectionWrapper extends DBAL\Connection
 			register_shutdown_function(
 				function (): void {
 					$this->exec(sprintf('DROP DATABASE IF EXISTS `%s`', $this->dbName));
-				}
+				},
 			);
 
 			return true;

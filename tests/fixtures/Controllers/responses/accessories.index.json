@@ -1,0 +1,86 @@
+{
+  "accessories": [
+    {
+      "aid": 1,
+      "services": [
+        {
+          "iid": 1,
+          "type": "a2",
+          "characteristics": [
+            {
+              "iid": 2,
+              "type": "37",
+              "perms": [
+                "pr",
+                "ev"
+              ],
+              "format": "string",
+              "value": "01.01.00",
+              "ev": true
+            }
+          ],
+          "primary": false,
+          "hidden": false
+        },
+        {
+          "iid": 3,
+          "type": "3e",
+          "characteristics": [
+            {
+              "iid": 4,
+              "type": "23",
+              "perms": [
+                "pr"
+              ],
+              "format": "string",
+              "value": "HomeKit Bridge",
+              "ev": false
+            },
+            {
+              "iid": 5,
+              "type": "30",
+              "perms": [
+                "pr"
+              ],
+              "format": "string",
+              "value": "p21ZD04m8GQ42",
+              "ev": false
+            },
+            {
+              "iid": 6,
+              "type": "52",
+              "perms": [
+                "pr"
+              ],
+              "format": "string",
+              "value": "0.0.0",
+              "ev": false
+            },
+            {
+              "iid": 7,
+              "type": "20",
+              "perms": [
+                "pr"
+              ],
+              "format": "string",
+              "value": "FastyBird",
+              "ev": false
+            },
+            {
+              "iid": 8,
+              "type": "21",
+              "perms": [
+                "pr"
+              ],
+              "format": "string",
+              "value": "Virtual bridge",
+              "ev": false
+            }
+          ],
+          "primary": false,
+          "hidden": false
+        }
+      ]
+    }
+  ]
+}
