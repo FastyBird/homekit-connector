@@ -13,7 +13,7 @@
 
 ## What is FastyBird IoT HomeKit connector?
 
-HomeKit connector is a combined [FastyBird IoT](https://www.fastybird.com) extension which is integrating [HomeKit Accessory Protoccol](https://www.homekit.org) into [FastyBird](https://www.fastybird.com) IoT system
+HomeKit connector [FastyBird IoT](https://www.fastybird.com) extension which is integrating [HomeKit Accessory Protoccol](https://www.homekit.org) into [FastyBird](https://www.fastybird.com) IoT system
 
 HomeKit connector is an [Apache2 licensed](http://www.apache.org/licenses/LICENSE-2.0) distributed extension, developed
 in [PHP](https://www.php.net) with [Nette framework](https://nette.org).
