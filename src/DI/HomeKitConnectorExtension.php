@@ -34,10 +34,6 @@ use IPub\DoctrineCrud;
 use Nette;
 use Nette\DI;
 use Nette\PhpGenerator;
-use Nette\Schema;
-use React\EventLoop;
-use stdClass;
-use function assert;
 use function ucfirst;
 use const DIRECTORY_SEPARATOR;
 
@@ -52,9 +48,11 @@ use const DIRECTORY_SEPARATOR;
 class HomeKitConnectorExtension extends DI\CompilerExtension
 {
 
+	public const NAME = 'fbHomeKitConnector';
+
 	public static function register(
 		Nette\Configurator $config,
-		string $extensionName = 'fbHomeKitConnector',
+		string $extensionName = self::NAME,
 	): void
 	{
 		$config->onCompile[] = static function (
@@ -65,28 +63,9 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		};
 	}
 
-	public function getConfigSchema(): Schema\Schema
-	{
-		return Schema\Expect::structure([
-			'loop' => Schema\Expect::anyOf(
-				Schema\Expect::string(),
-				Schema\Expect::type(DI\Definitions\Statement::class),
-			)
-				->nullable(),
-		]);
-	}
-
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
-		$configuration = $this->getConfig();
-		assert($configuration instanceof stdClass);
-
-		if ($configuration->loop === null && $builder->getByType(EventLoop\LoopInterface::class) === null) {
-			$builder->addDefinition($this->prefix('client.loop'), new DI\Definitions\ServiceDefinition())
-				->setType(EventLoop\LoopInterface::class)
-				->setFactory('React\EventLoop\Factory::create');
-		}
 
 		// Servers
 		$builder->addFactoryDefinition($this->prefix('server.mdns'))

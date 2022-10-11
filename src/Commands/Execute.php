@@ -42,6 +42,8 @@ use function sprintf;
 class Execute extends Console\Command\Command
 {
 
+	public const NAME = 'fb:homekit-connector:execute';
+
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
@@ -58,7 +60,7 @@ class Execute extends Console\Command\Command
 	protected function configure(): void
 	{
 		$this
-			->setName('fb:homekit-connector:execute')
+			->setName(self::NAME)
 			->setDescription('HomeKit connector service')
 			->setDefinition(
 				new Input\InputDefinition([

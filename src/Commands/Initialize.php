@@ -50,6 +50,8 @@ use function sprintf;
 class Initialize extends Console\Command\Command
 {
 
+	public const NAME = 'fb:homekit-connector:initialize';
+
 	private const CHOICE_QUESTION_CREATE_CONNECTOR = 'Create new connector configuration';
 
 	private const CHOICE_QUESTION_EDIT_CONNECTOR = 'Edit existing connector configuration';
@@ -77,7 +79,7 @@ class Initialize extends Console\Command\Command
 	protected function configure(): void
 	{
 		$this
-			->setName('fb:homekit-connector:initialize')
+			->setName(self::NAME)
 			->setDescription('HomeKit connector initialization')
 			->setDefinition(
 				new Input\InputDefinition([

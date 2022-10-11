@@ -1684,7 +1684,6 @@ final class PairingController extends BaseController
 		);
 
 		try {
-			/** @var mixed $client */
 			$client = $this->databaseHelper->query(function () use ($connectorId, $clientUid): Entities\Client|null {
 				$findClientQuery = new Queries\FindClients();
 				$findClientQuery->byUid($clientUid);
@@ -1692,7 +1691,6 @@ final class PairingController extends BaseController
 
 				return $this->clientsRepository->findOneBy($findClientQuery);
 			});
-			assert($client instanceof Entities\Client || $client === null);
 		} catch (Throwable) {
 			return [
 				[
