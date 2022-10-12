@@ -80,8 +80,8 @@ class Bridge extends Accessory
 					continue;
 				}
 
-				foreach ($this->accessories as $accessory) {
-					if ($accessory->getAid() !== null && $accessory->getAid() === $newAid) {
+				foreach ($this->accessories as $existingAccessory) {
+					if ($existingAccessory->getAid() !== null && $existingAccessory->getAid() === $newAid) {
 						$newAid++;
 
 						break;

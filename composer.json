@@ -74,6 +74,7 @@
     "phpstan/phpstan-deprecation-rules" : "^1.0",
     "phpstan/phpstan-doctrine" : "^1.3",
     "phpstan/phpstan-nette" : "^1.0",
+    "phpstan/phpstan-strict-rules": "^1.1",
     "tracy/tracy" : "^2.9"
   },
 

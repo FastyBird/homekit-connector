@@ -77,13 +77,7 @@ final class ClientsRepository
 	private function getRepository(): ORM\EntityRepository
 	{
 		if ($this->repository === null) {
-			$repository = $this->managerRegistry->getRepository(Entities\Client::class);
-
-			if (!$repository instanceof ORM\EntityRepository) {
-				throw new Exceptions\InvalidState('Entity repository could not be loaded');
-			}
-
-			$this->repository = $repository;
+			$this->repository = $this->managerRegistry->getRepository(Entities\Client::class);
 		}
 
 		return $this->repository;

@@ -283,12 +283,12 @@ final class Transformer
 
 			$transformedValue = (float) $transformedValue;
 
-			if ($minStep) {
+			if ($minStep !== null) {
 				$transformedValue = round($minStep * round($transformedValue / $minStep), 14);
 			}
 
-			$transformedValue = (float) min($maxValue ?? $transformedValue, $transformedValue);
-			$transformedValue = (float) max($minValue ?? $transformedValue, $transformedValue);
+			$transformedValue = min($maxValue ?? $transformedValue, $transformedValue);
+			$transformedValue = max($minValue ?? $transformedValue, $transformedValue);
 		} elseif (
 			$dataType->equalsValue(Types\DataType::DATA_TYPE_INT)
 			|| $dataType->equalsValue(Types\DataType::DATA_TYPE_UINT8)
@@ -302,7 +302,7 @@ final class Transformer
 
 			$transformedValue = (int) $transformedValue;
 
-			if ($minStep) {
+			if ($minStep !== null) {
 				$transformedValue = round($minStep * round($transformedValue / $minStep), 14);
 			}
 
