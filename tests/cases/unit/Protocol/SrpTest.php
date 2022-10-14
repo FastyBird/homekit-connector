@@ -235,7 +235,7 @@ final class SrpTest extends BaseTestCase
 	}
 
 	/**
-	 * @return array<int>
+	 * @return Array<int>
 	 *
 	 * @throws Exception
 	 */
