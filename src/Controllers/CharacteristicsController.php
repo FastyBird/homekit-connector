@@ -33,11 +33,13 @@ use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Fig\Http\Message\StatusCodeInterface;
+use InvalidArgumentException;
 use IPub\SlimRouter;
 use Nette\Utils;
 use Psr\EventDispatcher;
 use Psr\Http\Message;
 use Ramsey\Uuid;
+use RuntimeException;
 use function array_key_exists;
 use function array_merge;
 use function explode;
@@ -81,6 +83,8 @@ final class CharacteristicsController extends BaseController
 
 	/**
 	 * @throws Exceptions\HapRequestError
+	 * @throws Exceptions\InvalidState
+	 * @throws InvalidArgumentException
 	 * @throws Utils\JsonException
 	 */
 	public function index(
@@ -199,7 +203,11 @@ final class CharacteristicsController extends BaseController
 	/**
 	 * @throws DBAL\Exception
 	 * @throws Exceptions\HapRequestError
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws InvalidArgumentException
 	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws RuntimeException
 	 * @throws Utils\JsonException
 	 */
 	public function update(
@@ -293,8 +301,8 @@ final class CharacteristicsController extends BaseController
 				&& array_key_exists(Types\Representation::REPR_AID, $setCharacteristic)
 				&& array_key_exists(Types\Representation::REPR_IID, $setCharacteristic)
 			) {
-				$aid = (int) $setCharacteristic[Types\Representation::REPR_AID];
-				$iid = (int) $setCharacteristic[Types\Representation::REPR_IID];
+				$aid = intval($setCharacteristic[Types\Representation::REPR_AID]);
+				$iid = intval($setCharacteristic[Types\Representation::REPR_IID]);
 
 				$value = array_key_exists(
 					Types\Representation::REPR_VALUE,
@@ -361,6 +369,8 @@ final class CharacteristicsController extends BaseController
 	 * Handles a client request to prepare to write
 	 *
 	 * @throws Exceptions\HapRequestError
+	 * @throws InvalidArgumentException
+	 * @throws RuntimeException
 	 * @throws Utils\JsonException
 	 */
 	public function prepare(
@@ -401,9 +411,9 @@ final class CharacteristicsController extends BaseController
 			$this->preparedWrites[$clientAddress] = [];
 		}
 
-		$this->preparedWrites[$clientAddress][(int) $body[Types\Representation::REPR_PID]]
+		$this->preparedWrites[$clientAddress][intval($body[Types\Representation::REPR_PID])]
 			= intval($this->dateTimeFactory->getNow()->getTimestamp())
-			+ ((int) $body[Types\Representation::REPR_TTL] / 1_000);
+			+ (intval($body[Types\Representation::REPR_TTL]) / 1_000);
 
 		$result = [
 			Types\Representation::REPR_STATUS => Types\ServerStatus::STATUS_SUCCESS,
@@ -491,6 +501,8 @@ final class CharacteristicsController extends BaseController
 	 * @return Array<string, bool|float|int|string|null>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
 	 * @throws Utils\JsonException
 	 */

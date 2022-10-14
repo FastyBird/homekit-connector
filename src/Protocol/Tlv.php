@@ -53,6 +53,8 @@ final class Tlv
 
 	/**
 	 * @param Array<int, Array<int, (int|Array<int>|string)>> $objects
+	 *
+	 * @throws Exceptions\InvalidArgument
 	 */
 	public function encode(array $objects): string
 	{
@@ -156,6 +158,8 @@ final class Tlv
 
 	/**
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
+	 *
+	 * @throws Exceptions\InvalidArgument
 	 */
 	public function decode(string $data): array
 	{

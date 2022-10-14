@@ -69,6 +69,8 @@ class Characteristic
 	/**
 	 * @param Array<string> $permissions
 	 * @param Array<int>|null $validValues
+	 *
+	 * @throws Exceptions\InvalidArgument
 	 */
 	public function __construct(
 		private readonly Uuid\UuidInterface $typeId,

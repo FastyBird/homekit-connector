@@ -37,7 +37,7 @@ class HomeKitConnector extends DevicesModuleEntities\Connectors\Connector
 		return self::CONNECTOR_TYPE;
 	}
 
-	public function getSource(): MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource
+	public function getSource(): MetadataTypes\ConnectorSource
 	{
 		return MetadataTypes\ConnectorSource::get(MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT);
 	}

@@ -45,6 +45,9 @@ final class ClientsRepository
 
 	/**
 	 * @phpstan-param Queries\FindClients<Entities\Client> $queryObject
+	 *
+	 * @throws DoctrineOrmQuery\Exceptions\InvalidStateException
+	 * @throws DoctrineOrmQuery\Exceptions\QueryException
 	 */
 	public function findOneBy(
 		Queries\FindClients $queryObject,
@@ -57,6 +60,9 @@ final class ClientsRepository
 	 * @param Queries\FindClients<Entities\Client> $queryObject
 	 *
 	 * @return DoctrineOrmQuery\ResultSet<Entities\Client>
+	 *
+	 * @throws DoctrineOrmQuery\Exceptions\QueryException
+	 * @throws Exceptions\InvalidState
 	 */
 	public function getResultSet(
 		Queries\FindClients $queryObject,

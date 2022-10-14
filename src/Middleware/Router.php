@@ -21,6 +21,7 @@ use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use Fig\Http\Message\StatusCodeInterface;
+use InvalidArgumentException;
 use IPub\SlimRouter;
 use IPub\SlimRouter\Exceptions as SlimRouterExceptions;
 use IPub\SlimRouter\Http as SlimRouterHttp;
@@ -59,6 +60,7 @@ final class Router
 	}
 
 	/**
+	 * @throws InvalidArgumentException
 	 * @throws Utils\JsonException
 	 */
 	public function __invoke(ServerRequestInterface $request): ResponseInterface

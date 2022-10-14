@@ -1,20 +1,21 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit;
+namespace Tests\Cases\Unit\Protocol;
 
+use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Types;
-use Ninjify\Nunjuck\TestCase\BaseTestCase;
-use Tester\Assert;
+use Tests\Cases\Unit\BaseTestCase;
+use function array_merge;
+use function ord;
+use function pack;
 
-require_once __DIR__ . '/../../../bootstrap.php';
-
-/**
- * @testCase
- */
 final class TlvDecodeTest extends BaseTestCase
 {
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 */
 	public function testDecode(): void
 	{
 		$tlvTool = new Protocol\Tlv();
@@ -30,21 +31,24 @@ final class TlvDecodeTest extends BaseTestCase
 			0x65, // ASCII 'e'
 			0x6c, // ASCII 'l'
 			0x6c, // ASCII 'l'
-			0x6f  // ASCII 'o'
+			0x6f, // ASCII 'o'
 		);
 
 		$result = $tlvTool->decode($data);
 
-		Assert::count(1, $result);
-		Assert::same(
+		self::assertCount(1, $result);
+		self::assertSame(
 			[
 				Types\TlvCode::CODE_STATE => 3,
 				Types\TlvCode::CODE_IDENTIFIER => 'hello',
 			],
-			$result[0]
+			$result[0],
 		);
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 */
 	public function testDecodeWithMerge(): void
 	{
 		$tlvTool = new Protocol\Tlv();
@@ -68,7 +72,7 @@ final class TlvDecodeTest extends BaseTestCase
 				0x09, // certificate, continuation of previous TLV
 				0x2d, // 45 byte value size
 				0x61, // ASCII 'a'
-			]
+			],
 		);
 
 		for ($i = 0; $i < 44; $i++) {
@@ -85,7 +89,7 @@ final class TlvDecodeTest extends BaseTestCase
 				0x6c, // ASCII 'l'
 				0x6c, // ASCII 'l'
 				0x6f, // ASCII 'o'
-			]
+			],
 		);
 
 		$data = pack('C*', ...$rawData);
@@ -98,17 +102,20 @@ final class TlvDecodeTest extends BaseTestCase
 			$certificate[] = ord('a');
 		}
 
-		Assert::count(1, $result);
-		Assert::same(
+		self::assertCount(1, $result);
+		self::assertSame(
 			[
 				Types\TlvCode::CODE_STATE => 3,
 				Types\TlvCode::CODE_CERTIFICATE => $certificate,
 				Types\TlvCode::CODE_IDENTIFIER => 'hello',
 			],
-			$result[0]
+			$result[0],
 		);
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 */
 	public function testDecodeSeparated(): void
 	{
 		$tlvTool = new Protocol\Tlv();
@@ -136,30 +143,30 @@ final class TlvDecodeTest extends BaseTestCase
 			0x64, // ASCII 'd'
 			0x0b, // permissions
 			0x01, // 1 byte value size
-			0x01  // admin permission
+			0x01, // admin permission
 		);
 
 		$result = $tlvTool->decode($data);
 
-		Assert::count(2, $result);
-		Assert::same(
+		self::assertCount(2, $result);
+		self::assertSame(
 			[
 				Types\TlvCode::CODE_IDENTIFIER => 'hello',
 				Types\TlvCode::CODE_PERMISSIONS => 0,
 			],
-			$result[0]
+			$result[0],
 		);
-		Assert::same(
+		self::assertSame(
 			[
 				Types\TlvCode::CODE_IDENTIFIER => 'world',
 				Types\TlvCode::CODE_PERMISSIONS => 1,
 			],
-			$result[1]
+			$result[1],
 		);
 	}
 
 	/**
-	 * @throws FastyBird\HomeKitConnector\Exceptions\InvalidArgument  Provided TLV code in data is not valid
+	 * @throws Exceptions\InvalidArgument
 	 */
 	public function testDecodeInvalidStateValue(): void
 	{
@@ -167,14 +174,17 @@ final class TlvDecodeTest extends BaseTestCase
 
 		$data = pack(
 			'C*',
-			0xfa // unknown code
+			0xfa, // unknown code
 		);
+
+		$this->expectException(Exceptions\InvalidArgument::class);
+		$this->expectExceptionMessage('Provided TLV code in data is not valid');
 
 		$tlvTool->decode($data);
 	}
 
 	/**
-	 * @throws FastyBird\HomeKitConnector\Exceptions\InvalidArgument  Only short (1-byte length) integers is supported
+	 * @throws Exceptions\InvalidArgument
 	 */
 	public function testDecodeInvalidContentSize(): void
 	{
@@ -185,14 +195,17 @@ final class TlvDecodeTest extends BaseTestCase
 			0x00, // method (integer type)
 			0x02, // 2 byte value size
 			0x00, // first integer byte
-			0x00 // second integer byte (only 1-byte length integers is supported)
+			0x00, // second integer byte (only 1-byte length integers is supported)
 		);
+
+		$this->expectException(Exceptions\InvalidArgument::class);
+		$this->expectExceptionMessage('Only short (1-byte length) integers is supported');
 
 		$tlvTool->decode($data);
 	}
 
 	/**
-	 * @throws FastyBird\HomeKitConnector\Exceptions\InvalidArgument  Unable to decode string from bytes
+	 * @throws Exceptions\InvalidArgument
 	 */
 	public function testDecodeInvalidContentValue(): void
 	{
@@ -202,13 +215,13 @@ final class TlvDecodeTest extends BaseTestCase
 			'C*',
 			0x01, // identifier (string type)
 			0x01, // 1 byte value size
-			0xf0 // invalid unicode symbol
+			0xf0, // invalid unicode symbol
 		);
+
+		$this->expectException(Exceptions\InvalidArgument::class);
+		$this->expectExceptionMessage('Unable to decode string from bytes');
 
 		$tlvTool->decode($data);
 	}
 
 }
-
-$test_case = new TlvDecodeTest();
-$test_case->run();

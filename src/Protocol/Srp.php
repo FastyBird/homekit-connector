@@ -16,6 +16,7 @@
 namespace FastyBird\HomeKitConnector\Protocol;
 
 use Brick\Math;
+use InvalidArgumentException;
 use Nette;
 use Throwable;
 use function array_map;
@@ -83,6 +84,12 @@ final class Srp
 
 	private Math\BigInteger $n3072;
 
+	/**
+	 * @throws InvalidArgumentException
+	 * @throws Math\Exception\MathException
+	 * @throws Math\Exception\NegativeNumberException
+	 * @throws Math\Exception\NumberFormatException
+	 */
 	public function __construct(
 		private readonly string $username,
 		string $password,
@@ -164,6 +171,11 @@ final class Srp
 		return $this->premasterSecret;
 	}
 
+	/**
+	 * @throws Math\Exception\MathException
+	 * @throws Math\Exception\NegativeNumberException
+	 * @throws Math\Exception\NumberFormatException
+	 */
 	public function computeSharedSessionKey(Math\BigInteger $clientPublicKey): void
 	{
 		$this->randomScramblingParameter = Math\BigInteger::fromBytes(
@@ -249,6 +261,9 @@ final class Srp
 		return implode('', $unpacked);
 	}
 
+	/**
+	 * @throws Math\Exception\NumberFormatException
+	 */
 	private function generatePrivateKey(): Math\BigInteger
 	{
 		try {

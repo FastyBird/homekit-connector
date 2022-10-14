@@ -19,8 +19,10 @@ use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use Nette;
 use Nette\Utils;
 use function array_intersect;
+use function array_map;
 use function array_values;
 use function floatval;
 use function intval;
@@ -48,6 +50,10 @@ final class CharacteristicsFactory
 
 	/**
 	 * @param Array<int>|null $validValues
+	 *
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Nette\IOException
 	 */
 	public function create(
 		string $name,
@@ -123,6 +129,10 @@ final class CharacteristicsFactory
 					array_intersect($validValues, $defaultValidValues),
 				)
 				: $defaultValidValues;
+
+			if (is_array($validValues)) {
+				$validValues = array_map(static fn ($item): int => intval($item), $validValues);
+			}
 		} else {
 			$validValues = null;
 		}

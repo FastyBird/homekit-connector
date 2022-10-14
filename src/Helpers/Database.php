@@ -45,7 +45,7 @@ final class Database
 	 *
 	 * @return T|null
 	 *
-	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidState
 	 *
 	 * @template T
 	 */
@@ -66,6 +66,8 @@ final class Database
 	 * @return T
 	 *
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 *
 	 * @template T
 	 */
@@ -93,6 +95,9 @@ final class Database
 		}
 	}
 
+	/**
+	 * @throws Exceptions\Runtime
+	 */
 	public function getConnection(): DBAL\Connection
 	{
 		$em = $this->getEntityManager();
@@ -104,6 +109,9 @@ final class Database
 		throw new Exceptions\Runtime('Entity manager could not be loaded');
 	}
 
+	/**
+	 * @throws Exceptions\Runtime
+	 */
 	public function ping(): bool
 	{
 		$connection = $this->getConnection();
@@ -121,6 +129,7 @@ final class Database
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\Runtime
 	 */
 	public function reconnect(): void
 	{
@@ -132,6 +141,7 @@ final class Database
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\Runtime
 	 */
 	private function pingAndReconnect(): void
 	{

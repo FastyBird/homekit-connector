@@ -21,6 +21,7 @@ use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Clients;
 use FastyBird\HomeKitConnector\Entities;
+use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Middleware;
 use FastyBird\HomeKitConnector\Protocol;
@@ -146,7 +147,11 @@ final class Http implements Server
 	/**
 	 * @throws DBAL\Exception
 	 * @throws DevicesModuleExceptions\Terminate
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws Nette\IOException
 	 */
 	public function connect(): void
 	{

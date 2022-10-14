@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Servers;
 use Doctrine\DBAL;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\HomeKitConnector;
+use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
@@ -123,6 +124,8 @@ final class Mdns implements Server
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function connect(): void
@@ -281,6 +284,8 @@ final class Mdns implements Server
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	private function createZone(): void

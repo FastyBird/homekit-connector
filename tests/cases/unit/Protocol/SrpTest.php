@@ -1,18 +1,16 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit;
+namespace Tests\Cases\Unit\Protocol;
 
 use Brick\Math;
 use Exception;
 use FastyBird\HomeKitConnector\Protocol;
-use Ninjify\Nunjuck\TestCase\BaseTestCase;
-use Tester\Assert;
+use Tests\Cases\Unit\BaseTestCase;
+use function hex2bin;
+use function pack;
+use function str_replace;
+use function unpack;
 
-require_once __DIR__ . '/../../../bootstrap.php';
-
-/**
- * @testCase
- */
 final class SrpTest extends BaseTestCase
 {
 
@@ -96,12 +94,9 @@ final class SrpTest extends BaseTestCase
 		= '2FA0E81F 5CB73B88 FA096427 0F321DD6 41F2227A 5D805C40 F1BFE96A AF6A19FF'
 		. 'CE8E2328 7965A39E AB9D5A02 215F89E1 28177ED2 C4F103E6 55A04553 1BCBF7AD';
 
-	/** @var Protocol\Srp */
 	private Protocol\Srp $srp;
 
 	/**
-	 * @return void
-	 *
 	 * @throws Exception
 	 */
 	public function setUp(): void
@@ -111,126 +106,136 @@ final class SrpTest extends BaseTestCase
 		$salt = pack('C*', ...$this->hex2ByteArray(self::TEST_SALT));
 		$serverPrivateKey = Math\BigInteger::fromBytes(
 			(string) hex2bin(str_replace(' ', '', self::TEST_SERVER_PRIVATE_KEY)),
-			false
+			false,
 		);
 
 		$this->srp = new Protocol\Srp(
 			self::USERNAME,
 			self::PASSWORD,
 			$salt,
-			$serverPrivateKey
+			$serverPrivateKey,
 		);
 
 		$clientPublicKey = Math\BigInteger::fromBytes(
 			(string) hex2bin(str_replace(' ', '', self::TEST_CLIENT_PUBLIC_KEY)),
-			false
+			false,
 		);
 
 		$this->srp->computeSharedSessionKey($clientPublicKey);
 	}
 
+	/**
+	 * @throws Math\Exception\NumberFormatException
+	 */
 	public function testServerPasswordVerifier(): void
 	{
 		$serverPasswordVerifier = Math\BigInteger::fromBytes(
 			(string) hex2bin(str_replace(' ', '', self::TEST_SERVER_PASSWORD_VERIFIER)),
-			false
+			false,
 		);
 
-		Assert::equal(
+		self::assertEquals(
 			(string) $serverPasswordVerifier,
-			(string) $this->srp->getServerPasswordVerifier()
+			(string) $this->srp->getServerPasswordVerifier(),
 		);
 	}
 
+	/**
+	 * @throws Math\Exception\NumberFormatException
+	 */
 	public function testServerPublicKey(): void
 	{
 		$serverPublicKey = Math\BigInteger::fromBytes(
 			(string) hex2bin(str_replace(' ', '', self::TEST_SERVER_PUBLIC_KEY)),
-			false
+			false,
 		);
 
-		Assert::equal(
+		self::assertEquals(
 			(string) $serverPublicKey,
-			(string) $this->srp->getServerPublicKey()
+			(string) $this->srp->getServerPublicKey(),
 		);
 	}
 
+	/**
+	 * @throws Math\Exception\NumberFormatException
+	 */
 	public function testRandomScramblingParameter(): void
 	{
 		$randomScramblingParameter = Math\BigInteger::fromBytes(
 			(string) hex2bin(str_replace(' ', '', self::TEST_RANDOM_SCRAMBLING_PARAMETER)),
-			false
+			false,
 		);
 
-		Assert::notNull($this->srp->getRandomScramblingParameter());
-		Assert::equal(
+		self::assertNotNull($this->srp->getRandomScramblingParameter());
+		self::assertEquals(
 			(string) $randomScramblingParameter,
-			(string) $this->srp->getRandomScramblingParameter()
+			(string) $this->srp->getRandomScramblingParameter(),
 		);
 	}
 
+	/**
+	 * @throws Math\Exception\NumberFormatException
+	 */
 	public function testPremasteredSecret(): void
 	{
 		$premasteredSecret = Math\BigInteger::fromBytes(
 			(string) hex2bin(str_replace(' ', '', self::TEST_PREMASTER_SECRET)),
-			false
+			false,
 		);
 
-		Assert::notNull($this->srp->getPremasterSecret());
-		Assert::equal(
+		self::assertNotNull($this->srp->getPremasterSecret());
+		self::assertEquals(
 			(string) $premasteredSecret,
-			(string) $this->srp->getPremasterSecret()
+			(string) $this->srp->getPremasterSecret(),
 		);
 	}
 
 	public function testSessionKey(): void
 	{
-		Assert::notNull($this->srp->getSessionKey());
-		Assert::equal(
+		self::assertNotNull($this->srp->getSessionKey());
+		self::assertEquals(
 			(string) hex2bin(str_replace(' ', '', self::TEST_SESSION_KEY)),
-			$this->srp->getSessionKey()
+			$this->srp->getSessionKey(),
 		);
 	}
 
 	public function testSessionKeyClientProof(): void
 	{
-		Assert::notNull($this->srp->getClientProof());
-		Assert::equal(
+		self::assertNotNull($this->srp->getClientProof());
+		self::assertEquals(
 			(string) hex2bin(str_replace(' ', '', self::TEST_CLIENT_PROOF_OF_SESSION_KEY)),
-			(string) $this->srp->getClientProof()
+			$this->srp->getClientProof(),
 		);
 	}
 
 	public function testSessionKeyServerProof(): void
 	{
-		Assert::notNull($this->srp->getServerProof());
-		Assert::equal(
+		self::assertNotNull($this->srp->getServerProof());
+		self::assertEquals(
 			(string) hex2bin(str_replace(' ', '', self::TEST_SERVER_PROOF_OF_SESSION_KEY)),
-			(string) $this->srp->getServerProof()
+			$this->srp->getServerProof(),
 		);
 	}
 
 	public function testSalt(): void
 	{
-		Assert::equal(
+		self::assertEquals(
 			(string) hex2bin(str_replace(' ', '', self::TEST_SALT)),
-			$this->srp->getSalt()
+			$this->srp->getSalt(),
 		);
 	}
 
 	public function testVerifyProof(): void
 	{
-		Assert::true(
+		self::assertTrue(
 			$this->srp->verifyProof(
-				(string) hex2bin(str_replace(' ', '', self::TEST_CLIENT_PROOF_OF_SESSION_KEY))
-			)
+				(string) hex2bin(str_replace(' ', '', self::TEST_CLIENT_PROOF_OF_SESSION_KEY)),
+			),
 		);
 	}
 
 	/**
-	 * @param string $hexString
-	 *
-	 * @return int[]
+	 * @return array<int>
 	 *
 	 * @throws Exception
 	 */
@@ -248,6 +253,3 @@ final class SrpTest extends BaseTestCase
 	}
 
 }
-
-$test_case = new SrpTest();
-$test_case->run();

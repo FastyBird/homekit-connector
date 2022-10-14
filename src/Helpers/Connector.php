@@ -57,6 +57,8 @@ final class Connector extends Evenement\EventEmitter
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\FileNotFound
 	 */
 	public function getConfiguration(
@@ -112,6 +114,8 @@ final class Connector extends Evenement\EventEmitter
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 */
 	public function setConfiguration(
 		Uuid\UuidInterface $connectorId,

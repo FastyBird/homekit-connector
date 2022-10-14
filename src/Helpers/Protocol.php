@@ -106,6 +106,9 @@ final class Protocol
 		return $address;
 	}
 
+	/**
+	 * @throws Exceptions\InvalidState
+	 */
 	public static function generateSetupId(): string
 	{
 		try {
@@ -124,6 +127,9 @@ final class Protocol
 			. '-' . rand(pow(10, 2), pow(10, 3) - 1);
 	}
 
+	/**
+	 * @throws Exceptions\InvalidState
+	 */
 	public static function generateSignKey(): string
 	{
 		try {

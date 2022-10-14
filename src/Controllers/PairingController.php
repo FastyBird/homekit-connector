@@ -30,11 +30,13 @@ use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use Fig\Http\Message\StatusCodeInterface;
+use InvalidArgumentException;
 use IPub\DoctrineOrmQuery;
 use IPub\SlimRouter;
 use Nette\Utils\ArrayHash;
 use Psr\Http\Message;
 use Ramsey\Uuid;
+use RuntimeException;
 use SodiumException;
 use Throwable;
 use function array_key_exists;
@@ -176,7 +178,12 @@ final class PairingController extends BaseController
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws InvalidArgumentException
 	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws RuntimeException
 	 */
 	public function setup(
 		Message\ServerRequestInterface $request,
@@ -286,7 +293,12 @@ final class PairingController extends BaseController
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws InvalidArgumentException
 	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws RuntimeException
 	 */
 	public function verify(
 		Message\ServerRequestInterface $request,
@@ -366,6 +378,13 @@ final class PairingController extends BaseController
 		return $response;
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws InvalidArgumentException
+	 * @throws RuntimeException
+	 */
 	public function pairings(
 		Message\ServerRequestInterface $request,
 		Message\ResponseInterface $response,
@@ -484,6 +503,12 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws InvalidArgumentException
+	 * @throws Math\Exception\MathException
+	 * @throws Math\Exception\NegativeNumberException
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	private function srpStart(Uuid\UuidInterface $connectorId): array
@@ -679,6 +704,9 @@ final class PairingController extends BaseController
 	 * @param Array<int> $clientProof
 	 *
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
+	 *
+	 * @throws Math\Exception\MathException
+	 * @throws Math\Exception\NumberFormatException
 	 */
 	private function srpFinish(
 		Uuid\UuidInterface $connectorId,
@@ -817,6 +845,9 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function exchange(
@@ -1200,6 +1231,9 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	private function verifyStart(
@@ -1375,6 +1409,8 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	private function verifyFinish(

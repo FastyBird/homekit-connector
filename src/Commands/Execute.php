@@ -57,6 +57,9 @@ class Execute extends Console\Command\Command
 		parent::__construct($name);
 	}
 
+	/**
+	 * @throws Console\Exception\InvalidArgumentException
+	 */
 	protected function configure(): void
 	{
 		$this
@@ -83,6 +86,7 @@ class Execute extends Console\Command\Command
 
 	/**
 	 * @throws Console\Exception\ExceptionInterface
+	 * @throws Console\Exception\InvalidArgumentException
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int

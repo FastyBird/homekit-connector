@@ -62,6 +62,10 @@ class Driver
 		return null;
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 */
 	public function addBridge(Entities\Protocol\Bridge $accessory): void
 	{
 		$this->accessories->rewind();
@@ -75,6 +79,10 @@ class Driver
 		$this->addAccessory($accessory);
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 */
 	public function addBridgedAccessory(Entities\Protocol\Device $accessory): void
 	{
 		$this->accessories->rewind();
@@ -102,6 +110,9 @@ class Driver
 		throw new Exceptions\InvalidState('Bridge for given device accessory is not registered. Register it first');
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 */
 	public function addAccessory(Entities\Protocol\Accessory $accessory): void
 	{
 		if ($accessory->getAid() === null) {

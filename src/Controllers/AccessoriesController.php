@@ -23,6 +23,7 @@ use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use Fig\Http\Message\StatusCodeInterface;
+use InvalidArgumentException;
 use IPub\SlimRouter;
 use Nette\Utils;
 use Psr\Http\Message;
@@ -50,6 +51,8 @@ final class AccessoriesController extends BaseController
 	/**
 	 * Handles a client request to get the accessories
 	 *
+	 * @throws Exceptions\InvalidState
+	 * @throws InvalidArgumentException
 	 * @throws Utils\JsonException
 	 */
 	public function index(
@@ -91,6 +94,9 @@ final class AccessoriesController extends BaseController
 	 *
 	 * @throws DBAL\Exception
 	 * @throws Exceptions\HapRequestError
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws InvalidArgumentException
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
 	public function identify(
@@ -153,6 +159,8 @@ final class AccessoriesController extends BaseController
 
 	/**
 	 * Get a snapshot from the camera or other resource from accessory
+	 *
+	 * @throws InvalidArgumentException
 	 */
 	public function resource(
 		Message\ServerRequestInterface $request,

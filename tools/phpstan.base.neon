@@ -1,0 +1,15 @@
+includes:
+    - ../vendor/phpstan/phpstan/conf/bleedingEdge.neon
+
+parameters:
+    phpVersion: 80100
+    tmpDir: ../var/tools/PHPStan
+
+    exceptions:
+        check:
+            missingCheckedExceptionInThrows: true
+            tooWideThrowType: true
+
+    checkMissingCallableSignature: true
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkInternalClassCaseSensitivity: true

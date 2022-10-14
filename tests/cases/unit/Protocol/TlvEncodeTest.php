@@ -1,20 +1,22 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit;
+namespace Tests\Cases\Unit\Protocol;
 
+use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Types;
-use Ninjify\Nunjuck\TestCase\BaseTestCase;
-use Tester\Assert;
+use Tests\Cases\Unit\BaseTestCase;
+use function array_merge;
+use function array_values;
+use function ord;
+use function unpack;
 
-require_once __DIR__ . '/../../../bootstrap.php';
-
-/**
- * @testCase
- */
 final class TlvEncodeTest extends BaseTestCase
 {
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 */
 	public function testEncode(): void
 	{
 		$tlvTool = new Protocol\Tlv();
@@ -43,13 +45,13 @@ final class TlvEncodeTest extends BaseTestCase
 
 		$resultBytes = unpack('C*', $result);
 
-		Assert::true(is_array($resultBytes));
-		Assert::same(
-			$expectedResult,
-			is_array($resultBytes) ? array_values($resultBytes) : []
-		);
+		self::assertIsArray($resultBytes);
+		self::assertSame($expectedResult, array_values($resultBytes));
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 */
 	public function testEncodeWithMerge(): void
 	{
 		$tlvTool = new Protocol\Tlv();
@@ -105,13 +107,13 @@ final class TlvEncodeTest extends BaseTestCase
 
 		$resultBytes = unpack('C*', $result);
 
-		Assert::true(is_array($resultBytes));
-		Assert::same(
-			$expectedResult,
-			is_array($resultBytes) ? array_values($resultBytes) : []
-		);
+		self::assertIsArray($resultBytes);
+		self::assertSame($expectedResult, array_values($resultBytes));
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 */
 	public function testEncodeSeparated(): void
 	{
 		$tlvTool = new Protocol\Tlv();
@@ -156,14 +158,8 @@ final class TlvEncodeTest extends BaseTestCase
 
 		$resultBytes = unpack('C*', $result);
 
-		Assert::true(is_array($resultBytes));
-		Assert::same(
-			$expectedResult,
-			is_array($resultBytes) ? array_values($resultBytes) : []
-		);
+		self::assertIsArray($resultBytes);
+		self::assertSame($expectedResult, array_values($resultBytes));
 	}
 
 }
-
-$test_case = new TlvEncodeTest();
-$test_case->run();

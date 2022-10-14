@@ -5,8 +5,9 @@ namespace Tests\Tools;
 use Closure;
 use Nette\StaticClass;
 use Nette\Utils;
-use Tester\Assert;
-use Tester\AssertException;
+use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\TestCase;
+use SebastianBergmann\Comparator\ComparisonFailure;
 use function sprintf;
 
 class JsonAssert
@@ -15,7 +16,7 @@ class JsonAssert
 	use StaticClass;
 
 	/**
-	 * @throws AssertException
+	 * @throws ExpectationFailedException
 	 *
 	 * @throws Utils\JsonException
 	 */
@@ -35,7 +36,7 @@ class JsonAssert
 	}
 
 	/**
-	 * @throws AssertException
+	 * @throws ExpectationFailedException
 	 *
 	 * @throws Utils\JsonException
 	 */
@@ -48,13 +49,17 @@ class JsonAssert
 		$decodedInput = self::jsonDecode($actualJson, 'Actual-json');
 
 		try {
-			Assert::equal($decodedExpectedJson, $decodedInput);
+			TestCase::assertEquals($decodedExpectedJson, $decodedInput);
 
-		} catch (AssertException) {
-			throw new AssertException(
+		} catch (ExpectationFailedException) {
+			throw new ExpectationFailedException(
 				'%1 should be equal to %2',
-				self::makeJsonPretty($expectedJson),
-				self::makeJsonPretty($actualJson),
+				new ComparisonFailure(
+					$expectedJson,
+					$actualJson,
+					self::makeJsonPretty($expectedJson),
+					self::makeJsonPretty($actualJson),
+				),
 			);
 		}
 	}

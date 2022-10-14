@@ -1,30 +1,35 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit;
+namespace Tests\Cases\Unit\Models;
 
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\HomeKitConnector\Entities;
+use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Models;
 use FastyBird\HomeKitConnector\Queries;
+use IPub\DoctrineCrud;
+use Nette;
 use Nette\Utils;
 use Ramsey\Uuid;
-use Tester\Assert;
-use function is_object;
+use RuntimeException;
+use Tests\Cases\Unit\DbTestCase;
+use Throwable;
 use function random_bytes;
 
-require_once __DIR__ . '/../../../bootstrap.php';
-require_once __DIR__ . '/../DbTestCase.php';
-
-/**
- * @testCase
- */
 final class SessionsManagerTest extends DbTestCase
 {
 
+	/**
+	 * @throws DoctrineCrud\Exceptions\InvalidArgumentException
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Nette\DI\MissingServiceException
+	 * @throws RuntimeException
+	 * @throws Throwable
+	 */
 	public function testCreate(): void
 	{
-		/** @var DevicesModuleModels\Connectors\ConnectorsRepository $repository */
 		$repository = $this->getContainer()->getByType(DevicesModuleModels\Connectors\ConnectorsRepository::class);
 
 		$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
@@ -32,9 +37,8 @@ final class SessionsManagerTest extends DbTestCase
 
 		$connector = $repository->findOneBy($findConnectorQuery);
 
-		Assert::true(is_object($connector));
+		self::assertIsObject($connector);
 
-		/** @var Models\Clients\ClientsManager $manager */
 		$manager = $this->getContainer()->getByType(Models\Clients\ClientsManager::class);
 
 		$clientPublicKey = random_bytes(32);
@@ -45,18 +49,23 @@ final class SessionsManagerTest extends DbTestCase
 			'publicKey' => $clientPublicKey,
 		]));
 
-		Assert::true(is_object($entity));
-		Assert::type(Entities\Client::class, $entity);
-		Assert::same($clientPublicKey, $entity->getPublicKey());
-		Assert::same('7e11f659-a130-4eb1-b550-dc96c1160c85', $entity->getUid());
+		self::assertSame(Entities\Client::class, $entity::class);
+		self::assertSame($clientPublicKey, $entity->getPublicKey());
+		self::assertSame('7e11f659-a130-4eb1-b550-dc96c1160c85', $entity->getUid());
 	}
 
+	/**
+	 * @throws DoctrineCrud\Exceptions\InvalidArgumentException
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Nette\DI\MissingServiceException
+	 * @throws RuntimeException
+	 * @throws Throwable
+	 */
 	public function testUpdate(): void
 	{
-		/** @var Models\Clients\ClientsManager $manager */
 		$manager = $this->getContainer()->getByType(Models\Clients\ClientsManager::class);
 
-		/** @var Models\Clients\ClientsRepository $repository */
 		$repository = $this->getContainer()->getByType(Models\Clients\ClientsRepository::class);
 
 		$findQuery = new Queries\FindClients();
@@ -64,21 +73,16 @@ final class SessionsManagerTest extends DbTestCase
 
 		$entity = $repository->findOneBy($findQuery);
 
-		Assert::true(is_object($entity));
-		Assert::type(Entities\Client::class, $entity);
+		self::assertIsObject($entity);
+		self::assertSame(Entities\Client::class, $entity::class);
 
 		$clientPublicKey = random_bytes(32);
 
-		$updatedEntity = $manager->update($entity, Utils\ArrayHash::from([
+		$manager->update($entity, Utils\ArrayHash::from([
 			'publicKey' => $clientPublicKey,
 		]));
 
-		Assert::true(is_object($entity));
-		Assert::type(Entities\Client::class, $updatedEntity);
-		Assert::same($clientPublicKey, $entity->getPublicKey());
+		self::assertSame($clientPublicKey, $entity->getPublicKey());
 	}
 
 }
-
-$test_case = new SessionsManagerTest();
-$test_case->run();

@@ -111,6 +111,9 @@ class Service
 		return $characteristics;
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 */
 	public function addCharacteristic(Characteristic $characteristic): void
 	{
 		if (

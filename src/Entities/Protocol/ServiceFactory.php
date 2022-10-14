@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Entities\Protocol;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use Nette;
 use Nette\Utils;
 use function is_string;
 use function sprintf;
@@ -40,6 +41,11 @@ final class ServiceFactory
 	{
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Nette\IOException
+	 */
 	public function create(
 		string $name,
 		Accessory $accessory,

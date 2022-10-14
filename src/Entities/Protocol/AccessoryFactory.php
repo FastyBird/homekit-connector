@@ -21,6 +21,7 @@ use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Hashids;
+use Nette;
 use Ramsey\Uuid;
 use function preg_match;
 
@@ -37,6 +38,9 @@ final class AccessoryFactory
 
 	private Hashids\Hashids $hashIds;
 
+	/**
+	 * @throws Hashids\HashidsException
+	 */
 	public function __construct(
 		private readonly ServiceFactory $serviceFactory,
 		private readonly CharacteristicsFactory $characteristicsFactory,
@@ -45,6 +49,11 @@ final class AccessoryFactory
 		$this->hashIds = new Hashids\Hashids();
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Nette\IOException
+	 */
 	public function create(
 		MetadataEntities\DevicesModule\Connector|MetadataEntities\DevicesModule\Device $owner,
 		int|null $aid = null,

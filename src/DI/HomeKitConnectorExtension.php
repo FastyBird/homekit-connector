@@ -187,6 +187,9 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			->setType(Commands\Execute::class);
 	}
 
+	/**
+	 * @throws Nette\DI\MissingServiceException
+	 */
 	public function beforeCompile(): void
 	{
 		parent::beforeCompile();
@@ -218,6 +221,9 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		}
 	}
 
+	/**
+	 * @throws Nette\DI\MissingServiceException
+	 */
 	public function afterCompile(PhpGenerator\ClassType $class): void
 	{
 		$builder = $this->getContainerBuilder();

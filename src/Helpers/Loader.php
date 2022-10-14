@@ -17,6 +17,7 @@ namespace FastyBird\HomeKitConnector\Helpers;
 
 use FastyBird\HomeKitConnector;
 use FastyBird\HomeKitConnector\Exceptions;
+use Nette;
 use Nette\Utils;
 use const DIRECTORY_SEPARATOR;
 
@@ -31,6 +32,10 @@ use const DIRECTORY_SEPARATOR;
 final class Loader
 {
 
+	/**
+	 * @throws Exceptions\InvalidState
+	 * @throws Nette\IOException
+	 */
 	public function loadServices(): Utils\ArrayHash
 	{
 		$metadata = HomeKitConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'services.json';
@@ -43,6 +48,10 @@ final class Loader
 		}
 	}
 
+	/**
+	 * @throws Exceptions\InvalidState
+	 * @throws Nette\IOException
+	 */
 	public function loadCharacteristics(): Utils\ArrayHash
 	{
 		$metadata = HomeKitConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'characteristics.json';

@@ -60,6 +60,9 @@ class Bridge extends Accessory
 		return $this->connector;
 	}
 
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 */
 	public function addAccessory(Device $accessory): void
 	{
 		if ($accessory->getCategory()->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {

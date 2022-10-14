@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit;
+namespace Tests\Cases\Unit\Controllers;
 
 use FastyBird\DevicesModule\DataStorage as DevicesModuleDataStorage;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
@@ -10,23 +10,33 @@ use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\HomeKitConnector\Servers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Fig\Http\Message\RequestMethodInterface;
+use Fig\Http\Message\StatusCodeInterface;
+use InvalidArgumentException;
 use IPub\SlimRouter\Http as SlimRouterHttp;
+use League\Flysystem;
+use Nette;
+use Nette\Utils;
 use Ramsey\Uuid;
 use React\Http\Message\ServerRequest;
-use Tester\Assert;
+use RuntimeException;
+use Tests\Cases\Unit\DbTestCase;
 use Tests\Tools;
+use function assert;
 use function call_user_func;
 
-require_once __DIR__ . '/../../../bootstrap.php';
-require_once __DIR__ . '/../DbTestCase.php';
-
-/**
- * @testCase
- */
-final class AccessoriesControllerTest extends DbTestCase
+final class CharacteristicsControllerTest extends DbTestCase
 {
 
+	/**
+	 * @throws InvalidArgumentException
+	 * @throws Flysystem\FilesystemException
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws Nette\DI\MissingServiceException
+	 * @throws RuntimeException
+	 * @throws Utils\JsonException
+	 */
 	public function setUp(): void
 	{
 		parent::setUp();
@@ -37,33 +47,36 @@ final class AccessoriesControllerTest extends DbTestCase
 		$writer->write();
 		$reader->read();
 
-		/** @var DevicesModuleModels\DataStorage\ConnectorsRepository $repository */
 		$repository = $this->getContainer()->getByType(DevicesModuleModels\DataStorage\ConnectorsRepository::class);
 
-		/** @var MetadataEntities\DevicesModule\Connector $connector */
 		$connector = $repository->findById(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
+		assert($connector instanceof MetadataEntities\DevicesModule\Connector);
 
-		/** @var Entities\Protocol\AccessoryFactory $acccessoryFactory */
 		$accessoryFactory = $this->getContainer()->getByType(Entities\Protocol\AccessoryFactory::class);
 
-		$accessory = $accessoryFactory->create($connector, null, Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE));
+		$accessory = $accessoryFactory->create(
+			$connector,
+			null,
+			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE),
+		);
 
-		/** @var Protocol\Driver $accessoryDriver */
 		$accessoryDriver = $this->getContainer()->getByType(Protocol\Driver::class);
+
+		assert($accessory instanceof Entities\Protocol\Bridge);
 
 		$accessoryDriver->addBridge($accessory);
 	}
 
 	/**
-	 * @param string $url
-	 * @param int $statusCode
-	 * @param string $fixture
+	 * @throws InvalidArgumentException
+	 * @throws Nette\DI\MissingServiceException
+	 * @throws RuntimeException
+	 * @throws Utils\JsonException
 	 *
-	 * @dataProvider ./../../../fixtures/Controllers/accessoriesRead.php
+	 * @dataProvider characteristicsRead
 	 */
 	public function testRead(string $url, int $statusCode, string $fixture): void
 	{
-		/** @var Middleware\Router $middleware */
 		$middleware = $this->getContainer()->getByType(Middleware\Router::class);
 
 		$headers = [];
@@ -75,23 +88,39 @@ final class AccessoriesControllerTest extends DbTestCase
 			'',
 			'1.1',
 			[
-				'REMOTE_ADDR' => '127.0.0.1'
+				'REMOTE_ADDR' => '127.0.0.1',
 			],
 		);
 
-		$request = $request->withAttribute(Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR, 'f5a8691b-4917-4866-878f-5217193cf14b');
+		$request = $request->withAttribute(
+			Servers\Http::REQUEST_ATTRIBUTE_CONNECTOR,
+			'f5a8691b-4917-4866-878f-5217193cf14b',
+		);
 
 		$response = call_user_func($middleware, $request);
 
+		self::assertTrue($response instanceof SlimRouterHttp\Response);
+		self::assertSame($statusCode, $response->getStatusCode());
 		Tools\JsonAssert::assertFixtureMatch(
 			$fixture,
-			(string) $response->getBody()
+			(string) $response->getBody(),
 		);
-		Assert::same($statusCode, $response->getStatusCode());
-		Assert::type(SlimRouterHttp\Response::class, $response);
+	}
+
+	/**
+	 * @return Array<string, Array<int|string>>
+	 */
+	public function characteristicsRead(): array
+	{
+		return [
+			// Valid responses
+			//////////////////
+			'readAll' => [
+				'/characteristics?id=1.6',
+				StatusCodeInterface::STATUS_OK,
+				__DIR__ . '/../../../fixtures/Controllers/responses/characteristics.index.json',
+			],
+		];
 	}
 
 }
-
-$test_case = new AccessoriesControllerTest();
-$test_case->run();

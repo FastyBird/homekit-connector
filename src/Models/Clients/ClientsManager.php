@@ -17,6 +17,7 @@ namespace FastyBird\HomeKitConnector\Models\Clients;
 
 use FastyBird\HomeKitConnector\Entities;
 use FastyBird\HomeKitConnector\Models;
+use IPub\DoctrineCrud;
 use IPub\DoctrineCrud\Crud;
 use Nette;
 use Nette\Utils;
@@ -53,6 +54,9 @@ class ClientsManager
 		return $entity;
 	}
 
+	/**
+	 * @throws DoctrineCrud\Exceptions\InvalidArgumentException
+	 */
 	public function update(
 		Entities\Client $entity,
 		Utils\ArrayHash $values,
@@ -65,6 +69,9 @@ class ClientsManager
 		return $entity;
 	}
 
+	/**
+	 * @throws DoctrineCrud\Exceptions\InvalidArgumentException
+	 */
 	public function delete(Entities\Client $entity): bool
 	{
 		// Delete entity from database

@@ -22,6 +22,7 @@ use IPub\DoctrineCrud\Mapping\Annotation as IPubDoctrine;
 use IPub\DoctrineTimestampable;
 use Ramsey\Uuid;
 use function is_resource;
+use function PHPUnit\Framework\assertNotNull;
 use function rewind;
 use function stream_get_contents;
 use function strval;
@@ -57,9 +58,9 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	/**
 	 * @IPubDoctrine\Crud(is="required")
 	 * @ORM\ManyToOne(targetEntity="FastyBird\DevicesModule\Entities\Connectors\Connector")
-	 * @ORM\JoinColumn(name="connector_id", referencedColumnName="connector_id")
+	 * @ORM\JoinColumn(name="connector_id", referencedColumnName="connector_id", nullable="false")
 	 */
-	private DevicesModuleEntities\Connectors\Connector $connector;
+	private DevicesModuleEntities\Connectors\Connector|null $connector;
 
 	/**
 	 * @IPubDoctrine\Crud(is="required")
@@ -103,6 +104,8 @@ class Client implements DoctrineCrud\Entities\IEntity,
 
 	public function getConnector(): DevicesModuleEntities\Connectors\Connector
 	{
+		assertNotNull($this->connector);
+
 		return $this->connector;
 	}
 
