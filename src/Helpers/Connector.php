@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Helpers;
 use Doctrine\DBAL;
 use Evenement;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
+use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\HomeKitConnector;
@@ -57,6 +58,7 @@ final class Connector extends Evenement\EventEmitter
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\FileNotFound

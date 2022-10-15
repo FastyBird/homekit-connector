@@ -256,7 +256,6 @@ abstract class DbTestCase extends TestCase
 		}
 	}
 
-
 	/**
 	 * @throws Exceptions\InvalidArgument
 	 * @throws RuntimeException

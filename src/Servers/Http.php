@@ -146,6 +146,7 @@ final class Http implements Server
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws DevicesModuleExceptions\Terminate
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState

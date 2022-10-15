@@ -124,6 +124,7 @@ final class Mdns implements Server
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
@@ -284,6 +285,7 @@ final class Mdns implements Server
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound

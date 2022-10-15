@@ -16,6 +16,7 @@
 namespace FastyBird\HomeKitConnector\Controllers;
 
 use Doctrine\DBAL;
+use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\HomeKitConnector\Exceptions;
 use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Protocol;
@@ -93,6 +94,7 @@ final class AccessoriesController extends BaseController
 	 * Help user to locate accessory
 	 *
 	 * @throws DBAL\Exception
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\HapRequestError
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime

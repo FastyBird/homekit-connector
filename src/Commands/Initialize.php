@@ -27,6 +27,7 @@ use FastyBird\HomeKitConnector\Helpers;
 use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Types as MetadataTypes;
+use IPub\DoctrineOrmQuery\Exceptions as DoctrineOrmQueryExceptions;
 use Nette\Utils;
 use Psr\Log;
 use Symfony\Component\Console;
@@ -99,6 +100,8 @@ class Initialize extends Console\Command\Command
 	/**
 	 * @throws Console\Exception\InvalidArgumentException
 	 * @throws DBAL\Exception
+	 * @throws DoctrineOrmQueryExceptions\InvalidStateException
+	 * @throws DoctrineOrmQueryExceptions\QueryException
 	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
@@ -290,6 +293,8 @@ class Initialize extends Console\Command\Command
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws DoctrineOrmQueryExceptions\InvalidStateException
+	 * @throws DoctrineOrmQueryExceptions\QueryException
 	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
 	 */
@@ -434,6 +439,8 @@ class Initialize extends Console\Command\Command
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws DoctrineOrmQueryExceptions\InvalidStateException
+	 * @throws DoctrineOrmQueryExceptions\QueryException
 	 * @throws Exceptions\Runtime
 	 */
 	private function deleteExistingConfiguration(Style\SymfonyStyle $io): void

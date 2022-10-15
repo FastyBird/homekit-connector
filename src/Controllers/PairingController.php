@@ -18,6 +18,7 @@ namespace FastyBird\HomeKitConnector\Controllers;
 use Brick\Math;
 use Doctrine\DBAL;
 use Elliptic\EdDSA;
+use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\HomeKitConnector\Entities;
@@ -503,6 +504,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -845,6 +847,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -1231,6 +1234,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -1409,6 +1413,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws Metadata\Exceptions\FileNotFound
