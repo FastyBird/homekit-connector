@@ -256,8 +256,15 @@ abstract class DbTestCase extends TestCase
 		}
 	}
 
+
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 * @throws RuntimeException
+	 */
 	protected function tearDown(): void
 	{
+		$this->getDb()->close();
+
 		$this->container = null; // Fatal error: Cannot redeclare class SystemContainer
 		$this->isDatabaseSetUp = false;
 

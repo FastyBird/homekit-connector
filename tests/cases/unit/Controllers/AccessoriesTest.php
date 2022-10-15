@@ -26,7 +26,7 @@ use Tests\Tools;
 use function assert;
 use function call_user_func;
 
-final class CharacteristicsControllerTest extends DbTestCase
+final class AccessoriesTest extends DbTestCase
 {
 
 	/**
@@ -73,7 +73,7 @@ final class CharacteristicsControllerTest extends DbTestCase
 	 * @throws RuntimeException
 	 * @throws Utils\JsonException
 	 *
-	 * @dataProvider characteristicsRead
+	 * @dataProvider accessoriesRead
 	 */
 	public function testRead(string $url, int $statusCode, string $fixture): void
 	{
@@ -110,15 +110,15 @@ final class CharacteristicsControllerTest extends DbTestCase
 	/**
 	 * @return Array<string, Array<int|string>>
 	 */
-	public function characteristicsRead(): array
+	public function accessoriesRead(): array
 	{
 		return [
 			// Valid responses
 			//////////////////
 			'readAll' => [
-				'/characteristics?id=1.6',
+				'/accessories',
 				StatusCodeInterface::STATUS_OK,
-				__DIR__ . '/../../../fixtures/Controllers/responses/characteristics.index.json',
+				__DIR__ . '/../../../fixtures/Controllers/responses/accessories.index.json',
 			],
 		];
 	}
