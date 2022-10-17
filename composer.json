@@ -25,9 +25,9 @@
         "brick/math": "^0.10.2",
         "cweagans/composer-patches": "^1.7",
         "fastybird/datetime-factory": "^0.6",
-        "fastybird/devices-module": "^2.1",
-        "fastybird/exchange": "^2.1",
-        "fastybird/metadata": "^2.1",
+        "fastybird/devices-module": "2.0",
+        "fastybird/exchange": "2.0",
+        "fastybird/metadata": "2.0",
         "hashids/hashids": "^4.1",
         "ipub/slim-router": "^0.2",
         "leigh/curve25519": "^0.1",
@@ -79,20 +79,14 @@
         }
     },
     "extra": {
+        "branch-alias": {
+            "dev-main": "2.0-dev"
+        },
         "patches": {
             "nettrine/orm": {
                 "Enable connection overrides": "https://raw.githubusercontent.com/FastyBird/libraries-patches/master/nettrine.orm.mangerRegistry.diff"
             }
         }
-    },
-    "conflict": {
-        "fastybird/web-server-plugin": "<2.1.0-dev",
-        "fastybird/redisdb-plugin": "<2.1.0-dev",
-        "fastybird/ws-exchange-plugin": "<2.1.0-dev",
-        "fastybird/tuya-connector": "<2.1.0-dev",
-        "fastybird/fb-mqtt-connector": "<2.1.0-dev",
-        "fastybird/shelly-connector": "<2.1.0-dev",
-        "fastybird/modbus-connector": "<2.1.0-dev"
     },
     "minimum-stability": "stable",
     "prefer-stable": true
