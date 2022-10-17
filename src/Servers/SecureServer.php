@@ -13,7 +13,7 @@
  * @date           26.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Servers;
+namespace FastyBird\Connector\HomeKit\Servers;
 
 use Evenement\EventEmitter;
 use FastyBird\Metadata\Entities as MetadataEntities;

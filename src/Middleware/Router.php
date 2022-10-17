@@ -13,12 +13,12 @@
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Middleware;
+namespace FastyBird\Connector\HomeKit\Middleware;
 
-use FastyBird\HomeKitConnector\Events;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Servers;
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\Connector\HomeKit\Events;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Servers;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Metadata;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;

@@ -13,10 +13,10 @@
  * @date           17.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Connector;
+namespace FastyBird\Connector\HomeKit\Connector;
 
+use FastyBird\Connector\HomeKit\Connector;
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
-use FastyBird\HomeKitConnector\Connector;
 use FastyBird\Metadata\Entities as MetadataEntities;
 
 /**

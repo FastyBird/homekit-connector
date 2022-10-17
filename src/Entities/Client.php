@@ -13,7 +13,7 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Entities;
+namespace FastyBird\Connector\HomeKit\Entities;
 
 use Doctrine\ORM\Mapping as ORM;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;

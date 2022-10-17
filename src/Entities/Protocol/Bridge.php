@@ -13,11 +13,11 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Entities\Protocol;
+namespace FastyBird\Connector\HomeKit\Entities\Protocol;
 
-use FastyBird\HomeKitConnector;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\Connector\HomeKit;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Ramsey\Uuid;
 use SplObjectStorage;
@@ -43,7 +43,7 @@ class Bridge extends Accessory
 	{
 		parent::__construct(
 			$name,
-			HomeKitConnector\Constants::STANDALONE_AID,
+			HomeKit\Constants::STANDALONE_AID,
 			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE),
 		);
 

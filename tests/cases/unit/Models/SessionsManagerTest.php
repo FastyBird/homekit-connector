@@ -1,19 +1,19 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit\Models;
+namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Models;
 
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Models;
+use FastyBird\Connector\HomeKit\Queries;
+use FastyBird\Connector\HomeKit\Tests\Cases\Unit\DbTestCase;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Models;
-use FastyBird\HomeKitConnector\Queries;
 use IPub\DoctrineCrud;
 use Nette;
 use Nette\Utils;
 use Ramsey\Uuid;
 use RuntimeException;
-use Tests\Cases\Unit\DbTestCase;
 use Throwable;
 use function random_bytes;
 

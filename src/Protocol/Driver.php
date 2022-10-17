@@ -13,11 +13,11 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Protocol;
+namespace FastyBird\Connector\HomeKit\Protocol;
 
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Types;
 use Nette;
 use Ramsey\Uuid;
 use SplObjectStorage;

@@ -13,7 +13,7 @@
  * @date           20.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Types;
+namespace FastyBird\Connector\HomeKit\Types;
 
 use Consistence;
 use function strval;

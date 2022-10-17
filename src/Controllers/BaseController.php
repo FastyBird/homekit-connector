@@ -13,7 +13,7 @@
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Controllers;
+namespace FastyBird\Connector\HomeKit\Controllers;
 
 use Nette;
 use Psr\Log;

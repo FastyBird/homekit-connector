@@ -13,9 +13,9 @@
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Router;
+namespace FastyBird\Connector\HomeKit\Router;
 
-use FastyBird\HomeKitConnector\Controllers;
+use FastyBird\Connector\HomeKit\Controllers;
 use IPub\SlimRouter\Routing;
 
 /**

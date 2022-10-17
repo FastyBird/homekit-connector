@@ -13,12 +13,12 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Entities\Protocol;
+namespace FastyBird\Connector\HomeKit\Entities\Protocol;
 
 use Composer;
-use FastyBird\HomeKitConnector;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\Connector\HomeKit;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Hashids;
 use Nette;
@@ -81,7 +81,7 @@ final class AccessoryFactory
 				Types\ChannelPropertyIdentifier::IDENTIFIER_VERSION,
 				$accessoryProtocolInformation,
 			);
-			$accessoryProtocolVersion->setActualValue(HomeKitConnector\Constants::HAP_PROTOCOL_VERSION);
+			$accessoryProtocolVersion->setActualValue(HomeKit\Constants::HAP_PROTOCOL_VERSION);
 
 			$accessoryProtocolInformation->addCharacteristic($accessoryProtocolVersion);
 
@@ -115,7 +115,7 @@ final class AccessoryFactory
 
 		$accessoryInformation->addCharacteristic($accessorySerialNumber);
 
-		$packageRevision = Composer\InstalledVersions::getVersion(HomeKitConnector\Constants::PACKAGE_NAME);
+		$packageRevision = Composer\InstalledVersions::getVersion(HomeKit\Constants::PACKAGE_NAME);
 
 		$accessoryFirmwareRevision = $this->characteristicsFactory->create(
 			Types\ChannelPropertyIdentifier::IDENTIFIER_FIRMWARE_REVISION,
@@ -123,7 +123,7 @@ final class AccessoryFactory
 		);
 		$accessoryFirmwareRevision->setActualValue(
 			$packageRevision !== null && preg_match(
-				HomeKitConnector\Constants::VERSION_REGEXP,
+				HomeKit\Constants::VERSION_REGEXP,
 				$packageRevision,
 			) === 1 ? $packageRevision : '0.0.0',
 		);
@@ -134,7 +134,7 @@ final class AccessoryFactory
 			Types\ChannelPropertyIdentifier::IDENTIFIER_MANUFACTURER,
 			$accessoryInformation,
 		);
-		$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_MANUFACTURER);
+		$accessoryManufacturer->setActualValue(HomeKit\Constants::DEFAULT_MANUFACTURER);
 
 		$accessoryInformation->addCharacteristic($accessoryManufacturer);
 
@@ -144,9 +144,9 @@ final class AccessoryFactory
 		);
 
 		if ($accessory instanceof Bridge) {
-			$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_BRIDGE_MODEL);
+			$accessoryManufacturer->setActualValue(HomeKit\Constants::DEFAULT_BRIDGE_MODEL);
 		} else {
-			$accessoryManufacturer->setActualValue(HomeKitConnector\Constants::DEFAULT_DEVICE_MODEL);
+			$accessoryManufacturer->setActualValue(HomeKit\Constants::DEFAULT_DEVICE_MODEL);
 		}
 
 		$accessoryInformation->addCharacteristic($accessoryManufacturer);

@@ -13,13 +13,13 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Models\Clients;
+namespace FastyBird\Connector\HomeKit\Models\Clients;
 
 use Doctrine\ORM;
 use Doctrine\Persistence;
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Queries;
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Queries;
 use IPub\DoctrineOrmQuery;
 use Nette;
 

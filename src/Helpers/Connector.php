@@ -13,17 +13,17 @@
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Helpers;
+namespace FastyBird\Connector\HomeKit\Helpers;
 
 use Doctrine\DBAL;
 use Evenement;
+use FastyBird\Connector\HomeKit;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
-use FastyBird\HomeKitConnector;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Types as MetadataTypes;
@@ -62,6 +62,11 @@ final class Connector extends Evenement\EventEmitter
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function getConfiguration(
 		Uuid\UuidInterface $connectorId,
@@ -75,7 +80,7 @@ final class Connector extends Evenement\EventEmitter
 				$type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT
 				&& $configuration->getValue() === null
 			) {
-				return HomeKitConnector\Constants::DEFAULT_PORT;
+				return HomeKit\Constants::DEFAULT_PORT;
 			}
 
 			if (
@@ -100,7 +105,7 @@ final class Connector extends Evenement\EventEmitter
 		}
 
 		if ($type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT) {
-			return HomeKitConnector\Constants::DEFAULT_PORT;
+			return HomeKit\Constants::DEFAULT_PORT;
 		}
 
 		if ($type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET) {
@@ -157,7 +162,7 @@ final class Connector extends Evenement\EventEmitter
 
 						$connector = $this->connectorsEntitiesRepository->findOneBy(
 							$findConnectorQuery,
-							HomeKitConnector\Entities\HomeKitConnector::class,
+							HomeKit\Entities\HomeKitConnector::class,
 						);
 
 						if ($connector === null) {

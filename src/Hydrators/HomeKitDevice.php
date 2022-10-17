@@ -13,10 +13,10 @@
  * @date           29.03.22
  */
 
-namespace FastyBird\HomeKitConnector\Hydrators;
+namespace FastyBird\Connector\HomeKit\Hydrators;
 
+use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\DevicesModule\Hydrators as DevicesModuleHydrators;
-use FastyBird\HomeKitConnector\Entities;
 
 /**
  * HomeKit device entity hydrator

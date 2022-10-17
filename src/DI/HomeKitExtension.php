@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * HomeKitConnectorExtension.php
+ * HomeKitExtension.php
  *
  * @license        More in license.md
  * @copyright      https://www.fastybird.com
@@ -13,23 +13,23 @@
  * @date           29.03.22
  */
 
-namespace FastyBird\HomeKitConnector\DI;
+namespace FastyBird\Connector\HomeKit\DI;
 
 use Doctrine\Persistence;
+use FastyBird\Connector\HomeKit\Clients;
+use FastyBird\Connector\HomeKit\Commands;
+use FastyBird\Connector\HomeKit\Connector;
+use FastyBird\Connector\HomeKit\Controllers;
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Helpers;
+use FastyBird\Connector\HomeKit\Hydrators;
+use FastyBird\Connector\HomeKit\Middleware;
+use FastyBird\Connector\HomeKit\Models;
+use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Router;
+use FastyBird\Connector\HomeKit\Schemas;
+use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\DevicesModule\DI as DevicesModuleDI;
-use FastyBird\HomeKitConnector\Clients;
-use FastyBird\HomeKitConnector\Commands;
-use FastyBird\HomeKitConnector\Connector;
-use FastyBird\HomeKitConnector\Controllers;
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Helpers;
-use FastyBird\HomeKitConnector\Hydrators;
-use FastyBird\HomeKitConnector\Middleware;
-use FastyBird\HomeKitConnector\Models;
-use FastyBird\HomeKitConnector\Protocol;
-use FastyBird\HomeKitConnector\Router;
-use FastyBird\HomeKitConnector\Schemas;
-use FastyBird\HomeKitConnector\Servers;
 use IPub\DoctrineCrud;
 use Nette;
 use Nette\DI;
@@ -45,7 +45,7 @@ use const DIRECTORY_SEPARATOR;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class HomeKitConnectorExtension extends DI\CompilerExtension
+class HomeKitExtension extends DI\CompilerExtension
 {
 
 	public const NAME = 'fbHomeKitConnector';
@@ -59,7 +59,7 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 			Nette\Configurator $config,
 			DI\Compiler $compiler,
 		) use ($extensionName): void {
-			$compiler->addExtension($extensionName, new HomeKitConnectorExtension());
+			$compiler->addExtension($extensionName, new HomeKitExtension());
 		};
 	}
 
@@ -216,7 +216,7 @@ class HomeKitConnectorExtension extends DI\CompilerExtension
 		if ($ormAnnotationDriverChainService instanceof DI\Definitions\ServiceDefinition) {
 			$ormAnnotationDriverChainService->addSetup('addDriver', [
 				$ormAnnotationDriverService,
-				'FastyBird\HomeKitConnector\Entities',
+				'FastyBird\Connector\HomeKit\Entities',
 			]);
 		}
 	}

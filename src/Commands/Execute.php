@@ -13,11 +13,12 @@
  * @date           17.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Commands;
+namespace FastyBird\Connector\HomeKit\Commands;
 
+use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
-use FastyBird\HomeKitConnector\Entities;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Psr\Log;
 use Ramsey\Uuid;
 use Symfony\Component\Console;
@@ -87,7 +88,12 @@ class Execute extends Console\Command\Command
 	/**
 	 * @throws Console\Exception\ExceptionInterface
 	 * @throws Console\Exception\InvalidArgumentException
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int
 	{

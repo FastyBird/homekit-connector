@@ -13,27 +13,30 @@
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Controllers;
+namespace FastyBird\Connector\HomeKit\Controllers;
 
 use Doctrine\DBAL;
+use FastyBird\Connector\HomeKit\Clients;
+use FastyBird\Connector\HomeKit\Constants;
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Events;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Helpers;
+use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Servers;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DateTimeFactory;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Exchange\Entities as ExchangeEntities;
+use FastyBird\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Exchange\Publisher as ExchangePublisher;
-use FastyBird\HomeKitConnector\Clients;
-use FastyBird\HomeKitConnector\Constants;
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Events;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Helpers;
-use FastyBird\HomeKitConnector\Protocol;
-use FastyBird\HomeKitConnector\Servers;
-use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
+use IPub\Phone\Exceptions as PhoneExceptions;
 use IPub\SlimRouter;
 use Nette\Utils;
 use Psr\EventDispatcher;
@@ -85,6 +88,7 @@ final class CharacteristicsController extends BaseController
 	 * @throws Exceptions\HapRequestError
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
+	 * @throws MetadataExceptions\InvalidState
 	 * @throws Utils\JsonException
 	 */
 	public function index(
@@ -206,7 +210,8 @@ final class CharacteristicsController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\Logic
 	 * @throws RuntimeException
 	 * @throws Utils\JsonException
 	 */
@@ -428,6 +433,8 @@ final class CharacteristicsController extends BaseController
 
 	/**
 	 * @return Array<string, (bool|int|Array<int>|float|string|Array<string>|null)>
+	 *
+	 * @throws MetadataExceptions\InvalidState
 	 */
 	private function readCharacteristic(
 		Uuid\UuidInterface $connectorId,
@@ -503,7 +510,15 @@ final class CharacteristicsController extends BaseController
 	 * @throws DBAL\Exception
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws ExchangeExceptions\InvalidState
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
+	 * @throws PhoneExceptions\NoValidCountryException
+	 * @throws PhoneExceptions\NoValidPhoneException
 	 * @throws Utils\JsonException
 	 */
 	public function writeCharacteristic(

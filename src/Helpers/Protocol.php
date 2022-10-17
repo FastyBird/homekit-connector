@@ -13,10 +13,10 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Helpers;
+namespace FastyBird\Connector\HomeKit\Helpers;
 
-use FastyBird\HomeKitConnector;
-use FastyBird\HomeKitConnector\Exceptions;
+use FastyBird\Connector\HomeKit;
+use FastyBird\Connector\HomeKit\Exceptions;
 use Nette\Utils;
 use Ramsey\Uuid;
 use Socket;
@@ -58,7 +58,7 @@ final class Protocol
 	{
 		$longType = Utils\Strings::upper($uuid->toString());
 
-		if (!Utils\Strings::endsWith($longType, HomeKitConnector\Constants::BASE_UUID)) {
+		if (!Utils\Strings::endsWith($longType, HomeKit\Constants::BASE_UUID)) {
 			return $longType;
 		}
 
@@ -77,7 +77,7 @@ final class Protocol
 		}
 
 		return Uuid\Uuid::fromString(
-			str_repeat('0', 8 - strlen($type)) . $type . HomeKitConnector\Constants::BASE_UUID,
+			str_repeat('0', 8 - strlen($type)) . $type . HomeKit\Constants::BASE_UUID,
 		);
 	}
 

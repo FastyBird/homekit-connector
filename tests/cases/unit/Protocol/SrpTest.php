@@ -1,11 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit\Protocol;
+namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Protocol;
 
 use Brick\Math;
 use Exception;
-use FastyBird\HomeKitConnector\Protocol;
-use Tests\Cases\Unit\BaseTestCase;
+use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Tests\Cases\Unit\BaseTestCase;
 use function hex2bin;
 use function pack;
 use function str_replace;

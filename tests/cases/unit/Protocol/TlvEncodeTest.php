@@ -1,11 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit\Protocol;
+namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Protocol;
 
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Protocol;
-use FastyBird\HomeKitConnector\Types;
-use Tests\Cases\Unit\BaseTestCase;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Tests\Cases\Unit\BaseTestCase;
+use FastyBird\Connector\HomeKit\Types;
 use function array_merge;
 use function array_values;
 use function ord;

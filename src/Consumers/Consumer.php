@@ -13,15 +13,16 @@
  * @date           02.10.22
  */
 
-namespace FastyBird\HomeKitConnector\Consumers;
+namespace FastyBird\Connector\HomeKit\Consumers;
 
+use FastyBird\Connector\HomeKit\Clients;
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Exchange\Consumer as ExchangeConsumer;
-use FastyBird\HomeKitConnector\Clients;
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Protocol;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Types as MetadataTypes;
 use Nette;
 use Psr\Log;
@@ -120,6 +121,9 @@ final class Consumer implements ExchangeConsumer\Consumer
 		}
 	}
 
+	/**
+	 * @throws MetadataExceptions\InvalidState
+	 */
 	private function processProperty(
 		MetadataEntities\DevicesModule\Property $entity,
 		Entities\Protocol\Accessory $accessory,

@@ -13,10 +13,10 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Helpers;
+namespace FastyBird\Connector\HomeKit\Helpers;
 
-use FastyBird\HomeKitConnector;
-use FastyBird\HomeKitConnector\Exceptions;
+use FastyBird\Connector\HomeKit;
+use FastyBird\Connector\HomeKit\Exceptions;
 use Nette;
 use Nette\Utils;
 use const DIRECTORY_SEPARATOR;
@@ -38,7 +38,7 @@ final class Loader
 	 */
 	public function loadServices(): Utils\ArrayHash
 	{
-		$metadata = HomeKitConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'services.json';
+		$metadata = HomeKit\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'services.json';
 		$metadata = Utils\FileSystem::read($metadata);
 
 		try {
@@ -54,7 +54,7 @@ final class Loader
 	 */
 	public function loadCharacteristics(): Utils\ArrayHash
 	{
-		$metadata = HomeKitConnector\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'characteristics.json';
+		$metadata = HomeKit\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'characteristics.json';
 		$metadata = Utils\FileSystem::read($metadata);
 
 		try {

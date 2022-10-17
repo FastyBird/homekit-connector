@@ -13,7 +13,7 @@
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Events;
+namespace FastyBird\Connector\HomeKit\Events;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

@@ -13,7 +13,7 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Exceptions;
+namespace FastyBird\Connector\HomeKit\Exceptions;
 
 interface Exception
 {

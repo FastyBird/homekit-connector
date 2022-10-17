@@ -1,0 +1,11 @@
+parameters:
+    level: max
+
+    paths:
+        - ../tests/cases/
+
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+
+    scanDirectories:
+        - ../src

@@ -1,11 +1,12 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit;
+namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit;
 
-use FastyBird\HomeKitConnector;
+use FastyBird\Connector\HomeKit\DI;
 use Nette;
-use Nette\DI;
 use PHPUnit\Framework\TestCase;
+use function constant;
+use function defined;
 use function file_exists;
 use function md5;
 use function time;
@@ -13,7 +14,7 @@ use function time;
 abstract class BaseTestCase extends TestCase
 {
 
-	protected DI\Container $container;
+	protected Nette\DI\Container $container;
 
 	protected function setUp(): void
 	{
@@ -24,13 +25,14 @@ abstract class BaseTestCase extends TestCase
 
 	protected function createContainer(string|null $additionalConfig = null): Nette\DI\Container
 	{
-		$rootDir = __DIR__ . '/../../';
+		$rootDir = __DIR__ . '/../..';
+		$vendorDir = defined('FB_VENDOR_DIR') ? constant('FB_VENDOR_DIR') : $rootDir . '/../vendor';
 
 		$config = new Nette\Configurator();
 		$config->setTempDirectory(FB_TEMP_DIR);
 
 		$config->addParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);
-		$config->addParameters(['appDir' => $rootDir, 'wwwDir' => $rootDir]);
+		$config->addParameters(['appDir' => $rootDir, 'wwwDir' => $rootDir, 'vendorDir' => $vendorDir]);
 
 		$config->addConfig(__DIR__ . '/../../common.neon');
 
@@ -38,7 +40,7 @@ abstract class BaseTestCase extends TestCase
 			$config->addConfig($additionalConfig);
 		}
 
-		HomeKitConnector\DI\HomeKitConnectorExtension::register($config);
+		DI\HomeKitExtension::register($config);
 
 		return $config->createContainer();
 	}

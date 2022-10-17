@@ -13,23 +13,24 @@
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Controllers;
+namespace FastyBird\Connector\HomeKit\Controllers;
 
 use Brick\Math;
 use Doctrine\DBAL;
 use Elliptic\EdDSA;
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Helpers;
+use FastyBird\Connector\HomeKit\Models;
+use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Queries;
+use FastyBird\Connector\HomeKit\Servers;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Helpers;
-use FastyBird\HomeKitConnector\Models;
-use FastyBird\HomeKitConnector\Protocol;
-use FastyBird\HomeKitConnector\Queries;
-use FastyBird\HomeKitConnector\Servers;
-use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use IPub\DoctrineOrmQuery;
@@ -183,7 +184,12 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 * @throws RuntimeException
 	 */
 	public function setup(
@@ -298,7 +304,12 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 * @throws RuntimeException
 	 */
 	public function verify(
@@ -511,7 +522,12 @@ final class PairingController extends BaseController
 	 * @throws InvalidArgumentException
 	 * @throws Math\Exception\MathException
 	 * @throws Math\Exception\NegativeNumberException
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function srpStart(Uuid\UuidInterface $connectorId): array
 	{
@@ -851,7 +867,12 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function exchange(
 		Uuid\UuidInterface $connectorId,
@@ -1238,7 +1259,12 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function verifyStart(
 		Uuid\UuidInterface $connectorId,
@@ -1416,7 +1442,12 @@ final class PairingController extends BaseController
 	 * @throws DevicesModuleExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function verifyFinish(
 		Uuid\UuidInterface $connectorId,

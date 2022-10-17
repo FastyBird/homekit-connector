@@ -1,13 +1,13 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit\DI;
+namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\DI;
 
-use FastyBird\HomeKitConnector\Hydrators;
-use FastyBird\HomeKitConnector\Schemas;
+use FastyBird\Connector\HomeKit\Hydrators;
+use FastyBird\Connector\HomeKit\Schemas;
+use FastyBird\Connector\HomeKit\Tests\Cases\Unit\BaseTestCase;
 use Nette;
-use Tests\Cases\Unit\BaseTestCase;
 
-final class ServicesTest extends BaseTestCase
+final class HomeKitExtensionTest extends BaseTestCase
 {
 
 	/**

@@ -13,9 +13,9 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Helpers;
+namespace FastyBird\Connector\HomeKit\Helpers;
 
-use FastyBird\HomeKitConnector\Entities;
+use FastyBird\Connector\HomeKit\Entities;
 use Nette;
 use SplObjectStorage;
 

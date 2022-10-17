@@ -13,19 +13,20 @@
  * @date           17.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Commands;
+namespace FastyBird\Connector\HomeKit\Commands;
 
 use Doctrine\DBAL;
 use Doctrine\Persistence;
+use FastyBird\Connector\HomeKit;
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Helpers;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
-use FastyBird\HomeKitConnector;
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Helpers;
-use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Types as MetadataTypes;
 use IPub\DoctrineOrmQuery\Exceptions as DoctrineOrmQueryExceptions;
 use Nette\Utils;
@@ -103,7 +104,12 @@ class Initialize extends Console\Command\Command
 	 * @throws DoctrineOrmQueryExceptions\InvalidStateException
 	 * @throws DoctrineOrmQueryExceptions\QueryException
 	 * @throws Exceptions\Runtime
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int
 	{
@@ -155,7 +161,12 @@ class Initialize extends Console\Command\Command
 	/**
 	 * @throws DBAL\Exception
 	 * @throws Exceptions\Runtime
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function createNewConfiguration(Style\SymfonyStyle $io): void
 	{
@@ -217,7 +228,7 @@ class Initialize extends Console\Command\Command
 				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
 				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
-				'value' => HomeKitConnector\Constants::DEFAULT_PORT,
+				'value' => HomeKit\Constants::DEFAULT_PORT,
 				'connector' => $connector,
 			]));
 
@@ -296,7 +307,12 @@ class Initialize extends Console\Command\Command
 	 * @throws DoctrineOrmQueryExceptions\InvalidStateException
 	 * @throws DoctrineOrmQueryExceptions\QueryException
 	 * @throws Exceptions\Runtime
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function editExistingConfiguration(Style\SymfonyStyle $io): void
 	{

@@ -13,10 +13,10 @@
  * @date           20.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Protocol;
+namespace FastyBird\Connector\HomeKit\Protocol;
 
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Types;
 use Nette;
 use function array_map;
 use function array_merge;

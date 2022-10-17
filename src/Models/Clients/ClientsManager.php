@@ -13,10 +13,10 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Models\Clients;
+namespace FastyBird\Connector\HomeKit\Models\Clients;
 
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Models;
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Models;
 use IPub\DoctrineCrud;
 use IPub\DoctrineCrud\Crud;
 use Nette;

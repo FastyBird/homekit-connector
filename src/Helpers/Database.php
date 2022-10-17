@@ -13,12 +13,12 @@
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Helpers;
+namespace FastyBird\Connector\HomeKit\Helpers;
 
 use Doctrine\DBAL;
 use Doctrine\ORM;
 use Doctrine\Persistence;
-use FastyBird\HomeKitConnector\Exceptions;
+use FastyBird\Connector\HomeKit\Exceptions;
 use Nette;
 use Throwable;
 use function gc_collect_cycles;

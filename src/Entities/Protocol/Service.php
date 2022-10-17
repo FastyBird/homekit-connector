@@ -13,11 +13,11 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Entities\Protocol;
+namespace FastyBird\Connector\HomeKit\Entities\Protocol;
 
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Helpers;
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Helpers;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Nette;
 use Ramsey\Uuid;

@@ -13,12 +13,12 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Queries;
+namespace FastyBird\Connector\HomeKit\Queries;
 
 use Closure;
 use Doctrine\ORM;
+use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
-use FastyBird\HomeKitConnector\Entities;
 use IPub\DoctrineOrmQuery;
 use Ramsey\Uuid;
 

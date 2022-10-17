@@ -13,9 +13,9 @@
  * @date           01.10.22
  */
 
-namespace FastyBird\HomeKitConnector\Events;
+namespace FastyBird\Connector\HomeKit\Events;
 
-use FastyBird\HomeKitConnector\Entities;
+use FastyBird\Connector\HomeKit\Entities;
 use Symfony\Contracts\EventDispatcher;
 
 /**

@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * HomeKitConnector.php
+ * HomeKit.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -13,10 +13,10 @@
  * @date           29.03.22
  */
 
-namespace FastyBird\HomeKitConnector\Hydrators;
+namespace FastyBird\Connector\HomeKit\Hydrators;
 
+use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\DevicesModule\Hydrators as DevicesModuleHydrators;
-use FastyBird\HomeKitConnector\Entities;
 
 /**
  * HomeKit connector entity hydrator

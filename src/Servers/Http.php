@@ -13,21 +13,22 @@
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Servers;
+namespace FastyBird\Connector\HomeKit\Servers;
 
 use Doctrine\DBAL;
+use FastyBird\Connector\HomeKit;
+use FastyBird\Connector\HomeKit\Clients;
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Helpers;
+use FastyBird\Connector\HomeKit\Middleware;
+use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
-use FastyBird\HomeKitConnector;
-use FastyBird\HomeKitConnector\Clients;
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Helpers;
-use FastyBird\HomeKitConnector\Middleware;
-use FastyBird\HomeKitConnector\Protocol;
-use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Nette;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -89,12 +90,12 @@ final class Http implements Server
 			'updated',
 			function (
 				Uuid\UuidInterface $connectorId,
-				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
+				HomeKit\Types\ConnectorPropertyIdentifier $type,
 				MetadataEntities\DevicesModule\ConnectorVariableProperty $property,
 			): void {
 				if (
 					$this->connector->getId()->equals($connectorId)
-					&& $type->equalsValue(HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
+					&& $type->equalsValue(HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
 				) {
 					$this->logger->debug(
 						'Shared key has been changed',
@@ -118,12 +119,12 @@ final class Http implements Server
 			'created',
 			function (
 				Uuid\UuidInterface $connectorId,
-				HomeKitConnector\Types\ConnectorPropertyIdentifier $type,
+				HomeKit\Types\ConnectorPropertyIdentifier $type,
 				MetadataEntities\DevicesModule\ConnectorVariableProperty $property,
 			): void {
 				if (
 					$this->connector->getId()->equals($connectorId)
-					&& $type->equalsValue(HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
+					&& $type->equalsValue(HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
 				) {
 					$this->logger->debug(
 						'Shared key has been created',
@@ -151,7 +152,12 @@ final class Http implements Server
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 * @throws Nette\IOException
 	 */
 	public function connect(): void
@@ -216,8 +222,8 @@ final class Http implements Server
 
 		$port = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
-			HomeKitConnector\Types\ConnectorPropertyIdentifier::get(
-				HomeKitConnector\Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
+			HomeKit\Types\ConnectorPropertyIdentifier::get(
+				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
 			),
 		);
 

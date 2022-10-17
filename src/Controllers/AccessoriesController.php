@@ -13,16 +13,17 @@
  * @date           19.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Controllers;
+namespace FastyBird\Connector\HomeKit\Controllers;
 
 use Doctrine\DBAL;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Helpers;
+use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Servers;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Helpers;
-use FastyBird\HomeKitConnector\Protocol;
-use FastyBird\HomeKitConnector\Servers;
-use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use IPub\SlimRouter;
@@ -99,7 +100,11 @@ final class AccessoriesController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
-	 * @throws Metadata\Exceptions\FileNotFound
+	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\InvalidData
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function identify(
 		Message\ServerRequestInterface $request,

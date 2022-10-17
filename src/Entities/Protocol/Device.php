@@ -13,9 +13,9 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Entities\Protocol;
+namespace FastyBird\Connector\HomeKit\Entities\Protocol;
 
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use Ramsey\Uuid;
 

@@ -13,7 +13,7 @@
  * @date           20.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Protocol;
+namespace FastyBird\Connector\HomeKit\Protocol;
 
 use Brick\Math;
 use InvalidArgumentException;

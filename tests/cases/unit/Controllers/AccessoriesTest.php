@@ -1,14 +1,16 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit\Controllers;
+namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Controllers;
 
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Middleware;
+use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Servers;
+use FastyBird\Connector\HomeKit\Tests\Cases\Unit\DbTestCase;
+use FastyBird\Connector\HomeKit\Tests\Tools;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DevicesModule\DataStorage as DevicesModuleDataStorage;
 use FastyBird\DevicesModule\Models as DevicesModuleModels;
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Middleware;
-use FastyBird\HomeKitConnector\Protocol;
-use FastyBird\HomeKitConnector\Servers;
-use FastyBird\HomeKitConnector\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
 use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use Fig\Http\Message\RequestMethodInterface;
@@ -21,8 +23,6 @@ use Nette\Utils;
 use Ramsey\Uuid;
 use React\Http\Message\ServerRequest;
 use RuntimeException;
-use Tests\Cases\Unit\DbTestCase;
-use Tests\Tools;
 use function assert;
 use function call_user_func;
 
@@ -33,6 +33,7 @@ final class AccessoriesTest extends DbTestCase
 	 * @throws InvalidArgumentException
 	 * @throws Flysystem\FilesystemException
 	 * @throws MetadataExceptions\FileNotFound
+	 * @throws MetadataExceptions\Logic
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws RuntimeException
 	 * @throws Utils\JsonException

@@ -1,15 +1,15 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Cases\Unit\Models;
+namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Models;
 
-use FastyBird\HomeKitConnector\Entities;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Models;
-use FastyBird\HomeKitConnector\Queries;
+use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Models;
+use FastyBird\Connector\HomeKit\Queries;
+use FastyBird\Connector\HomeKit\Tests\Cases\Unit\DbTestCase;
 use IPub\DoctrineOrmQuery;
 use Nette;
 use RuntimeException;
-use Tests\Cases\Unit\DbTestCase;
 
 final class SessionsRepositoryTest extends DbTestCase
 {

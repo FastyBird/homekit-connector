@@ -13,7 +13,7 @@
  * @date           17.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Servers;
+namespace FastyBird\Connector\HomeKit\Servers;
 
 /**
  * HomeKit device server interface

@@ -2,8 +2,9 @@
 
 // phpcs:ignoreFile
 
-define('FB_TEMP_DIR', __DIR__ . '/tmp');
-define('FB_RESOURCES_DIR', __DIR__ . '/../resources');
+if (!defined('FB_TEMP_DIR')) {
+	define('FB_TEMP_DIR', __DIR__ . '/../var/tools/PHPUnit/tmp');
+}
 
 if (@!include __DIR__ . '/../vendor/autoload.php') {
 	echo 'Install Tester using `composer update --dev`';

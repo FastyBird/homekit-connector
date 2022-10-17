@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * HomeKitConnector.php
+ * HomeKit.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -13,10 +13,10 @@
  * @date           29.03.22
  */
 
-namespace FastyBird\HomeKitConnector\Schemas;
+namespace FastyBird\Connector\HomeKit\Schemas;
 
+use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\DevicesModule\Schemas as DevicesModuleSchemas;
-use FastyBird\HomeKitConnector\Entities;
 use FastyBird\Metadata\Types as MetadataTypes;
 
 /**

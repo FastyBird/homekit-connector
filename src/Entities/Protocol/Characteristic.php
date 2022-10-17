@@ -13,14 +13,15 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Entities\Protocol;
+namespace FastyBird\Connector\HomeKit\Entities\Protocol;
 
 use DateTimeInterface;
-use FastyBird\HomeKitConnector\Exceptions;
-use FastyBird\HomeKitConnector\Helpers;
-use FastyBird\HomeKitConnector\Protocol\Transformer;
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Helpers;
+use FastyBird\Connector\HomeKit\Protocol\Transformer;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Types as MetadataTypes;
 use Nette;
 use Ramsey\Uuid;
@@ -242,6 +243,8 @@ class Characteristic
 	 * Used for json serialization
 	 *
 	 * @return Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>
+	 *
+	 * @throws MetadataExceptions\InvalidState
 	 */
 	public function toHap(): array
 	{

@@ -51,10 +51,10 @@
     "fastybird/exchange" : "^1.0",
     "fastybird/metadata" : "^1.1",
     "hashids/hashids" : "^4.1",
-    "ipub/slim-router" : "^0.2.0",
-    "leigh/curve25519" : "^0.1.0",
+    "ipub/slim-router" : "^0.2",
+    "leigh/curve25519" : "^0.1",
     "nette/di" : "^3.0",
-    "psr/log" : "^1.1",
+    "psr/log" : "^1.1|^3.0",
     "react/async" : "^4.0",
     "react/datagram" : "^1.8",
     "react/dns" : "^1.10",
@@ -84,14 +84,14 @@
 
   "autoload" : {
     "psr-4" : {
-      "FastyBird\\HomeKitConnector\\" : "src/"
+      "FastyBird\\Connector\\HomeKit\\" : "src/"
     }
   },
 
   "autoload-dev" : {
     "psr-4" : {
-      "Tests\\Cases\\Unit\\" : "tests/cases/unit",
-      "Tests\\Tools\\" : "tests/tools"
+      "FastyBird\\Connector\\HomeKit\\Tests\\Cases\\Unit\\" : "tests/cases/unit",
+      "FastyBird\\Connector\\HomeKit\\Tests\\Tools\\" : "tests/tools"
     }
   },
 

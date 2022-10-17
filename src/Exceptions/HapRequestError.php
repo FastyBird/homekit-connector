@@ -13,9 +13,9 @@
  * @date           27.09.22
  */
 
-namespace FastyBird\HomeKitConnector\Exceptions;
+namespace FastyBird\Connector\HomeKit\Exceptions;
 
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\Connector\HomeKit\Types;
 use IPub\SlimRouter\Exceptions as SlimRouterExceptions;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;

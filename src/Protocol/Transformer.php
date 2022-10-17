@@ -13,11 +13,12 @@
  * @date           01.10.22
  */
 
-namespace FastyBird\HomeKitConnector\Protocol;
+namespace FastyBird\Connector\HomeKit\Protocol;
 
 use DateTimeInterface;
-use FastyBird\HomeKitConnector\Types;
+use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Metadata\Types as MetadataTypes;
 use FastyBird\Metadata\ValueObjects as MetadataValueObjects;
 use Nette\Utils;
@@ -50,6 +51,9 @@ use function substr;
 final class Transformer
 {
 
+	/**
+	 * @throws MetadataExceptions\InvalidState
+	 */
 	public static function fromClient(
 		MetadataEntities\DevicesModule\Property|null $property,
 		Types\DataType $dataType,
@@ -187,6 +191,8 @@ final class Transformer
 
 	/**
 	 * @param Array<int>|null $validValues
+	 *
+	 * @throws MetadataExceptions\InvalidState
 	 */
 	public static function toClient(
 		MetadataEntities\DevicesModule\Property|null $property,
