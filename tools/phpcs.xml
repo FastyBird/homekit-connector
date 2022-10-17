@@ -18,8 +18,8 @@
         <properties>
             <property name="rootNamespaces" type="array">
                 <element key="src" value="FastyBird\Connector\HomeKit"/>
-                <element key="tests/cases/unit" value="FastyBird\HomekitConnector\Tests\Cases\Unit"/>
-                <element key="tests/tools" value="FastyBird\HomekitConnector\Tests\Tools"/>
+                <element key="tests/cases/unit" value="FastyBird\Connector\HomeKit\Tests\Cases\Unit"/>
+                <element key="tests/tools" value="FastyBird\Connector\HomeKit\Tests\Tools"/>
             </property>
         </properties>
     </rule>
