@@ -19,7 +19,7 @@ use Composer;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use Hashids;
 use Nette;
 use Ramsey\Uuid;

@@ -18,7 +18,7 @@ namespace FastyBird\Connector\HomeKit\Entities\Protocol;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use Nette;
 use Ramsey\Uuid;
 use SplObjectStorage;

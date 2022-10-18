@@ -17,7 +17,7 @@ namespace FastyBird\Connector\HomeKit\Clients;
 
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Metadata;
+use FastyBird\Library\Metadata;
 use Nette;
 use Nette\Utils;
 use Psr\Log;

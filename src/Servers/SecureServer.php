@@ -16,7 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Servers;
 
 use Evenement\EventEmitter;
-use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use Nette;
 use React\Socket;
 use SplObjectStorage;

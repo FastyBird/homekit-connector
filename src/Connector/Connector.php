@@ -17,8 +17,8 @@ namespace FastyBird\Connector\HomeKit\Connector;
 
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\DevicesModule\Connectors as DevicesModuleConnectors;
-use FastyBird\Metadata;
-use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Library\Metadata;
+use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use Nette;
 use Psr\Log;
 

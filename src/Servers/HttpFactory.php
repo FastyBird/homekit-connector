@@ -15,7 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Servers;
 
-use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Library\Metadata\Entities as MetadataEntities;
 
 /**
  * HTTP connector communication server factory

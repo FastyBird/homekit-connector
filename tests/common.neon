@@ -29,9 +29,9 @@ extensions:
     ipubDoctrineTimestampable           : IPub\DoctrineTimestampable\DI\DoctrineTimestampableExtension
     ipubPhone                           : IPub\Phone\DI\PhoneExtension
     fbDateTimeFactory                   : FastyBird\DateTimeFactory\DI\DateTimeFactoryExtension
-    fbExchange                          : FastyBird\Exchange\DI\ExchangeExtension
+    fbExchange                          : FastyBird\Library\Exchange\DI\ExchangeExtension
     fbJsonApi                           : FastyBird\JsonApi\DI\JsonApiExtension
-    fbMetadata                          : FastyBird\Metadata\DI\MetadataExtension
+    fbMetadata                          : FastyBird\Library\Metadata\DI\MetadataExtension
     fbSimpleAuth                        : FastyBird\SimpleAuth\DI\SimpleAuthExtension
     fbDevicesModule                     : FastyBird\DevicesModule\DI\DevicesModuleExtension
 

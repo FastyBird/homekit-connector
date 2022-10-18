@@ -16,7 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Entities\Protocol;
 
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Metadata\Entities as MetadataEntities;
+use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use Ramsey\Uuid;
 
 /**

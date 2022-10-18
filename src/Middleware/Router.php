@@ -19,7 +19,7 @@ use FastyBird\Connector\HomeKit\Events;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Metadata;
+use FastyBird\Library\Metadata;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use IPub\SlimRouter;
