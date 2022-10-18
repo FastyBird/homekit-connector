@@ -26,11 +26,11 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
-use FastyBird\DevicesModule\Models as DevicesModuleModels;
-use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
+use FastyBird\Module\Devices\Models as DevicesModels;
+use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use IPub\DoctrineOrmQuery;
@@ -170,7 +170,7 @@ final class PairingController extends BaseController
 		private readonly Protocol\Tlv $tlv,
 		private readonly Models\Clients\ClientsRepository $clientsRepository,
 		private readonly Models\Clients\ClientsManager $clientsManager,
-		private readonly DevicesModuleModels\Connectors\ConnectorsRepository $connectorsRepository,
+		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsRepository,
 	)
 	{
 		$this->edDsa = new EdDSA('ed25519');
@@ -515,7 +515,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
-	 * @throws DevicesModuleExceptions\InvalidState
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -863,7 +863,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
-	 * @throws DevicesModuleExceptions\InvalidState
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -1083,7 +1083,7 @@ final class PairingController extends BaseController
 		/** @var mixed $connectorEntity */
 		$connectorEntity = $this->databaseHelper->query(
 			function () use ($connectorId): Entities\HomeKitConnector|null {
-				$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
+				$findConnectorQuery = new DevicesQueries\FindConnectors();
 				$findConnectorQuery->byId($connectorId);
 
 				$connector = $this->connectorsRepository->findOneBy(
@@ -1255,7 +1255,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
-	 * @throws DevicesModuleExceptions\InvalidState
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -1439,7 +1439,7 @@ final class PairingController extends BaseController
 	 * @return Array<int, Array<int, (int|Array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
-	 * @throws DevicesModuleExceptions\InvalidState
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\FileNotFound
@@ -1817,7 +1817,7 @@ final class PairingController extends BaseController
 			try {
 				$this->databaseHelper->transaction(
 					function () use ($connectorId, $clientUid, $clientPublicKey, $clientPermission): void {
-						$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
+						$findConnectorQuery = new DevicesQueries\FindConnectors();
 						$findConnectorQuery->byId($connectorId);
 
 						$connector = $this->connectorsRepository->findOneBy(

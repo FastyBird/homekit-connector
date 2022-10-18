@@ -16,7 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Entities;
 
 use Doctrine\ORM\Mapping as ORM;
-use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 use IPub\DoctrineCrud;
 use IPub\DoctrineCrud\Mapping\Annotation as IPubDoctrine;
 use IPub\DoctrineTimestampable;
@@ -57,10 +57,10 @@ class Client implements DoctrineCrud\Entities\IEntity,
 
 	/**
 	 * @IPubDoctrine\Crud(is="required")
-	 * @ORM\ManyToOne(targetEntity="FastyBird\DevicesModule\Entities\Connectors\Connector")
+	 * @ORM\ManyToOne(targetEntity="FastyBird\Module\Devices\Entities\Connectors\Connector")
 	 * @ORM\JoinColumn(name="connector_id", referencedColumnName="connector_id", nullable="false")
 	 */
-	private DevicesModuleEntities\Connectors\Connector|null $connector;
+	private DevicesEntities\Connectors\Connector|null $connector;
 
 	/**
 	 * @IPubDoctrine\Crud(is="required")
@@ -85,7 +85,7 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	public function __construct(
 		string $uid,
 		string $publicKey,
-		DevicesModuleEntities\Connectors\Connector $connector,
+		DevicesEntities\Connectors\Connector $connector,
 		Uuid\UuidInterface|null $id = null,
 	)
 	{
@@ -102,7 +102,7 @@ class Client implements DoctrineCrud\Entities\IEntity,
 		return $this->id;
 	}
 
-	public function getConnector(): DevicesModuleEntities\Connectors\Connector
+	public function getConnector(): DevicesEntities\Connectors\Connector
 	{
 		assertNotNull($this->connector);
 

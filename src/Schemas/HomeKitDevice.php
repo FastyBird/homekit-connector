@@ -16,19 +16,19 @@
 namespace FastyBird\Connector\HomeKit\Schemas;
 
 use FastyBird\Connector\HomeKit\Entities;
-use FastyBird\DevicesModule\Schemas as DevicesModuleSchemas;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Schemas as DevicesSchemas;
 
 /**
  * HomeKit connector entity schema
  *
- * @extends DevicesModuleSchemas\Devices\Device<Entities\HomeKitDevice>
+ * @extends DevicesSchemas\Devices\Device<Entities\HomeKitDevice>
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Schemas
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class HomeKitDevice extends DevicesModuleSchemas\Devices\Device
+final class HomeKitDevice extends DevicesSchemas\Devices\Device
 {
 
 	/**

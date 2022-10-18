@@ -9,10 +9,10 @@ use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Tests\Cases\Unit\DbTestCase;
 use FastyBird\Connector\HomeKit\Tests\Tools;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\DevicesModule\DataStorage as DevicesModuleDataStorage;
-use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Module\Devices\DataStorage as DevicesDataStorage;
+use FastyBird\Module\Devices\Models as DevicesModels;
 use Fig\Http\Message\RequestMethodInterface;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
@@ -42,13 +42,13 @@ final class AccessoriesTest extends DbTestCase
 	{
 		parent::setUp();
 
-		$writer = $this->getContainer()->getByType(DevicesModuleDataStorage\Writer::class);
-		$reader = $this->getContainer()->getByType(DevicesModuleDataStorage\Reader::class);
+		$writer = $this->getContainer()->getByType(DevicesDataStorage\Writer::class);
+		$reader = $this->getContainer()->getByType(DevicesDataStorage\Reader::class);
 
 		$writer->write();
 		$reader->read();
 
-		$repository = $this->getContainer()->getByType(DevicesModuleModels\DataStorage\ConnectorsRepository::class);
+		$repository = $this->getContainer()->getByType(DevicesModels\DataStorage\ConnectorsRepository::class);
 
 		$connector = $repository->findById(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
 		assert($connector instanceof MetadataEntities\DevicesModule\Connector);

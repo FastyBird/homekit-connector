@@ -18,12 +18,12 @@ namespace FastyBird\Connector\HomeKit\Consumers;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Protocol;
-use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Library\Exchange\Consumer as ExchangeConsumer;
 use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Models as DevicesModels;
 use Nette;
 use Psr\Log;
 use Throwable;
@@ -47,7 +47,7 @@ final class Consumer implements ExchangeConsumer\Consumer
 	public function __construct(
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
-		private readonly DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
+		private readonly DevicesModels\DataStorage\ChannelsRepository $channelsRepository,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{

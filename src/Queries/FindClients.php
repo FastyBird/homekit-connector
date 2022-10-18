@@ -18,7 +18,7 @@ namespace FastyBird\Connector\HomeKit\Queries;
 use Closure;
 use Doctrine\ORM;
 use FastyBird\Connector\HomeKit\Entities;
-use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 use IPub\DoctrineOrmQuery;
 use Ramsey\Uuid;
 
@@ -68,7 +68,7 @@ class FindClients extends DoctrineOrmQuery\QueryObject
 		};
 	}
 
-	public function forConnector(DevicesModuleEntities\Connectors\Connector $connector): void
+	public function forConnector(DevicesEntities\Connectors\Connector $connector): void
 	{
 		$this->select[] = static function (ORM\QueryBuilder $qb): void {
 			$qb->addSelect('connector');

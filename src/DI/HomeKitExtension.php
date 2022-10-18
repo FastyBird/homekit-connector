@@ -29,7 +29,7 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Router;
 use FastyBird\Connector\HomeKit\Schemas;
 use FastyBird\Connector\HomeKit\Servers;
-use FastyBird\DevicesModule\DI as DevicesModuleDI;
+use FastyBird\Module\Devices\DI as DevicesDI;
 use IPub\DoctrineCrud;
 use Nette;
 use Nette\DI;
@@ -170,7 +170,7 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addFactoryDefinition($this->prefix('executor.factory'))
 			->setImplement(Connector\ConnectorFactory::class)
 			->addTag(
-				DevicesModuleDI\DevicesModuleExtension::CONNECTOR_TYPE_TAG,
+				DevicesDI\DevicesExtension::CONNECTOR_TYPE_TAG,
 				Entities\HomeKitConnector::CONNECTOR_TYPE,
 			)
 			->getResultDefinition()

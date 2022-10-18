@@ -26,14 +26,14 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DateTimeFactory;
-use FastyBird\DevicesModule\Models as DevicesModuleModels;
-use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Library\Exchange\Entities as ExchangeEntities;
 use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Exchange\Publisher as ExchangePublisher;
 use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Module\Devices\Models as DevicesModels;
+use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use IPub\Phone\Exceptions as PhoneExceptions;
@@ -73,13 +73,13 @@ final class CharacteristicsController extends BaseController
 		private readonly ExchangeEntities\EntityFactory $entityFactory,
 		private readonly ExchangePublisher\Container|null $publisher,
 		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher,
-		private readonly DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
-		private readonly DevicesModuleModels\Connectors\Properties\PropertiesRepository $connectorsPropertiesRepository,
-		private readonly DevicesModuleModels\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
-		private readonly DevicesModuleModels\Devices\Properties\PropertiesRepository $devicesPropertiesRepository,
-		private readonly DevicesModuleModels\Devices\Properties\PropertiesManager $devicesPropertiesManager,
-		private readonly DevicesModuleModels\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
-		private readonly DevicesModuleModels\Channels\Properties\PropertiesManager $channelsPropertiesManager,
+		private readonly DevicesModels\DataStorage\ChannelsRepository $channelsRepository,
+		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $connectorsPropertiesRepository,
+		private readonly DevicesModels\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
+		private readonly DevicesModels\Devices\Properties\PropertiesRepository $devicesPropertiesRepository,
+		private readonly DevicesModels\Devices\Properties\PropertiesManager $devicesPropertiesManager,
+		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
+		private readonly DevicesModels\Channels\Properties\PropertiesManager $channelsPropertiesManager,
 	)
 	{
 	}
@@ -642,7 +642,7 @@ final class CharacteristicsController extends BaseController
 						);
 					} else {
 						$this->databaseHelper->transaction(function () use ($characteristic): void {
-							$findPropertyQuery = new DevicesModuleQueries\FindConnectorProperties();
+							$findPropertyQuery = new DevicesQueries\FindConnectorProperties();
 							$findPropertyQuery->byId($characteristic->getProperty()->getId());
 
 							$property = $this->connectorsPropertiesRepository->findOneBy($findPropertyQuery);
@@ -721,7 +721,7 @@ final class CharacteristicsController extends BaseController
 						);
 					} else {
 						$this->databaseHelper->transaction(function () use ($characteristic): void {
-							$findPropertyQuery = new DevicesModuleQueries\FindDeviceProperties();
+							$findPropertyQuery = new DevicesQueries\FindDeviceProperties();
 							$findPropertyQuery->byId($characteristic->getProperty()->getId());
 
 							$property = $this->devicesPropertiesRepository->findOneBy($findPropertyQuery);
@@ -801,7 +801,7 @@ final class CharacteristicsController extends BaseController
 							);
 						} else {
 							$this->databaseHelper->transaction(function () use ($characteristic, $channel): void {
-								$findPropertyQuery = new DevicesModuleQueries\FindChannelProperties();
+								$findPropertyQuery = new DevicesQueries\FindChannelProperties();
 								$findPropertyQuery->byId($characteristic->getProperty()->getId());
 
 								$property = $this->channelsPropertiesRepository->findOneBy($findPropertyQuery);

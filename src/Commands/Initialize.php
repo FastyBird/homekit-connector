@@ -22,12 +22,12 @@ use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
-use FastyBird\DevicesModule\Models as DevicesModuleModels;
-use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
+use FastyBird\Module\Devices\Models as DevicesModels;
+use FastyBird\Module\Devices\Queries as DevicesQueries;
 use IPub\DoctrineOrmQuery\Exceptions as DoctrineOrmQueryExceptions;
 use Nette\Utils;
 use Psr\Log;
@@ -63,11 +63,11 @@ class Initialize extends Console\Command\Command
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private readonly DevicesModuleModels\Connectors\ConnectorsRepository $connectorsRepository,
-		private readonly DevicesModuleModels\Connectors\ConnectorsManager $connectorsManager,
-		private readonly DevicesModuleModels\Connectors\Properties\PropertiesManager $propertiesManager,
-		private readonly DevicesModuleModels\Connectors\Controls\ControlsManager $controlsManager,
-		private readonly DevicesModuleModels\DataStorage\ConnectorsRepository $connectorsDataStorageRepository,
+		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsRepository,
+		private readonly DevicesModels\Connectors\ConnectorsManager $connectorsManager,
+		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesManager,
+		private readonly DevicesModels\Connectors\Controls\ControlsManager $controlsManager,
+		private readonly DevicesModels\DataStorage\ConnectorsRepository $connectorsDataStorageRepository,
 		private readonly Persistence\ManagerRegistry $managerRegistry,
 		Log\LoggerInterface|null $logger = null,
 		string|null $name = null,
@@ -225,7 +225,7 @@ class Initialize extends Console\Command\Command
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
+				'entity' => DevicesEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
 				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
 				'value' => HomeKit\Constants::DEFAULT_PORT,
@@ -233,7 +233,7 @@ class Initialize extends Console\Command\Command
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
+				'entity' => DevicesEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PIN_CODE,
 				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 				'value' => Helpers\Protocol::generatePinCode(),
@@ -241,7 +241,7 @@ class Initialize extends Console\Command\Command
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
+				'entity' => DevicesEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS,
 				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 				'value' => Helpers\Protocol::generateMacAddress(),
@@ -249,7 +249,7 @@ class Initialize extends Console\Command\Command
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
+				'entity' => DevicesEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID,
 				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 				'value' => Helpers\Protocol::generateSetupId(),
@@ -257,7 +257,7 @@ class Initialize extends Console\Command\Command
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
+				'entity' => DevicesEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION,
 				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_USHORT),
 				'value' => 1,
@@ -265,7 +265,7 @@ class Initialize extends Console\Command\Command
 			]));
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
+				'entity' => DevicesEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED,
 				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_BOOLEAN),
 				'value' => false,
@@ -369,7 +369,7 @@ class Initialize extends Console\Command\Command
 			return;
 		}
 
-		$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
+		$findConnectorQuery = new DevicesQueries\FindConnectors();
 		$findConnectorQuery->byIdentifier($connectorIdentifier);
 
 		$connector = $this->connectorsRepository->findOneBy($findConnectorQuery);
@@ -503,7 +503,7 @@ class Initialize extends Console\Command\Command
 			return;
 		}
 
-		$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
+		$findConnectorQuery = new DevicesQueries\FindConnectors();
 		$findConnectorQuery->byIdentifier($connectorIdentifier);
 
 		$connector = $this->connectorsRepository->findOneBy($findConnectorQuery);

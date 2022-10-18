@@ -20,13 +20,13 @@ use Evenement;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
-use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
-use FastyBird\DevicesModule\Models as DevicesModuleModels;
-use FastyBird\DevicesModule\Queries as DevicesModuleQueries;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
+use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
+use FastyBird\Module\Devices\Models as DevicesModels;
+use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Nette;
 use Nette\Utils;
 use Ramsey\Uuid;
@@ -48,17 +48,17 @@ final class Connector extends Evenement\EventEmitter
 
 	public function __construct(
 		private readonly Database $databaseHelper,
-		private readonly DevicesModuleModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository,
-		private readonly DevicesModuleModels\Connectors\Properties\PropertiesRepository $propertiesEntitiesRepository,
-		private readonly DevicesModuleModels\Connectors\Properties\PropertiesManager $propertiesEntitiesManagers,
-		private readonly DevicesModuleModels\DataStorage\ConnectorPropertiesRepository $propertiesItemsRepository,
+		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository,
+		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $propertiesEntitiesRepository,
+		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesEntitiesManagers,
+		private readonly DevicesModels\DataStorage\ConnectorPropertiesRepository $propertiesItemsRepository,
 	)
 	{
 	}
 
 	/**
 	 * @throws DBAL\Exception
-	 * @throws DevicesModuleExceptions\InvalidState
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\FileNotFound
@@ -131,17 +131,17 @@ final class Connector extends Evenement\EventEmitter
 	): void
 	{
 		$property = $this->databaseHelper->query(
-			function () use ($connectorId, $type): DevicesModuleEntities\Connectors\Properties\Variable|null {
-				$findConnectorProperty = new DevicesModuleQueries\FindConnectorProperties();
+			function () use ($connectorId, $type): DevicesEntities\Connectors\Properties\Variable|null {
+				$findConnectorProperty = new DevicesQueries\FindConnectorProperties();
 				$findConnectorProperty->byConnectorId($connectorId);
 				$findConnectorProperty->byIdentifier(strval($type->getValue()));
 
 				$property = $this->propertiesEntitiesRepository->findOneBy(
 					$findConnectorProperty,
-					DevicesModuleEntities\Connectors\Properties\Variable::class,
+					DevicesEntities\Connectors\Properties\Variable::class,
 				);
 				assert(
-					$property instanceof DevicesModuleEntities\Connectors\Properties\Variable || $property === null,
+					$property instanceof DevicesEntities\Connectors\Properties\Variable || $property === null,
 				);
 
 				return $property;
@@ -157,7 +157,7 @@ final class Connector extends Evenement\EventEmitter
 			) {
 				$this->databaseHelper->transaction(
 					function () use ($connectorId, $type, $value): void {
-						$findConnectorQuery = new DevicesModuleQueries\FindConnectors();
+						$findConnectorQuery = new DevicesQueries\FindConnectors();
 						$findConnectorQuery->byId($connectorId);
 
 						$connector = $this->connectorsEntitiesRepository->findOneBy(
@@ -173,7 +173,7 @@ final class Connector extends Evenement\EventEmitter
 
 						$this->propertiesEntitiesManagers->create(
 							Utils\ArrayHash::from([
-								'entity' => DevicesModuleEntities\Connectors\Properties\Variable::class,
+								'entity' => DevicesEntities\Connectors\Properties\Variable::class,
 								'identifier' => $type->getValue(),
 								'dataType' => MetadataTypes\DataType::get(
 									MetadataTypes\DataType::DATA_TYPE_STRING,

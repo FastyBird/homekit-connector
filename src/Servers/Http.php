@@ -24,11 +24,11 @@ use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Middleware;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\DevicesModule\Exceptions as DevicesModuleExceptions;
-use FastyBird\DevicesModule\Models as DevicesModuleModels;
 use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
+use FastyBird\Module\Devices\Models as DevicesModels;
 use Nette;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -77,9 +77,9 @@ final class Http implements Server
 		private readonly Entities\Protocol\AccessoryFactory $accessoryFactory,
 		private readonly Entities\Protocol\ServiceFactory $serviceFactory,
 		private readonly Entities\Protocol\CharacteristicsFactory $characteristicsFactory,
-		private readonly DevicesModuleModels\DataStorage\DevicesRepository $devicesRepository,
-		private readonly DevicesModuleModels\DataStorage\ChannelsRepository $channelsRepository,
-		private readonly DevicesModuleModels\DataStorage\ChannelPropertiesRepository $channelPropertiesRepository,
+		private readonly DevicesModels\DataStorage\DevicesRepository $devicesRepository,
+		private readonly DevicesModels\DataStorage\ChannelsRepository $channelsRepository,
+		private readonly DevicesModels\DataStorage\ChannelPropertiesRepository $channelPropertiesRepository,
 		private readonly EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
 	)
@@ -147,8 +147,8 @@ final class Http implements Server
 
 	/**
 	 * @throws DBAL\Exception
-	 * @throws DevicesModuleExceptions\InvalidState
-	 * @throws DevicesModuleExceptions\Terminate
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws DevicesExceptions\Terminate
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -263,7 +263,7 @@ final class Http implements Server
 				],
 			);
 
-			throw new DevicesModuleExceptions\Terminate(
+			throw new DevicesExceptions\Terminate(
 				'Socket server could not be created',
 				$ex->getCode(),
 				$ex,
@@ -322,7 +322,7 @@ final class Http implements Server
 				],
 			);
 
-			throw new DevicesModuleExceptions\Terminate(
+			throw new DevicesExceptions\Terminate(
 				'HTTP server was terminated',
 				$ex->getCode(),
 				$ex,
@@ -372,7 +372,7 @@ final class Http implements Server
 				],
 			);
 
-			throw new DevicesModuleExceptions\Terminate(
+			throw new DevicesExceptions\Terminate(
 				'HTTP server was terminated',
 				$ex->getCode(),
 				$ex,

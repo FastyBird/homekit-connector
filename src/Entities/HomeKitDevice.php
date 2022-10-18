@@ -16,13 +16,13 @@
 namespace FastyBird\Connector\HomeKit\Entities;
 
 use Doctrine\ORM\Mapping as ORM;
-use FastyBird\DevicesModule\Entities as DevicesModuleEntities;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 
 /**
  * @ORM\Entity
  */
-class HomeKitDevice extends DevicesModuleEntities\Devices\Device
+class HomeKitDevice extends DevicesEntities\Devices\Device
 {
 
 	public const DEVICE_TYPE = 'homekit';

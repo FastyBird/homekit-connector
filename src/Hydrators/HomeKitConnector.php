@@ -16,18 +16,18 @@
 namespace FastyBird\Connector\HomeKit\Hydrators;
 
 use FastyBird\Connector\HomeKit\Entities;
-use FastyBird\DevicesModule\Hydrators as DevicesModuleHydrators;
+use FastyBird\Module\Devices\Hydrators as DevicesHydrators;
 
 /**
  * HomeKit connector entity hydrator
  *
- * @extends DevicesModuleHydrators\Connectors\Connector<Entities\HomeKitConnector>
+ * @extends DevicesHydrators\Connectors\Connector<Entities\HomeKitConnector>
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Hydrators
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class HomeKitConnector extends DevicesModuleHydrators\Connectors\Connector
+final class HomeKitConnector extends DevicesHydrators\Connectors\Connector
 {
 
 	public function getEntityName(): string
