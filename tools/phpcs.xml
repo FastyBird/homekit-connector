@@ -25,6 +25,5 @@
     </rule>
 
     <!--Exclude folders -->
-    <exclude-pattern>/tests/tmp</exclude-pattern>
     <exclude-pattern>/tests/stubs/*</exclude-pattern>
 </ruleset>

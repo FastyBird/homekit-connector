@@ -205,12 +205,12 @@ jobs:
       - name: "Tests"
         run: "make tests"
 
-      - name: "Upload test output"
-        if: ${{ failure() }}
+      - name: "Upload logs"
         uses: "actions/upload-artifact@v2"
         with:
-          name: output
-          path: tests/**/output
+          name: "Logs - Tests (${{ matrix.operating-system }}, ${{ matrix.php-version }}, ${{ matrix.composer-flags }})"
+          path: "var/log"
+          if-no-files-found: "ignore"
 
   tests-code-coverage:
     name: "Code tests with code coverage"

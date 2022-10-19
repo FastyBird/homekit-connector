@@ -18,7 +18,7 @@ HomeKit connector is extension for [FastyBird](https://www.fastybird.com) [IoT](
 which is integrating [HomeKit Accessory Protoccol](https://www.homekit.org).
 
 HomeKit connector is an [Apache2 licensed](http://www.apache.org/licenses/LICENSE-2.0) distributed extension, developed
-in [PHP](https://www.php.net) with [Nette framework](https://nette.org).
+in [PHP](https://www.php.net) on top of the [Nette framework](https://nette.org) and [Symfony framework](https://symfony.com).
 
 ### Features:
 
@@ -56,14 +56,19 @@ system with [Apple HomeKit]((https://www.homekit.org)) in [documentation](https:
 
 ## Feedback
 
-Use the [issue tracker](https://github.com/FastyBird/homekit-connector/issues) for bugs
-or [mail](mailto:code@fastybird.com) or [Tweet](https://twitter.com/fastybird) us for any idea that can improve the project.
+Use the [issue tracker](https://github.com/FastyBird/fastybird/issues) for bugs
+or [mail](mailto:code@fastybird.com) or [Tweet](https://twitter.com/fastybird) us for any idea that can improve the
+project.
 
 Thank you for testing, reporting and contributing.
 
 ## Changelog
 
-For release info check [release page](https://github.com/FastyBird/homekit-connector/releases)
+For release info check [release page](https://github.com/FastyBird/fastybird/releases)
+
+## Contribute
+
+The sources of this package are contained in the [FastyBird monorepo](https://github.com/FastyBird/fastybird). We welcome contributions for this package on [FastyBird/fastybird](https://github.com/FastyBird/).
 
 ## Maintainers
 
