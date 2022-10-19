@@ -2,6 +2,7 @@
 
 namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Models;
 
+use Exception;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Models;
@@ -14,7 +15,6 @@ use Nette;
 use Nette\Utils;
 use Ramsey\Uuid;
 use RuntimeException;
-use Throwable;
 use function random_bytes;
 
 final class SessionsManagerTest extends DbTestCase
@@ -25,8 +25,8 @@ final class SessionsManagerTest extends DbTestCase
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Nette\DI\MissingServiceException
+	 * @throws Exception
 	 * @throws RuntimeException
-	 * @throws Throwable
 	 */
 	public function testCreate(): void
 	{
@@ -59,8 +59,8 @@ final class SessionsManagerTest extends DbTestCase
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Nette\DI\MissingServiceException
+	 * @throws Exception
 	 * @throws RuntimeException
-	 * @throws Throwable
 	 */
 	public function testUpdate(): void
 	{

@@ -2,6 +2,7 @@
 
 namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Controllers;
 
+use Exception;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Middleware;
 use FastyBird\Connector\HomeKit\Protocol;
@@ -30,6 +31,7 @@ final class CharacteristicsTest extends DbTestCase
 {
 
 	/**
+	 * @throws Exception
 	 * @throws InvalidArgumentException
 	 * @throws Flysystem\FilesystemException
 	 * @throws MetadataExceptions\FileNotFound

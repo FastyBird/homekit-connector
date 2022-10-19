@@ -15,6 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Consumers;
 
+use Exception;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Protocol;
@@ -26,7 +27,6 @@ use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use Nette;
 use Psr\Log;
-use Throwable;
 use function intval;
 
 /**
@@ -56,7 +56,12 @@ final class Consumer implements ExchangeConsumer\Consumer
 
 	/**
 	 * @throws Metadata\Exceptions\FileNotFound
-	 * @throws Throwable
+	 * @throws Metadata\Exceptions\InvalidArgument
+	 * @throws Metadata\Exceptions\InvalidData
+	 * @throws Metadata\Exceptions\InvalidState
+	 * @throws Metadata\Exceptions\Logic
+	 * @throws Metadata\Exceptions\MalformedInput
+	 * @throws Exception
 	 */
 	public function consume(
 		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource|MetadataTypes\TriggerSource $source,
