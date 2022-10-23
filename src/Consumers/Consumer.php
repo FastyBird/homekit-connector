@@ -19,7 +19,6 @@ use Exception;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Protocol;
-use FastyBird\Library\Exchange\Consumer as ExchangeConsumer;
 use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
@@ -37,7 +36,7 @@ use function intval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Consumer implements ExchangeConsumer\Consumer
+final class Consumer
 {
 
 	use Nette\SmartObject;

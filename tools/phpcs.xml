@@ -26,4 +26,9 @@
 
     <!--Exclude folders -->
     <exclude-pattern>/tests/stubs/*</exclude-pattern>
+
+    <!--Exclude rules/files -->
+    <rule ref="SlevomatCodingStandard.Files.LineLength.LineTooLong">
+        <exclude-pattern>src/Controllers/CharacteristicsController\.php</exclude-pattern>
+    </rule>
 </ruleset>

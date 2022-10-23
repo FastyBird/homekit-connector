@@ -31,7 +31,6 @@ extensions:
     fbDateTimeFactory                   : FastyBird\DateTimeFactory\DI\DateTimeFactoryExtension
     fbJsonApi                           : FastyBird\JsonApi\DI\JsonApiExtension
     fbSimpleAuth                        : FastyBird\SimpleAuth\DI\SimpleAuthExtension
-    fbExchangeLibrary                   : FastyBird\Library\Exchange\DI\ExchangeExtension
     fbMetadataLibrary                   : FastyBird\Library\Metadata\DI\MetadataExtension
     fbDevicesModule                     : FastyBird\Module\Devices\DI\DevicesExtension
 
