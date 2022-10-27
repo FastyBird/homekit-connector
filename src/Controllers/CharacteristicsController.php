@@ -30,8 +30,10 @@ use FastyBird\Library\Exchange\Publisher as ExchangePublisher;
 use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
+use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use IPub\Phone\Exceptions as PhoneExceptions;
@@ -66,7 +68,6 @@ final class CharacteristicsController extends BaseController
 	public function __construct(
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
-		private readonly Helpers\Database $databaseHelper,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly MetadataEntities\RoutingFactory $entityFactory,
 		private readonly ExchangePublisher\Container $publisher,
@@ -78,6 +79,7 @@ final class CharacteristicsController extends BaseController
 		private readonly DevicesModels\Devices\Properties\PropertiesManager $devicesPropertiesManager,
 		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly DevicesModels\Channels\Properties\PropertiesManager $channelsPropertiesManager,
+		private readonly DevicesUtilities\Database $databaseHelper,
 	)
 	{
 	}
@@ -506,8 +508,8 @@ final class CharacteristicsController extends BaseController
 	 * @return Array<string, bool|float|int|string|null>
 	 *
 	 * @throws DBAL\Exception
-	 * @throws Exceptions\InvalidState
-	 * @throws Exceptions\Runtime
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws DevicesExceptions\Runtime
 	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData

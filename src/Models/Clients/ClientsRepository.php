@@ -20,6 +20,8 @@ use Doctrine\Persistence;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Queries;
+use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
+use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use IPub\DoctrineOrmQuery;
 use Nette;
 
@@ -39,21 +41,25 @@ final class ClientsRepository
 	/** @var ORM\EntityRepository<Entities\Client>|null */
 	private ORM\EntityRepository|null $repository = null;
 
-	public function __construct(private readonly Persistence\ManagerRegistry $managerRegistry)
+	public function __construct(
+		private readonly DevicesUtilities\Database $database,
+		private readonly Persistence\ManagerRegistry $managerRegistry,
+	)
 	{
 	}
 
 	/**
 	 * @phpstan-param Queries\FindClients<Entities\Client> $queryObject
 	 *
-	 * @throws DoctrineOrmQuery\Exceptions\InvalidStateException
-	 * @throws DoctrineOrmQuery\Exceptions\QueryException
+	 * @throws DevicesExceptions\InvalidState
 	 */
 	public function findOneBy(
 		Queries\FindClients $queryObject,
 	): Entities\Client|null
 	{
-		return $queryObject->fetchOne($this->getRepository());
+		return $this->database->query(
+			fn (): Entities\Client|null => $queryObject->fetchOne($this->getRepository()),
+		);
 	}
 
 	/**
@@ -61,20 +67,23 @@ final class ClientsRepository
 	 *
 	 * @return DoctrineOrmQuery\ResultSet<Entities\Client>
 	 *
-	 * @throws DoctrineOrmQuery\Exceptions\QueryException
-	 * @throws Exceptions\InvalidState
+	 * @throws DevicesExceptions\InvalidState
 	 */
 	public function getResultSet(
 		Queries\FindClients $queryObject,
 	): DoctrineOrmQuery\ResultSet
 	{
-		$result = $queryObject->fetch($this->getRepository());
+		return $this->database->query(
+			function () use ($queryObject): DoctrineOrmQuery\ResultSet {
+				$result = $queryObject->fetch($this->getRepository());
 
-		if (!$result instanceof DoctrineOrmQuery\ResultSet) {
-			throw new Exceptions\InvalidState('Result set for given query could not be loaded.');
-		}
+				if (!$result instanceof DoctrineOrmQuery\ResultSet) {
+					throw new Exceptions\InvalidState('Result set for given query could not be loaded.');
+				}
 
-		return $result;
+				return $result;
+			},
+		);
 	}
 
 	/**

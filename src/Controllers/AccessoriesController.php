@@ -96,9 +96,9 @@ final class AccessoriesController extends BaseController
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\HapRequestError
 	 * @throws Exceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
 	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidData

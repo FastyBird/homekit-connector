@@ -31,6 +31,7 @@ use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
+use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use IPub\DoctrineOrmQuery;
@@ -166,11 +167,11 @@ final class PairingController extends BaseController
 
 	public function __construct(
 		private readonly Helpers\Connector $connectorHelper,
-		private readonly Helpers\Database $databaseHelper,
 		private readonly Protocol\Tlv $tlv,
 		private readonly Models\Clients\ClientsRepository $clientsRepository,
 		private readonly Models\Clients\ClientsManager $clientsManager,
 		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsRepository,
+		private readonly DevicesUtilities\Database $databaseHelper,
 	)
 	{
 		$this->edDsa = new EdDSA('ed25519');
@@ -516,9 +517,9 @@ final class PairingController extends BaseController
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
 	 * @throws Math\Exception\MathException
 	 * @throws Math\Exception\NegativeNumberException
@@ -864,9 +865,9 @@ final class PairingController extends BaseController
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData
@@ -1256,9 +1257,9 @@ final class PairingController extends BaseController
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData
@@ -1440,8 +1441,8 @@ final class PairingController extends BaseController
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData

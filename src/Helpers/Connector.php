@@ -27,6 +27,7 @@ use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
+use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
 use Nette\Utils;
 use Ramsey\Uuid;
@@ -47,7 +48,7 @@ final class Connector extends Evenement\EventEmitter
 	use Nette\SmartObject;
 
 	public function __construct(
-		private readonly Database $databaseHelper,
+		private readonly DevicesUtilities\Database $databaseHelper,
 		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository,
 		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $propertiesEntitiesRepository,
 		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesEntitiesManagers,
@@ -59,8 +60,8 @@ final class Connector extends Evenement\EventEmitter
 	/**
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData
@@ -121,8 +122,9 @@ final class Connector extends Evenement\EventEmitter
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 */
 	public function setConfiguration(
 		Uuid\UuidInterface $connectorId,
