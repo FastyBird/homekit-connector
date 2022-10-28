@@ -15,9 +15,11 @@
 
 namespace FastyBird\Connector\HomeKit\Connector;
 
+use FastyBird\Connector\HomeKit\Consumers;
 use FastyBird\Connector\HomeKit\Servers;
-use FastyBird\Library\Metadata;
+use FastyBird\Library\Exchange\Consumers as ExchangeConsumers;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
+use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Connectors as DevicesConnectors;
 use Nette;
 use Psr\Log;
@@ -46,6 +48,7 @@ final class Connector implements DevicesConnectors\Connector
 	public function __construct(
 		private readonly MetadataEntities\DevicesModule\Connector $connector,
 		private readonly array $serversFactories,
+		private readonly ExchangeConsumers\Container $consumer,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{
@@ -54,10 +57,12 @@ final class Connector implements DevicesConnectors\Connector
 
 	public function execute(): void
 	{
+		$this->consumer->enable(Consumers\Consumer::class);
+
 		$this->logger->debug(
 			'Registering bridge accessory from connector configuration',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
@@ -75,7 +80,7 @@ final class Connector implements DevicesConnectors\Connector
 		$this->logger->debug(
 			'Connector has been started',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
@@ -90,10 +95,12 @@ final class Connector implements DevicesConnectors\Connector
 			$server->disconnect();
 		}
 
+		$this->consumer->disable(Consumers\Consumer::class);
+
 		$this->logger->debug(
 			'Connector has been terminated',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),

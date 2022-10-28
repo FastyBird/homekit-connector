@@ -22,7 +22,6 @@ use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -283,7 +282,7 @@ class Initialize extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'initialize-cmd',
 					'exception' => [
 						'message' => $ex->getMessage(),
@@ -359,7 +358,7 @@ class Initialize extends Console\Command\Command
 			$this->logger->alert(
 				'Connector identifier was not able to get from answer',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'initialize-cmd',
 				],
 			);
@@ -378,7 +377,7 @@ class Initialize extends Console\Command\Command
 			$this->logger->alert(
 				'Connector was not found',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'initialize-cmd',
 				],
 			);
@@ -433,7 +432,7 @@ class Initialize extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'initialize-cmd',
 					'exception' => [
 						'message' => $ex->getMessage(),
@@ -492,7 +491,7 @@ class Initialize extends Console\Command\Command
 			$this->logger->alert(
 				'Connector identifier was not able to get from answer',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'initialize-cmd',
 				],
 			);
@@ -511,7 +510,7 @@ class Initialize extends Console\Command\Command
 			$this->logger->alert(
 				'Connector was not found',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'initialize-cmd',
 				],
 			);
@@ -548,7 +547,7 @@ class Initialize extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'initialize-cmd',
 					'exception' => [
 						'message' => $ex->getMessage(),

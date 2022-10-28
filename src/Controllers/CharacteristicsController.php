@@ -26,10 +26,13 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DateTimeFactory;
+use FastyBird\Library\Exchange\Entities as ExchangeEntities;
+use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Exchange\Publisher as ExchangePublisher;
 use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
@@ -69,7 +72,7 @@ final class CharacteristicsController extends BaseController
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
-		private readonly MetadataEntities\RoutingFactory $entityFactory,
+		private readonly ExchangeEntities\EntityFactory $entityFactory,
 		private readonly ExchangePublisher\Container $publisher,
 		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher,
 		private readonly DevicesModels\DataStorage\ChannelsRepository $channelsRepository,
@@ -99,7 +102,7 @@ final class CharacteristicsController extends BaseController
 		$this->logger->debug(
 			'Requested list of characteristics of selected accessories',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'characteristics-controller',
 				'request' => [
 					'address' => $request->getServerParams()['REMOTE_ADDR'],
@@ -223,7 +226,7 @@ final class CharacteristicsController extends BaseController
 		$this->logger->debug(
 			'Requested updating of characteristics of selected accessories',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'characteristics-controller',
 				'request' => [
 					'address' => $request->getServerParams()['REMOTE_ADDR'],
@@ -510,6 +513,7 @@ final class CharacteristicsController extends BaseController
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws DevicesExceptions\Runtime
+	 * @throws ExchangeExceptions\InvalidState
 	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData
@@ -596,7 +600,7 @@ final class CharacteristicsController extends BaseController
 				$this->logger->error(
 					'Accessory characteristic is not connected to any property',
 					[
-						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'characteristics-controller',
 						'characteristic' => [
 							'type' => $characteristic->getTypeId()->toString(),
@@ -635,7 +639,7 @@ final class CharacteristicsController extends BaseController
 							$this->logger->error(
 								'Connector static property could not be updated',
 								[
-									'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+									'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 									'type' => 'characteristics-controller',
 									'characteristic' => [
 										'type' => $characteristic->getTypeId()->toString(),
@@ -655,7 +659,7 @@ final class CharacteristicsController extends BaseController
 					$this->logger->debug(
 						'Apple client requested to set expected value to connector property',
 						[
-							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'characteristics-controller',
 							'characteristic' => [
 								'type' => $characteristic->getTypeId()->toString(),
@@ -710,7 +714,7 @@ final class CharacteristicsController extends BaseController
 								$this->logger->error(
 									'Device static property could not be updated',
 									[
-										'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+										'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 										'type' => 'characteristics-controller',
 										'characteristic' => [
 											'type' => $characteristic->getTypeId()->toString(),
@@ -731,7 +735,7 @@ final class CharacteristicsController extends BaseController
 					$this->logger->debug(
 						'Apple client requested to set expected value to device property',
 						[
-							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'characteristics-controller',
 							'characteristic' => [
 								'type' => $characteristic->getTypeId()->toString(),
@@ -793,7 +797,7 @@ final class CharacteristicsController extends BaseController
 									$this->logger->error(
 										'Device static property could not be updated',
 										[
-											'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+											'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 											'type' => 'characteristics-controller',
 											'characteristic' => [
 												'type' => $characteristic->getTypeId()->toString(),
@@ -817,7 +821,7 @@ final class CharacteristicsController extends BaseController
 						$this->logger->debug(
 							'Apple client requested to set expected value to device channel property',
 							[
-								'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+								'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 								'type' => 'characteristics-controller',
 								'characteristic' => [
 									'type' => $characteristic->getTypeId()->toString(),
@@ -838,7 +842,7 @@ final class CharacteristicsController extends BaseController
 						$this->logger->error(
 							'Channel for characteristic dynamic property was not found',
 							[
-								'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+								'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 								'type' => 'characteristics-controller',
 								'characteristic' => [
 									'type' => $characteristic->getTypeId()->toString(),
@@ -898,7 +902,7 @@ final class CharacteristicsController extends BaseController
 				$this->logger->warning(
 					'Connected client is without defined IP address and could not subscribe for events',
 					[
-						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'characteristics-controller',
 						'characteristic' => [
 							'type' => $characteristic->getTypeId()->toString(),

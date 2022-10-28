@@ -19,7 +19,7 @@ use FastyBird\Connector\HomeKit\Events;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata;
+use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use IPub\SlimRouter;
@@ -75,7 +75,7 @@ final class Router
 			$this->logger->warning(
 				'Request ended with error',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'router-middleware',
 					'exception' => [
 						'message' => $ex->getMessage(),
@@ -98,7 +98,7 @@ final class Router
 			$this->logger->warning(
 				'Received invalid HTTP request',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'router-middleware',
 					'exception' => [
 						'message' => $ex->getMessage(),
@@ -121,7 +121,7 @@ final class Router
 			$this->logger->error(
 				'An unhandled error occurred during handling server HTTP request',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'router-middleware',
 					'exception' => [
 						'message' => $ex->getMessage(),

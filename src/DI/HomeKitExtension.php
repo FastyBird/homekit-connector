@@ -19,6 +19,7 @@ use Doctrine\Persistence;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Commands;
 use FastyBird\Connector\HomeKit\Connector;
+use FastyBird\Connector\HomeKit\Consumers;
 use FastyBird\Connector\HomeKit\Controllers;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Helpers;
@@ -29,6 +30,8 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Router;
 use FastyBird\Connector\HomeKit\Schemas;
 use FastyBird\Connector\HomeKit\Servers;
+use FastyBird\Connector\HomeKit\Subscribers;
+use FastyBird\Library\Exchange\DI as ExchangeDI;
 use FastyBird\Module\Devices\DI as DevicesDI;
 use IPub\DoctrineCrud;
 use Nette;
@@ -67,7 +70,6 @@ class HomeKitExtension extends DI\CompilerExtension
 	{
 		$builder = $this->getContainerBuilder();
 
-		// Servers
 		$builder->addFactoryDefinition($this->prefix('server.mdns'))
 			->setImplement(Servers\MdnsFactory::class)
 			->getResultDefinition()
@@ -88,33 +90,29 @@ class HomeKitExtension extends DI\CompilerExtension
 			->getResultDefinition()
 			->setType(Servers\SecureConnection::class);
 
-		// API schemas
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\HomeKitConnector::class);
 
 		$builder->addDefinition($this->prefix('schemas.device.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\HomeKitDevice::class);
 
-		// API hydrators
 		$builder->addDefinition($this->prefix('hydrators.connector.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Hydrators\HomeKitConnector::class);
 
 		$builder->addDefinition($this->prefix('hydrators.device.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Hydrators\HomeKitDevice::class);
 
-		// Helpers
 		$builder->addDefinition($this->prefix('helpers.connector'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Connector::class);
 
 		$builder->addDefinition($this->prefix('helpers.loader'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Loader::class);
 
-		// HTTP server services
 		$router = $builder->addDefinition($this->prefix('http.router'), new DI\Definitions\ServiceDefinition())
 			->setType(Router\Router::class)
 			->setAutowired(false);
 
-		$builder->addDefinition($this->prefix('http.middleware.router'), new DI\Definitions\ServiceDefinition())
+		$builder->addDefinition($this->prefix('http.middlewares.router'), new DI\Definitions\ServiceDefinition())
 			->setType(Middleware\Router::class)
 			->setArguments(['router' => $router]);
 
@@ -133,7 +131,6 @@ class HomeKitExtension extends DI\CompilerExtension
 			->setType(Controllers\PairingController::class)
 			->addTag('nette.inject');
 
-		// Entities
 		$builder->addDefinition($this->prefix('entities.accessory.factory'))
 			->setType(Entities\Protocol\AccessoryFactory::class);
 
@@ -143,27 +140,22 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('entities.characteristic.factory'))
 			->setType(Entities\Protocol\CharacteristicsFactory::class);
 
-		// Protocol utilities
 		$builder->addDefinition($this->prefix('protocol.tlv'), new DI\Definitions\ServiceDefinition())
 			->setType(Protocol\Tlv::class);
 
 		$builder->addDefinition($this->prefix('protocol.accessoryDriver'))
 			->setType(Protocol\Driver::class);
 
-		// Clients
 		$builder->addDefinition($this->prefix('clients.subscriber'))
 			->setType(Clients\Subscriber::class);
 
-		// Database repositories
 		$builder->addDefinition($this->prefix('models.clientsRepository'), new DI\Definitions\ServiceDefinition())
 			->setType(Models\Clients\ClientsRepository::class);
 
-		// Database managers
 		$builder->addDefinition($this->prefix('models.clientsManager'), new DI\Definitions\ServiceDefinition())
 			->setType(Models\Clients\ClientsManager::class)
 			->setArgument('entityCrud', '__placeholder__');
 
-		// Service factory
 		$builder->addFactoryDefinition($this->prefix('executor.factory'))
 			->setImplement(Connector\ConnectorFactory::class)
 			->addTag(
@@ -176,7 +168,13 @@ class HomeKitExtension extends DI\CompilerExtension
 				'serversFactories' => $builder->findByType(Servers\ServerFactory::class),
 			]);
 
-		// Console commands
+		$builder->addDefinition($this->prefix('consumers.exchange'), new DI\Definitions\ServiceDefinition())
+			->setType(Consumers\Consumer::class)
+			->addTag(ExchangeDI\ExchangeExtension::CONSUMER_STATUS, false);
+
+		$builder->addDefinition($this->prefix('subscribers.connector'), new DI\Definitions\ServiceDefinition())
+			->setType(Subscribers\Connector::class);
+
 		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
 			->setType(Commands\Initialize::class);
 

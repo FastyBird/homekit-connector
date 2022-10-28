@@ -19,9 +19,9 @@ use Doctrine\DBAL;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
-use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use Nette;
 use Nette\Utils;
@@ -108,7 +108,7 @@ final class Mdns implements Server
 					$this->logger->debug(
 						'Paired status has been changed',
 						[
-							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'mdns-server',
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
@@ -142,7 +142,7 @@ final class Mdns implements Server
 		$this->logger->debug(
 			'Creating mDNS server',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
@@ -177,7 +177,7 @@ final class Mdns implements Server
 					$this->logger->error(
 						'An error occurred during server handling',
 						[
-							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'mdns-server',
 							'exception' => [
 								'message' => $ex->getMessage(),
@@ -200,7 +200,7 @@ final class Mdns implements Server
 					$this->logger->info(
 						'Server was closed',
 						[
-							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'mdns-server',
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
@@ -224,7 +224,7 @@ final class Mdns implements Server
 				$this->logger->error(
 					'Could not create mDNS discovery server',
 					[
-						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'mdns-server',
 						'exception' => [
 							'message' => $ex->getMessage(),
@@ -243,7 +243,7 @@ final class Mdns implements Server
 		$this->logger->debug(
 			'Closing mDNS server',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
@@ -259,7 +259,7 @@ final class Mdns implements Server
 		$this->logger->debug(
 			'Broadcasting connector DNS zone',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),

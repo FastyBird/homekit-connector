@@ -16,8 +16,8 @@
 namespace FastyBird\Connector\HomeKit\Commands;
 
 use FastyBird\Connector\HomeKit\Entities;
-use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use Psr\Log;
 use Ramsey\Uuid;
@@ -196,7 +196,7 @@ class Execute extends Console\Command\Command
 					$this->logger->alert(
 						'Connector identifier was not able to get from answer',
 						[
-							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'execute-cmd',
 						],
 					);
@@ -213,7 +213,7 @@ class Execute extends Console\Command\Command
 				$this->logger->alert(
 					'Connector was not found',
 					[
-						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'execute-cmd',
 					],
 				);

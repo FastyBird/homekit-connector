@@ -26,8 +26,8 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
@@ -201,7 +201,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'Requested pairing setup',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'request' => [
 					'query' => $request->getQueryParams(),
@@ -321,7 +321,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'Requested pairing verify',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'request' => [
 					'query' => $request->getQueryParams(),
@@ -406,7 +406,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'Requested clients pairing update',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'request' => [
 					'query' => $request->getQueryParams(),
@@ -541,7 +541,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Accessory already paired, cannot accept additional pairings',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -565,7 +565,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Max authentication attempts reached',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -589,7 +589,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Unexpected pairing setup state. Expected is M1',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -613,7 +613,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Currently perform pair setup operation with a different controller',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -648,7 +648,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Server public key could not be converted to bytes',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -674,7 +674,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Slat could not be converted to bytes',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -697,7 +697,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'SRP start success',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
 					'id' => $connectorId->toString(),
@@ -737,7 +737,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Unexpected pairing setup state. Expected is M3',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -765,7 +765,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Incorrect pin code, try again',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -789,7 +789,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Server proof of session key is not computed',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -815,7 +815,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Server proof of session key could not be converted to binary array',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -838,7 +838,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'SRP finish success',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
 					'id' => $connectorId->toString(),
@@ -884,7 +884,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Unexpected pairing setup state. Expected is M5',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -923,7 +923,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Data could not be encrypted',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'exception' => [
 						'message' => $ex->getMessage(),
@@ -962,7 +962,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Unable to decode decrypted tlv data',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -986,7 +986,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Data in decoded decrypted tlv data are missing',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1019,7 +1019,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Data in decoded decrypted tlv data are invalid',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1061,7 +1061,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'iOS device info ed25519 signature verification is failed',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1171,7 +1171,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Data could not be encrypted',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'exception' => [
 						'message' => $ex->getMessage(),
@@ -1199,7 +1199,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Encrypted data could not be converted to bytes',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1224,7 +1224,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'Pair finish exchange success',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
 					'id' => $connectorId->toString(),
@@ -1318,7 +1318,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Data could not be encrypted',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'exception' => [
 						'message' => $ex->getMessage(),
@@ -1346,7 +1346,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Encrypted data could not be converted to bytes',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1372,7 +1372,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Accessory public key could not be converted to bytes',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1413,7 +1413,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'Verify start success',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
 					'id' => $connectorId->toString(),
@@ -1469,7 +1469,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Data could not be encrypted',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'exception' => [
 						'message' => $ex->getMessage(),
@@ -1508,7 +1508,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Unable to decode decrypted tlv data',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1532,7 +1532,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Data in decoded decrypted tlv data are missing',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1563,7 +1563,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Data in decoded decrypted tlv data are invalid',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1597,7 +1597,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'Pairing client instance is not created',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1640,7 +1640,7 @@ final class PairingController extends BaseController
 			$this->logger->error(
 				'iOS device info ed25519 signature verification is failed',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
 						'id' => $connectorId->toString(),
@@ -1663,7 +1663,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'Verify finish success',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
 					'id' => $connectorId->toString(),
@@ -1690,7 +1690,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'Requested list pairings',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
 					'id' => $connectorId->toString(),
@@ -1748,7 +1748,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'Requested add new pairing',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
 					'id' => $connectorId->toString(),
@@ -1778,7 +1778,7 @@ final class PairingController extends BaseController
 				$this->logger->error(
 					'Received iOS device public key does not match with previously saved key',
 					[
-						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'pairing-controller',
 						'connector' => [
 							'id' => $connectorId->toString(),
@@ -1866,7 +1866,7 @@ final class PairingController extends BaseController
 		$this->logger->debug(
 			'Requested remove pairing',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
 					'id' => $connectorId->toString(),

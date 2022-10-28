@@ -21,8 +21,8 @@ use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
@@ -65,7 +65,7 @@ final class AccessoriesController extends BaseController
 		$this->logger->debug(
 			'Requested list of all registered accessories',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'accessories-controller',
 				'request' => [
 					'address' => $request->getServerParams()['REMOTE_ADDR'],
@@ -114,7 +114,7 @@ final class AccessoriesController extends BaseController
 		$this->logger->debug(
 			'Requested accessories identify routine',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'accessories-controller',
 				'request' => [
 					'address' => $request->getServerParams()['REMOTE_ADDR'],
@@ -140,7 +140,7 @@ final class AccessoriesController extends BaseController
 			$this->logger->error(
 				'Paired connector could not trigger identify routine',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'accessories-controller',
 					'request' => [
 						'address' => $request->getServerParams()['REMOTE_ADDR'],
@@ -177,7 +177,7 @@ final class AccessoriesController extends BaseController
 		$this->logger->debug(
 			'Requested fetching accessory resource',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'accessories-controller',
 				'request' => [
 					'address' => $request->getServerParams()['REMOTE_ADDR'],

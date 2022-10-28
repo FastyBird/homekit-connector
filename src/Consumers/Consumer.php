@@ -19,6 +19,7 @@ use Exception;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Library\Exchange\Consumers as ExchangeConsumers;
 use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
@@ -36,7 +37,7 @@ use function intval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Consumer
+final class Consumer implements ExchangeConsumers\Consumer
 {
 
 	use Nette\SmartObject;
@@ -86,7 +87,7 @@ final class Consumer
 					$this->logger->error(
 						'Channel for received channel property message could not be loaded',
 						[
-							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'consumer',
 							'message' => [
 								'source' => $source->getValue(),
@@ -107,7 +108,7 @@ final class Consumer
 				$this->logger->warning(
 					'Accessory for received property message was not found in accessory driver',
 					[
-						'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'consumer',
 						'message' => [
 							'source' => $source->getValue(),
@@ -171,7 +172,7 @@ final class Consumer
 					$this->logger->debug(
 						'Processed received property message',
 						[
-							'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'consumer',
 							'property' => $entity->toArray(),
 						],

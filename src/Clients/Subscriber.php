@@ -17,7 +17,7 @@ namespace FastyBird\Connector\HomeKit\Clients;
 
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata;
+use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
@@ -74,7 +74,7 @@ final class Subscriber
 			$this->logger->warning(
 				'Connected client is without defined IP address and could not be registered to subscriber',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'subscriber',
 				],
 			);
@@ -85,7 +85,7 @@ final class Subscriber
 		$this->logger->debug(
 			'Registering client to subscriber',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
 				'connection' => [
 					'address' => $connection->getRemoteAddress(),
@@ -103,7 +103,7 @@ final class Subscriber
 		$this->logger->debug(
 			'Unregistering client from subscriber',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
 				'connection' => [
 					'address' => $connection->getRemoteAddress(),
@@ -127,7 +127,7 @@ final class Subscriber
 		$this->logger->debug(
 			'Subscribing to characteristic',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
 				'subscription' => [
 					'aid' => $aid,
@@ -149,7 +149,7 @@ final class Subscriber
 		$this->logger->debug(
 			'Unsubscribing from characteristic',
 			[
-				'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
 				'subscription' => [
 					'aid' => $aid,
@@ -212,7 +212,7 @@ final class Subscriber
 			$this->logger->error(
 				'Event message could not be created',
 				[
-					'source' => Metadata\Constants::CONNECTOR_HOMEKIT_SOURCE,
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'subscriber',
 					'data' => [
 						'aid' => $aid,
