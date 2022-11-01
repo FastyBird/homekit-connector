@@ -25,6 +25,7 @@ use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Models as DevicesModels;
+use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Nette;
 use Psr\Log;
 use function intval;
@@ -47,7 +48,7 @@ final class Consumer implements ExchangeConsumers\Consumer
 	public function __construct(
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
-		private readonly DevicesModels\DataStorage\ChannelsRepository $channelsRepository,
+		private readonly DevicesModels\Channels\ChannelsRepository $channelsRepository,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{
@@ -81,7 +82,10 @@ final class Consumer implements ExchangeConsumers\Consumer
 			) {
 				$accessory = $this->accessoryDriver->findAccessory($entity->getDevice());
 			} else {
-				$channel = $this->channelsRepository->findById($entity->getChannel());
+				$findChannelQuery = new DevicesQueries\FindChannels();
+				$findChannelQuery->byId($entity->getChannel());
+
+				$channel = $this->channelsRepository->findOneBy($findChannelQuery);
 
 				if ($channel === null) {
 					$this->logger->error(
@@ -101,7 +105,7 @@ final class Consumer implements ExchangeConsumers\Consumer
 					return;
 				}
 
-				$accessory = $this->accessoryDriver->findAccessory($channel->getDevice());
+				$accessory = $this->accessoryDriver->findAccessory($channel->getDevice()->getId());
 			}
 
 			if ($accessory === null) {
@@ -127,6 +131,7 @@ final class Consumer implements ExchangeConsumers\Consumer
 	}
 
 	/**
+	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	private function processProperty(

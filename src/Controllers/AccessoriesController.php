@@ -100,11 +100,7 @@ final class AccessoriesController extends BaseController
 	 * @throws Exceptions\HapRequestError
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
-	 * @throws MetadataExceptions\FileNotFound
-	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function identify(
 		Message\ServerRequestInterface $request,

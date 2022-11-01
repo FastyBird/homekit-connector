@@ -20,9 +20,9 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Protocol\Transformer;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 use Nette;
 use Ramsey\Uuid;
 use function array_merge;
@@ -79,7 +79,7 @@ class Characteristic
 		private readonly Types\DataType $dataType,
 		private readonly array $permissions,
 		private readonly Service $service,
-		private readonly MetadataEntities\DevicesModule\Property|null $property = null,
+		private readonly DevicesEntities\Channels\Properties\Mapped|DevicesEntities\Channels\Properties\Variable|null $property = null,
 		private readonly array|null $validValues = [],
 		private readonly int|null $maxLength = null,
 		private readonly float|null $minValue = null,
@@ -144,7 +144,7 @@ class Characteristic
 		return $this->maxLength;
 	}
 
-	public function getProperty(): MetadataEntities\DevicesModule\Property|null
+	public function getProperty(): DevicesEntities\Property|null
 	{
 		return $this->property;
 	}
@@ -244,6 +244,7 @@ class Characteristic
 	 *
 	 * @return Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>
 	 *
+	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	public function toHap(): array

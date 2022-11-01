@@ -22,7 +22,6 @@ use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
@@ -37,6 +36,7 @@ use Symfony\Component\Console\Style;
 use Throwable;
 use function array_search;
 use function array_values;
+use function assert;
 use function count;
 use function sprintf;
 
@@ -66,7 +66,6 @@ class Initialize extends Console\Command\Command
 		private readonly DevicesModels\Connectors\ConnectorsManager $connectorsManager,
 		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesManager,
 		private readonly DevicesModels\Connectors\Controls\ControlsManager $controlsManager,
-		private readonly DevicesModels\DataStorage\ConnectorsRepository $connectorsDataStorageRepository,
 		private readonly Persistence\ManagerRegistry $managerRegistry,
 		Log\LoggerInterface|null $logger = null,
 		string|null $name = null,
@@ -102,12 +101,6 @@ class Initialize extends Console\Command\Command
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\FileNotFound
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
-	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int
 	{
@@ -158,21 +151,24 @@ class Initialize extends Console\Command\Command
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\FileNotFound
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
-	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function createNewConfiguration(Style\SymfonyStyle $io): void
 	{
 		$question = new Console\Question\Question('Provide connector identifier');
 
 		$question->setValidator(function ($answer) {
-			if ($answer !== null && $this->connectorsDataStorageRepository->findByIdentifier($answer) !== null) {
-				throw new Exceptions\Runtime('This identifier is already used');
+			if ($answer !== null) {
+				$findConnectorQuery = new DevicesQueries\FindConnectors();
+				$findConnectorQuery->byIdentifier($answer);
+
+				if ($this->connectorsRepository->findOneBy(
+					$findConnectorQuery,
+					Entities\HomeKitConnector::class,
+				) !== null) {
+					throw new Exceptions\Runtime('This identifier is already used');
+				}
 			}
 
 			return $answer;
@@ -186,7 +182,13 @@ class Initialize extends Console\Command\Command
 			for ($i = 1; $i <= 100; $i++) {
 				$identifier = sprintf($identifierPattern, $i);
 
-				if ($this->connectorsDataStorageRepository->findByIdentifier($identifier) === null) {
+				$findConnectorQuery = new DevicesQueries\FindConnectors();
+				$findConnectorQuery->byIdentifier($identifier);
+
+				if ($this->connectorsRepository->findOneBy(
+					$findConnectorQuery,
+					Entities\HomeKitConnector::class,
+				) === null) {
 					break;
 				}
 			}
@@ -304,12 +306,6 @@ class Initialize extends Console\Command\Command
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\FileNotFound
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
-	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function editExistingConfiguration(Style\SymfonyStyle $io): void
 	{
@@ -317,10 +313,13 @@ class Initialize extends Console\Command\Command
 
 		$connectors = [];
 
-		foreach ($this->connectorsDataStorageRepository as $connector) {
-			if ($connector->getType() !== Entities\HomeKitConnector::CONNECTOR_TYPE) {
-				continue;
-			}
+		$findConnectorsQuery = new DevicesQueries\FindConnectors();
+
+		foreach ($this->connectorsRepository->findAllBy(
+			$findConnectorsQuery,
+			Entities\HomeKitConnector::class,
+		) as $connector) {
+			assert($connector instanceof Entities\HomeKitConnector);
 
 			$connectors[$connector->getIdentifier()] = $connector->getIdentifier()
 				. ($connector->getName() !== null ? ' [' . $connector->getName() . ']' : '');
@@ -369,7 +368,7 @@ class Initialize extends Console\Command\Command
 		$findConnectorQuery = new DevicesQueries\FindConnectors();
 		$findConnectorQuery->byIdentifier($connectorIdentifier);
 
-		$connector = $this->connectorsRepository->findOneBy($findConnectorQuery);
+		$connector = $this->connectorsRepository->findOneBy($findConnectorQuery, Entities\HomeKitConnector::class);
 
 		if ($connector === null) {
 			$io->error('Something went wrong, connector could not be loaded');
@@ -461,10 +460,13 @@ class Initialize extends Console\Command\Command
 
 		$connectors = [];
 
-		foreach ($this->connectorsDataStorageRepository as $connector) {
-			if ($connector->getType() !== Entities\HomeKitConnector::CONNECTOR_TYPE) {
-				continue;
-			}
+		$findConnectorsQuery = new DevicesQueries\FindConnectors();
+
+		foreach ($this->connectorsRepository->findAllBy(
+			$findConnectorsQuery,
+			Entities\HomeKitConnector::class,
+		) as $connector) {
+			assert($connector instanceof Entities\HomeKitConnector);
 
 			$connectors[$connector->getIdentifier()] = $connector->getIdentifier()
 				. ($connector->getName() !== null ? ' [' . $connector->getName() . ']' : '');
@@ -502,7 +504,7 @@ class Initialize extends Console\Command\Command
 		$findConnectorQuery = new DevicesQueries\FindConnectors();
 		$findConnectorQuery->byIdentifier($connectorIdentifier);
 
-		$connector = $this->connectorsRepository->findOneBy($findConnectorQuery);
+		$connector = $this->connectorsRepository->findOneBy($findConnectorQuery, Entities\HomeKitConnector::class);
 
 		if ($connector === null) {
 			$io->error('Something went wrong, connector could not be loaded');

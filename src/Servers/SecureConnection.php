@@ -16,7 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Servers;
 
 use Evenement;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
+use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Nette;
 use Psr\Log;
@@ -72,7 +72,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly Entities\HomeKitConnector $connector,
 		string|null $sharedKey,
 		private readonly Socket\ConnectionInterface $connection,
 		Log\LoggerInterface|null $logger = null,
@@ -227,7 +227,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 						'code' => $ex->getCode(),
 					],
 					'connector' => [
-						'id' => $this->connector->getId()->toString(),
+						'id' => $this->connector->getPlainId(),
 					],
 				],
 			);
@@ -281,7 +281,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 						'code' => $ex->getCode(),
 					],
 					'connector' => [
-						'id' => $this->connector->getId()->toString(),
+						'id' => $this->connector->getPlainId(),
 					],
 				],
 			);

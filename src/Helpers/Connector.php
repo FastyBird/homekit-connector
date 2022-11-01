@@ -15,12 +15,12 @@
 
 namespace FastyBird\Connector\HomeKit\Helpers;
 
+use DateTimeInterface;
 use Doctrine\DBAL;
 use Evenement;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -49,10 +49,9 @@ final class Connector extends Evenement\EventEmitter
 
 	public function __construct(
 		private readonly DevicesUtilities\Database $databaseHelper,
-		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsEntitiesRepository,
-		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $propertiesEntitiesRepository,
-		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesEntitiesManagers,
-		private readonly DevicesModels\DataStorage\ConnectorPropertiesRepository $propertiesItemsRepository,
+		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsRepository,
+		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $propertiesRepository,
+		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesManagers,
 	)
 	{
 	}
@@ -62,21 +61,24 @@ final class Connector extends Evenement\EventEmitter
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function getConfiguration(
 		Uuid\UuidInterface $connectorId,
 		Types\ConnectorPropertyIdentifier $type,
-	): float|bool|int|string|null
+	): float|bool|int|string|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|DateTimeInterface|null
 	{
-		$configuration = $this->propertiesItemsRepository->findByIdentifier($connectorId, strval($type->getValue()));
+		$findPropertyQuery = new DevicesQueries\FindConnectorProperties();
+		$findPropertyQuery->byConnectorId($connectorId);
+		$findPropertyQuery->byIdentifier(strval($type->getValue()));
 
-		if ($configuration instanceof MetadataEntities\DevicesModule\ConnectorVariableProperty) {
+		$configuration = $this->propertiesRepository->findOneBy(
+			$findPropertyQuery,
+			DevicesEntities\Connectors\Properties\Variable::class,
+		);
+
+		if ($configuration instanceof DevicesEntities\Connectors\Properties\Variable) {
 			if (
 				$type->getValue() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT
 				&& $configuration->getValue() === null
@@ -132,22 +134,16 @@ final class Connector extends Evenement\EventEmitter
 		string|int|float|bool|null $value = null,
 	): void
 	{
-		$property = $this->databaseHelper->query(
-			function () use ($connectorId, $type): DevicesEntities\Connectors\Properties\Variable|null {
-				$findConnectorProperty = new DevicesQueries\FindConnectorProperties();
-				$findConnectorProperty->byConnectorId($connectorId);
-				$findConnectorProperty->byIdentifier(strval($type->getValue()));
+		$findConnectorProperty = new DevicesQueries\FindConnectorProperties();
+		$findConnectorProperty->byConnectorId($connectorId);
+		$findConnectorProperty->byIdentifier(strval($type->getValue()));
 
-				$property = $this->propertiesEntitiesRepository->findOneBy(
-					$findConnectorProperty,
-					DevicesEntities\Connectors\Properties\Variable::class,
-				);
-				assert(
-					$property instanceof DevicesEntities\Connectors\Properties\Variable || $property === null,
-				);
-
-				return $property;
-			},
+		$property = $this->propertiesRepository->findOneBy(
+			$findConnectorProperty,
+			DevicesEntities\Connectors\Properties\Variable::class,
+		);
+		assert(
+			$property instanceof DevicesEntities\Connectors\Properties\Variable || $property === null,
 		);
 
 		if ($property === null) {
@@ -162,7 +158,7 @@ final class Connector extends Evenement\EventEmitter
 						$findConnectorQuery = new DevicesQueries\FindConnectors();
 						$findConnectorQuery->byId($connectorId);
 
-						$connector = $this->connectorsEntitiesRepository->findOneBy(
+						$connector = $this->connectorsRepository->findOneBy(
 							$findConnectorQuery,
 							HomeKit\Entities\HomeKitConnector::class,
 						);
@@ -173,7 +169,7 @@ final class Connector extends Evenement\EventEmitter
 							);
 						}
 
-						$this->propertiesEntitiesManagers->create(
+						$configuration = $this->propertiesManagers->create(
 							Utils\ArrayHash::from([
 								'entity' => DevicesEntities\Connectors\Properties\Variable::class,
 								'identifier' => $type->getValue(),
@@ -185,11 +181,6 @@ final class Connector extends Evenement\EventEmitter
 							]),
 						);
 
-						$configuration = $this->propertiesItemsRepository->findByIdentifier(
-							$connectorId,
-							strval($type->getValue()),
-						);
-
 						$this->emit('created', [$connectorId, $type, $configuration]);
 					},
 				);
@@ -199,14 +190,9 @@ final class Connector extends Evenement\EventEmitter
 		} else {
 			$this->databaseHelper->transaction(
 				function () use ($connectorId, $property, $type, $value): void {
-					$this->propertiesEntitiesManagers->update(
+					$configuration = $this->propertiesManagers->update(
 						$property,
 						Utils\ArrayHash::from(['value' => $value]),
-					);
-
-					$configuration = $this->propertiesItemsRepository->findByIdentifier(
-						$connectorId,
-						strval($type->getValue()),
 					);
 
 					$this->emit('updated', [$connectorId, $type, $configuration]);

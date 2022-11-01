@@ -53,7 +53,7 @@ class Connector implements EventDispatcher\EventSubscriberInterface
 
 	public function startup(DevicesEvents\ConnectorStartup $event): void
 	{
-		if ($event->getConnector()->getType() !== Entities\HomeKitConnector::CONNECTOR_TYPE) {
+		if (!$event->getConnector() instanceof Entities\HomeKitConnector) {
 			return;
 		}
 

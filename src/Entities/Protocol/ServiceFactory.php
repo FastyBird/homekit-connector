@@ -17,7 +17,7 @@ namespace FastyBird\Connector\HomeKit\Entities\Protocol;
 
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 use Nette;
 use Nette\Utils;
 use function is_string;
@@ -49,7 +49,7 @@ final class ServiceFactory
 	public function create(
 		string $name,
 		Accessory $accessory,
-		MetadataEntities\DevicesModule\Channel|null $channel = null,
+		DevicesEntities\Channels\Channel|null $channel = null,
 	): Service
 	{
 		$name = str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));

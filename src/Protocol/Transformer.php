@@ -17,10 +17,10 @@ namespace FastyBird\Connector\HomeKit\Protocol;
 
 use DateTimeInterface;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Library\Metadata\ValueObjects as MetadataValueObjects;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 use Nette\Utils;
 use function array_filter;
 use function array_values;
@@ -52,10 +52,11 @@ final class Transformer
 {
 
 	/**
+	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	public static function fromClient(
-		MetadataEntities\DevicesModule\Property|null $property,
+		DevicesEntities\Property|null $property,
 		Types\DataType $dataType,
 		bool|float|int|string|null $value,
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null
@@ -192,10 +193,11 @@ final class Transformer
 	/**
 	 * @param Array<int>|null $validValues
 	 *
+	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	public static function toClient(
-		MetadataEntities\DevicesModule\Property|null $property,
+		DevicesEntities\Property|null $property,
 		Types\DataType $dataType,
 		array|null $validValues,
 		int|null $maxLength,

@@ -15,7 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Servers;
 
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
+use FastyBird\Connector\HomeKit\Entities;
 
 /**
  * mDNS connector discovery server factory
@@ -28,6 +28,6 @@ use FastyBird\Library\Metadata\Entities as MetadataEntities;
 interface MdnsFactory extends ServerFactory
 {
 
-	public function create(MetadataEntities\DevicesModule\Connector $connector): Mdns;
+	public function create(Entities\HomeKitConnector $connector): Mdns;
 
 }

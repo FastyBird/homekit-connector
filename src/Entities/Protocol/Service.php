@@ -18,7 +18,7 @@ namespace FastyBird\Connector\HomeKit\Entities\Protocol;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 use Nette;
 use Ramsey\Uuid;
 use SplObjectStorage;
@@ -58,7 +58,7 @@ class Service
 		private readonly Uuid\UuidInterface $typeId,
 		private readonly string $name,
 		private readonly Accessory $accessory,
-		private readonly MetadataEntities\DevicesModule\Channel|null $channel = null,
+		private readonly DevicesEntities\Channels\Channel|null $channel = null,
 		private readonly array $requiredCharacteristics = [],
 		private readonly array $optionalCharacteristics = [],
 		private bool $primary = false,
@@ -82,7 +82,7 @@ class Service
 		return $this->accessory;
 	}
 
-	public function getChannel(): MetadataEntities\DevicesModule\Channel|null
+	public function getChannel(): DevicesEntities\Channels\Channel|null
 	{
 		return $this->channel;
 	}

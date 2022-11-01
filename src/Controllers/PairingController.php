@@ -34,7 +34,6 @@ use FastyBird\Module\Devices\Queries as DevicesQueries;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
-use IPub\DoctrineOrmQuery;
 use IPub\SlimRouter;
 use Nette\Utils\ArrayHash;
 use Psr\Http\Message;
@@ -185,11 +184,9 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
 	 * @throws MetadataExceptions\MalformedInput
 	 * @throws RuntimeException
 	 */
@@ -305,11 +302,9 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
 	 * @throws MetadataExceptions\MalformedInput
 	 * @throws RuntimeException
 	 */
@@ -523,12 +518,8 @@ final class PairingController extends BaseController
 	 * @throws InvalidArgumentException
 	 * @throws Math\Exception\MathException
 	 * @throws Math\Exception\NegativeNumberException
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function srpStart(Uuid\UuidInterface $connectorId): array
 	{
@@ -868,12 +859,8 @@ final class PairingController extends BaseController
 	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function exchange(
 		Uuid\UuidInterface $connectorId,
@@ -1081,31 +1068,24 @@ final class PairingController extends BaseController
 			];
 		}
 
-		/** @var mixed $connectorEntity */
-		$connectorEntity = $this->databaseHelper->query(
-			function () use ($connectorId): Entities\HomeKitConnector|null {
-				$findConnectorQuery = new DevicesQueries\FindConnectors();
-				$findConnectorQuery->byId($connectorId);
+		$findConnectorQuery = new DevicesQueries\FindConnectors();
+		$findConnectorQuery->byId($connectorId);
 
-				$connector = $this->connectorsRepository->findOneBy(
-					$findConnectorQuery,
-					Entities\HomeKitConnector::class,
-				);
-				assert($connector instanceof Entities\HomeKitConnector || $connector === null);
-
-				return $connector;
-			},
+		$connector = $this->connectorsRepository->findOneBy(
+			$findConnectorQuery,
+			Entities\HomeKitConnector::class,
 		);
-		assert($connectorEntity instanceof Entities\HomeKitConnector || $connectorEntity === null);
 
-		if ($connectorEntity === null) {
+		assert($connector instanceof Entities\HomeKitConnector || $connector === null);
+
+		if ($connector === null) {
 			throw new Exceptions\InvalidState('Connector entity could not be loaded from database');
 		}
 
 		$this->databaseHelper->transaction(
-			function () use ($tlvEntry, $connectorEntity): void {
+			function () use ($tlvEntry, $connector): void {
 				$findClientQuery = new Queries\FindClients();
-				$findClientQuery->forConnector($connectorEntity);
+				$findClientQuery->forConnector($connector);
 				$findClientQuery->byUid($tlvEntry[Types\TlvCode::CODE_IDENTIFIER]);
 
 				$client = $this->clientsRepository->findOneBy($findClientQuery);
@@ -1118,7 +1098,7 @@ final class PairingController extends BaseController
 					$this->clientsManager->create(ArrayHash::from([
 						'uid' => $tlvEntry[Types\TlvCode::CODE_IDENTIFIER],
 						'publicKey' => pack('C*', ...$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]),
-						'connector' => $connectorEntity,
+						'connector' => $connector,
 					]));
 				}
 			},
@@ -1148,6 +1128,7 @@ final class PairingController extends BaseController
 			$connectorId,
 			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS),
 		);
+		assert(is_string($macAddress));
 
 		$serverInfo = $serverX . $macAddress . pack('C*', ...$serverPublicKey);
 		$serverSignature = $serverPrivateKey->sign(unpack('C*', $serverInfo))->toBytes();
@@ -1260,12 +1241,8 @@ final class PairingController extends BaseController
 	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function verifyStart(
 		Uuid\UuidInterface $connectorId,
@@ -1443,12 +1420,8 @@ final class PairingController extends BaseController
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function verifyFinish(
 		Uuid\UuidInterface $connectorId,
@@ -1583,15 +1556,11 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$client = $this->databaseHelper->query(
-			function () use ($tlvEntry, $connectorId) {
-				$findClientQuery = new Queries\FindClients();
-				$findClientQuery->byConnectorId($connectorId);
-				$findClientQuery->byUid($tlvEntry[Types\TlvCode::CODE_IDENTIFIER]);
+		$findClientQuery = new Queries\FindClients();
+		$findClientQuery->byConnectorId($connectorId);
+		$findClientQuery->byUid($tlvEntry[Types\TlvCode::CODE_IDENTIFIER]);
 
-				return $this->clientsRepository->findOneBy($findClientQuery);
-			},
-		);
+		$client = $this->clientsRepository->findOneBy($findClientQuery);
 
 		if ($client === null) {
 			$this->logger->error(
@@ -1705,13 +1674,10 @@ final class PairingController extends BaseController
 		];
 
 		try {
-			/** @var DoctrineOrmQuery\ResultSet<Entities\Client> $clients */
-			$clients = $this->databaseHelper->query(function () use ($connectorId): DoctrineOrmQuery\ResultSet {
-				$findClientsQuery = new Queries\FindClients();
-				$findClientsQuery->byConnectorId($connectorId);
+			$findClientsQuery = new Queries\FindClients();
+			$findClientsQuery->byConnectorId($connectorId);
 
-				return $this->clientsRepository->getResultSet($findClientsQuery);
-			});
+			$clients = $this->clientsRepository->getResultSet($findClientsQuery);
 		} catch (Throwable) {
 			return [
 				[
@@ -1757,13 +1723,11 @@ final class PairingController extends BaseController
 		);
 
 		try {
-			$client = $this->databaseHelper->query(function () use ($connectorId, $clientUid): Entities\Client|null {
-				$findClientQuery = new Queries\FindClients();
-				$findClientQuery->byUid($clientUid);
-				$findClientQuery->byConnectorId($connectorId);
+			$findClientQuery = new Queries\FindClients();
+			$findClientQuery->byUid($clientUid);
+			$findClientQuery->byConnectorId($connectorId);
 
-				return $this->clientsRepository->findOneBy($findClientQuery);
-			});
+			$client = $this->clientsRepository->findOneBy($findClientQuery);
 		} catch (Throwable) {
 			return [
 				[

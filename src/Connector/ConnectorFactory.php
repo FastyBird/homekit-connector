@@ -16,8 +16,8 @@
 namespace FastyBird\Connector\HomeKit\Connector;
 
 use FastyBird\Connector\HomeKit\Connector;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Module\Devices\Connectors as DevicesConnectors;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 
 /**
  * Connector service executor factory
@@ -31,7 +31,7 @@ interface ConnectorFactory extends DevicesConnectors\ConnectorFactory
 {
 
 	public function create(
-		MetadataEntities\DevicesModule\Connector $connector,
+		DevicesEntities\Connectors\Connector $connector,
 	): Connector\Connector;
 
 }

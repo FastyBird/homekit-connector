@@ -19,7 +19,6 @@ use Doctrine\DBAL;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
@@ -35,9 +34,12 @@ use function array_filter;
 use function array_map;
 use function array_merge;
 use function array_unique;
+use function assert;
 use function base64_encode;
 use function hash;
 use function is_array;
+use function is_numeric;
+use function is_string;
 use function mt_rand;
 use function preg_replace;
 use function React\Async\async;
@@ -84,7 +86,7 @@ final class Mdns implements Server
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly HomeKit\Entities\HomeKitConnector $connector,
 		private readonly Helpers\Connector $connectorHelper,
 		private readonly EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
@@ -111,7 +113,7 @@ final class Mdns implements Server
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'mdns-server',
 							'connector' => [
-								'id' => $this->connector->getId()->toString(),
+								'id' => $this->connector->getPlainId(),
 							],
 						],
 					);
@@ -128,12 +130,8 @@ final class Mdns implements Server
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function connect(): void
 	{
@@ -145,7 +143,7 @@ final class Mdns implements Server
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
 				'connector' => [
-					'id' => $this->connector->getId()->toString(),
+					'id' => $this->connector->getPlainId(),
 				],
 			],
 		);
@@ -184,7 +182,7 @@ final class Mdns implements Server
 								'code' => $ex->getCode(),
 							],
 							'connector' => [
-								'id' => $this->connector->getId()->toString(),
+								'id' => $this->connector->getPlainId(),
 							],
 						],
 					);
@@ -203,7 +201,7 @@ final class Mdns implements Server
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'mdns-server',
 							'connector' => [
-								'id' => $this->connector->getId()->toString(),
+								'id' => $this->connector->getPlainId(),
 							],
 						],
 					);
@@ -231,7 +229,7 @@ final class Mdns implements Server
 							'code' => $ex->getCode(),
 						],
 						'connector' => [
-							'id' => $this->connector->getId()->toString(),
+							'id' => $this->connector->getPlainId(),
 						],
 					],
 				);
@@ -246,7 +244,7 @@ final class Mdns implements Server
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
 				'connector' => [
-					'id' => $this->connector->getId()->toString(),
+					'id' => $this->connector->getPlainId(),
 				],
 			],
 		);
@@ -262,7 +260,7 @@ final class Mdns implements Server
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
 				'connector' => [
-					'id' => $this->connector->getId()->toString(),
+					'id' => $this->connector->getPlainId(),
 				],
 			],
 		);
@@ -294,12 +292,8 @@ final class Mdns implements Server
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function createZone(): void
 	{
@@ -338,6 +332,7 @@ final class Mdns implements Server
 				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
 			),
 		);
+		assert(is_numeric($port));
 
 		$macAddress = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
@@ -345,8 +340,9 @@ final class Mdns implements Server
 				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS,
 			),
 		);
+		assert(is_string($macAddress));
 
-		$shortMacAddress = str_replace(':', '', Utils\Strings::substring((string) $macAddress, -8));
+		$shortMacAddress = str_replace(':', '', Utils\Strings::substring($macAddress, -8));
 
 		$version = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
@@ -354,6 +350,7 @@ final class Mdns implements Server
 				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION,
 			),
 		);
+		assert(is_numeric($version));
 
 		$paired = $this->connectorHelper->getConfiguration(
 			$this->connector->getId(),
@@ -368,9 +365,10 @@ final class Mdns implements Server
 				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID,
 			),
 		);
+		assert(is_string($setupId));
 
 		$setupHash = substr(
-			base64_encode(hash('sha512', (string) $setupId . (string) $macAddress, true)),
+			base64_encode(hash('sha512', $setupId . $macAddress, true)),
 			0,
 			4,
 		);
@@ -418,7 +416,7 @@ final class Mdns implements Server
 			[
 				'md=' . $name,
 				'pv=' . HomeKit\Constants::HAP_PROTOCOL_SHORT_VERSION,
-				'id=' . ((string) $macAddress),
+				'id=' . $macAddress,
 				// Represents the 'configuration version' of an Accessory.
 				// Increasing this 'version number' signals iOS devices to
 				// re-fetch accessories data

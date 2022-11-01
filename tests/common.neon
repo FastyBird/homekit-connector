@@ -15,7 +15,6 @@ php:
 
 extensions:
     contributteTranslation              : Contributte\Translation\DI\TranslationExtension
-    contributeFlysystem                 : Contributte\Flysystem\DI\FlysystemExtension
     nettrineAnnotations                 : Nettrine\Annotations\DI\AnnotationsExtension
     nettrineCache                       : Nettrine\Cache\DI\CacheExtension
     nettrineDbal                        : Nettrine\DBAL\DI\DbalExtension
@@ -55,12 +54,6 @@ contributteTranslation:
     localeResolvers: []
     dirs:
         - %vendorDir%/fastybird/json-api/src/Translations
-
-contributeFlysystem:
-    filesystem:
-        default:
-            adapter: League\Flysystem\Local\LocalFilesystemAdapter(%tempDir%)
-            autowired: true
 
 nettrineDbal:
     connection:

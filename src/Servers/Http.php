@@ -24,11 +24,10 @@ use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Middleware;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
-use FastyBird\Module\Devices\Models as DevicesModels;
 use Nette;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -40,6 +39,7 @@ use React\Socket;
 use Throwable;
 use function assert;
 use function hex2bin;
+use function is_numeric;
 use function is_string;
 
 /**
@@ -68,7 +68,7 @@ final class Http implements Server
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
-		private readonly MetadataEntities\DevicesModule\Connector $connector,
+		private readonly Entities\HomeKitConnector $connector,
 		private readonly Helpers\Connector $connectorHelper,
 		private readonly Middleware\Router $routerMiddleware,
 		private readonly SecureServerFactory $secureServerFactory,
@@ -77,9 +77,6 @@ final class Http implements Server
 		private readonly Entities\Protocol\AccessoryFactory $accessoryFactory,
 		private readonly Entities\Protocol\ServiceFactory $serviceFactory,
 		private readonly Entities\Protocol\CharacteristicsFactory $characteristicsFactory,
-		private readonly DevicesModels\DataStorage\DevicesRepository $devicesRepository,
-		private readonly DevicesModels\DataStorage\ChannelsRepository $channelsRepository,
-		private readonly DevicesModels\DataStorage\ChannelPropertiesRepository $channelPropertiesRepository,
 		private readonly EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
 	)
@@ -91,7 +88,7 @@ final class Http implements Server
 			function (
 				Uuid\UuidInterface $connectorId,
 				HomeKit\Types\ConnectorPropertyIdentifier $type,
-				MetadataEntities\DevicesModule\ConnectorVariableProperty $property,
+				DevicesEntities\Connectors\Properties\Variable $property,
 			): void {
 				if (
 					$this->connector->getId()->equals($connectorId)
@@ -103,7 +100,7 @@ final class Http implements Server
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'http-server',
 							'connector' => [
-								'id' => $this->connector->getId()->toString(),
+								'id' => $this->connector->getPlainId(),
 							],
 						],
 					);
@@ -120,7 +117,7 @@ final class Http implements Server
 			function (
 				Uuid\UuidInterface $connectorId,
 				HomeKit\Types\ConnectorPropertyIdentifier $type,
-				MetadataEntities\DevicesModule\ConnectorVariableProperty $property,
+				DevicesEntities\Connectors\Properties\Variable $property,
 			): void {
 				if (
 					$this->connector->getId()->equals($connectorId)
@@ -132,7 +129,7 @@ final class Http implements Server
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'http-server',
 							'connector' => [
-								'id' => $this->connector->getId()->toString(),
+								'id' => $this->connector->getPlainId(),
 							],
 						],
 					);
@@ -152,12 +149,8 @@ final class Http implements Server
 	 * @throws DevicesExceptions\Terminate
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
 	 * @throws Nette\IOException
 	 */
 	public function connect(): void
@@ -172,7 +165,9 @@ final class Http implements Server
 		$this->accessoriesDriver->reset();
 		$this->accessoriesDriver->addBridge($bridge);
 
-		foreach ($this->devicesRepository->findAllByConnector($this->connector->getId()) as $device) {
+		foreach ($this->connector->getDevices() as $device) {
+			assert($device instanceof Entities\HomeKitDevice);
+
 			$accessory = $this->accessoryFactory->create(
 				$device,
 				null,
@@ -180,17 +175,17 @@ final class Http implements Server
 			);
 			assert($accessory instanceof Entities\Protocol\Device);
 
-			foreach ($this->channelsRepository->findAllByDevice($device->getId()) as $channel) {
+			foreach ($device->getChannels() as $channel) {
 				$service = $this->serviceFactory->create(
 					$channel->getIdentifier(),
 					$accessory,
 					$channel,
 				);
 
-				foreach ($this->channelPropertiesRepository->findAllByChannel($channel->getId()) as $property) {
+				foreach ($channel->getProperties() as $property) {
 					if (
-						$property instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
-						|| $property instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
+						$property instanceof DevicesEntities\Channels\Properties\Mapped
+						|| $property instanceof DevicesEntities\Channels\Properties\Variable
 					) {
 						$characteristic = $this->characteristicsFactory->create(
 							$property->getIdentifier(),
@@ -198,7 +193,7 @@ final class Http implements Server
 							$property,
 						);
 
-						if ($property instanceof MetadataEntities\DevicesModule\ChannelVariableProperty) {
+						if ($property instanceof DevicesEntities\Channels\Properties\Variable) {
 							$characteristic->setActualValue($property->getValue());
 						}
 
@@ -226,6 +221,7 @@ final class Http implements Server
 				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
 			),
 		);
+		assert(is_numeric($port));
 
 		try {
 			$this->logger->debug(
@@ -234,7 +230,7 @@ final class Http implements Server
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'http-server',
 					'connector' => [
-						'id' => $this->connector->getId()->toString(),
+						'id' => $this->connector->getPlainId(),
 					],
 					'server' => [
 						'address' => self::LISTENING_ADDRESS,
@@ -258,7 +254,7 @@ final class Http implements Server
 						'code' => $ex->getCode(),
 					],
 					'connector' => [
-						'id' => $this->connector->getId()->toString(),
+						'id' => $this->connector->getPlainId(),
 					],
 				],
 			);
@@ -277,7 +273,7 @@ final class Http implements Server
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'http-server',
 					'connector' => [
-						'id' => $this->connector->getId()->toString(),
+						'id' => $this->connector->getPlainId(),
 					],
 					'client' => [
 						'address' => $connection->getRemoteAddress(),
@@ -294,7 +290,7 @@ final class Http implements Server
 						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'http-server',
 						'connector' => [
-							'id' => $this->connector->getId()->toString(),
+							'id' => $this->connector->getPlainId(),
 						],
 						'client' => [
 							'address' => $connection->getRemoteAddress(),
@@ -317,7 +313,7 @@ final class Http implements Server
 						'code' => $ex->getCode(),
 					],
 					'connector' => [
-						'id' => $this->connector->getId()->toString(),
+						'id' => $this->connector->getPlainId(),
 					],
 				],
 			);
@@ -336,7 +332,7 @@ final class Http implements Server
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'mdns-server',
 					'connector' => [
-						'id' => $this->connector->getId()->toString(),
+						'id' => $this->connector->getPlainId(),
 					],
 				],
 			);
@@ -347,7 +343,7 @@ final class Http implements Server
 			function (ServerRequestInterface $request, callable $next): ResponseInterface {
 				$request = $request->withAttribute(
 					self::REQUEST_ATTRIBUTE_CONNECTOR,
-					$this->connector->getId()->toString(),
+					$this->connector->getPlainId(),
 				);
 
 				return $next($request);
@@ -367,7 +363,7 @@ final class Http implements Server
 						'code' => $ex->getCode(),
 					],
 					'connector' => [
-						'id' => $this->connector->getId()->toString(),
+						'id' => $this->connector->getPlainId(),
 					],
 				],
 			);
@@ -388,7 +384,7 @@ final class Http implements Server
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'http-server',
 				'connector' => [
-					'id' => $this->connector->getId()->toString(),
+					'id' => $this->connector->getPlainId(),
 				],
 			],
 		);
