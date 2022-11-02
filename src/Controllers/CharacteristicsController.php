@@ -73,7 +73,7 @@ final class CharacteristicsController extends BaseController
 		private readonly Clients\Subscriber $subscriber,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly ExchangeEntities\EntityFactory $entityFactory,
-		private readonly ExchangePublisher\Container $publisher,
+		private readonly ExchangePublisher\Publisher $publisher,
 		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher,
 		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $connectorsPropertiesRepository,
 		private readonly DevicesModels\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
