@@ -147,7 +147,7 @@ abstract class DbTestCase extends TestCase
 		if (!$this->isDatabaseSetUp) {
 			$db = $this->getDb();
 
-			/** @var Array<ORM\Mapping\ClassMetadata> $metadatas */
+			/** @var list<ORM\Mapping\ClassMetadata> $metadatas */
 			$metadatas = $this->getEntityManager()->getMetadataFactory()->getAllMetadata();
 			$schemaTool = new ORM\Tools\SchemaTool($this->getEntityManager());
 
