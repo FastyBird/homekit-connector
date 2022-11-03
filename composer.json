@@ -24,10 +24,10 @@
       "email": "adam.kadlec@fastybird.com"
     }
   ],
-  "support" : {
-    "email" : "code@fastybird.com",
-    "issues" : "https://github.com/FastyBird/fastybird/issues",
-    "source" : "https://github.com/FastyBird/homekit-connector"
+  "support": {
+    "email": "code@fastybird.com",
+    "issues": "https://github.com/FastyBird/fastybird/issues",
+    "source": "https://github.com/FastyBird/homekit-connector"
   },
   "require": {
     "php": ">=8.1.0",
