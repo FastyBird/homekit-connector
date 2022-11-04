@@ -3,6 +3,7 @@
 namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit;
 
 use FastyBird\Connector\HomeKit\DI;
+use FastyBird\Library\Bootstrap\Boot as BootstrapBoot;
 use Nette;
 use PHPUnit\Framework\TestCase;
 use function constant;
@@ -28,7 +29,7 @@ abstract class BaseTestCase extends TestCase
 		$rootDir = __DIR__ . '/../..';
 		$vendorDir = defined('FB_VENDOR_DIR') ? constant('FB_VENDOR_DIR') : $rootDir . '/../vendor';
 
-		$config = new Nette\Configurator();
+		$config = new BootstrapBoot\Configurator();
 		$config->setTempDirectory(FB_TEMP_DIR);
 
 		$config->addParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);

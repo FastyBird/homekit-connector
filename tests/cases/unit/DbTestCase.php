@@ -8,6 +8,7 @@ use Doctrine\ORM;
 use FastyBird\Connector\HomeKit\DI;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\DateTimeFactory;
+use FastyBird\Library\Bootstrap\Boot as BootstrapBoot;
 use Nette;
 use Nettrine\ORM as NettrineORM;
 use PHPUnit\Framework\TestCase;
@@ -114,7 +115,7 @@ abstract class DbTestCase extends TestCase
 		$rootDir = __DIR__ . '/../..';
 		$vendorDir = defined('FB_VENDOR_DIR') ? constant('FB_VENDOR_DIR') : $rootDir . '/../vendor';
 
-		$config = new Nette\Configurator();
+		$config = new BootstrapBoot\Configurator();
 		$config->setTempDirectory(FB_TEMP_DIR);
 
 		$config->addParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);
