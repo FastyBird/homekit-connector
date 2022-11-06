@@ -25,6 +25,10 @@ use RuntimeException;
 use function assert;
 use function call_user_func;
 
+/**
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
+ */
 final class CharacteristicsTest extends DbTestCase
 {
 

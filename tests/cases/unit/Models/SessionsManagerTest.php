@@ -17,6 +17,10 @@ use Ramsey\Uuid;
 use RuntimeException;
 use function random_bytes;
 
+/**
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
+ */
 final class SessionsManagerTest extends DbTestCase
 {
 

@@ -11,6 +11,10 @@ use IPub\DoctrineOrmQuery;
 use Nette;
 use RuntimeException;
 
+/**
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
+ */
 final class SessionsRepositoryTest extends DbTestCase
 {
 
