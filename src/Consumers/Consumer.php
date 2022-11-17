@@ -65,7 +65,7 @@ final class Consumer implements ExchangeConsumers\Consumer
 	 * @throws Exception
 	 */
 	public function consume(
-		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource|MetadataTypes\TriggerSource $source,
+		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource|MetadataTypes\AutomatorSource $source,
 		MetadataTypes\RoutingKey $routingKey,
 		MetadataEntities\Entity|null $entity,
 	): void

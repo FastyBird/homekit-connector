@@ -47,7 +47,7 @@ composer require fastybird/homekit-connector
 ### Marketplace installation [WIP]
 
 You could install this connector in your [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things)
-application under marketplace section
+application under marketplace section.
 
 ## Documentation
 
@@ -64,7 +64,7 @@ Thank you for testing, reporting and contributing.
 
 ## Changelog
 
-For release info check [release page](https://github.com/FastyBird/fastybird/releases)
+For release info check [release page](https://github.com/FastyBird/fastybird/releases).
 
 ## Contribute
 
