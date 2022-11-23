@@ -1,14 +1,16 @@
 {
   "name": "fastybird/homekit-connector",
-  "type": "connector",
+  "type": "fastybird-connector",
   "description": "FastyBird IoT connector for HomeKit Accessory Protocol",
   "keywords": [
-    "fastybird",
-    "fb",
+    "php",
     "iot",
+    "nette",
+    "reactphp",
+    "fb",
     "homekit",
-    "apple",
-    "hap",
+    "hap-python",
+    "fastybird",
     "connector"
   ],
   "homepage": "https://www.fastybird.com",
