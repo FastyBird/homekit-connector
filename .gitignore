@@ -1,5 +1,4 @@
 .idea
-/var
 /vendor
-/composer.lock
+composer.lock
 .DS_Store
