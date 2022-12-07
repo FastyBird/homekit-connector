@@ -18,6 +18,7 @@ namespace FastyBird\Connector\HomeKit\Commands;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Commands as DevicesCommands;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
@@ -253,7 +254,7 @@ class Execute extends Console\Command\Command
 			return Console\Command\Command::SUCCESS;
 		}
 
-		$serviceCmd = $symfonyApp->find('fb:devices-module:service');
+		$serviceCmd = $symfonyApp->find(DevicesCommands\Connector::NAME);
 
 		$result = $serviceCmd->run(new Input\ArrayInput([
 			'--connector' => $connector->getPlainId(),
