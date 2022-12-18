@@ -37,7 +37,7 @@
     "ext-pcntl": "*",
     "ext-sockets": "*",
     "ext-sodium": "*",
-    "brick/math": "^0.10.2",
+    "brick/math": "^0.10",
     "cweagans/composer-patches": "^1.7",
     "fastybird/bootstrap-library": "dev-main",
     "fastybird/datetime-factory": "^0.6",
