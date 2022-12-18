@@ -109,7 +109,7 @@ final class CharacteristicsTest extends DbTestCase
 	}
 
 	/**
-	 * @return Array<string, Array<int|string>>
+	 * @return array<string, array<int|string>>
 	 */
 	public function characteristicsRead(): array
 	{

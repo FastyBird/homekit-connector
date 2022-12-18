@@ -113,7 +113,7 @@ class Bridge extends Accessory
 	}
 
 	/**
-	 * @return Array<Device>
+	 * @return array<Device>
 	 */
 	public function getAccessories(): array
 	{

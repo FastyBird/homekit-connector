@@ -65,7 +65,7 @@ class JsonAssert
 	}
 
 	/**
-	 * @return Array<mixed>
+	 * @return array<mixed>
 	 *
 	 * @throws Utils\JsonException
 	 */

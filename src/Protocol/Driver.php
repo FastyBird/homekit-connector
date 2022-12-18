@@ -155,7 +155,7 @@ class Driver
 	}
 
 	/**
-	 * @return Array<Entities\Protocol\Accessory>
+	 * @return array<Entities\Protocol\Accessory>
 	 */
 	public function getAccessories(): array
 	{
@@ -192,7 +192,7 @@ class Driver
 	}
 
 	/**
-	 * @return Array<string, Array<Array<string, (int|Array<Array<string, (string|int|bool|Array<Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>>|null)>>|null)>>>
+	 * @return array<string, array<array<string, (int|array<array<string, (string|int|bool|array<array<string, (bool|float|int|array<int>|string|array<string>|null)>>|null)>>|null)>>>
 	 */
 	public function toHap(Uuid\UuidInterface $connectorId): array
 	{

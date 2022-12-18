@@ -75,7 +75,7 @@ abstract class Accessory
 	}
 
 	/**
-	 * @return Array<Service>
+	 * @return array<Service>
 	 */
 	public function getServices(): array
 	{
@@ -118,7 +118,7 @@ abstract class Accessory
 	 * Create a HAP representation of this Service
 	 * Used for json serialization
 	 *
-	 * @return Array<string, (int|Array<Array<string, (string|int|bool|Array<Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>>|null)>>|null)>
+	 * @return array<string, (int|array<array<string, (string|int|bool|array<array<string, (bool|float|int|array<int>|string|array<string>|null)>>|null)>>|null)>
 	 */
 	public function toHap(): array
 	{

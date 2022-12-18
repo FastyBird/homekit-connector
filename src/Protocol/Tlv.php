@@ -52,7 +52,7 @@ final class Tlv
 	use Nette\SmartObject;
 
 	/**
-	 * @param Array<int, Array<int, (int|Array<int>|string)>> $objects
+	 * @param array<int, array<int, (int|array<int>|string)>> $objects
 	 *
 	 * @throws Exceptions\InvalidArgument
 	 */
@@ -157,7 +157,7 @@ final class Tlv
 	}
 
 	/**
-	 * @return Array<int, Array<int, (int|Array<int>|string)>>
+	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
 	 * @throws Exceptions\InvalidArgument
 	 */

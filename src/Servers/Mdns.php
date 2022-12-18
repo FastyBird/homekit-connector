@@ -74,7 +74,7 @@ final class Mdns implements Server
 
 	private const DASH_REGEX = '/[-]+/';
 
-	/** @var Array<string, Array<int, Array<int, Array<Dns\Model\Record>>>> */
+	/** @var array<string, array<int, array<int, array<Dns\Model\Record>>>> */
 	private array $resourceRecords = [];
 
 	private Dns\Protocol\Parser $parser;
@@ -438,9 +438,9 @@ final class Mdns implements Server
 	}
 
 	/**
-	 * @param Array<Dns\Query\Query> $queries
+	 * @param array<Dns\Query\Query> $queries
 	 *
-	 * @return Array<Dns\Model\Record>
+	 * @return array<Dns\Model\Record>
 	 */
 	private function getAnswers(array $queries): array
 	{
@@ -472,9 +472,9 @@ final class Mdns implements Server
 	/**
 	 * Populate the additional records of a message if required
 	 *
-	 * @param Array<Dns\Model\Record> $answers
+	 * @param array<Dns\Model\Record> $answers
 	 *
-	 * @return Array<Dns\Model\Record>
+	 * @return array<Dns\Model\Record>
 	 */
 	private function getAdditional(array $answers): array
 	{

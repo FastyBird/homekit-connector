@@ -191,7 +191,7 @@ final class Transformer
 	}
 
 	/**
-	 * @param Array<int>|null $validValues
+	 * @param array<int>|null $validValues
 	 *
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState

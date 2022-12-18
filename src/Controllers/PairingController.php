@@ -508,7 +508,7 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @return Array<int, Array<int, (int|Array<int>|string)>>
+	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
@@ -710,10 +710,10 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Array<int> $clientPublicKey
-	 * @param Array<int> $clientProof
+	 * @param array<int> $clientPublicKey
+	 * @param array<int> $clientProof
 	 *
-	 * @return Array<int, Array<int, (int|Array<int>|string)>>
+	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
 	 * @throws Math\Exception\MathException
 	 * @throws Math\Exception\NumberFormatException
@@ -850,9 +850,9 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Array<int> $encryptedData
+	 * @param array<int> $encryptedData
 	 *
-	 * @return Array<int, Array<int, (int|Array<int>|string)>>
+	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
@@ -1232,9 +1232,9 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Array<int> $clientPublicKey
+	 * @param array<int> $clientPublicKey
 	 *
-	 * @return Array<int, Array<int, (int|Array<int>|string)>>
+	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
@@ -1412,9 +1412,9 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Array<int> $encryptedData
+	 * @param array<int> $encryptedData
 	 *
-	 * @return Array<int, Array<int, (int|Array<int>|string)>>
+	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
@@ -1652,7 +1652,7 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @return Array<int, Array<int, (int|Array<int>|string)>>
+	 * @return array<int, array<int, (int|array<int>|string)>>
 	 */
 	private function listPairings(Uuid\UuidInterface $connectorId): array
 	{
@@ -1700,9 +1700,9 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @param Array<int> $clientPublicKey
+	 * @param array<int> $clientPublicKey
 	 *
-	 * @return Array<int, Array<int, int>>
+	 * @return array<int, array<int, int>>
 	 */
 	private function addPairing(
 		Uuid\UuidInterface $connectorId,
@@ -1820,7 +1820,7 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @return Array<int, Array<int, int>>
+	 * @return array<int, array<int, int>>
 	 */
 	private function removePairing(
 		Uuid\UuidInterface $connectorId,

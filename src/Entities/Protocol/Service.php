@@ -51,8 +51,8 @@ class Service
 	private SplObjectStorage $characteristics;
 
 	/**
-	 * @param Array<string> $requiredCharacteristics
-	 * @param Array<string> $optionalCharacteristics
+	 * @param array<string> $requiredCharacteristics
+	 * @param array<string> $optionalCharacteristics
 	 */
 	public function __construct(
 		private readonly Uuid\UuidInterface $typeId,
@@ -88,7 +88,7 @@ class Service
 	}
 
 	/**
-	 * @return Array<string>
+	 * @return array<string>
 	 */
 	public function getAllowedCharacteristicsNames(): array
 	{
@@ -96,7 +96,7 @@ class Service
 	}
 
 	/**
-	 * @return Array<Characteristic>
+	 * @return array<Characteristic>
 	 */
 	public function getCharacteristics(): array
 	{
@@ -162,7 +162,7 @@ class Service
 	 * Create a HAP representation of this Service
 	 * Used for json serialization
 	 *
-	 * @return Array<string, (string|int|bool|Array<Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>>|null)>
+	 * @return array<string, (string|int|bool|array<array<string, (bool|float|int|array<int>|string|array<string>|null)>>|null)>
 	 */
 	public function toHap(): array
 	{

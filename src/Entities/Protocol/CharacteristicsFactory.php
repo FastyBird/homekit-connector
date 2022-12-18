@@ -49,7 +49,7 @@ final class CharacteristicsFactory
 	}
 
 	/**
-	 * @param Array<int>|null $validValues
+	 * @param array<int>|null $validValues
 	 *
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState

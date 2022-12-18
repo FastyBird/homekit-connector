@@ -65,7 +65,7 @@ use function strval;
 final class CharacteristicsController extends BaseController
 {
 
-	/** @var Array<string, Array<int, int>> */
+	/** @var array<string, array<int, int>> */
 	private array $preparedWrites = [];
 
 	public function __construct(
@@ -434,7 +434,7 @@ final class CharacteristicsController extends BaseController
 	}
 
 	/**
-	 * @return Array<string, (bool|int|Array<int>|float|string|Array<string>|null)>
+	 * @return array<string, (bool|int|array<int>|float|string|array<string>|null)>
 	 *
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
@@ -508,7 +508,7 @@ final class CharacteristicsController extends BaseController
 	}
 
 	/**
-	 * @return Array<string, bool|float|int|string|null>
+	 * @return array<string, bool|float|int|string|null>
 	 *
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
@@ -897,7 +897,7 @@ final class CharacteristicsController extends BaseController
 	}
 
 	/**
-	 * @return Array<string, int>
+	 * @return array<string, int>
 	 */
 	private function getCharacteristicRepresentationSkeleton(int $aid, int $iid): array
 	{

@@ -18,7 +18,7 @@ class ConnectionWrapper extends DBAL\Connection
 	private string $dbName;
 
 	/**
-	 * @param Array<mixed> $params
+	 * @param array<mixed> $params
 	 *
 	 * @throws DBAL\Exception
 	 */

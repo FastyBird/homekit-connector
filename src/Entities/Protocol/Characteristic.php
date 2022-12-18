@@ -68,8 +68,8 @@ class Characteristic
 	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null $expectedValue = null;
 
 	/**
-	 * @param Array<string> $permissions
-	 * @param Array<int>|null $validValues
+	 * @param array<string> $permissions
+	 * @param array<int>|null $validValues
 	 *
 	 * @throws Exceptions\InvalidArgument
 	 */
@@ -109,7 +109,7 @@ class Characteristic
 	}
 
 	/**
-	 * @return Array<string>
+	 * @return array<string>
 	 */
 	public function getPermissions(): array
 	{
@@ -117,7 +117,7 @@ class Characteristic
 	}
 
 	/**
-	 * @return Array<int>|null
+	 * @return array<int>|null
 	 */
 	public function getValidValues(): array|null
 	{
@@ -192,7 +192,7 @@ class Characteristic
 	}
 
 	/**
-	 * @return Array<string, (int|Array<int>|float|string)>
+	 * @return array<string, (int|array<int>|float|string)>
 	 */
 	public function getMeta(): array
 	{
@@ -242,7 +242,7 @@ class Characteristic
 	 * Create a HAP representation of this Characteristic
 	 * Used for json serialization
 	 *
-	 * @return Array<string, (bool|float|int|Array<int>|string|Array<string>|null)>
+	 * @return array<string, (bool|float|int|array<int>|string|array<string>|null)>
 	 *
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState

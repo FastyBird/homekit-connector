@@ -39,13 +39,13 @@ final class Connector implements DevicesConnectors\Connector
 
 	use Nette\SmartObject;
 
-	/** @var Array<Servers\Server> */
+	/** @var array<Servers\Server> */
 	private array $servers = [];
 
 	private Log\LoggerInterface $logger;
 
 	/**
-	 * @param Array<Servers\ServerFactory> $serversFactories
+	 * @param array<Servers\ServerFactory> $serversFactories
 	 */
 	public function __construct(
 		private readonly DevicesEntities\Connectors\Connector $connector,

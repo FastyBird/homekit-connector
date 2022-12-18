@@ -52,7 +52,7 @@ final class Subscriber
 	/** @var SplObjectStorage<Socket\ConnectionInterface, string> */
 	private SplObjectStorage $connections;
 
-	/** @var Array<string, Array<string>> */
+	/** @var array<string, array<string>> */
 	private array $subscriptions;
 
 	private Log\LoggerInterface $logger;

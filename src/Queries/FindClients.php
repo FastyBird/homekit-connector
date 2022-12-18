@@ -35,10 +35,10 @@ use Ramsey\Uuid;
 class FindClients extends DoctrineOrmQuery\QueryObject
 {
 
-	/** @var Array<Closure(ORM\QueryBuilder $qb): void> */
+	/** @var array<Closure(ORM\QueryBuilder $qb): void> */
 	private array $filter = [];
 
-	/** @var Array<Closure(ORM\QueryBuilder $qb): void> */
+	/** @var array<Closure(ORM\QueryBuilder $qb): void> */
 	private array $select = [];
 
 	public function byId(Uuid\UuidInterface $id): void
