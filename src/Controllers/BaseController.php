@@ -33,7 +33,7 @@ abstract class BaseController
 
 	protected Log\LoggerInterface $logger;
 
-	public function injectLogger(Log\LoggerInterface|null $logger): void
+	public function injectLogger(Log\LoggerInterface|null $logger = null): void
 	{
 		$this->logger = $logger ?? new Log\NullLogger();
 	}

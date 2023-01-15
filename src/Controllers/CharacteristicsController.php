@@ -74,7 +74,6 @@ final class CharacteristicsController extends BaseController
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly ExchangeEntities\EntityFactory $entityFactory,
 		private readonly ExchangePublisher\Publisher $publisher,
-		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher,
 		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $connectorsPropertiesRepository,
 		private readonly DevicesModels\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
 		private readonly DevicesModels\Devices\Properties\PropertiesRepository $devicesPropertiesRepository,
@@ -82,6 +81,7 @@ final class CharacteristicsController extends BaseController
 		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly DevicesModels\Channels\Properties\PropertiesManager $channelsPropertiesManager,
 		private readonly DevicesUtilities\Database $databaseHelper,
+		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
 	)
 	{
 	}

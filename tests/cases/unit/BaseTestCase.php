@@ -32,14 +32,16 @@ abstract class BaseTestCase extends TestCase
 		$config = new BootstrapBoot\Configurator();
 		$config->setTempDirectory(FB_TEMP_DIR);
 
-		$config->addParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);
-		$config->addParameters(['appDir' => $rootDir, 'wwwDir' => $rootDir, 'vendorDir' => $vendorDir]);
+		$config->addStaticParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);
+		$config->addStaticParameters(['appDir' => $rootDir, 'wwwDir' => $rootDir, 'vendorDir' => $vendorDir]);
 
 		$config->addConfig(__DIR__ . '/../../common.neon');
 
 		if ($additionalConfig !== null && file_exists($additionalConfig)) {
 			$config->addConfig($additionalConfig);
 		}
+
+		$config->setTimeZone('Europe/Prague');
 
 		DI\HomeKitExtension::register($config);
 

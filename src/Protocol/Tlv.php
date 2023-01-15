@@ -157,7 +157,7 @@ final class Tlv
 	}
 
 	/**
-	 * @return array<int, array<int, (int|array<int>|string)>>
+	 * @return array<int, array<int, (int|array<int>|string|null)>>
 	 *
 	 * @throws Exceptions\InvalidArgument
 	 */
@@ -225,7 +225,7 @@ final class Tlv
 				if ($value === false) {
 					throw new Exceptions\InvalidArgument('Provided data are not valid TLV data');
 				} else {
-					$value = array_sum($value);
+					$value = intval(array_sum($value));
 				}
 			} elseif ($tlvCode->equalsValue(Types\TlvCode::CODE_IDENTIFIER)) {
 				// Str value
@@ -269,12 +269,14 @@ final class Tlv
 			$position += $length;
 
 			if ($previousCode !== null && $previousCode->equals($tlvCode)) {
-				$entry[intval($tlvCode->getValue())] = is_array($entry[$tlvCode->getValue()]) && is_array($value)
-					? array_merge(
-						$entry[$tlvCode->getValue()],
-						$value,
-					)
-					: $entry[$tlvCode->getValue()] + $value;
+				if ($value !== null) {
+					$entry[intval($tlvCode->getValue())] = is_array($entry[$tlvCode->getValue()])
+						? array_merge(
+							$entry[$tlvCode->getValue()],
+							is_array($value) ? $value : [intval($value)],
+						)
+						: $entry[$tlvCode->getValue()] . (is_array($value) ? implode('', $value) : $value);
+				}
 			} else {
 				$entry[intval($tlvCode->getValue())] = $value;
 			}

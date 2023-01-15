@@ -174,9 +174,9 @@ final class Subscriber
 	public function publish(
 		int $aid,
 		int $iid,
-		bool|float|int|string|null $value,
-		bool $immediate,
-		string|null $senderAddress,
+		bool|float|int|string|null $value = null,
+		bool $immediate = true,
+		string|null $senderAddress = null,
 	): void
 	{
 		// Skip invalid value
@@ -200,7 +200,12 @@ final class Subscriber
 		}
 	}
 
-	private function sendToClients(int $aid, int $iid, bool|float|int|string $value, string|null $senderAddress): void
+	private function sendToClients(
+		int $aid,
+		int $iid,
+		bool|float|int|string $value,
+		string|null $senderAddress = null,
+	): void
 	{
 		if (!array_key_exists($this->getTopic($aid, $iid), $this->subscriptions)) {
 			return;

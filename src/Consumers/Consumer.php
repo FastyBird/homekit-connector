@@ -67,7 +67,7 @@ final class Consumer implements ExchangeConsumers\Consumer
 	public function consume(
 		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource|MetadataTypes\AutomatorSource $source,
 		MetadataTypes\RoutingKey $routingKey,
-		MetadataEntities\Entity|null $entity,
+		MetadataEntities\Entity|null $entity = null,
 	): void
 	{
 		if (
