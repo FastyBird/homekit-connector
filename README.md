@@ -1,7 +1,7 @@
 # FastyBird IoT HomeKit connector
 
-[![Build Status](https://badgen.net/github/checks/FastyBird/homekit-connector/master?cache=300&style=flat-square)](https://github.com/FastyBird/homekit-connector/actions)
-[![Licence](https://badgen.net/github/license/FastyBird/homekit-connector?cache=300&style=flat-square)](https://github.com/FastyBird/homekit-connector/blob/master/LICENSE.md)
+[![Build Status](https://badgen.net/github/checks/FastyBird/homekit-connector/main?cache=300&style=flat-square)](https://github.com/FastyBird/homekit-connector/actions)
+[![Licence](https://badgen.net/github/license/FastyBird/homekit-connector?cache=300&style=flat-square)](https://github.com/FastyBird/homekit-connector/blob/main/LICENSE.md)
 [![Code coverage](https://badgen.net/coveralls/c/github/FastyBird/homekit-connector?cache=300&style=flat-square)](https://coveralls.io/r/FastyBird/homekit-connector)
 [![Mutation testing](https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2FFastyBird%2Fhomekit-connector%2Fmain)](https://dashboard.stryker-mutator.io/reports/github.com/FastyBird/homekit-connector/main)
 
@@ -52,7 +52,7 @@ application under marketplace section.
 ## Documentation
 
 Learn how to connect your devices from [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things)
-system with [Apple HomeKit]((https://www.homekit.org)) in [documentation](https://github.com/FastyBird/homekit-connector/blob/master/docs/index.md).
+system with [Apple HomeKit]((https://www.homekit.org)) in [documentation](https://github.com/FastyBird/homekit-connector/blob/main/docs/index.md).
 
 ## Feedback
 
