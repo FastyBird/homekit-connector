@@ -108,7 +108,7 @@ class Initialize extends Console\Command\Command
 
 		$io->title('HomeKit connector - initialization');
 
-		$io->note('This action will create|update connector configuration.');
+		$io->note('This action will create|update|delete connector configuration.');
 
 		if ($input->getOption('no-confirm') === false) {
 			$question = new Console\Question\ConfirmationQuestion(
