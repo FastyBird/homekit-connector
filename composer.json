@@ -93,7 +93,8 @@
       "cweagans/composer-patches": true,
       "dealerdirect/phpcodesniffer-composer-installer": true,
       "phpstan/extension-installer": true,
-      "infection/extension-installer": true
+      "infection/extension-installer": true,
+      "php-http/discovery": false
     }
   },
   "extra": {
