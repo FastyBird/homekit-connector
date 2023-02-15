@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Middleware
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           19.09.22
  */
@@ -77,6 +77,7 @@ final class Router
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'router-middleware',
+					'group' => 'middleware',
 					'exception' => [
 						'message' => $ex->getMessage(),
 						'code' => $ex->getCode(),
@@ -100,6 +101,7 @@ final class Router
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'router-middleware',
+					'group' => 'middleware',
 					'exception' => [
 						'message' => $ex->getMessage(),
 						'code' => $ex->getCode(),
@@ -123,6 +125,7 @@ final class Router
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'router-middleware',
+					'group' => 'middleware',
 					'exception' => [
 						'message' => $ex->getMessage(),
 						'code' => $ex->getCode(),

@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Types
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           17.09.22
  */
@@ -34,8 +34,6 @@ class ConnectorControlName extends Consistence\Enum\Enum
 	 * Define device states
 	 */
 	public const NAME_REBOOT = MetadataTypes\ControlName::NAME_REBOOT;
-
-	public const NAME_RESET = MetadataTypes\ControlName::NAME_RESET;
 
 	public function __toString(): string
 	{

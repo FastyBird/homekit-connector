@@ -1,0 +1,147 @@
+#
+# Connector translations
+#
+# @language		en_US
+#
+# @license		More in LICENSE.md
+# @copyright	https://www.fastybird.com
+# @author		Adam Kadlec <adam.kadlec@fastybird.com>
+# @package		FastyBird:HomeKitConnector!
+# @subpackage	Translations
+# @since		0.1.0
+#
+# @date			14.02.23
+#
+
+cmd:
+    base:
+        questions:
+            continue: "Would you like to continue?"
+            whatToDo: "What would you like to do?"
+
+        messages:
+            noConnectors: "No HomeKit connectors registered in system."
+            answerNotValid: "Selected answer: \"%s\" is not valid."
+
+        category:
+            1: "Other"
+            2: "Bridge"
+            3: "Fan"
+            4: "Garage Door Opener"
+            5: "Light Bulb"
+            6: "Door Lock"
+            7: "Outlet"
+            8: "Swtich"
+            9: "Thermostat"
+            10: "Sensor"
+            11: "Alarm System"
+            12: "Door"
+            13: "Window"
+            14: "Window Covering"
+            15: "Programmable Switch"
+            16: "Range Extender"
+            17: "Camera"
+            18: "Video Door Bell"
+            19: "Air Purifier"
+            20: "Heater"
+            21: "Air Conditioner"
+            22: "Humidifier"
+            23: "Dehumidifier"
+            24: "N/A"
+            25: "N/A"
+            26: "Speaker"
+            27: "N/A"
+            28: "Sprinkler"
+            29: "Faucet"
+            30: "Shower Head"
+            31: "Television"
+            32: "Remote Controller"
+
+    initialize:
+        title: "HomeKit connector - initialization"
+        subtitle: "This action will create|update|delete connector configuration"
+
+        actions:
+            create: "Create new connector configuration"
+            update: "Edit existing connector configuration"
+            remove: "Delete existing connector configuration"
+
+        questions:
+            create: "Would you like to create new HomeKit connector configuration?"
+            disable: "Do you want to disable connector?"
+            enable: "Do you want to enable connector?"
+            provide:
+                identifier: "Provide connector identifier"
+                name: "Provide connector name"
+                port: "Provide server port"
+            select:
+                connector: "Please select connector to manage"
+
+        messages:
+            identifier:
+                used: "This identifier is already used."
+                missing: "Connector identifier have to provided."
+            create:
+                success: "Connector \"%name%\" was successfully created."
+                error: "Something went wrong, connector could not be created. Error was logged."
+            update:
+                success: "Connector \"%name%\" was successfully updated."
+                error: "Something went wrong, connector could not be updated. Error was logged."
+            remove:
+                success: "Connector \"%name%\" was successfully removed."
+                error: "Something went wrong, connector could not be removed. Error was logged."
+            noConnectors: "No HomeKit connectors registered in system."
+            portUsed: "Provided port is already taken by \"%connector%\" connector"
+
+    devices:
+        title: "HomeKit connector - devices management"
+        subtitle: "This action will create|update|delete connector device"
+
+        actions:
+            create: "Create new connector device"
+            update: "Edit existing connector device"
+            remove: "Delete existing connector device"
+
+        questions:
+            create: "Would you like to create new device in connector?"
+            provide:
+                identifier: "Provide device identifier"
+                name: "Provide device name"
+            select:
+                connector: "Please select connector under which you want to manage devices"
+                device: "Please select device to manage"
+                category: "Provide device category"
+
+        messages:
+            identifier:
+                used: "This identifier is already used."
+                missing: "Device identifier have to provided."
+            create:
+                success: "Device \"%name%\" was successfully created."
+                error: "Something went wrong, device could not be created. Error was logged."
+            update:
+                success: "Device \"%name%\" was successfully updated."
+                error: "Something went wrong, device could not be updated. Error was logged."
+            remove:
+                success: "Device \"%name%\" was successfully removed."
+                error: "Something went wrong, device could not be removed. Error was logged."
+            noDevices: "No devices registered in HomeKit connector."
+
+    execute:
+        title: "HomeKit connector - service"
+        subtitle: "This action will run connector service"
+
+        questions:
+            execute: "Would you like to execute \"%connector%\" connector"
+            select:
+                connector: "Please select connector to execute"
+
+        messages:
+            connector:
+                notFound: "Connector was not found in system."
+                disabled: "Connector is disabled. Disabled connector could not be executed."
+            noConnectors: "No HomeKit connectors registered in system."
+            uriPath: "Setup payload: %path%"
+            scanCode: "Scan this code with your HomeKit app on your iOS device:"
+            pinCode: "Or enter this code in your HomeKit app on your iOS device: %code%."
+            error: "Something went wrong, service could not be processed."

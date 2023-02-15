@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Types
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           13.09.22
  */
@@ -89,6 +89,17 @@ class AccessoryCategory extends Consistence\Enum\Enum
 	public const CATEGORY_TELEVISION = 31;
 
 	public const CATEGORY_TARGET_CONTROLLER = 32; // Remote Controller
+
+	/**
+	 * @return array<int>
+	 */
+	public static function getValues(): array
+	{
+		/** @var iterable<int> $availableValues */
+		$availableValues = parent::getAvailableValues();
+
+		return (array) $availableValues;
+	}
 
 	public function __toString(): string
 	{

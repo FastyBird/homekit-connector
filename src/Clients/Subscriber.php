@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Clients
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           02.10.22
  */
@@ -76,6 +76,7 @@ final class Subscriber
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'subscriber',
+					'group' => 'client',
 				],
 			);
 
@@ -87,6 +88,7 @@ final class Subscriber
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
+				'group' => 'client',
 				'connection' => [
 					'address' => $connection->getRemoteAddress(),
 				],
@@ -105,6 +107,7 @@ final class Subscriber
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
+				'group' => 'client',
 				'connection' => [
 					'address' => $connection->getRemoteAddress(),
 				],
@@ -129,6 +132,7 @@ final class Subscriber
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
+				'group' => 'client',
 				'subscription' => [
 					'aid' => $aid,
 					'iid' => $iid,
@@ -151,6 +155,7 @@ final class Subscriber
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
+				'group' => 'client',
 				'subscription' => [
 					'aid' => $aid,
 					'iid' => $iid,
@@ -219,6 +224,7 @@ final class Subscriber
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'subscriber',
+					'group' => 'client',
 					'data' => [
 						'aid' => $aid,
 						'iid' => $iid,

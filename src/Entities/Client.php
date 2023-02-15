@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Entities
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           13.09.22
  */
@@ -16,13 +16,11 @@
 namespace FastyBird\Connector\HomeKit\Entities;
 
 use Doctrine\ORM\Mapping as ORM;
-use FastyBird\Module\Devices\Entities as DevicesEntities;
 use IPub\DoctrineCrud;
 use IPub\DoctrineCrud\Mapping\Annotation as IPubDoctrine;
 use IPub\DoctrineTimestampable;
 use Ramsey\Uuid;
 use function is_resource;
-use function PHPUnit\Framework\assertNotNull;
 use function rewind;
 use function stream_get_contents;
 use function strval;
@@ -57,10 +55,10 @@ class Client implements DoctrineCrud\Entities\IEntity,
 
 	/**
 	 * @IPubDoctrine\Crud(is="required")
-	 * @ORM\ManyToOne(targetEntity="FastyBird\Module\Devices\Entities\Connectors\Connector")
-	 * @ORM\JoinColumn(name="connector_id", referencedColumnName="connector_id", nullable="false")
+	 * @ORM\ManyToOne(targetEntity="FastyBird\Connector\HomeKit\Entities\HomeKitConnector", inversedBy="clients")
+	 * @ORM\JoinColumn(name="connector_id", referencedColumnName="connector_id", onDelete="CASCADE", nullable=false)
 	 */
-	private DevicesEntities\Connectors\Connector|null $connector;
+	private HomeKitConnector $connector;
 
 	/**
 	 * @IPubDoctrine\Crud(is="required")
@@ -85,7 +83,7 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	public function __construct(
 		string $uid,
 		string $publicKey,
-		DevicesEntities\Connectors\Connector $connector,
+		HomeKitConnector $connector,
 		Uuid\UuidInterface|null $id = null,
 	)
 	{
@@ -102,10 +100,8 @@ class Client implements DoctrineCrud\Entities\IEntity,
 		return $this->id;
 	}
 
-	public function getConnector(): DevicesEntities\Connectors\Connector
+	public function getConnector(): HomeKitConnector
 	{
-		assertNotNull($this->connector);
-
 		return $this->connector;
 	}
 

@@ -8,33 +8,38 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Commands
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           17.09.22
  */
 
 namespace FastyBird\Connector\HomeKit\Commands;
 
+use Endroid\QrCode;
 use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Commands as DevicesCommands;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
-use Psr\Log;
+use Nette\Localization;
 use Ramsey\Uuid;
 use Symfony\Component\Console;
 use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output;
 use Symfony\Component\Console\Style;
+use function array_key_exists;
 use function array_key_first;
 use function array_search;
 use function array_values;
 use function assert;
 use function count;
+use function intval;
 use function is_string;
 use function sprintf;
+use function usort;
 
 /**
  * Connector execute command
@@ -49,16 +54,12 @@ class Execute extends Console\Command\Command
 
 	public const NAME = 'fb:homekit-connector:execute';
 
-	private Log\LoggerInterface $logger;
-
 	public function __construct(
 		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsRepository,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Localization\Translator $translator,
 		string|null $name = null,
 	)
 	{
-		$this->logger = $logger ?? new Log\NullLogger();
-
 		parent::__construct($name);
 	}
 
@@ -93,6 +94,7 @@ class Execute extends Console\Command\Command
 	 * @throws Console\Exception\ExceptionInterface
 	 * @throws Console\Exception\InvalidArgumentException
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
@@ -109,13 +111,13 @@ class Execute extends Console\Command\Command
 
 		$io = new Style\SymfonyStyle($input, $output);
 
-		$io->title('HomeKit connector - service');
+		$io->title($this->translator->translate('//homekit-connector.cmd.execute.title'));
 
-		$io->note('This action will run connector service.');
+		$io->note($this->translator->translate('//homekit-connector.cmd.execute.subtitle'));
 
 		if ($input->getOption('no-confirm') === false) {
 			$question = new Console\Question\ConfirmationQuestion(
-				'Would you like to continue?',
+				$this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
 				false,
 			);
 
@@ -144,7 +146,9 @@ class Execute extends Console\Command\Command
 			$connector = $this->connectorsRepository->findOneBy($findConnectorQuery, Entities\HomeKitConnector::class);
 
 			if ($connector === null) {
-				$io->warning('Connector was not found in system');
+				$io->warning(
+					$this->translator->translate('//homekit-connector.cmd.execute.messages.connector.notFound'),
+				);
 
 				return Console\Command\Command::FAILURE;
 			}
@@ -153,10 +157,17 @@ class Execute extends Console\Command\Command
 
 			$findConnectorsQuery = new DevicesQueries\FindConnectors();
 
-			foreach ($this->connectorsRepository->findAllBy(
+			$systemConnectors = $this->connectorsRepository->findAllBy(
 				$findConnectorsQuery,
 				Entities\HomeKitConnector::class,
-			) as $connector) {
+			);
+			usort(
+				$systemConnectors,
+				// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+				static fn (DevicesEntities\Connectors\Connector $a, DevicesEntities\Connectors\Connector $b): int => $a->getIdentifier() <=> $b->getIdentifier()
+			);
+
+			foreach ($systemConnectors as $connector) {
 				assert($connector instanceof Entities\HomeKitConnector);
 
 				$connectors[$connector->getIdentifier()] = $connector->getIdentifier()
@@ -164,9 +175,9 @@ class Execute extends Console\Command\Command
 			}
 
 			if (count($connectors) === 0) {
-				$io->warning('No connectors registered in system');
+				$io->warning($this->translator->translate('//homekit-connector.cmd.execute.messages.noConnectors'));
 
-				return Console\Command\Command::FAILURE;
+				return Console\Command\Command::SUCCESS;
 			}
 
 			if (count($connectors) === 1) {
@@ -181,16 +192,18 @@ class Execute extends Console\Command\Command
 				);
 
 				if ($connector === null) {
-					$io->warning('Connector was not found in system');
+					$io->warning(
+						$this->translator->translate('//homekit-connector.cmd.execute.messages.connector.notFound'),
+					);
 
 					return Console\Command\Command::FAILURE;
 				}
 
 				if ($input->getOption('no-confirm') === false) {
 					$question = new Console\Question\ConfirmationQuestion(
-						sprintf(
-							'Would you like to execute "%s" connector',
-							$connector->getName() ?? $connector->getIdentifier(),
+						$this->translator->translate(
+							'//homekit-connector.cmd.execute.questions.execute',
+							['connector' => $connector->getName() ?? $connector->getIdentifier()],
 						),
 						false,
 					);
@@ -201,59 +214,97 @@ class Execute extends Console\Command\Command
 				}
 			} else {
 				$question = new Console\Question\ChoiceQuestion(
-					'Please select connector to execute',
+					$this->translator->translate('//homekit-connector.cmd.execute.questions.select.connector'),
 					array_values($connectors),
 				);
-
-				$question->setErrorMessage('Selected connector: %s is not valid.');
-
-				$connectorIdentifierKey = array_search($io->askQuestion($question), $connectors, true);
-
-				if ($connectorIdentifierKey === false) {
-					$io->error('Something went wrong, connector could not be loaded');
-
-					$this->logger->alert(
-						'Connector identifier was not able to get from answer',
-						[
-							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-							'type' => 'execute-cmd',
-						],
-					);
-
-					return Console\Command\Command::FAILURE;
-				}
-
-				$findConnectorQuery = new DevicesQueries\FindConnectors();
-				$findConnectorQuery->byIdentifier($connectorIdentifierKey);
-
-				$connector = $this->connectorsRepository->findOneBy(
-					$findConnectorQuery,
-					Entities\HomeKitConnector::class,
+				$question->setErrorMessage(
+					$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 				);
-			}
+				$question->setValidator(
+					function (string|int|null $answer) use ($connectors): Entities\HomeKitConnector {
+						if ($answer === null) {
+							throw new Exceptions\Runtime(
+								sprintf(
+									$this->translator->translate(
+										'//homekit-connector.cmd.base.messages.answerNotValid',
+									),
+									$answer,
+								),
+							);
+						}
 
-			if ($connector === null) {
-				$io->error('Something went wrong, connector could not be loaded');
+						if (array_key_exists(intval($answer), array_values($connectors))) {
+							$answer = array_values($connectors)[intval($answer)];
+						}
 
-				$this->logger->alert(
-					'Connector was not found',
-					[
-						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-						'type' => 'execute-cmd',
-					],
+						$identifier = array_search($answer, $connectors, true);
+
+						if ($identifier !== false) {
+							$findConnectorQuery = new DevicesQueries\FindConnectors();
+							$findConnectorQuery->byIdentifier($identifier);
+
+							$connector = $this->connectorsRepository->findOneBy(
+								$findConnectorQuery,
+								Entities\HomeKitConnector::class,
+							);
+							assert($connector instanceof Entities\HomeKitConnector || $connector === null);
+
+							if ($connector !== null) {
+								return $connector;
+							}
+						}
+
+						throw new Exceptions\Runtime(
+							sprintf(
+								$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+								$answer,
+							),
+						);
+					},
 				);
 
-				return Console\Command\Command::FAILURE;
+				$connector = $io->askQuestion($question);
+				assert($connector instanceof Entities\HomeKitConnector);
 			}
 		}
 
+		assert($connector instanceof Entities\HomeKitConnector);
+
 		if (!$connector->isEnabled()) {
-			$io->warning('Connector is disabled. Disabled connector could not be executed');
+			$io->warning($this->translator->translate('//homekit-connector.cmd.execute.messages.connector.disabled'));
 
 			return Console\Command\Command::SUCCESS;
 		}
 
+		$qrCode = QrCode\Builder\Builder::create()
+			->writer(new QrCode\Writer\ConsoleWriter())
+			->data($connector->getXhmUri())
+			->encoding(new QrCode\Encoding\Encoding('UTF-8'))
+			->errorCorrectionLevel(new QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
+			->labelText($connector->getPinCode())
+			->labelAlignment(new QrCode\Label\Alignment\LabelAlignmentCenter())
+			->validateResult(false)
+			->build();
+
+		$io->note(
+			$this->translator->translate(
+				'//homekit-connector.cmd.execute.messages.uriPath',
+				['path' => $connector->getXhmUri()],
+			),
+		);
+
+		$io->info($this->translator->translate('//homekit-connector.cmd.execute.messages.scanCode'));
+
+		$io->writeln($qrCode->getString());
+
 		$serviceCmd = $symfonyApp->find(DevicesCommands\Connector::NAME);
+
+		$io->info(
+			$this->translator->translate(
+				'//homekit-connector.cmd.execute.messages.pinCode',
+				['code' => $connector->getPinCode()],
+			),
+		);
 
 		$result = $serviceCmd->run(new Input\ArrayInput([
 			'--connector' => $connector->getPlainId(),
@@ -262,7 +313,7 @@ class Execute extends Console\Command\Command
 		]), $output);
 
 		if ($result !== Console\Command\Command::SUCCESS) {
-			$io->error('Something went wrong, service could not be processed.');
+			$io->error($this->translator->translate('//homekit-connector.cmd.execute.messages.error'));
 
 			return Console\Command\Command::FAILURE;
 		}

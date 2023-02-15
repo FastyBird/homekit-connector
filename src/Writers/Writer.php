@@ -1,33 +1,35 @@
 <?php declare(strict_types = 1);
 
 /**
- * HttpFactory.php
+ * Writer.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Servers
+ * @subpackage     Writers
  * @since          1.0.0
  *
- * @date           19.09.22
+ * @date           11.02.23
  */
 
-namespace FastyBird\Connector\HomeKit\Servers;
+namespace FastyBird\Connector\HomeKit\Writers;
 
 use FastyBird\Connector\HomeKit\Entities;
 
 /**
- * HTTP connector communication server factory
+ * Properties writer interface
  *
  * @package        FastyBird:HomeKitConnector!
- * @subpackage     Servers
+ * @subpackage     Writers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface HttpFactory extends ServerFactory
+interface Writer
 {
 
-	public function create(Entities\HomeKitConnector $connector): Http;
+	public function connect(Entities\HomeKitConnector $connector): void;
+
+	public function disconnect(Entities\HomeKitConnector $connector): void;
 
 }

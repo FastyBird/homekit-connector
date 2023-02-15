@@ -8,14 +8,13 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Servers
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           17.09.22
  */
 
 namespace FastyBird\Connector\HomeKit\Servers;
 
-use Doctrine\DBAL;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
@@ -25,7 +24,6 @@ use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
-use Ramsey\Uuid;
 use React\Datagram;
 use React\Dns;
 use React\EventLoop;
@@ -34,12 +32,9 @@ use function array_filter;
 use function array_map;
 use function array_merge;
 use function array_unique;
-use function assert;
 use function base64_encode;
 use function hash;
 use function is_array;
-use function is_numeric;
-use function is_string;
 use function mt_rand;
 use function preg_replace;
 use function React\Async\async;
@@ -87,7 +82,6 @@ final class Mdns implements Server
 
 	public function __construct(
 		private readonly HomeKit\Entities\HomeKitConnector $connector,
-		private readonly Helpers\Connector $connectorHelper,
 		private readonly EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
 	)
@@ -96,39 +90,10 @@ final class Mdns implements Server
 
 		$this->parser = new Dns\Protocol\Parser();
 		$this->dumper = new Dns\Protocol\BinaryDumper();
-
-		$this->connectorHelper->on(
-			'updated',
-			function (
-				Uuid\UuidInterface $connectorId,
-				HomeKit\Types\ConnectorPropertyIdentifier $type,
-			): void {
-				if (
-					$this->connector->getId()->equals($connectorId)
-					&& $type->equalsValue(HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED)
-				) {
-					$this->logger->debug(
-						'Paired status has been changed',
-						[
-							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-							'type' => 'mdns-server',
-							'connector' => [
-								'id' => $this->connector->getPlainId(),
-							],
-						],
-					);
-
-					$this->createZone();
-					$this->broadcastZone();
-				}
-			},
-		);
 	}
 
 	/**
-	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
@@ -142,6 +107,7 @@ final class Mdns implements Server
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
+				'group' => 'server',
 				'connector' => [
 					'id' => $this->connector->getPlainId(),
 				],
@@ -177,6 +143,7 @@ final class Mdns implements Server
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'mdns-server',
+							'group' => 'server',
 							'exception' => [
 								'message' => $ex->getMessage(),
 								'code' => $ex->getCode(),
@@ -200,6 +167,7 @@ final class Mdns implements Server
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'mdns-server',
+							'group' => 'server',
 							'connector' => [
 								'id' => $this->connector->getPlainId(),
 							],
@@ -224,6 +192,7 @@ final class Mdns implements Server
 					[
 						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'mdns-server',
+						'group' => 'server',
 						'exception' => [
 							'message' => $ex->getMessage(),
 							'code' => $ex->getCode(),
@@ -243,6 +212,7 @@ final class Mdns implements Server
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
+				'group' => 'server',
 				'connector' => [
 					'id' => $this->connector->getPlainId(),
 				],
@@ -252,6 +222,30 @@ final class Mdns implements Server
 		$this->server?->close();
 	}
 
+	/**
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidState
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 */
+	public function refresh(): void
+	{
+		$this->logger->debug(
+			'Connector configuration changes. Refreshing mDNS broadcast',
+			[
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'type' => 'mdns-server',
+				'group' => 'server',
+				'connector' => [
+					'id' => $this->connector->getPlainId(),
+				],
+			],
+		);
+
+		$this->createZone();
+		$this->broadcastZone();
+	}
+
 	private function broadcastZone(): void
 	{
 		$this->logger->debug(
@@ -259,6 +253,7 @@ final class Mdns implements Server
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
+				'group' => 'server',
 				'connector' => [
 					'id' => $this->connector->getPlainId(),
 				],
@@ -288,9 +283,7 @@ final class Mdns implements Server
 	}
 
 	/**
-	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws DevicesExceptions\Runtime
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
@@ -326,49 +319,12 @@ final class Mdns implements Server
 			),
 		);
 
-		$port = $this->connectorHelper->getConfiguration(
-			$this->connector->getId(),
-			HomeKit\Types\ConnectorPropertyIdentifier::get(
-				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
-			),
-		);
-		assert(is_numeric($port));
-
-		$macAddress = $this->connectorHelper->getConfiguration(
-			$this->connector->getId(),
-			HomeKit\Types\ConnectorPropertyIdentifier::get(
-				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS,
-			),
-		);
-		assert(is_string($macAddress));
+		$macAddress = $this->connector->getMacAddress();
 
 		$shortMacAddress = str_replace(':', '', Utils\Strings::substring($macAddress, -8));
 
-		$version = $this->connectorHelper->getConfiguration(
-			$this->connector->getId(),
-			HomeKit\Types\ConnectorPropertyIdentifier::get(
-				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION,
-			),
-		);
-		assert(is_numeric($version));
-
-		$paired = $this->connectorHelper->getConfiguration(
-			$this->connector->getId(),
-			HomeKit\Types\ConnectorPropertyIdentifier::get(
-				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED,
-			),
-		);
-
-		$setupId = $this->connectorHelper->getConfiguration(
-			$this->connector->getId(),
-			HomeKit\Types\ConnectorPropertyIdentifier::get(
-				HomeKit\Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID,
-			),
-		);
-		assert(is_string($setupId));
-
 		$setupHash = substr(
-			base64_encode(hash('sha512', $setupId . $macAddress, true)),
+			base64_encode(hash('sha512', $this->connector->getSetupId() . $macAddress, true)),
 			0,
 			4,
 		);
@@ -403,7 +359,7 @@ final class Mdns implements Server
 			[
 				'priority' => '0',
 				'weight' => '0',
-				'port' => (string) $port,
+				'port' => (string) $this->connector->getPort(),
 				'target' => $hostName . '-' . $shortMacAddress . '.local',
 			],
 		);
@@ -420,12 +376,12 @@ final class Mdns implements Server
 				// Represents the 'configuration version' of an Accessory.
 				// Increasing this 'version number' signals iOS devices to
 				// re-fetch accessories data
-				'c#=' . ((int) $version),
+				'c#=' . $this->connector->getVersion(),
 				's#=1', // Accessory state
 				'ff=0',
 				'ci=' . HomeKit\Types\AccessoryCategory::CATEGORY_BRIDGE,
 				// 'sf == 1' means "discoverable by HomeKit iOS clients"
-				'sf=' . ((bool) $paired === true ? 0 : 1),
+				'sf=' . ($this->connector->isPaired() ? 0 : 1),
 				'sh=' . $setupHash,
 			],
 		);

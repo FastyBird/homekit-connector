@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Servers
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           26.09.22
  */
@@ -222,6 +222,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'secure-connection',
+					'group' => 'server',
 					'exception' => [
 						'message' => $ex->getMessage(),
 						'code' => $ex->getCode(),
@@ -276,6 +277,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'secure-connection',
+					'group' => 'server',
 					'exception' => [
 						'message' => $ex->getMessage(),
 						'code' => $ex->getCode(),

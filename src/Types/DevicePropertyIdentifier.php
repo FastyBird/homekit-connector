@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * CharacteristicPermission.php
+ * DevicePropertyIdentifier.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -10,7 +10,7 @@
  * @subpackage     Types
  * @since          1.0.0
  *
- * @date           13.09.22
+ * @date           13.02.23
  */
 
 namespace FastyBird\Connector\HomeKit\Types;
@@ -19,32 +19,20 @@ use Consistence;
 use function strval;
 
 /**
- * HAP accessory permissions type
+ * Device property identifier types
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Types
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class CharacteristicPermission extends Consistence\Enum\Enum
+class DevicePropertyIdentifier extends Consistence\Enum\Enum
 {
 
 	/**
-	 * Define permissions identifiers
+	 * Define device properties identifiers
 	 */
-	public const PERMISSION_HIDDEN = 'hd';
-
-	public const PERMISSION_NOTIFY = 'ev';
-
-	public const PERMISSION_READ = 'pr';
-
-	public const PERMISSION_WRITE = 'pw';
-
-	public const PERMISSION_WRITE_RESPONSE = 'wr';
-
-	public const PERMISSION_TIMED_WRITE = 'tw';
-
-	public const PERMISSION_ADDITIONAL_AUTHORIZATION = 'aa';
+	public const IDENTIFIER_CATEGORY = 'category';
 
 	public function __toString(): string
 	{

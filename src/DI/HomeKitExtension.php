@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     DI
- * @since          0.1.0
+ * @since          1.0.0
  *
  * @date           29.03.22
  */
@@ -19,7 +19,6 @@ use Doctrine\Persistence;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Commands;
 use FastyBird\Connector\HomeKit\Connector;
-use FastyBird\Connector\HomeKit\Consumers;
 use FastyBird\Connector\HomeKit\Controllers;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Helpers;
@@ -31,13 +30,16 @@ use FastyBird\Connector\HomeKit\Router;
 use FastyBird\Connector\HomeKit\Schemas;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Subscribers;
+use FastyBird\Connector\HomeKit\Writers;
 use FastyBird\Library\Bootstrap\Boot as BootstrapBoot;
-use FastyBird\Library\Exchange\DI as ExchangeDI;
 use FastyBird\Module\Devices\DI as DevicesDI;
 use IPub\DoctrineCrud;
 use Nette;
 use Nette\DI;
 use Nette\PhpGenerator;
+use Nette\Schema;
+use stdClass;
+use function assert;
 use function ucfirst;
 use const DIRECTORY_SEPARATOR;
 
@@ -68,9 +70,35 @@ class HomeKitExtension extends DI\CompilerExtension
 		};
 	}
 
+	public function getConfigSchema(): Schema\Schema
+	{
+		return Schema\Expect::structure([
+			'writer' => Schema\Expect::anyOf(
+				Writers\Event::NAME,
+				Writers\Exchange::NAME,
+				Writers\Periodic::NAME,
+			)->default(
+				Writers\Periodic::NAME,
+			),
+		]);
+	}
+
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
+		$configuration = $this->getConfig();
+		assert($configuration instanceof stdClass);
+
+		if ($configuration->writer === Writers\Event::NAME) {
+			$builder->addDefinition($this->prefix('writers.event'), new DI\Definitions\ServiceDefinition())
+				->setType(Writers\Event::class);
+		} elseif ($configuration->writer === Writers\Exchange::NAME) {
+			$builder->addDefinition($this->prefix('writers.exchange'), new DI\Definitions\ServiceDefinition())
+				->setType(Writers\Exchange::class);
+		} elseif ($configuration->writer === Writers\Periodic::NAME) {
+			$builder->addDefinition($this->prefix('writers.periodic'), new DI\Definitions\ServiceDefinition())
+				->setType(Writers\Periodic::class);
+		}
 
 		$builder->addFactoryDefinition($this->prefix('server.mdns'))
 			->setImplement(Servers\MdnsFactory::class)
@@ -92,6 +120,9 @@ class HomeKitExtension extends DI\CompilerExtension
 			->getResultDefinition()
 			->setType(Servers\SecureConnection::class);
 
+		$builder->addDefinition($this->prefix('subscribers.properties'), new DI\Definitions\ServiceDefinition())
+			->setType(Subscribers\Properties::class);
+
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\HomeKitConnector::class);
 
@@ -103,9 +134,6 @@ class HomeKitExtension extends DI\CompilerExtension
 
 		$builder->addDefinition($this->prefix('hydrators.device.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Hydrators\HomeKitDevice::class);
-
-		$builder->addDefinition($this->prefix('helpers.connector'), new DI\Definitions\ServiceDefinition())
-			->setType(Helpers\Connector::class);
 
 		$builder->addDefinition($this->prefix('helpers.loader'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Loader::class);
@@ -170,18 +198,14 @@ class HomeKitExtension extends DI\CompilerExtension
 				'serversFactories' => $builder->findByType(Servers\ServerFactory::class),
 			]);
 
-		$builder->addDefinition($this->prefix('consumers.exchange'), new DI\Definitions\ServiceDefinition())
-			->setType(Consumers\Consumer::class)
-			->addTag(ExchangeDI\ExchangeExtension::CONSUMER_STATUS, false);
-
-		$builder->addDefinition($this->prefix('subscribers.connector'), new DI\Definitions\ServiceDefinition())
-			->setType(Subscribers\Connector::class);
-
 		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
 			->setType(Commands\Initialize::class);
 
 		$builder->addDefinition($this->prefix('commands.execute'), new DI\Definitions\ServiceDefinition())
 			->setType(Commands\Execute::class);
+
+		$builder->addDefinition($this->prefix('commands.devices'), new DI\Definitions\ServiceDefinition())
+			->setType(Commands\Devices::class);
 	}
 
 	/**

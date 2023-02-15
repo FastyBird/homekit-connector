@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Controllers
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           19.09.22
  */
@@ -103,6 +103,7 @@ final class CharacteristicsController extends BaseController
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'characteristics-controller',
+				'group' => 'controller',
 				'request' => [
 					'address' => $request->getServerParams()['REMOTE_ADDR'],
 					'path' => $request->getUri()->getPath(),
@@ -227,6 +228,7 @@ final class CharacteristicsController extends BaseController
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'characteristics-controller',
+				'group' => 'controller',
 				'request' => [
 					'address' => $request->getServerParams()['REMOTE_ADDR'],
 					'path' => $request->getUri()->getPath(),
@@ -602,6 +604,7 @@ final class CharacteristicsController extends BaseController
 					[
 						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'characteristics-controller',
+						'group' => 'controller',
 						'characteristic' => [
 							'type' => $characteristic->getTypeId()->toString(),
 							'name' => $characteristic->getName(),
@@ -641,6 +644,7 @@ final class CharacteristicsController extends BaseController
 								[
 									'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 									'type' => 'characteristics-controller',
+									'group' => 'controller',
 									'characteristic' => [
 										'type' => $characteristic->getTypeId()->toString(),
 										'name' => $characteristic->getName(),
@@ -661,6 +665,7 @@ final class CharacteristicsController extends BaseController
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'characteristics-controller',
+							'group' => 'controller',
 							'characteristic' => [
 								'type' => $characteristic->getTypeId()->toString(),
 								'name' => $characteristic->getName(),
@@ -716,6 +721,7 @@ final class CharacteristicsController extends BaseController
 									[
 										'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 										'type' => 'characteristics-controller',
+										'group' => 'controller',
 										'characteristic' => [
 											'type' => $characteristic->getTypeId()->toString(),
 											'name' => $characteristic->getName(),
@@ -737,6 +743,7 @@ final class CharacteristicsController extends BaseController
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'characteristics-controller',
+							'group' => 'controller',
 							'characteristic' => [
 								'type' => $characteristic->getTypeId()->toString(),
 								'name' => $characteristic->getName(),
@@ -796,6 +803,7 @@ final class CharacteristicsController extends BaseController
 									[
 										'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 										'type' => 'characteristics-controller',
+										'group' => 'controller',
 										'characteristic' => [
 											'type' => $characteristic->getTypeId()->toString(),
 											'name' => $characteristic->getName(),
@@ -820,6 +828,7 @@ final class CharacteristicsController extends BaseController
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'characteristics-controller',
+							'group' => 'controller',
 							'characteristic' => [
 								'type' => $characteristic->getTypeId()->toString(),
 								'name' => $characteristic->getName(),
@@ -882,6 +891,7 @@ final class CharacteristicsController extends BaseController
 					[
 						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'characteristics-controller',
+						'group' => 'controller',
 						'characteristic' => [
 							'type' => $characteristic->getTypeId()->toString(),
 							'name' => $characteristic->getName(),

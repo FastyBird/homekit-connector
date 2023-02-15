@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Helpers
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           13.09.22
  */
@@ -21,10 +21,12 @@ use Nette\Utils;
 use Ramsey\Uuid;
 use Socket;
 use Throwable;
+use function base_convert;
 use function bin2hex;
 use function count;
 use function explode;
 use function implode;
+use function intval;
 use function ltrim;
 use function pow;
 use function rand;
@@ -35,7 +37,9 @@ use function socket_connect;
 use function socket_create;
 use function socket_getsockname;
 use function str_repeat;
+use function str_replace;
 use function strlen;
+use function strval;
 use const AF_INET;
 use const SOCK_DGRAM;
 use const SOL_UDP;
@@ -79,6 +83,33 @@ final class Protocol
 		return Uuid\Uuid::fromString(
 			str_repeat('0', 8 - strlen($type)) . $type . HomeKit\Constants::BASE_UUID,
 		);
+	}
+
+	public static function getXhmUri(
+		string $pinCode,
+		string $setupId,
+		HomeKit\Types\AccessoryCategory $category,
+	): string
+	{
+		$payload = 0;
+
+		$payload |= 0 & 0x7; // version
+		$payload <<= 4;
+		$payload |= 0 & 0xF; // reserved bits
+
+		$payload <<= 8;
+		$payload |= intval($category->getValue()) & 0xFF; // category
+
+		$payload <<= 4;
+		$payload |= 2 & 0xF; // flags
+
+		$payload <<= 27;
+		$payload |= (intval(str_replace('-', '', $pinCode)) & 0x7FFFFFFF); // pin code
+
+		$encodedPayload = Utils\Strings::upper(base_convert(strval($payload), 10, 36));
+		$encodedPayload = Utils\Strings::substring(str_repeat('0', 9) . $encodedPayload, -9);
+
+		return 'X-HM://' . $encodedPayload . $setupId;
 	}
 
 	public static function getLocalAddress(): string|null

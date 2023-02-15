@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Types
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           13.09.22
  */
@@ -37,8 +37,6 @@ class ConnectorPropertyIdentifier extends Consistence\Enum\Enum
 
 	public const IDENTIFIER_PIN_CODE = 'pin_code';
 
-	public const IDENTIFIER_XHM_URI = 'xhm_uri';
-
 	public const IDENTIFIER_MAC_ADDRESS = 'mac_address';
 
 	public const IDENTIFIER_SETUP_ID = 'setup_id';
@@ -54,6 +52,8 @@ class ConnectorPropertyIdentifier extends Consistence\Enum\Enum
 	public const IDENTIFIER_SHARED_KEY = 'shared_key';
 
 	public const IDENTIFIER_HASHING_KEY = 'hashing_key';
+
+	public const IDENTIFIER_XHM_URI = 'xhm_uri';
 
 	public function __toString(): string
 	{

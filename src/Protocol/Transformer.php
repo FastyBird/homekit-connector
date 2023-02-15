@@ -8,7 +8,7 @@
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Protocol
- * @since          0.19.0
+ * @since          1.0.0
  *
  * @date           01.10.22
  */
