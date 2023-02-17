@@ -36,7 +36,6 @@ use function array_search;
 use function array_values;
 use function assert;
 use function count;
-use function intval;
 use function is_string;
 use function sprintf;
 use function usort;
@@ -233,8 +232,8 @@ class Execute extends Console\Command\Command
 							);
 						}
 
-						if (array_key_exists(intval($answer), array_values($connectors))) {
-							$answer = array_values($connectors)[intval($answer)];
+						if (array_key_exists($answer, array_values($connectors))) {
+							$answer = array_values($connectors)[$answer];
 						}
 
 						$identifier = array_search($answer, $connectors, true);

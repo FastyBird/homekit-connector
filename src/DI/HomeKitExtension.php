@@ -123,6 +123,9 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('subscribers.properties'), new DI\Definitions\ServiceDefinition())
 			->setType(Subscribers\Properties::class);
 
+		$builder->addDefinition($this->prefix('subscribers.controls'), new DI\Definitions\ServiceDefinition())
+			->setType(Subscribers\Controls::class);
+
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\HomeKitConnector::class);
 

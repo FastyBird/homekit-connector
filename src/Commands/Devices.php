@@ -503,8 +503,8 @@ class Devices extends Console\Command\Command
 				);
 			}
 
-			if (array_key_exists(intval($answer), array_values($categories))) {
-				$answer = array_values($categories)[intval($answer)];
+			if (array_key_exists($answer, array_values($categories))) {
+				$answer = array_values($categories)[$answer];
 			}
 
 			$category = array_search($answer, $categories, true);
@@ -572,8 +572,8 @@ class Devices extends Console\Command\Command
 				);
 			}
 
-			if (array_key_exists(intval($answer), array_values($connectors))) {
-				$answer = array_values($connectors)[intval($answer)];
+			if (array_key_exists($answer, array_values($connectors))) {
+				$answer = array_values($connectors)[$answer];
 			}
 
 			$identifier = array_search($answer, $connectors, true);
@@ -655,8 +655,8 @@ class Devices extends Console\Command\Command
 				);
 			}
 
-			if (array_key_exists(intval($answer), array_values($devices))) {
-				$answer = array_values($devices)[intval($answer)];
+			if (array_key_exists($answer, array_values($devices))) {
+				$answer = array_values($devices)[$answer];
 			}
 
 			$identifier = array_search($answer, $devices, true);
