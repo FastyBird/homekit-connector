@@ -55,11 +55,12 @@
     "react/datagram": "^1.8",
     "react/dns": "^1.10",
     "react/http": "^1.7",
+    "symplify/vendor-patches": "^11.2",
     "simplito/elliptic-php": "^1.0",
     "symfony/event-dispatcher": "^5.4"
   },
   "require-dev": {
-    "brianium/paratest": "^6.6",
+    "brianium/paratest": "^7.1",
     "contributte/translation": "^2.0",
     "dg/bypass-finals": "^1.4",
     "infection/infection": "^0.26",
@@ -73,7 +74,7 @@
     "phpstan/phpstan-nette": "^1.1",
     "phpstan/phpstan-phpunit": "^1.1",
     "phpstan/phpstan-strict-rules": "^1.4",
-    "phpunit/phpunit": "^9.5",
+    "phpunit/phpunit": "^10.0",
     "staabm/annotate-pull-request-from-checkstyle": "^1.8",
     "tracy/tracy": "^2.9"
   },
@@ -104,7 +105,10 @@
     },
     "patches": {
       "nettrine/orm": {
-        "Enable connection overrides": "https://raw.githubusercontent.com/FastyBird/libraries-patches/master/nettrine.orm.mangerRegistry.diff"
+        "Enable connection overrides": "https://raw.githubusercontent.com/FastyBird/libraries-patches/master/nettrine-orm-src-managerregistry-php.patch"
+      },
+      "react/event-loop": {
+        "Bug: Use native return type": "https://raw.githubusercontent.com/FastyBird/libraries-patches/master/react-event-loop-src-loop-php.patch"
       }
     }
   },

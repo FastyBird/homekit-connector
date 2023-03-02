@@ -100,7 +100,7 @@ final class AccessoriesTest extends DbTestCase
 	/**
 	 * @return array<string, array<int|string>>
 	 */
-	public function accessoriesRead(): array
+	public static function accessoriesRead(): array
 	{
 		return [
 			// Valid responses

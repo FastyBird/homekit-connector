@@ -31,7 +31,7 @@ cmd:
             5: "Light Bulb"
             6: "Door Lock"
             7: "Outlet"
-            8: "Swtich"
+            8: "Switch"
             9: "Thermostat"
             10: "Sensor"
             11: "Alarm System"
@@ -101,31 +101,71 @@ cmd:
             create: "Create new connector device"
             update: "Edit existing connector device"
             remove: "Delete existing connector device"
+            createService: "Create new device service"
+            updateService: "Edit existing device service"
+            removeService: "Delete existing device service"
+            listServices: "List device services"
+            nothing: "Nothing"
 
         questions:
             create: "Would you like to create new device in connector?"
             provide:
                 identifier: "Provide device identifier"
                 name: "Provide device name"
+                value: "Provide characteristic value"
             select:
                 connector: "Please select connector under which you want to manage devices"
                 device: "Please select device to manage"
-                category: "Provide device category"
+                category: "Please select device category"
+                service: "Please select device's service"
+                value: "Please select characteristic value"
+                propertyType: "What type of property you want to map?"
+                mappedDevice: "Select device for mapping"
+                mappedDeviceProperty: "Select device property for mapping"
+                mappedDeviceChannel: "Select device channel for mapping"
+                mappedChannelProperty: "Select channel property for mapping"
+                requiredCharacteristic: "What type of service characteristic you would like to add?"
+                optionalCharacteristic: "What type of service characteristic you would like to add? (optional)"
+            connectCharacteristic: "Connect characteristics with device?"
+            createServices: "Would you like to configure new device service?"
+            editServices: "Would you like to manage device services?"
+
+        answers:
+            none: "None"
+            true: "True"
+            false: "False"
+            deviceProperty: "Device property"
+            channelProperty: "Channel property"
 
         messages:
             identifier:
                 used: "This identifier is already used."
                 missing: "Device identifier have to provided."
             create:
-                success: "Device \"%name%\" was successfully created."
-                error: "Something went wrong, device could not be created. Error was logged."
+                device:
+                    success: "Device \"%name%\" was successfully created."
+                    error: "Something went wrong, device could not be created. Error was logged."
+                service:
+                    success: "Service \"%name%\" was successfully created."
+                    error: "Something went wrong, service could not be created. Error was logged."
             update:
-                success: "Device \"%name%\" was successfully updated."
-                error: "Something went wrong, device could not be updated. Error was logged."
+                device:
+                    success: "Device \"%name%\" was successfully updated."
+                    error: "Something went wrong, device could not be updated. Error was logged."
+                service:
+                    success: "Service \"%name%\" was successfully updated."
+                    error: "Something went wrong, service could not be updated. Error was logged."
             remove:
-                success: "Device \"%name%\" was successfully removed."
-                error: "Something went wrong, device could not be removed. Error was logged."
+                device:
+                    success: "Device \"%name%\" was successfully removed."
+                    error: "Something went wrong, device could not be removed. Error was logged."
+                service:
+                    success: "Service \"%name%\" was successfully removed."
+                    error: "Something went wrong, service could not be removed. Error was logged."
             noDevices: "No devices registered in HomeKit connector."
+            noServices: "This device has not configured any service."
+            serviceNotFound: "Something went wrong, service could not be loaded"
+            noHardwareDevices: "No devices registered in system"
 
     execute:
         title: "HomeKit connector - service"

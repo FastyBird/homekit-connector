@@ -1,0 +1,306 @@
+{
+  "1": {
+    "name": "Other",
+    "services": [
+    ]
+  },
+  "2": {
+    "name": "Bridge",
+    "services": [
+    ]
+  },
+  "3": {
+    "name": "Fan",
+    "services": [
+      "BatteryService",
+      "Fan",
+      "Fanv2",
+      "FilterMaintenance",
+      "MotionSensor",
+      "OccupancySensor",
+      "Switch"
+    ]
+  },
+  "4": {
+    "name": "Garage Door Opener",
+    "services": [
+      "BatteryService",
+      "ContactSensor",
+      "Door",
+      "GarageDoorOpener",
+      "LockManagement",
+      "LockMechanism",
+      "MotionSensor",
+      "OccupancySensor",
+      "Switch"
+    ]
+  },
+  "5": {
+    "name": "Light Bulb",
+    "services": [
+      "BatteryService",
+      "LightSensor",
+      "Lightbulb",
+      "MotionSensor",
+      "OccupancySensor"
+    ]
+  },
+  "6": {
+    "name": "Door Lock",
+    "services": [
+      "BatteryService",
+      "ContactSensor",
+      "Door",
+      "LockManagement",
+      "LockMechanism"
+    ]
+  },
+  "7": {
+    "name": "Outlet",
+    "services": [
+      "Outlet"
+    ]
+  },
+  "8": {
+    "name": "Switch",
+    "services": [
+      "BatteryService",
+      "Switch"
+    ]
+  },
+  "9": {
+    "name": "Thermostat",
+    "services": [
+      "BatteryService",
+      "HeaterCooler",
+      "HumiditySensor",
+      "MotionSensor",
+      "OccupancySensor",
+      "TemperatureSensor",
+      "Thermostat"
+    ]
+  },
+  "10": {
+    "name": "Sensor",
+    "services": [
+      "AirQualitySensor",
+      "BatteryService",
+      "CarbonDioxideSensor",
+      "CarbonMonoxideSensor",
+      "ContactSensor",
+      "HumiditySensor",
+      "InputSource",
+      "LeakSensor",
+      "LightSensor",
+      "Microphone",
+      "MotionSensor",
+      "OccupancySensor",
+      "SmokeSensor",
+      "TemperatureSensor"
+    ]
+  },
+  "11": {
+    "name": "Alarm System",
+    "services": [
+      "BatteryService",
+      "ContactSensor",
+      "LeakSensor",
+      "LightSensor",
+      "Microphone",
+      "MotionSensor",
+      "SecuritySystem",
+      "SmokeSensor"
+    ]
+  },
+  "12": {
+    "name": "Door",
+    "services": [
+      "BatteryService",
+      "ContactSensor",
+      "Door",
+      "Doorbell",
+      "LockManagement",
+      "LockMechanism"
+    ]
+  },
+  "13": {
+    "name": "Window",
+    "services": [
+      "BatteryService",
+      "ContactSensor",
+      "Window"
+    ]
+  },
+  "14": {
+    "name": "Window Covering",
+    "services": [
+      "BatteryService",
+      "ContactSensor",
+      "WindowCovering"
+    ]
+  },
+  "15": {
+    "name": "Programmable Switch",
+    "services": [
+      "BatteryService",
+      "StatelessProgrammableSwitch"
+    ]
+  },
+  "16": {
+    "name": "Range Extender",
+    "services": [
+      "BatteryService"
+    ]
+  },
+  "17": {
+    "name": "Camera",
+    "services": [
+      "BatteryService",
+      "CameraRTPStreamManagement",
+      "Microphone",
+      "MotionSensor"
+    ]
+  },
+  "18": {
+    "name": "Video Door Bell",
+    "services": [
+      "BatteryService",
+      "CameraRTPStreamManagement",
+      "Doorbell",
+      "LockManagement",
+      "LockMechanism",
+      "Microphone"
+    ]
+  },
+  "19": {
+    "name": "Air Purifier",
+    "services": [
+      "AirPurifier",
+      "AirQualitySensor",
+      "Fan",
+      "Fanv2",
+      "FilterMaintenance",
+      "HumiditySensor",
+      "LeakSensor",
+      "MotionSensor",
+      "OccupancySensor",
+      "SmokeSensor"
+    ]
+  },
+  "20": {
+    "name": "Heater",
+    "services": [
+      "BatteryService",
+      "HeaterCooler",
+      "LeakSensor",
+      "MotionSensor",
+      "OccupancySensor",
+      "TemperatureSensor",
+      "Valve"
+    ]
+  },
+  "21": {
+    "name": "Air Conditioner",
+    "services": [
+      "AirQualitySensor",
+      "BatteryService",
+      "Fan",
+      "Fanv2",
+      "FilterMaintenance",
+      "HumiditySensor",
+      "LeakSensor",
+      "MotionSensor",
+      "OccupancySensor",
+      "TemperatureSensor"
+    ]
+  },
+  "22": {
+    "name": "Humidifier",
+    "services": [
+      "AirQualitySensor",
+      "BatteryService",
+      "Fan",
+      "Fanv2",
+      "FilterMaintenance",
+      "HumidifierDehumidifier",
+      "HumiditySensor",
+      "LeakSensor",
+      "MotionSensor",
+      "OccupancySensor",
+      "TemperatureSensor"
+    ]
+  },
+  "23": {
+    "name": "Dehumidifier",
+    "services": [
+      "AirQualitySensor",
+      "BatteryService",
+      "Fan",
+      "Fanv2",
+      "FilterMaintenance",
+      "HumidifierDehumidifier",
+      "HumiditySensor",
+      "LeakSensor",
+      "MotionSensor",
+      "OccupancySensor",
+      "TemperatureSensor"
+    ]
+  },
+  "24": {
+    "name": "N/A",
+    "services": []
+  },
+  "25": {
+    "name": "N/A",
+    "services": []
+  },
+  "26": {
+    "name": "Speaker",
+    "services": [
+      "BatteryService",
+      "Speaker"
+    ]
+  },
+  "27": {
+    "name": "N/A",
+    "services": []
+  },
+  "28": {
+    "name": "Sprinkler",
+    "services": [
+      "BatteryService",
+      "IrrigationSystem",
+      "SmokeSensor",
+      "Valve"
+    ]
+  },
+  "29": {
+    "name": "Faucet",
+    "services": [
+      "BatteryService",
+      "Faucet",
+      "Valve"
+    ]
+  },
+  "30": {
+    "name": "Shower Head",
+    "services": [
+      "BatteryService",
+      "Valve"
+    ]
+  },
+  "31": {
+    "name": "Television",
+    "services": [
+      "BatteryService",
+      "Television",
+      "TelevisionSpeaker"
+    ]
+  },
+  "32": {
+    "name": "Remote Controller",
+    "services": [
+      "BatteryService"
+    ]
+  }
+}

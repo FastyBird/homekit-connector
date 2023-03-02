@@ -8,7 +8,8 @@
     "UUID" : "000000A6-0000-1000-8000-0026BB765291",
     "ValidValues" : {
       "RequiresAdditionalSetup" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "Active" : {
     "Format" : "uint8",
@@ -21,7 +22,8 @@
     "ValidValues" : {
       "Active" : 1,
       "Inactive" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "ActiveIdentifier" : {
     "Format" : "uint32",
@@ -30,7 +32,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "000000E7-0000-1000-8000-0026BB765291"
+    "UUID" : "000000E7-0000-1000-8000-0026BB765291",
+    "DataType": "uint"
   },
   "AdministratorOnlyAccess" : {
     "Format" : "bool",
@@ -39,7 +42,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "00000001-0000-1000-8000-0026BB765291"
+    "UUID" : "00000001-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "AirParticulateDensity" : {
     "Format" : "float",
@@ -50,7 +54,8 @@
     "UUID" : "00000064-0000-1000-8000-0026BB765291",
     "MaxValue" : 1000,
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "ushort"
   },
   "AirParticulateSize" : {
     "Format" : "uint8",
@@ -62,7 +67,8 @@
     "ValidValues" : {
       "10\u03bcm" : 1,
       "2.5\u03bcm" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "AirQuality" : {
     "Format" : "uint8",
@@ -78,7 +84,8 @@
       "Inferior" : 4,
       "Poor" : 5,
       "Unknown" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "AudioFeedback" : {
     "Format" : "bool",
@@ -87,7 +94,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "00000005-0000-1000-8000-0026BB765291"
+    "UUID" : "00000005-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "BatteryLevel" : {
     "Format" : "uint8",
@@ -99,7 +107,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "Brightness" : {
     "Format" : "int",
@@ -112,7 +121,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "CarbonDioxideDetected" : {
     "Format" : "uint8",
@@ -124,7 +134,8 @@
     "ValidValues" : {
       "CO2LevelsAbnormal" : 1,
       "CO2LevelsNormal" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "CarbonDioxideLevel" : {
     "Format" : "float",
@@ -134,7 +145,8 @@
     ],
     "UUID" : "00000093-0000-1000-8000-0026BB765291",
     "MaxValue" : 100000,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "float"
   },
   "CarbonDioxidePeakLevel" : {
     "Format" : "float",
@@ -144,7 +156,8 @@
     ],
     "UUID" : "00000094-0000-1000-8000-0026BB765291",
     "MaxValue" : 100000,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "float"
   },
   "CarbonMonoxideDetected" : {
     "Format" : "uint8",
@@ -156,7 +169,8 @@
     "ValidValues" : {
       "COLevelsAbnormal" : 1,
       "COLevelsNormal" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "CarbonMonoxideLevel" : {
     "Format" : "float",
@@ -166,7 +180,8 @@
     ],
     "UUID" : "00000090-0000-1000-8000-0026BB765291",
     "MaxValue" : 100,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "float"
   },
   "CarbonMonoxidePeakLevel" : {
     "Format" : "float",
@@ -176,7 +191,8 @@
     ],
     "UUID" : "00000091-0000-1000-8000-0026BB765291",
     "MaxValue" : 100,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "float"
   },
   "ChargingState" : {
     "Format" : "uint8",
@@ -189,7 +205,8 @@
       "Charging" : 1,
       "NotChargeable" : 2,
       "NotCharging" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "ClosedCaptions" : {
     "Format" : "uint8",
@@ -202,7 +219,8 @@
     "ValidValues" : {
       "Disabled" : 0,
       "Enabled" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "ColorTemperature" : {
     "Format" : "uint32",
@@ -214,7 +232,8 @@
     "UUID" : "000000CE-0000-1000-8000-0026BB765291",
     "MaxValue" : 500,
     "MinStep" : 1,
-    "MinValue" : 140
+    "MinValue" : 140,
+    "DataType": "uint"
   },
   "ConfiguredName" : {
     "Format" : "string",
@@ -223,7 +242,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "000000E3-0000-1000-8000-0026BB765291"
+    "UUID" : "000000E3-0000-1000-8000-0026BB765291",
+    "DataType": "string"
   },
   "ContactSensorState" : {
     "Format" : "uint8",
@@ -235,7 +255,8 @@
     "ValidValues" : {
       "ContactDetected" : 0,
       "ContactNotDetected" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "CoolingThresholdTemperature" : {
     "Format" : "float",
@@ -248,7 +269,8 @@
     "MaxValue" : 35,
     "MinStep" : 0.1,
     "MinValue" : 10,
-    "Unit" : "celsius"
+    "Unit" : "celsius",
+    "DataType": "float"
   },
   "CurrentAirPurifierState" : {
     "Format" : "uint8",
@@ -261,7 +283,8 @@
       "Idle" : 1,
       "Inactive" : 0,
       "PurifyingAir" : 2
-    }
+    },
+    "DataType": "enum"
   },
   "CurrentAmbientLightLevel" : {
     "Format" : "float",
@@ -272,7 +295,8 @@
     "UUID" : "0000006B-0000-1000-8000-0026BB765291",
     "MaxValue" : 100000,
     "MinValue" : 0.0001,
-    "Unit" : "lux"
+    "Unit" : "lux",
+    "DataType": "float"
   },
   "CurrentDoorState" : {
     "Format" : "uint8",
@@ -287,7 +311,8 @@
       "Open" : 0,
       "Opening" : 2,
       "Stopped" : 4
-    }
+    },
+    "DataType": "enum"
   },
   "CurrentFanState" : {
     "Format" : "uint8",
@@ -300,7 +325,8 @@
       "BlowingAir" : 2,
       "Idle" : 1,
       "Inactive" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "CurrentHeaterCoolerState" : {
     "Format" : "uint8",
@@ -314,7 +340,8 @@
       "Heating" : 2,
       "Idle" : 1,
       "Inactive" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "CurrentHeatingCoolingState" : {
     "Format" : "uint8",
@@ -327,7 +354,8 @@
       "Cool" : 2,
       "Heat" : 1,
       "Off" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "CurrentHorizontalTiltAngle" : {
     "Format" : "int",
@@ -339,7 +367,8 @@
     "MaxValue" : 90,
     "MinStep" : 1,
     "MinValue" : -90,
-    "Unit" : "arcdegrees"
+    "Unit" : "arcdegrees",
+    "DataType": "char"
   },
   "CurrentHumidifierDehumidifierState" : {
     "Format" : "uint8",
@@ -353,7 +382,8 @@
       "Humidifying" : 2,
       "Idle" : 1,
       "Inactive" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "CurrentMediaState" : {
     "Format" : "uint8",
@@ -367,7 +397,8 @@
       "Pause" : 1,
       "Stop" : 2,
       "Unknown" : 3
-    }
+    },
+    "DataType": "enum"
   },
   "CurrentPosition" : {
     "Format" : "uint8",
@@ -379,7 +410,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "CurrentRelativeHumidity" : {
     "Format" : "float",
@@ -391,7 +423,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "CurrentSlatState" : {
     "Format" : "uint8",
@@ -404,7 +437,8 @@
       "Fixed" : 0,
       "Jammed" : 1,
       "Swinging" : 2
-    }
+    },
+    "DataType": "enum"
   },
   "CurrentTemperature" : {
     "Format" : "float",
@@ -416,7 +450,8 @@
     "MaxValue" : 1000,
     "MinStep" : 0.1,
     "MinValue" : -273.1,
-    "Unit" : "celsius"
+    "Unit" : "celsius",
+    "DataType": "float"
   },
   "CurrentTiltAngle" : {
     "Format" : "int",
@@ -428,7 +463,8 @@
     "MaxValue" : 90,
     "MinStep" : 1,
     "MinValue" : -90,
-    "Unit" : "arcdegrees"
+    "Unit" : "arcdegrees",
+    "DataType": "char"
   },
   "CurrentVerticalTiltAngle" : {
     "Format" : "int",
@@ -440,7 +476,8 @@
     "MaxValue" : 90,
     "MinStep" : 1,
     "MinValue" : -90,
-    "Unit" : "arcdegrees"
+    "Unit" : "arcdegrees",
+    "DataType": "char"
   },
   "CurrentVisibilityState" : {
     "Format" : "uint8",
@@ -454,7 +491,8 @@
       "Hidden" : 1,
       "State2" : 2,
       "State3" : 3
-    }
+    },
+    "DataType": "enum"
   },
   "DigitalZoom" : {
     "Format" : "float",
@@ -463,7 +501,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "0000011D-0000-1000-8000-0026BB765291"
+    "UUID" : "0000011D-0000-1000-8000-0026BB765291",
+    "DataType": "float"
   },
   "DisplayOrder" : {
     "Format" : "tlv8",
@@ -472,7 +511,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "00000136-0000-1000-8000-0026BB765291"
+    "UUID" : "00000136-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "FilterChangeIndication" : {
     "Format" : "uint8",
@@ -484,7 +524,8 @@
     "ValidValues" : {
       "ChangeFilter" : 1,
       "FilterOK" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "FilterLifeLevel" : {
     "Format" : "float",
@@ -495,21 +536,24 @@
     "UUID" : "000000AB-0000-1000-8000-0026BB765291",
     "MaxValue" : 100,
     "MinValue" : 0,
-    "stepValue" : 1
+    "stepValue" : 1,
+    "DataType": "uchar"
   },
   "FirmwareRevision" : {
     "Format" : "string",
     "Permissions" : [
       "pr"
     ],
-    "UUID" : "00000052-0000-1000-8000-0026BB765291"
+    "UUID" : "00000052-0000-1000-8000-0026BB765291",
+    "DataType": "string"
   },
   "HardwareRevision" : {
     "Format" : "string",
     "Permissions" : [
       "pr"
     ],
-    "UUID" : "00000053-0000-1000-8000-0026BB765291"
+    "UUID" : "00000053-0000-1000-8000-0026BB765291",
+    "DataType": "string"
   },
   "HeatingThresholdTemperature" : {
     "Format" : "float",
@@ -522,14 +566,16 @@
     "MaxValue" : 25,
     "MinStep" : 0.1,
     "MinValue" : 0,
-    "Unit" : "celsius"
+    "Unit" : "celsius",
+    "DataType": "float"
   },
   "HoldPosition" : {
     "Format" : "bool",
     "Permissions" : [
       "pw"
     ],
-    "UUID" : "0000006F-0000-1000-8000-0026BB765291"
+    "UUID" : "0000006F-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "Hue" : {
     "Format" : "float",
@@ -542,7 +588,8 @@
     "MaxValue" : 360,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "arcdegrees"
+    "Unit" : "arcdegrees",
+    "DataType": "ushort"
   },
   "Identifier" : {
     "Format" : "uint32",
@@ -551,14 +598,16 @@
     ],
     "UUID" : "000000E6-0000-1000-8000-0026BB765291",
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "uint"
   },
   "Identify" : {
     "Format" : "bool",
     "Permissions" : [
       "pw"
     ],
-    "UUID" : "00000014-0000-1000-8000-0026BB765291"
+    "UUID" : "00000014-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "ImageMirroring" : {
     "Format" : "bool",
@@ -567,7 +616,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "0000011F-0000-1000-8000-0026BB765291"
+    "UUID" : "0000011F-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "ImageRotation" : {
     "Format" : "float",
@@ -580,7 +630,8 @@
     "MaxValue" : 270,
     "MinStep" : 90,
     "MinValue" : 0,
-    "Unit" : "arcdegrees"
+    "Unit" : "arcdegrees",
+    "DataType": "ushort"
   },
   "InputSourceType" : {
     "Format" : "uint8",
@@ -601,7 +652,8 @@
       "AirPlay" : 8,
       "USB" : 9,
       "Application" : 10
-    }
+    },
+    "DataType": "enum"
   },
   "InputDeviceType" : {
     "Format" : "uint8",
@@ -617,7 +669,8 @@
       "Tuner" : 3,
       "Playback" : 4,
       "AudioSystem" : 5
-    }
+    },
+    "DataType": "enum"
   },
   "InUse" : {
     "Format" : "uint8",
@@ -629,7 +682,8 @@
     "ValidValues" : {
       "Inuse" : 1,
       "Notinuse" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "IsConfigured" : {
     "Format" : "uint8",
@@ -642,7 +696,8 @@
     "ValidValues" : {
       "Configured" : 1,
       "NotConfigured" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "LeakDetected" : {
     "Format" : "uint8",
@@ -654,14 +709,16 @@
     "ValidValues" : {
       "LeakDetected" : 1,
       "LeakNotDetected" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "LockControlPoint" : {
     "Format" : "tlv8",
     "Permissions" : [
       "pw"
     ],
-    "UUID" : "00000019-0000-1000-8000-0026BB765291"
+    "UUID" : "00000019-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "LockCurrentState" : {
     "Format" : "uint8",
@@ -675,7 +732,8 @@
       "Secured" : 1,
       "Unknown" : 3,
       "Unsecured" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "LockLastKnownAction" : {
     "Format" : "uint8",
@@ -694,7 +752,8 @@
       "UnsecuredPhysically,Interior" : 1,
       "UnsecuredRemotely" : 7,
       "UnsecuredbyKeypad" : 5
-    }
+    },
+    "DataType": "enum"
   },
   "LockManagementAutoSecurityTimeout" : {
     "Format" : "uint32",
@@ -704,7 +763,8 @@
       "ev"
     ],
     "UUID" : "0000001A-0000-1000-8000-0026BB765291",
-    "Unit" : "seconds"
+    "Unit" : "seconds",
+    "DataType": "uint"
   },
   "LockPhysicalControls" : {
     "Format" : "uint8",
@@ -717,7 +777,8 @@
     "ValidValues" : {
       "ControlLockDisabled" : 0,
       "ControlLockEnabled" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "LockTargetState" : {
     "Format" : "uint8",
@@ -730,7 +791,8 @@
     "ValidValues" : {
       "Secured" : 1,
       "Unsecured" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "Logs" : {
     "Format" : "tlv8",
@@ -738,21 +800,24 @@
       "pr",
       "ev"
     ],
-    "UUID" : "0000001F-0000-1000-8000-0026BB765291"
+    "UUID" : "0000001F-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "Manufacturer" : {
     "Format" : "string",
     "Permissions" : [
       "pr"
     ],
-    "UUID" : "00000020-0000-1000-8000-0026BB765291"
+    "UUID" : "00000020-0000-1000-8000-0026BB765291",
+    "DataType": "string"
   },
   "Model" : {
     "Format" : "string",
     "Permissions" : [
       "pr"
     ],
-    "UUID" : "00000021-0000-1000-8000-0026BB765291"
+    "UUID" : "00000021-0000-1000-8000-0026BB765291",
+    "DataType": "string"
   },
   "MotionDetected" : {
     "Format" : "bool",
@@ -760,7 +825,8 @@
       "pr",
       "ev"
     ],
-    "UUID" : "00000022-0000-1000-8000-0026BB765291"
+    "UUID" : "00000022-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "Mute" : {
     "Format" : "bool",
@@ -769,7 +835,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "0000011A-0000-1000-8000-0026BB765291"
+    "UUID" : "0000011A-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "Name" : {
     "Format" : "string",
@@ -777,7 +844,8 @@
       "pr"
     ],
     "UUID" : "00000023-0000-1000-8000-0026BB765291",
-    "MaximumLength" : 64
+    "MaximumLength" : 64,
+    "DataType": "string"
   },
   "NightVision" : {
     "Format" : "bool",
@@ -786,7 +854,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "0000011B-0000-1000-8000-0026BB765291"
+    "UUID" : "0000011B-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "NitrogenDioxideDensity" : {
     "Format" : "float",
@@ -797,7 +866,8 @@
     "UUID" : "000000C4-0000-1000-8000-0026BB765291",
     "MaxValue" : 1000,
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "ushort"
   },
   "ObstructionDetected" : {
     "Format" : "bool",
@@ -805,7 +875,8 @@
       "pr",
       "ev"
     ],
-    "UUID" : "00000024-0000-1000-8000-0026BB765291"
+    "UUID" : "00000024-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "OccupancyDetected" : {
     "Format" : "uint8",
@@ -817,7 +888,8 @@
     "ValidValues" : {
       "OccupancyDetected" : 1,
       "OccupancyNotDetected" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "On" : {
     "Format" : "bool",
@@ -826,7 +898,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "00000025-0000-1000-8000-0026BB765291"
+    "UUID" : "00000025-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "OpticalZoom" : {
     "Format" : "float",
@@ -835,7 +908,8 @@
       "pw",
       "ev"
     ],
-    "UUID" : "0000011C-0000-1000-8000-0026BB765291"
+    "UUID" : "0000011C-0000-1000-8000-0026BB765291",
+    "DataType": "float"
   },
   "OutletInUse" : {
     "Format" : "bool",
@@ -843,7 +917,8 @@
       "pr",
       "ev"
     ],
-    "UUID" : "00000026-0000-1000-8000-0026BB765291"
+    "UUID" : "00000026-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "OzoneDensity" : {
     "Format" : "float",
@@ -854,7 +929,8 @@
     "UUID" : "000000C3-0000-1000-8000-0026BB765291",
     "MaxValue" : 1000,
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "ushort"
   },
   "PM10Density" : {
     "Format" : "float",
@@ -865,7 +941,8 @@
     "UUID" : "000000C7-0000-1000-8000-0026BB765291",
     "MaxValue" : 1000,
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "ushort"
   },
   "PM2.5Density" : {
     "Format" : "float",
@@ -876,7 +953,8 @@
     "UUID" : "000000C6-0000-1000-8000-0026BB765291",
     "MaxValue" : 1000,
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "ushort"
   },
   "PairSetup" : {
     "Format" : "tlv8",
@@ -884,7 +962,8 @@
       "pr",
       "pw"
     ],
-    "UUID" : "0000004C-0000-1000-8000-0026BB765291"
+    "UUID" : "0000004C-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "PairVerify" : {
     "Format" : "tlv8",
@@ -892,14 +971,16 @@
       "pr",
       "pw"
     ],
-    "UUID" : "0000004E-0000-1000-8000-0026BB765291"
+    "UUID" : "0000004E-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "PairingFeatures" : {
     "Format" : "uint8",
     "Permissions" : [
       "pr"
     ],
-    "UUID" : "0000004F-0000-1000-8000-0026BB765291"
+    "UUID" : "0000004F-0000-1000-8000-0026BB765291",
+    "DataType": "uchar"
   },
   "PairingPairings" : {
     "Format" : "tlv8",
@@ -907,7 +988,8 @@
       "pr",
       "pw"
     ],
-    "UUID" : "00000050-0000-1000-8000-0026BB765291"
+    "UUID" : "00000050-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "PictureMode" : {
     "Format" : "uint8",
@@ -928,7 +1010,8 @@
       "Game" : 5,
       "Computer" : 6,
       "Custom" : 7
-    }
+    },
+    "DataType": "enum"
   },
   "PositionState" : {
     "Format" : "uint8",
@@ -941,7 +1024,8 @@
       "Decreasing" : 0,
       "Increasing" : 1,
       "Stopped" : 2
-    }
+    },
+    "DataType": "enum"
   },
   "PowerModeSelection" : {
     "Format" : "uint8",
@@ -952,7 +1036,8 @@
     "ValidValues" : {
       "Show" : 0,
       "Hide" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "ProgramMode" : {
     "Format" : "uint8",
@@ -965,7 +1050,8 @@
       "Noprogramscheduled" : 0,
       "Programscheduled" : 1,
       "Programscheduled(ManualMode)" : 2
-    }
+    },
+    "DataType": "enum"
   },
   "ProgrammableSwitchEvent" : {
     "Format" : "uint8",
@@ -978,7 +1064,8 @@
       "DoublePress" : 1,
       "LongPress" : 2,
       "SinglePress" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "RelativeHumidityDehumidifierThreshold" : {
     "Format" : "float",
@@ -991,7 +1078,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "RelativeHumidityHumidifierThreshold" : {
     "Format" : "float",
@@ -1004,7 +1092,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "RemainingDuration" : {
     "Format" : "uint32",
@@ -1015,7 +1104,8 @@
     "UUID" : "000000D4-0000-1000-8000-0026BB765291",
     "MaxValue" : 3600,
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "uint"
   },
   "RemoteKey" : {
     "Format" : "uint8",
@@ -1039,7 +1129,8 @@
       "Exit" : 10,
       "PlayPause" : 11,
       "Information" : 15
-    }
+    },
+    "DataType": "enum"
   },
   "ResetFilterIndication" : {
     "Format" : "uint8",
@@ -1049,7 +1140,8 @@
     "UUID" : "000000AD-0000-1000-8000-0026BB765291",
     "MaxValue" : 1,
     "MinStep" : 1,
-    "MinValue" : 1
+    "MinValue" : 1,
+    "DataType": "uchar"
   },
   "RotationDirection" : {
     "Format" : "int",
@@ -1062,7 +1154,8 @@
     "ValidValues" : {
       "Clockwise" : 0,
       "Counter-clockwise" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "RotationSpeed" : {
     "Format" : "float",
@@ -1075,7 +1168,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "Saturation" : {
     "Format" : "float",
@@ -1088,7 +1182,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "SecuritySystemAlarmType" : {
     "Format" : "uint8",
@@ -1099,7 +1194,8 @@
     "UUID" : "0000008E-0000-1000-8000-0026BB765291",
     "MaxValue" : 1,
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "uchar"
   },
   "SecuritySystemCurrentState" : {
     "Format" : "uint8",
@@ -1114,7 +1210,8 @@
       "Disarmed" : 3,
       "NightArm" : 2,
       "StayArm" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "SecuritySystemTargetState" : {
     "Format" : "uint8",
@@ -1129,7 +1226,8 @@
       "Disarm" : 3,
       "NightArm" : 2,
       "StayArm" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "SelectedRTPStreamConfiguration" : {
     "Format" : "tlv8",
@@ -1137,7 +1235,8 @@
       "pr",
       "pw"
     ],
-    "UUID" : "00000117-0000-1000-8000-0026BB765291"
+    "UUID" : "00000117-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "SerialNumber" : {
     "Format" : "string",
@@ -1145,7 +1244,8 @@
     "Permissions" : [
       "pr"
     ],
-    "UUID" : "00000030-0000-1000-8000-0026BB765291"
+    "UUID" : "00000030-0000-1000-8000-0026BB765291",
+    "DataType": "string"
   },
   "ServiceLabelIndex" : {
     "Format" : "uint8",
@@ -1155,7 +1255,8 @@
     "UUID" : "000000CB-0000-1000-8000-0026BB765291",
     "MaxValue" : 255,
     "MinStep" : 1,
-    "MinValue" : 1
+    "MinValue" : 1,
+    "DataType": "uchar"
   },
   "ServiceLabelNamespace" : {
     "Format" : "uint8",
@@ -1166,7 +1267,8 @@
     "ValidValues" : {
       "ArabicNumerals" : 1,
       "Dots" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "SetDuration" : {
     "Format" : "uint32",
@@ -1178,7 +1280,8 @@
     "UUID" : "000000D3-0000-1000-8000-0026BB765291",
     "MaxValue" : 3600,
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "uint"
   },
   "SetupEndpoints" : {
     "Format" : "tlv8",
@@ -1186,7 +1289,8 @@
       "pr",
       "pw"
     ],
-    "UUID" : "00000118-0000-1000-8000-0026BB765291"
+    "UUID" : "00000118-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "SlatType" : {
     "Format" : "uint8",
@@ -1197,7 +1301,8 @@
     "ValidValues" : {
       "Horizontal" : 0,
       "Vertical" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "SleepDiscoveryMode" : {
     "Format" : "uint8",
@@ -1209,7 +1314,8 @@
     "ValidValues" : {
       "NotDiscoverable" : 0,
       "AlwaysDiscoverable" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "SmokeDetected" : {
     "Format" : "uint8",
@@ -1221,7 +1327,8 @@
     "ValidValues" : {
       "SmokeDetected" : 1,
       "SmokeNotDetected" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "StatusActive" : {
     "Format" : "bool",
@@ -1229,7 +1336,8 @@
       "pr",
       "ev"
     ],
-    "UUID" : "00000075-0000-1000-8000-0026BB765291"
+    "UUID" : "00000075-0000-1000-8000-0026BB765291",
+    "DataType": "bool"
   },
   "StatusFault" : {
     "Format" : "uint8",
@@ -1241,7 +1349,8 @@
     "ValidValues" : {
       "GeneralFault" : 1,
       "NoFault" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "StatusJammed" : {
     "Format" : "uint8",
@@ -1253,7 +1362,8 @@
     "ValidValues" : {
       "Jammed" : 1,
       "NotJammed" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "StatusLowBattery" : {
     "Format" : "uint8",
@@ -1265,7 +1375,8 @@
     "ValidValues" : {
       "BatteryLevelLow" : 1,
       "BatteryLevelNormal" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "StatusTampered" : {
     "Format" : "uint8",
@@ -1277,7 +1388,8 @@
     "ValidValues" : {
       "NotTampered" : 0,
       "Tampered" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "StreamingStatus" : {
     "Format" : "tlv8",
@@ -1285,7 +1397,8 @@
       "pr",
       "ev"
     ],
-    "UUID" : "00000120-0000-1000-8000-0026BB765291"
+    "UUID" : "00000120-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "SulphurDioxideDensity" : {
     "Format" : "float",
@@ -1296,28 +1409,32 @@
     "UUID" : "000000C5-0000-1000-8000-0026BB765291",
     "MaxValue" : 1000,
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "ushort"
   },
   "SupportedAudioStreamConfiguration" : {
     "Format" : "tlv8",
     "Permissions" : [
       "pr"
     ],
-    "UUID" : "00000115-0000-1000-8000-0026BB765291"
+    "UUID" : "00000115-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "SupportedRTPConfiguration" : {
     "Format" : "tlv8",
     "Permissions" : [
       "pr"
     ],
-    "UUID" : "00000116-0000-1000-8000-0026BB765291"
+    "UUID" : "00000116-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "SupportedVideoStreamConfiguration" : {
     "Format" : "tlv8",
     "Permissions" : [
       "pr"
     ],
-    "UUID" : "00000114-0000-1000-8000-0026BB765291"
+    "UUID" : "00000114-0000-1000-8000-0026BB765291",
+    "DataType": "unknown"
   },
   "SwingMode" : {
     "Format" : "uint8",
@@ -1330,7 +1447,8 @@
     "ValidValues" : {
       "SwingDisabled" : 0,
       "SwingEnabled" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "TargetAirPurifierState" : {
     "Format" : "uint8",
@@ -1343,7 +1461,8 @@
     "ValidValues" : {
       "Auto" : 1,
       "Manual" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "TargetAirQuality" : {
     "Format" : "uint8",
@@ -1357,7 +1476,8 @@
       "Excellent" : 0,
       "Fair" : 2,
       "Good" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "TargetDoorState" : {
     "Format" : "uint8",
@@ -1370,7 +1490,8 @@
     "ValidValues" : {
       "Closed" : 1,
       "Open" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "TargetFanState" : {
     "Format" : "uint8",
@@ -1383,7 +1504,8 @@
     "ValidValues" : {
       "Auto" : 1,
       "Manual" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "TargetHeaterCoolerState" : {
     "Format" : "uint8",
@@ -1397,7 +1519,8 @@
       "Auto" : 0,
       "Cool" : 2,
       "Heat" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "TargetHeatingCoolingState" : {
     "Format" : "uint8",
@@ -1412,7 +1535,8 @@
       "Cool" : 2,
       "Heat" : 1,
       "Off" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "TargetHorizontalTiltAngle" : {
     "Format" : "int",
@@ -1425,7 +1549,8 @@
     "MaxValue" : 90,
     "MinStep" : 1,
     "MinValue" : -90,
-    "Unit" : "arcdegrees"
+    "Unit" : "arcdegrees",
+    "DataType": "char"
   },
   "TargetHumidifierDehumidifierState" : {
     "Format" : "uint8",
@@ -1439,7 +1564,8 @@
       "Dehumidifier" : 2,
       "Humidifier" : 1,
       "HumidifierorDehumidifier" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "TargetMediaState" : {
     "Format" : "uint8",
@@ -1453,7 +1579,8 @@
       "Play" : 0,
       "Pause" : 1,
       "Stop" : 2
-    }
+    },
+    "DataType": "enum"
   },
   "TargetPosition" : {
     "Format" : "uint8",
@@ -1466,7 +1593,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "TargetRelativeHumidity" : {
     "Format" : "float",
@@ -1479,7 +1607,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "TargetSlatState" : {
     "Format" : "uint8",
@@ -1492,7 +1621,8 @@
     "ValidValues" : {
       "Auto" : 1,
       "Manual" : 0
-    }
+    },
+    "DataType": "enum"
   },
   "TargetTemperature" : {
     "Format" : "float",
@@ -1505,7 +1635,8 @@
     "MaxValue" : 38,
     "MinStep" : 0.1,
     "MinValue" : 10,
-    "Unit" : "celsius"
+    "Unit" : "celsius",
+    "DataType": "float"
   },
   "TargetTiltAngle" : {
     "Format" : "int",
@@ -1518,7 +1649,8 @@
     "MaxValue" : 90,
     "MinStep" : 1,
     "MinValue" : -90,
-    "Unit" : "arcdegrees"
+    "Unit" : "arcdegrees",
+    "DataType": "char"
   },
   "TargetVerticalTiltAngle" : {
     "Format" : "int",
@@ -1531,7 +1663,8 @@
     "MaxValue" : 90,
     "MinStep" : 1,
     "MinValue" : -90,
-    "Unit" : "arcdegrees"
+    "Unit" : "arcdegrees",
+    "DataType": "char"
   },
   "TargetVisibilityState" : {
     "Format" : "uint8",
@@ -1544,7 +1677,8 @@
     "ValidValues" : {
       "Shown" : 0,
       "Hidden" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "TemperatureDisplayUnits" : {
     "Format" : "uint8",
@@ -1557,7 +1691,8 @@
     "ValidValues" : {
       "Celsius" : 0,
       "Fahrenheit" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "VOCDensity" : {
     "Format" : "float",
@@ -1568,7 +1703,8 @@
     "UUID" : "000000C8-0000-1000-8000-0026BB765291",
     "MaxValue" : 1000,
     "MinStep" : 1,
-    "MinValue" : 0
+    "MinValue" : 0,
+    "DataType": "ushort"
   },
   "ValveType" : {
     "Format" : "uint8",
@@ -1582,7 +1718,8 @@
       "Irrigation" : 1,
       "Showerhead" : 2,
       "Waterfaucet" : 3
-    }
+    },
+    "DataType": "enum"
   },
   "Version" : {
     "Format" : "string",
@@ -1591,7 +1728,8 @@
       "pr",
       "ev"
     ],
-    "UUID" : "00000037-0000-1000-8000-0026BB765291"
+    "UUID" : "00000037-0000-1000-8000-0026BB765291",
+    "DataType": "string"
   },
   "Volume" : {
     "Format" : "uint8",
@@ -1604,7 +1742,8 @@
     "MaxValue" : 100,
     "MinStep" : 1,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
   "VolumeControlType" : {
     "Format" : "uint8",
@@ -1618,7 +1757,8 @@
       "Relative" : 1,
       "RelativeWithCurrent" : 2,
       "Absolute" : 3
-    }
+    },
+    "DataType": "enum"
   },
   "VolumeSelector" : {
     "Format" : "uint8",
@@ -1629,7 +1769,8 @@
     "ValidValues" : {
       "Increment" : 0,
       "Decrement" : 1
-    }
+    },
+    "DataType": "enum"
   },
   "WaterLevel" : {
     "Format" : "float",
@@ -1641,5 +1782,6 @@
     "MaxValue" : 100,
     "MinValue" : 0,
     "Unit" : "percentage"
-  }
+  },
+  "DataType": "uchar"
 }

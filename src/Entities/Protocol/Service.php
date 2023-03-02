@@ -127,14 +127,6 @@ class Service
 			));
 		}
 
-		$this->characteristics->rewind();
-
-		foreach ($this->characteristics as $existingCharacteristic) {
-			if ($existingCharacteristic->getTypeId()->equals($characteristic->getTypeId())) {
-				$this->characteristics->detach($existingCharacteristic);
-			}
-		}
-
 		$this->characteristics->attach($characteristic);
 	}
 

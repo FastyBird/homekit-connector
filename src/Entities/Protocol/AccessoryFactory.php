@@ -138,18 +138,18 @@ final class AccessoryFactory
 
 		$accessoryInformation->addCharacteristic($accessoryManufacturer);
 
-		$accessoryManufacturer = $this->characteristicsFactory->create(
+		$accessoryModel = $this->characteristicsFactory->create(
 			Types\ChannelPropertyIdentifier::IDENTIFIER_MODEL,
 			$accessoryInformation,
 		);
 
 		if ($accessory instanceof Bridge) {
-			$accessoryManufacturer->setActualValue(HomeKit\Constants::DEFAULT_BRIDGE_MODEL);
+			$accessoryModel->setActualValue(HomeKit\Constants::DEFAULT_BRIDGE_MODEL);
 		} else {
-			$accessoryManufacturer->setActualValue(HomeKit\Constants::DEFAULT_DEVICE_MODEL);
+			$accessoryModel->setActualValue(HomeKit\Constants::DEFAULT_DEVICE_MODEL);
 		}
 
-		$accessoryInformation->addCharacteristic($accessoryManufacturer);
+		$accessoryInformation->addCharacteristic($accessoryModel);
 
 		$accessory->addService($accessoryInformation);
 

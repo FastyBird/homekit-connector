@@ -111,7 +111,7 @@ final class CharacteristicsTest extends DbTestCase
 	/**
 	 * @return array<string, array<int|string>>
 	 */
-	public function characteristicsRead(): array
+	public static function characteristicsRead(): array
 	{
 		return [
 			// Valid responses

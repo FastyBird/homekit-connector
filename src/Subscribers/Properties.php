@@ -47,7 +47,6 @@ final class Properties implements Common\EventSubscriber
 
 	public function __construct(
 		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesManager,
-		private readonly DevicesModels\Connectors\Controls\ControlsManager $controlsManager,
 	)
 	{
 	}
@@ -189,15 +188,6 @@ final class Properties implements Common\EventSubscriber
 					'settable' => false,
 					'queryable' => false,
 					'value' => $xhmUri,
-				]));
-			}
-
-			$rebootControl = $entity->getProperty(Types\ConnectorControlName::NAME_REBOOT);
-
-			if ($rebootControl === null) {
-				$this->controlsManager->create(Utils\ArrayHash::from([
-					'name' => Types\ConnectorControlName::NAME_REBOOT,
-					'connector' => $entity,
 				]));
 			}
 		}

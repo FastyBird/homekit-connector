@@ -92,14 +92,6 @@ abstract class Accessory
 
 	public function addService(Service $service): void
 	{
-		$this->services->rewind();
-
-		foreach ($this->services as $existingService) {
-			if ($existingService->getTypeId()->equals($service->getTypeId())) {
-				$this->services->detach($existingService);
-			}
-		}
-
 		$this->iidManager->assign($service);
 
 		foreach ($service->getCharacteristics() as $characteristic) {

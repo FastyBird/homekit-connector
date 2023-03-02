@@ -1,19 +1,19 @@
+<?xml version="1.0"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="./../vendor/phpunit/phpunit/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
          bootstrap="./phpunit-bootstrap.php"
          beStrictAboutOutputDuringTests="true"
-         cacheResultFile="../var/tools/PHPUnit/results.dat"
          colors="true"
          failOnRisky="true"
          failOnWarning="true"
          stderr="true"
-         verbose="true"
+         cacheDirectory="../var/tools/PHPUnit/.phpunit.cache"
 >
     <testsuite name="all">
         <directory>../tests/cases/</directory>
     </testsuite>
 
-    <coverage cacheDirectory="../var/tools/PHPUnit/coverage" processUncoveredFiles="true">
+    <coverage cacheDirectory="../var/tools/PHPUnit/coverage">
         <include>
             <directory suffix=".php">../src</directory>
         </include>
