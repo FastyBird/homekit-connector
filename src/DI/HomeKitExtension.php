@@ -132,11 +132,17 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('schemas.device.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\HomeKitDevice::class);
 
+		$builder->addDefinition($this->prefix('schemas.channel.homekit'), new DI\Definitions\ServiceDefinition())
+			->setType(Schemas\HomeKitChannel::class);
+
 		$builder->addDefinition($this->prefix('hydrators.connector.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Hydrators\HomeKitConnector::class);
 
 		$builder->addDefinition($this->prefix('hydrators.device.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Hydrators\HomeKitDevice::class);
+
+		$builder->addDefinition($this->prefix('hydrators.channel.homekit'), new DI\Definitions\ServiceDefinition())
+			->setType(Hydrators\HomeKitChannel::class);
 
 		$builder->addDefinition($this->prefix('helpers.loader'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Loader::class);

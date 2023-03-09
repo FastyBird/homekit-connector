@@ -60,10 +60,8 @@ use function is_numeric;
 use function is_string;
 use function preg_replace;
 use function sprintf;
-use function str_replace;
 use function strtolower;
 use function strval;
-use function ucwords;
 use function usort;
 
 /**
@@ -421,7 +419,7 @@ class Devices extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
-			$this->translator->translate('//homekit-connector.cmd.devices.questions.createServices'),
+			$this->translator->translate('//homekit-connector.cmd.devices.questions.createService'),
 			false,
 		);
 
@@ -510,7 +508,9 @@ class Devices extends Console\Command\Command
 	private function createService(Style\SymfonyStyle $io, Entities\HomeKitDevice $device, bool $editMode = false): void
 	{
 		$type = $this->askServiceType($io, $device);
+
 		$identifier = strtolower(strval(preg_replace('/(?<!^)[A-Z]/', '_$0', $type)));
+
 		$identifierPattern = $identifier . '_%d';
 
 		for ($i = 1; $i <= 100; $i++) {
@@ -547,9 +547,6 @@ class Devices extends Console\Command\Command
 		$requiredCharacteristics = (array) $serviceMetadata->offsetGet('RequiredCharacteristics');
 		$optionalCharacteristics = [];
 
-		$createdRequiredCharacteristics = [];
-		$createdOptionalCharacteristics = [];
-
 		if (
 			$serviceMetadata->offsetExists('OptionalCharacteristics')
 			&& $serviceMetadata->offsetGet('OptionalCharacteristics') instanceof Utils\ArrayHash
@@ -562,179 +559,15 @@ class Devices extends Console\Command\Command
 			$this->getOrmConnection()->beginTransaction();
 
 			$channel = $this->channelsManager->create(Utils\ArrayHash::from([
-				'entity' => DevicesEntities\Channels\Channel::class,
+				'entity' => Entities\HomeKitChannel::class,
 				'identifier' => $identifier,
 				'device' => $device,
 			]));
+			assert($channel instanceof Entities\HomeKitChannel);
 
-			$metadata = $this->loader->loadCharacteristics();
+			$this->createCharacteristics($io, $device, $channel, $requiredCharacteristics, true);
 
-			while (count(array_diff($requiredCharacteristics, $createdRequiredCharacteristics)) > 0) {
-				$characteristic = $this->askCharacteristic($io, $type, true, $createdRequiredCharacteristics);
-
-				if ($characteristic === null) {
-					break;
-				}
-
-				$characteristicMetadata = $metadata->offsetGet($characteristic);
-
-				if (
-					!$characteristicMetadata instanceof Utils\ArrayHash
-					|| !$characteristicMetadata->offsetExists('Format')
-					|| !is_string($characteristicMetadata->offsetGet('Format'))
-					|| !$characteristicMetadata->offsetExists('DataType')
-					|| !is_string($characteristicMetadata->offsetGet('DataType'))
-				) {
-					throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
-				}
-
-				$format = null;
-
-				if ($characteristicMetadata->offsetExists('MinValue')) {
-					$format = $characteristicMetadata->offsetGet('MinValue') . ':';
-				}
-
-				if ($characteristicMetadata->offsetExists('MaxValue')) {
-					$format .= ($format === null ? ':' : '') . $characteristicMetadata->offsetGet('MaxValue');
-				}
-
-				$question = new Console\Question\ConfirmationQuestion(
-					$this->translator->translate('//homekit-connector.cmd.devices.questions.connectCharacteristic'),
-					true,
-				);
-
-				$connect = (bool) $io->askQuestion($question);
-
-				if ($connect) {
-					$property = $this->askProperty($io);
-
-					if ($property instanceof DevicesEntities\Devices\Properties\Dynamic) {
-						$this->devicesPropertiesManager->create(Utils\ArrayHash::from([
-							'entity' => DevicesEntities\Devices\Properties\Mapped::class,
-							'parent' => $property,
-							'identifier' => $characteristic,
-							'device' => $device,
-							'dataType' => MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType')),
-							'format' => $format,
-						]));
-
-					} elseif ($property instanceof DevicesEntities\Channels\Properties\Dynamic) {
-						$this->channelsPropertiesManager->create(Utils\ArrayHash::from([
-							'entity' => DevicesEntities\Channels\Properties\Mapped::class,
-							'parent' => $property,
-							'identifier' => $characteristic,
-							'channel' => $channel,
-							'dataType' => MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType')),
-							'format' => $format,
-						]));
-					}
-				} else {
-					$value = $this->provideCharacteristicValue($io, $characteristic);
-
-					$this->channelsPropertiesManager->create(Utils\ArrayHash::from([
-						'entity' => DevicesEntities\Channels\Properties\Variable::class,
-						'identifier' => $characteristic,
-						'channel' => $channel,
-						'dataType' => MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType')),
-						'format' => $format,
-						'settable' => false,
-						'queryable' => false,
-						'value' => $value,
-					]));
-				}
-
-				$createdRequiredCharacteristics[] = $characteristic;
-			}
-
-			while (count(array_diff($optionalCharacteristics, $createdOptionalCharacteristics)) > 0) {
-				$characteristic = $this->askCharacteristic($io, $type, false, $createdOptionalCharacteristics);
-
-				if ($characteristic === null) {
-					break;
-				}
-
-				$characteristicMetadata = $metadata->offsetGet($characteristic);
-
-				if (
-					!$characteristicMetadata instanceof Utils\ArrayHash
-					|| !$characteristicMetadata->offsetExists('Format')
-					|| !is_string($characteristicMetadata->offsetGet('Format'))
-					|| !$characteristicMetadata->offsetExists('DataType')
-					|| !is_string($characteristicMetadata->offsetGet('DataType'))
-				) {
-					throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
-				}
-
-				$format = null;
-
-				if ($characteristicMetadata->offsetExists('MinValue')) {
-					$format = $characteristicMetadata->offsetGet('MinValue') . ':';
-				}
-
-				if ($characteristicMetadata->offsetExists('MaxValue')) {
-					$format .= ($format === null ? ':' : '') . $characteristicMetadata->offsetGet('MaxValue');
-				}
-
-				$question = new Console\Question\ConfirmationQuestion(
-					$this->translator->translate('//homekit-connector.cmd.devices.questions.connectCharacteristic'),
-					true,
-				);
-
-				$connect = (bool) $io->askQuestion($question);
-
-				if ($connect) {
-					$property = $this->askProperty($io);
-
-					if ($property instanceof DevicesEntities\Devices\Properties\Dynamic) {
-						$this->devicesPropertiesManager->create(Utils\ArrayHash::from([
-							'entity' => DevicesEntities\Devices\Properties\Mapped::class,
-							'parent' => $property,
-							'identifier' => $characteristic,
-							'device' => $device,
-							'dataType' => MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType')),
-							'format' => $format,
-						]));
-
-					} elseif ($property instanceof DevicesEntities\Channels\Properties\Dynamic) {
-						$this->channelsPropertiesManager->create(Utils\ArrayHash::from([
-							'entity' => DevicesEntities\Channels\Properties\Mapped::class,
-							'parent' => $property,
-							'identifier' => $characteristic,
-							'channel' => $channel,
-							'dataType' => MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType')),
-							'format' => $format,
-						]));
-					}
-				} else {
-					$value = $this->provideCharacteristicValue($io, $characteristic);
-
-					$this->channelsPropertiesManager->create(Utils\ArrayHash::from([
-						'entity' => DevicesEntities\Channels\Properties\Variable::class,
-						'identifier' => $characteristic,
-						'channel' => $channel,
-						'dataType' => MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType')),
-						'format' => $format,
-						'settable' => false,
-						'queryable' => false,
-						'value' => $value,
-					]));
-				}
-
-				$createdOptionalCharacteristics[] = $characteristic;
-
-				if (count(array_diff($optionalCharacteristics, $createdOptionalCharacteristics)) > 0) {
-					$question = new Console\Question\ConfirmationQuestion(
-						$this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
-						false,
-					);
-
-					$continue = (bool) $io->askQuestion($question);
-
-					if (!$continue) {
-						break;
-					}
-				}
-			}
+			$this->createCharacteristics($io, $device, $channel, $optionalCharacteristics, false);
 
 			// Commit all changes into database
 			$this->getOrmConnection()->commit();
@@ -777,7 +610,7 @@ class Devices extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
-			'Would you like to configure another device service?',
+			$this->translator->translate('//homekit-connector.cmd.devices.questions.createAnotherService'),
 			false,
 		);
 
@@ -803,10 +636,10 @@ class Devices extends Console\Command\Command
 		$channels = $this->getServicesList($device);
 
 		if (count($channels) === 0) {
-			$io->warning('This device has not configured any service');
+			$io->warning($this->translator->translate('//homekit-connector.cmd.devices.messages.noServices'));
 
 			$question = new Console\Question\ConfirmationQuestion(
-				'Would you like to configure new device service?',
+				$this->translator->translate('//homekit-connector.cmd.devices.questions.createService'),
 				false,
 			);
 
@@ -825,9 +658,79 @@ class Devices extends Console\Command\Command
 			return;
 		}
 
+		$type = $channel->getServiceType();
+
+		$metadata = $this->loader->loadServices();
+
+		if (!$metadata->offsetExists(strval($type->getValue()))) {
+			throw new Exceptions\InvalidArgument(sprintf(
+				'Definition for service: %s was not found',
+				strval($type->getValue()),
+			));
+		}
+
+		$serviceMetadata = $metadata->offsetGet(strval($type->getValue()));
+
+		if (
+			!$serviceMetadata instanceof Utils\ArrayHash
+			|| !$serviceMetadata->offsetExists('UUID')
+			|| !is_string($serviceMetadata->offsetGet('UUID'))
+			|| !$serviceMetadata->offsetExists('RequiredCharacteristics')
+			|| !$serviceMetadata->offsetGet('RequiredCharacteristics') instanceof Utils\ArrayHash
+		) {
+			throw new Exceptions\InvalidState('Service definition is missing required attributes');
+		}
+
+		$requiredCharacteristics = (array) $serviceMetadata->offsetGet('RequiredCharacteristics');
+		$optionalCharacteristics = [];
+
+		if (
+			$serviceMetadata->offsetExists('OptionalCharacteristics')
+			&& $serviceMetadata->offsetGet('OptionalCharacteristics') instanceof Utils\ArrayHash
+		) {
+			$optionalCharacteristics = (array) $serviceMetadata->offsetGet('OptionalCharacteristics');
+		}
+
+		$missingRequired = [];
+
+		foreach ($requiredCharacteristics as $requiredCharacteristic) {
+			if ($channel->findProperty(
+				strtolower(strval(preg_replace('/(?<!^)[A-Z]/', '_$0', $requiredCharacteristic))),
+			) === null) {
+				$missingRequired[] = $requiredCharacteristic;
+			}
+		}
+
+		$missingOptional = [];
+
+		foreach ($optionalCharacteristics as $optionalCharacteristic) {
+			if ($channel->findProperty(
+				strtolower(strval(preg_replace('/(?<!^)[A-Z]/', '_$0', $optionalCharacteristic))),
+			) === null) {
+				$missingOptional[] = $optionalCharacteristic;
+			}
+		}
+
 		try {
 			// Start transaction connection to the database
 			$this->getOrmConnection()->beginTransaction();
+
+			if (count($missingRequired) > 0) {
+				$this->createCharacteristics($io, $device, $channel, $missingRequired, true);
+			}
+
+			if (count($missingOptional) > 0) {
+				$question = new Console\Question\ConfirmationQuestion(
+					$this->translator->translate('//homekit-connector.cmd.base.questions.addCharacteristics'),
+					false,
+				);
+
+				$add = (bool) $io->askQuestion($question);
+
+				if ($add) {
+					$this->createCharacteristics($io, $device, $channel, $missingOptional, false);
+				}
+			}
 
 			// Commit all changes into database
 			$this->getOrmConnection()->commit();
@@ -860,6 +763,8 @@ class Devices extends Console\Command\Command
 				$this->getOrmConnection()->rollBack();
 			}
 		}
+
+		$this->askCharacteristicAction($io, $channel);
 	}
 
 	/**
@@ -946,7 +851,7 @@ class Devices extends Console\Command\Command
 		$findChannelsQuery = new DevicesQueries\FindChannels();
 		$findChannelsQuery->forDevice($device);
 
-		$deviceChannels = $this->channelsRepository->findAllBy($findChannelsQuery);
+		$deviceChannels = $this->channelsRepository->findAllBy($findChannelsQuery, Entities\HomeKitChannel::class);
 		usort(
 			$deviceChannels,
 			static function (DevicesEntities\Channels\Channel $a, DevicesEntities\Channels\Channel $b): int {
@@ -967,10 +872,12 @@ class Devices extends Console\Command\Command
 		]);
 
 		foreach ($deviceChannels as $index => $channel) {
+			assert($channel instanceof Entities\HomeKitChannel);
+
 			$table->addRow([
 				$index + 1,
 				$channel->getName() ?? $channel->getIdentifier(),
-				$channel->getIdentifier(),
+				$channel->getServiceType()->getValue(),
 				implode(
 					', ',
 					array_map(
@@ -987,6 +894,334 @@ class Devices extends Console\Command\Command
 
 		if (count($device->getChannels()) > 0) {
 			$this->askServiceAction($io, $device, true);
+		}
+	}
+
+	/**
+	 * @param array<string> $characteristics
+	 *
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Nette\IOException
+	 */
+	private function createCharacteristics(
+		Style\SymfonyStyle $io,
+		Entities\HomeKitDevice $device,
+		Entities\HomeKitChannel $channel,
+		array $characteristics,
+		bool $required,
+	): void
+	{
+		$metadata = $this->loader->loadCharacteristics();
+
+		$createdCharacteristics = [];
+
+		while (count(array_diff($characteristics, $createdCharacteristics)) > 0) {
+			$characteristic = $this->askCharacteristic(
+				$io,
+				$channel->getServiceType(),
+				$required,
+				$createdCharacteristics,
+			);
+
+			if ($characteristic === null) {
+				break;
+			}
+
+			$characteristicMetadata = $metadata->offsetGet($characteristic);
+
+			if (
+				!$characteristicMetadata instanceof Utils\ArrayHash
+				|| !$characteristicMetadata->offsetExists('Format')
+				|| !is_string($characteristicMetadata->offsetGet('Format'))
+				|| !$characteristicMetadata->offsetExists('DataType')
+				|| !is_string($characteristicMetadata->offsetGet('DataType'))
+			) {
+				throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
+			}
+
+			$dataType = MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType'));
+
+			$format = null;
+
+			if ($characteristicMetadata->offsetExists('MinValue')) {
+				$format = $characteristicMetadata->offsetGet('MinValue') . ':';
+			}
+
+			if ($characteristicMetadata->offsetExists('MaxValue')) {
+				$format .= ($format === null ? ':' : '') . $characteristicMetadata->offsetGet('MaxValue');
+			}
+
+			$question = new Console\Question\ConfirmationQuestion(
+				$this->translator->translate('//homekit-connector.cmd.devices.questions.connectCharacteristic'),
+				true,
+			);
+
+			$connect = (bool) $io->askQuestion($question);
+
+			if ($connect) {
+				$property = $this->askProperty($io);
+
+				if ($property instanceof DevicesEntities\Devices\Properties\Dynamic) {
+					$this->devicesPropertiesManager->create(Utils\ArrayHash::from([
+						'entity' => DevicesEntities\Devices\Properties\Mapped::class,
+						'parent' => $property,
+						'identifier' => strtolower(strval(preg_replace('/(?<!^)[A-Z]/', '_$0', $characteristic))),
+						'device' => $device,
+						'dataType' => $dataType,
+						'format' => $format,
+					]));
+
+				} elseif ($property instanceof DevicesEntities\Channels\Properties\Dynamic) {
+					$this->channelsPropertiesManager->create(Utils\ArrayHash::from([
+						'entity' => DevicesEntities\Channels\Properties\Mapped::class,
+						'parent' => $property,
+						'identifier' => strtolower(strval(preg_replace('/(?<!^)[A-Z]/', '_$0', $characteristic))),
+						'channel' => $channel,
+						'dataType' => $dataType,
+						'format' => $format,
+					]));
+				}
+			} else {
+				$value = $this->provideCharacteristicValue($io, $characteristic);
+
+				$this->channelsPropertiesManager->create(Utils\ArrayHash::from([
+					'entity' => DevicesEntities\Channels\Properties\Variable::class,
+					'identifier' => strtolower(strval(preg_replace('/(?<!^)[A-Z]/', '_$0', $characteristic))),
+					'channel' => $channel,
+					'dataType' => $dataType,
+					'format' => $format,
+					'settable' => false,
+					'queryable' => false,
+					'value' => $value,
+				]));
+			}
+
+			$createdCharacteristics[] = $characteristic;
+
+			if (!$required && count(array_diff($characteristics, $createdCharacteristics)) > 0) {
+				$question = new Console\Question\ConfirmationQuestion(
+					$this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
+					false,
+				);
+
+				$continue = (bool) $io->askQuestion($question);
+
+				if (!$continue) {
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * @throws DBAL\Exception
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws Nette\IOException
+	 */
+	private function editCharacteristic(Style\SymfonyStyle $io, Entities\HomeKitChannel $channel): void
+	{
+		$properties = $this->getCharacteristicsList($channel);
+
+		if (count($properties) === 0) {
+			$io->warning($this->translator->translate('//homekit-connector.cmd.devices.messages.noCharacteristics'));
+
+			return;
+		}
+
+		$property = $this->askWhichCharacteristic($io, $channel, $properties);
+
+		if ($property === null) {
+			return;
+		}
+
+		$type = strtolower(strval(preg_replace('/(?<!^)[A-Z]/', '_$0', $property->getIdentifier())));
+
+		$metadata = $this->loader->loadCharacteristics();
+
+		if (!$metadata->offsetExists($type)) {
+			throw new Exceptions\InvalidArgument(sprintf(
+				'Definition for characteristic: %s was not found',
+				$type,
+			));
+		}
+
+		$characteristicMetadata = $metadata->offsetGet($type);
+
+		if (
+			!$characteristicMetadata instanceof Utils\ArrayHash
+			|| !$characteristicMetadata->offsetExists('UUID')
+			|| !is_string($characteristicMetadata->offsetGet('UUID'))
+			|| !$characteristicMetadata->offsetExists('Format')
+			|| !$characteristicMetadata->offsetExists('DataType')
+		) {
+			throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
+		}
+
+		try {
+			// Start transaction connection to the database
+			$this->getOrmConnection()->beginTransaction();
+
+			// Commit all changes into database
+			$this->getOrmConnection()->commit();
+
+			$io->success(
+				$this->translator->translate(
+					'//homekit-connector.cmd.devices.messages.edit.characteristic.success',
+					['name' => $channel->getName() ?? $channel->getIdentifier()],
+				),
+			);
+		} catch (Throwable $ex) {
+			// Log caught exception
+			$this->logger->error(
+				'An unhandled error occurred',
+				[
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'type' => 'devices-cmd',
+					'group' => 'cmd',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code' => $ex->getCode(),
+					],
+				],
+			);
+
+			$io->success(
+				$this->translator->translate('//homekit-connector.cmd.devices.messages.edit.characteristic.error'),
+			);
+		} finally {
+			// Revert all changes when error occur
+			if ($this->getOrmConnection()->isTransactionActive()) {
+				$this->getOrmConnection()->rollBack();
+			}
+		}
+	}
+
+	/**
+	 * @throws DBAL\Exception
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws Nette\IOException
+	 */
+	private function deleteCharacteristic(Style\SymfonyStyle $io, Entities\HomeKitChannel $channel): void
+	{
+		$properties = $this->getCharacteristicsList($channel);
+
+		if (count($properties) === 0) {
+			$io->warning($this->translator->translate('//homekit-connector.cmd.devices.messages.noCharacteristics'));
+
+			return;
+		}
+
+		$property = $this->askWhichCharacteristic($io, $channel, $properties);
+
+		if ($property === null) {
+			return;
+		}
+
+		try {
+			// Start transaction connection to the database
+			$this->getOrmConnection()->beginTransaction();
+
+			$this->channelsPropertiesManager->delete($property);
+
+			// Commit all changes into database
+			$this->getOrmConnection()->commit();
+
+			$io->success(
+				$this->translator->translate(
+					'//homekit-connector.cmd.devices.messages.remove.characteristic.success',
+					['name' => $channel->getName() ?? $channel->getIdentifier()],
+				),
+			);
+		} catch (Throwable $ex) {
+			// Log caught exception
+			$this->logger->error(
+				'An unhandled error occurred',
+				[
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'type' => 'devices-cmd',
+					'group' => 'cmd',
+					'exception' => [
+						'message' => $ex->getMessage(),
+						'code' => $ex->getCode(),
+					],
+				],
+			);
+
+			$io->success(
+				$this->translator->translate('//homekit-connector.cmd.devices.messages.remove.characteristic.error'),
+			);
+		} finally {
+			// Revert all changes when error occur
+			if ($this->getOrmConnection()->isTransactionActive()) {
+				$this->getOrmConnection()->rollBack();
+			}
+		}
+
+		if (count($channel->getProperties()) > 0) {
+			$this->askCharacteristicAction($io, $channel);
+		}
+	}
+
+	/**
+	 * @throws DBAL\Exception
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws Nette\IOException
+	 */
+	private function listCharacteristics(Style\SymfonyStyle $io, Entities\HomeKitChannel $channel): void
+	{
+		$findPropertiesQuery = new DevicesQueries\FindChannelProperties();
+		$findPropertiesQuery->forChannel($channel);
+
+		$channelProperties = $this->channelsPropertiesRepository->findAllBy($findPropertiesQuery);
+		usort(
+			$channelProperties,
+			static function (DevicesEntities\Channels\Properties\Property $a, DevicesEntities\Channels\Properties\Property $b): int {
+				if ($a->getIdentifier() === $b->getIdentifier()) {
+					return $a->getName() <=> $b->getName();
+				}
+
+				return $a->getIdentifier() <=> $b->getIdentifier();
+			},
+		);
+
+		$table = new Console\Helper\Table($io);
+		$table->setHeaders([
+			'#',
+			'Name',
+			'Type',
+			'Value',
+		]);
+
+		foreach ($channelProperties as $index => $property) {
+			$table->addRow([
+				$index + 1,
+				$property->getName() ?? $property->getIdentifier(),
+				strtolower(strval(preg_replace('/(?<!^)[A-Z]/', '_$0', $property->getIdentifier()))),
+				$property instanceof DevicesEntities\Channels\Properties\Variable ? $property->getValue() : 'N/A',
+			]);
+		}
+
+		$table->render();
+
+		$io->newLine();
+
+		if (count($channel->getProperties()) > 0) {
+			$this->askCharacteristicAction($io, $channel);
 		}
 	}
 
@@ -1104,10 +1339,10 @@ class Devices extends Console\Command\Command
 				0 => $this->translator->translate('//homekit-connector.cmd.devices.actions.createService'),
 				1 => $this->translator->translate('//homekit-connector.cmd.devices.actions.updateService'),
 				2 => $this->translator->translate('//homekit-connector.cmd.devices.actions.removeService'),
-				4 => $this->translator->translate('//homekit-connector.cmd.devices.actions.listServices'),
-				5 => $this->translator->translate('//homekit-connector.cmd.devices.actions.nothing'),
+				3 => $this->translator->translate('//homekit-connector.cmd.devices.actions.listServices'),
+				4 => $this->translator->translate('//homekit-connector.cmd.devices.actions.nothing'),
 			],
-			5,
+			4,
 		);
 
 		$question->setErrorMessage(
@@ -1151,6 +1386,64 @@ class Devices extends Console\Command\Command
 	}
 
 	/**
+	 * @throws DBAL\Exception
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws Nette\IOException
+	 */
+	private function askCharacteristicAction(
+		Style\SymfonyStyle $io,
+		Entities\HomeKitChannel $channel,
+	): void
+	{
+		$question = new Console\Question\ChoiceQuestion(
+			$this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
+			[
+				0 => $this->translator->translate('//homekit-connector.cmd.devices.actions.updateCharacteristic'),
+				1 => $this->translator->translate('//homekit-connector.cmd.devices.actions.removeCharacteristic'),
+				2 => $this->translator->translate('//homekit-connector.cmd.devices.actions.listCharacteristics'),
+				3 => $this->translator->translate('//homekit-connector.cmd.devices.actions.nothing'),
+			],
+			3,
+		);
+
+		$question->setErrorMessage(
+			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+		);
+
+		$whatToDo = $io->askQuestion($question);
+
+		if (
+			$whatToDo === $this->translator->translate(
+				'//homekit-connector.cmd.devices.actions.updateCharacteristic',
+			)
+			|| $whatToDo === '0'
+		) {
+			$this->editCharacteristic($io, $channel);
+
+		} elseif (
+			$whatToDo === $this->translator->translate(
+				'//homekit-connector.cmd.devices.actions.removeCharacteristic',
+			)
+			|| $whatToDo === '1'
+		) {
+			$this->deleteCharacteristic($io, $channel);
+
+		} elseif (
+			$whatToDo === $this->translator->translate(
+				'//homekit-connector.cmd.devices.actions.listCharacteristics',
+			)
+			|| $whatToDo === '2'
+		) {
+			$this->listCharacteristics($io, $channel);
+		}
+	}
+
+	/**
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
@@ -1161,7 +1454,6 @@ class Devices extends Console\Command\Command
 	private function askServiceType(
 		Style\SymfonyStyle $io,
 		Entities\HomeKitDevice $device,
-		DevicesEntities\Channels\Channel|null $channel = null,
 	): string
 	{
 		$category = $device->findProperty(Types\DevicePropertyIdentifier::IDENTIFIER_CATEGORY);
@@ -1199,21 +1491,11 @@ class Devices extends Console\Command\Command
 			$services = (array) $accessoryMetadata->offsetGet('services');
 		}
 
-		if ($channel !== null) {
-			$default = str_replace(' ', '', ucwords(str_replace('_', ' ', $channel->getIdentifier())));
-
-			$question = new Console\Question\ChoiceQuestion(
-				'Configure service type?',
-				$services,
-				$default,
-			);
-		} else {
-			$question = new Console\Question\ChoiceQuestion(
-				'What type of device service you would like to add?',
-				$services,
-				0,
-			);
-		}
+		$question = new Console\Question\ChoiceQuestion(
+			'What type of device service you would like to add?',
+			$services,
+			0,
+		);
 
 		$question->setErrorMessage(
 			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
@@ -1247,21 +1529,21 @@ class Devices extends Console\Command\Command
 	 */
 	private function askCharacteristic(
 		Style\SymfonyStyle $io,
-		string $service,
+		Types\ServiceType $service,
 		bool $required = true,
 		array $ignore = [],
 	): string|null
 	{
 		$metadata = $this->loader->loadServices();
 
-		if (!$metadata->offsetExists($service)) {
+		if (!$metadata->offsetExists(strval($service->getValue()))) {
 			throw new Exceptions\InvalidArgument(sprintf(
 				'Definition for service: %s was not found',
-				$service,
+				strval($service->getValue()),
 			));
 		}
 
-		$serviceMetadata = $metadata->offsetGet($service);
+		$serviceMetadata = $metadata->offsetGet(strval($service->getValue()));
 
 		if (
 			!$serviceMetadata instanceof Utils\ArrayHash
@@ -2128,7 +2410,7 @@ class Devices extends Console\Command\Command
 		Style\SymfonyStyle $io,
 		Entities\HomeKitDevice $device,
 		array $channels,
-	): DevicesEntities\Channels\Channel|null
+	): Entities\HomeKitChannel|null
 	{
 		$question = new Console\Question\ChoiceQuestion(
 			$this->translator->translate('//homekit-connector.cmd.devices.questions.select.service'),
@@ -2159,7 +2441,7 @@ class Devices extends Console\Command\Command
 		$findChannelQuery->forDevice($device);
 		$findChannelQuery->byIdentifier($serviceIdentifier);
 
-		$channel = $this->channelsRepository->findOneBy($findChannelQuery);
+		$channel = $this->channelsRepository->findOneBy($findChannelQuery, Entities\HomeKitChannel::class);
 
 		if ($channel === null) {
 			$io->error($this->translator->translate('//homekit-connector.cmd.devices.messages.serviceNotFound'));
@@ -2176,7 +2458,73 @@ class Devices extends Console\Command\Command
 			return null;
 		}
 
+		assert($channel instanceof Entities\HomeKitChannel);
+
 		return $channel;
+	}
+
+	/**
+	 * @param array<string, string> $properties
+	 *
+	 * @throws DevicesExceptions\InvalidState
+	 */
+	private function askWhichCharacteristic(
+		Style\SymfonyStyle $io,
+		Entities\HomeKitChannel $channel,
+		array $properties,
+	): DevicesEntities\Channels\Properties\Variable|DevicesEntities\Channels\Properties\Mapped|null
+	{
+		$question = new Console\Question\ChoiceQuestion(
+			$this->translator->translate('//homekit-connector.cmd.devices.questions.select.service'),
+			array_values($properties),
+		);
+		$question->setErrorMessage(
+			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+		);
+
+		$characteristicIdentifier = array_search($io->askQuestion($question), $properties, true);
+
+		if ($characteristicIdentifier === false) {
+			$io->error($this->translator->translate('//homekit-connector.cmd.devices.messages.characteristicNotFound'));
+
+			$this->logger->alert(
+				'Could not read characteristic identifier from console answer',
+				[
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'type' => 'devices-cmd',
+					'group' => 'cmd',
+				],
+			);
+
+			return null;
+		}
+
+		$findPropertyQuery = new DevicesQueries\FindChannelProperties();
+		$findPropertyQuery->forChannel($channel);
+		$findPropertyQuery->byIdentifier($characteristicIdentifier);
+
+		$property = $this->channelsPropertiesRepository->findOneBy($findPropertyQuery);
+
+		if ($property === null) {
+			$io->error($this->translator->translate('//homekit-connector.cmd.devices.messages.characteristicNotFound'));
+
+			$this->logger->alert(
+				'Property was not found',
+				[
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'type' => 'devices-cmd',
+					'group' => 'cmd',
+				],
+			);
+
+			return null;
+		}
+
+		assert(
+			$property instanceof DevicesEntities\Channels\Properties\Variable || $property instanceof DevicesEntities\Channels\Properties\Mapped,
+		);
+
+		return $property;
 	}
 
 	/**
@@ -2212,6 +2560,41 @@ class Devices extends Console\Command\Command
 		}
 
 		return $channels;
+	}
+
+	/**
+	 * @return array<string, string>
+	 *
+	 * @throws DevicesExceptions\InvalidState
+	 */
+	private function getCharacteristicsList(Entities\HomeKitChannel $channel): array
+	{
+		$properties = [];
+
+		$findPropertiesQuery = new DevicesQueries\FindChannelProperties();
+		$findPropertiesQuery->forChannel($channel);
+
+		$channelProperties = $this->channelsPropertiesRepository->findAllBy($findPropertiesQuery);
+		usort(
+			$channelProperties,
+			static function (DevicesEntities\Channels\Properties\Property $a, DevicesEntities\Channels\Properties\Property $b): int {
+				if ($a->getIdentifier() === $b->getIdentifier()) {
+					return $a->getName() <=> $b->getName();
+				}
+
+				return $a->getIdentifier() <=> $b->getIdentifier();
+			},
+		);
+
+		foreach ($channelProperties as $property) {
+			$properties[$property->getIdentifier()] = sprintf(
+				'%s%s',
+				$property->getIdentifier(),
+				($property->getName() !== null ? ' [' . $property->getName() . ']' : ''),
+			);
+		}
+
+		return $properties;
 	}
 
 	/**

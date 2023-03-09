@@ -95,7 +95,7 @@ final class AccessoryFactory
 		}
 
 		$accessoryInformation = $this->serviceFactory->create(
-			Types\ChannelIdentifier::IDENTIFIER_ACCESSORY_INFORMATION,
+			Types\ServiceType::get(Types\ServiceType::TYPE_ACCESSORY_INFORMATION),
 			$accessory,
 		);
 

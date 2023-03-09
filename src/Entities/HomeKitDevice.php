@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Entities;
 
 use Doctrine\ORM\Mapping as ORM;
+use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
@@ -69,6 +70,70 @@ class HomeKitDevice extends DevicesEntities\Devices\Device
 		}
 
 		return Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_OTHER);
+	}
+
+	/**
+	 * @return array<HomeKitChannel>
+	 */
+	public function getChannels(): array
+	{
+		$channels = [];
+
+		foreach (parent::getChannels() as $channel) {
+			if ($channel instanceof HomeKitChannel) {
+				$channels[] = $channel;
+			}
+		}
+
+		return $channels;
+	}
+
+	/**
+	 * @throws Exceptions\InvalidArgument
+	 */
+	public function addChannel(DevicesEntities\Channels\Channel $channel): void
+	{
+		if (!$channel instanceof HomeKitChannel) {
+			throw new Exceptions\InvalidArgument('Provided channel type is not valid');
+		}
+
+		parent::addChannel($channel);
+	}
+
+	public function getChannel(string $id): HomeKitChannel|null
+	{
+		$channel = parent::getChannel($id);
+
+		return $channel instanceof HomeKitChannel ? $channel : null;
+	}
+
+	public function findChannel(string $identifier): HomeKitChannel|null
+	{
+		$channel = parent::findChannel($identifier);
+
+		return $channel instanceof HomeKitChannel ? $channel : null;
+	}
+
+	/**
+	 * @return array<HomeKitChannel>
+	 *
+	 * @throws Exceptions\InvalidState
+	 */
+	public function findChannelsByType(Types\ServiceType $type): array
+	{
+		$channels = [];
+
+		foreach (parent::getChannels() as $channel) {
+			if (!$channel instanceof HomeKitChannel) {
+				continue;
+			}
+
+			if ($channel->getServiceType()->equals($type)) {
+				$channels[] = $channel;
+			}
+		}
+
+		return $channels;
 	}
 
 }

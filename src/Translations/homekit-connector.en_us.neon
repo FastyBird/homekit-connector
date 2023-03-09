@@ -127,8 +127,10 @@ cmd:
                 requiredCharacteristic: "What type of service characteristic you would like to add?"
                 optionalCharacteristic: "What type of service characteristic you would like to add? (optional)"
             connectCharacteristic: "Connect characteristics with device?"
-            createServices: "Would you like to configure new device service?"
+            createService: "Would you like to configure new device service?"
+            createAnotherService: "Would you like to configure another device service?"
             editServices: "Would you like to manage device services?"
+            addCharacteristics: "Would you like to add new characteristics?"
 
         answers:
             none: "None"
@@ -155,6 +157,9 @@ cmd:
                 service:
                     success: "Service \"%name%\" was successfully updated."
                     error: "Something went wrong, service could not be updated. Error was logged."
+                characteristic:
+                    success: "Characteristic \"%name%\" was successfully updated."
+                    error: "Something went wrong, characteristic could not be updated. Error was logged."
             remove:
                 device:
                     success: "Device \"%name%\" was successfully removed."
@@ -162,9 +167,14 @@ cmd:
                 service:
                     success: "Service \"%name%\" was successfully removed."
                     error: "Something went wrong, service could not be removed. Error was logged."
+                characteristic:
+                    success: "Characteristic \"%name%\" was successfully removed."
+                    error: "Something went wrong, characteristic could not be removed. Error was logged."
             noDevices: "No devices registered in HomeKit connector."
             noServices: "This device has not configured any service."
+            noCharacteristics: "This device service has not configured any characteristic."
             serviceNotFound: "Something went wrong, service could not be loaded"
+            characteristicNotFound: "Something went wrong, characteristic could not be loaded"
             noHardwareDevices: "No devices registered in system"
 
     execute:

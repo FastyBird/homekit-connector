@@ -105,7 +105,7 @@ final class Http implements Server
 
 			foreach ($device->getChannels() as $channel) {
 				$service = $this->serviceFactory->create(
-					$channel->getIdentifier(),
+					$channel->getServiceType(),
 					$accessory,
 					$channel,
 				);
