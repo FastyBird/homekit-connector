@@ -18,9 +18,14 @@ namespace FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
+use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Constants as DevicesConstants;
+use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
+use FastyBird\Module\Devices\Models as DevicesModels;
 use Nette;
 use Nette\Utils;
 use Psr\Log;
@@ -36,6 +41,7 @@ use function base64_encode;
 use function hash;
 use function is_array;
 use function mt_rand;
+use function preg_match;
 use function preg_replace;
 use function React\Async\async;
 use function str_replace;
@@ -65,6 +71,8 @@ final class Mdns implements Server
 
 	private const VALID_MDNS_REGEX = '/[^A-Za-z0-9\-]+/';
 
+	private const IP_ADDRESS_REGEX = '/^(\d[\d.]+):(\d+)\b/';
+
 	private const LEADING_TRAILING_SPACE_DASH = '/^[ -]+|[ -]+$/';
 
 	private const DASH_REGEX = '/[-]+/';
@@ -72,17 +80,20 @@ final class Mdns implements Server
 	/** @var array<string, array<int, array<int, array<Dns\Model\Record>>>> */
 	private array $resourceRecords = [];
 
+	private string|null $localIpAddress = null;
+
 	private Dns\Protocol\Parser $parser;
 
 	private Dns\Protocol\BinaryDumper $dumper;
 
-	private Datagram\SocketInterface|null $server = null;
+	private Datagram\SocketInterface|null $socket = null;
 
 	private Log\LoggerInterface $logger;
 
 	public function __construct(
 		private readonly HomeKit\Entities\HomeKitConnector $connector,
 		private readonly EventLoop\LoopInterface $eventLoop,
+		private readonly DevicesModels\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{
@@ -117,10 +128,17 @@ final class Mdns implements Server
 		$factory = new Datagram\Factory($this->eventLoop);
 
 		$factory->createServer(self::DNS_ADDRESS . ':' . self::DNS_PORT)
-			->then(function (Datagram\Socket $server): void {
-				$this->server = $server;
+			->then(function (Datagram\Socket $socket): void {
+				$this->socket = $socket;
 
-				$this->server->on('message', function (string $message): void {
+				$this->socket->on('message', function (string $message, string $remoteAddress): void {
+					if (
+						preg_match(self::IP_ADDRESS_REGEX, $remoteAddress, $matches) === false
+						|| $matches[1] === $this->localIpAddress
+					) {
+						return;
+					}
+
 					$request = $this->parser->parseMessage($message);
 
 					$response = clone $request;
@@ -131,13 +149,15 @@ final class Mdns implements Server
 					$response->answers = $this->getAnswers($request->questions);
 					$response->additional = $this->getAdditional($response->answers);
 
-					$this->server?->send(
-						$this->dumper->toBinary($response),
-						self::DNS_ADDRESS . ':' . self::DNS_PORT,
-					);
+					if ($response->answers !== []) {
+						$this->socket?->send(
+							$this->dumper->toBinary($response),
+							self::DNS_ADDRESS . ':' . self::DNS_PORT,
+						);
+					}
 				});
 
-				$this->server->on('error', function (Throwable $ex): void {
+				$this->socket->on('error', function (Throwable $ex): void {
 					$this->logger->error(
 						'An error occurred during server handling',
 						[
@@ -161,7 +181,7 @@ final class Mdns implements Server
 					);
 				});
 
-				$this->server->on('close', function (): void {
+				$this->socket->on('close', function (): void {
 					$this->logger->info(
 						'Server was closed',
 						[
@@ -203,6 +223,21 @@ final class Mdns implements Server
 					],
 				);
 			});
+
+		$this->connectorsPropertiesManager->on(
+			DevicesConstants::EVENT_ENTITY_CREATED,
+			[$this, 'refresh'],
+		);
+
+		$this->connectorsPropertiesManager->on(
+			DevicesConstants::EVENT_ENTITY_UPDATED,
+			[$this, 'refresh'],
+		);
+
+		$this->connectorsPropertiesManager->on(
+			DevicesConstants::EVENT_ENTITY_DELETED,
+			[$this, 'refresh'],
+		);
 	}
 
 	public function disconnect(): void
@@ -219,7 +254,24 @@ final class Mdns implements Server
 			],
 		);
 
-		$this->server?->close();
+		$this->connectorsPropertiesManager->removeListener(
+			DevicesConstants::EVENT_ENTITY_CREATED,
+			[$this, 'refresh'],
+		);
+
+		$this->connectorsPropertiesManager->removeListener(
+			DevicesConstants::EVENT_ENTITY_UPDATED,
+			[$this, 'refresh'],
+		);
+
+		$this->connectorsPropertiesManager->removeListener(
+			DevicesConstants::EVENT_ENTITY_DELETED,
+			[$this, 'refresh'],
+		);
+
+		$this->socket?->close();
+
+		$this->socket = null;
 	}
 
 	/**
@@ -228,22 +280,40 @@ final class Mdns implements Server
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
-	public function refresh(): void
+	public function refresh(
+		DevicesEntities\Connectors\Properties\Property|MetadataEntities\DevicesModule\ConnectorVariableProperty $property,
+	): void
 	{
-		$this->logger->debug(
-			'Connector configuration changes. Refreshing mDNS broadcast',
-			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-				'type' => 'mdns-server',
-				'group' => 'server',
-				'connector' => [
-					'id' => $this->connector->getPlainId(),
+		if (
+			(
+				(
+					$property instanceof DevicesEntities\Connectors\Properties\Variable
+					&& $property->getConnector()->getId()->equals($this->connector->getId())
+				) || (
+					$property instanceof MetadataEntities\DevicesModule\ConnectorVariableProperty
+					&& $property->getConnector()->equals($this->connector->getId())
+				)
+			)
+			&& (
+				$property->getIdentifier() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED
+				|| $property->getIdentifier() === Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION
+			)
+		) {
+			$this->logger->debug(
+				'Connector configuration changed. Refreshing mDNS broadcast',
+				[
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'type' => 'mdns-server',
+					'group' => 'server',
+					'connector' => [
+						'id' => $this->connector->getPlainId(),
+					],
 				],
-			],
-		);
+			);
 
-		$this->createZone();
-		$this->broadcastZone();
+			$this->createZone();
+			$this->broadcastZone();
+		}
 	}
 
 	private function broadcastZone(): void
@@ -276,7 +346,7 @@ final class Mdns implements Server
 			return;
 		}
 
-		$this->server?->send(
+		$this->socket?->send(
 			$this->dumper->toBinary($message),
 			self::DNS_ADDRESS . ':' . self::DNS_PORT,
 		);
@@ -323,10 +393,12 @@ final class Mdns implements Server
 
 		$shortMacAddress = str_replace(':', '', Utils\Strings::substring($macAddress, -8));
 
-		$setupHash = substr(
-			base64_encode(hash('sha512', $this->connector->getSetupId() . $macAddress, true)),
-			0,
-			4,
+		$setupHash = base64_encode(
+			substr(
+				hash('sha512', $this->connector->getSetupId() . $macAddress, true),
+				0,
+				4,
+			),
 		);
 
 		$resourceRecords = [];
@@ -339,15 +411,15 @@ final class Mdns implements Server
 			$name . ' ' . $shortMacAddress . '.' . self::HAP_SERVICE_TYPE,
 		);
 
-		$localIpAddress = Helpers\Protocol::getLocalAddress();
+		$this->localIpAddress = Helpers\Protocol::getLocalAddress();
 
-		if ($localIpAddress !== null) {
+		if ($this->localIpAddress !== null) {
 			$resourceRecords[] = new Dns\Model\Record(
 				$hostName . '-' . $shortMacAddress . '.local',
 				Dns\Model\Message::TYPE_A,
 				Dns\Model\Message::CLASS_IN,
 				120,
-				$localIpAddress,
+				$this->localIpAddress,
 			);
 		}
 

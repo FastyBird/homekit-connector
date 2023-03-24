@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Writers;
 
 use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Servers;
 
 /**
  * Properties writer interface
@@ -28,8 +29,14 @@ use FastyBird\Connector\HomeKit\Entities;
 interface Writer
 {
 
-	public function connect(Entities\HomeKitConnector $connector): void;
+	/**
+	 * @param array<Servers\Server> $servers
+	 */
+	public function connect(Entities\HomeKitConnector $connector, array $servers): void;
 
-	public function disconnect(Entities\HomeKitConnector $connector): void;
+	/**
+	 * @param array<Servers\Server> $servers
+	 */
+	public function disconnect(Entities\HomeKitConnector $connector, array $servers): void;
 
 }

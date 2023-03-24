@@ -18,11 +18,13 @@ namespace FastyBird\Connector\HomeKit\Writers;
 use DateTimeInterface;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\DateTimeFactory;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
+use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
 use Psr\Log;
@@ -69,7 +71,7 @@ class Periodic implements Writer
 	public function __construct(
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
-		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStates,
+		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStates,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly EventLoop\LoopInterface $eventLoop,
 		Log\LoggerInterface|null $logger = null,
@@ -78,7 +80,7 @@ class Periodic implements Writer
 		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
-	public function connect(Entities\HomeKitConnector $connector): void
+	public function connect(Entities\HomeKitConnector $connector, array $servers): void
 	{
 		$this->connectors[$connector->getPlainId()] = $connector;
 
@@ -93,7 +95,7 @@ class Periodic implements Writer
 		);
 	}
 
-	public function disconnect(Entities\HomeKitConnector $connector): void
+	public function disconnect(Entities\HomeKitConnector $connector, array $servers): void
 	{
 		unset($this->connectors[$connector->getPlainId()]);
 
@@ -105,6 +107,8 @@ class Periodic implements Writer
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
@@ -138,6 +142,8 @@ class Periodic implements Writer
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
@@ -169,17 +175,23 @@ class Periodic implements Writer
 
 						$this->processedProperties[$characteristic->getProperty()->getPlainId()] = $now;
 
-						$state = $this->channelPropertiesStates->getValue($characteristic->getProperty());
+						$state = $this->channelsPropertiesStates->getValue($characteristic->getProperty());
 
 						if ($state === null) {
 							continue;
 						}
 
-						if ($characteristic->getActualValue() === $state->getActualValue()) {
+						$characteristicValue = Protocol\Transformer::fromMappedParent(
+							$characteristic->getProperty(),
+							$characteristic->getProperty()->getParent(),
+							$state->getActualValue(),
+						);
+
+						if ($characteristic->getActualValue() === $characteristicValue) {
 							continue;
 						}
 
-						$characteristic->setActualValue($state->getActualValue());
+						$characteristic->setActualValue($characteristicValue);
 
 						$this->subscriber->publish(
 							intval($accessory->getAid()),

@@ -32,20 +32,32 @@ use const DIRECTORY_SEPARATOR;
 final class Loader
 {
 
+	private Utils\ArrayHash|null $accessories = null;
+
+	private Utils\ArrayHash|null $services = null;
+
+	private Utils\ArrayHash|null $characteristics = null;
+
 	/**
 	 * @throws Exceptions\InvalidState
 	 * @throws Nette\IOException
 	 */
 	public function loadAccessories(): Utils\ArrayHash
 	{
-		$metadata = HomeKit\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'accessories.json';
-		$metadata = Utils\FileSystem::read($metadata);
+		if ($this->accessories === null) {
+			$metadata = HomeKit\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'accessories.json';
+			$metadata = Utils\FileSystem::read($metadata);
 
-		try {
-			return Utils\ArrayHash::from((array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY));
-		} catch (Utils\JsonException) {
-			throw new Exceptions\InvalidState('Accessories metadata could not be loaded');
+			try {
+				$this->accessories = Utils\ArrayHash::from(
+					(array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY),
+				);
+			} catch (Utils\JsonException) {
+				throw new Exceptions\InvalidState('Accessories metadata could not be loaded');
+			}
 		}
+
+		return $this->accessories;
 	}
 
 	/**
@@ -54,14 +66,18 @@ final class Loader
 	 */
 	public function loadServices(): Utils\ArrayHash
 	{
-		$metadata = HomeKit\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'services.json';
-		$metadata = Utils\FileSystem::read($metadata);
+		if ($this->services === null) {
+			$metadata = HomeKit\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'services.json';
+			$metadata = Utils\FileSystem::read($metadata);
 
-		try {
-			return Utils\ArrayHash::from((array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY));
-		} catch (Utils\JsonException) {
-			throw new Exceptions\InvalidState('Services metadata could not be loaded');
+			try {
+				$this->services = Utils\ArrayHash::from((array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY));
+			} catch (Utils\JsonException) {
+				throw new Exceptions\InvalidState('Services metadata could not be loaded');
+			}
 		}
+
+		return $this->services;
 	}
 
 	/**
@@ -70,14 +86,20 @@ final class Loader
 	 */
 	public function loadCharacteristics(): Utils\ArrayHash
 	{
-		$metadata = HomeKit\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'characteristics.json';
-		$metadata = Utils\FileSystem::read($metadata);
+		if ($this->characteristics === null) {
+			$metadata = HomeKit\Constants::RESOURCES_FOLDER . DIRECTORY_SEPARATOR . 'characteristics.json';
+			$metadata = Utils\FileSystem::read($metadata);
 
-		try {
-			return Utils\ArrayHash::from((array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY));
-		} catch (Utils\JsonException) {
-			throw new Exceptions\InvalidState('Characteristics metadata could not be loaded');
+			try {
+				$this->characteristics = Utils\ArrayHash::from(
+					(array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY),
+				);
+			} catch (Utils\JsonException) {
+				throw new Exceptions\InvalidState('Characteristics metadata could not be loaded');
+			}
 		}
+
+		return $this->characteristics;
 	}
 
 }

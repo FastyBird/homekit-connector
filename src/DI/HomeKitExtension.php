@@ -126,6 +126,9 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('subscribers.controls'), new DI\Definitions\ServiceDefinition())
 			->setType(Subscribers\Controls::class);
 
+		$builder->addDefinition($this->prefix('subscribers.system'), new DI\Definitions\ServiceDefinition())
+			->setType(Subscribers\System::class);
+
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\HomeKitConnector::class);
 
@@ -164,6 +167,9 @@ class HomeKitExtension extends DI\CompilerExtension
 			new DI\Definitions\ServiceDefinition(),
 		)
 			->setType(Controllers\CharacteristicsController::class)
+			->setArguments([
+				'useExchange' => $configuration->writer === Writers\Exchange::NAME,
+			])
 			->addTag('nette.inject');
 
 		$builder->addDefinition($this->prefix('http.controllers.pairing'), new DI\Definitions\ServiceDefinition())

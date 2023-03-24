@@ -105,6 +105,9 @@ cmd:
             updateService: "Edit existing device service"
             removeService: "Delete existing device service"
             listServices: "List device services"
+            updateCharacteristic: "Edit existing service characteristic"
+            removeCharacteristic: "Delete existing service characteristic"
+            listCharacteristics: "List service characteristics"
             nothing: "Nothing"
 
         questions:
@@ -118,6 +121,7 @@ cmd:
                 device: "Please select device to manage"
                 category: "Please select device category"
                 service: "Please select device's service"
+                characteristic: "Please select service's characteristic"
                 value: "Please select characteristic value"
                 propertyType: "What type of property you want to map?"
                 mappedDevice: "Select device for mapping"
@@ -126,7 +130,8 @@ cmd:
                 mappedChannelProperty: "Select channel property for mapping"
                 requiredCharacteristic: "What type of service characteristic you would like to add?"
                 optionalCharacteristic: "What type of service characteristic you would like to add? (optional)"
-            connectCharacteristic: "Connect characteristics with device?"
+                valueMapping: "Select device value which will be mapped to: %value%"
+            connectCharacteristic: "Connect characteristic with device?"
             createService: "Would you like to configure new device service?"
             createAnotherService: "Would you like to configure another device service?"
             editServices: "Would you like to manage device services?"

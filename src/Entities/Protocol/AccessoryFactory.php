@@ -23,7 +23,10 @@ use FastyBird\Connector\HomeKit\Types;
 use Hashids;
 use Nette;
 use Ramsey\Uuid;
+use function array_map;
+use function intval;
 use function preg_match;
+use function str_split;
 
 /**
  * HAP accessory factory
@@ -68,24 +71,6 @@ final class AccessoryFactory
 			}
 
 			$accessory = new Bridge($owner->getName() ?? $owner->getIdentifier(), $owner);
-
-			$accessoryProtocolInformation = new Service(
-				Uuid\Uuid::fromString(Service::HAP_PROTOCOL_INFORMATION_SERVICE_UUID),
-				'HAPProtocolInformation',
-				$accessory,
-				null,
-				['Version'],
-			);
-
-			$accessoryProtocolVersion = $this->characteristicsFactory->create(
-				Types\ChannelPropertyIdentifier::IDENTIFIER_VERSION,
-				$accessoryProtocolInformation,
-			);
-			$accessoryProtocolVersion->setActualValue(HomeKit\Constants::HAP_PROTOCOL_VERSION);
-
-			$accessoryProtocolInformation->addCharacteristic($accessoryProtocolVersion);
-
-			$accessory->addService($accessoryProtocolInformation);
 		} else {
 			if (!$owner instanceof Entities\HomeKitDevice) {
 				throw new Exceptions\InvalidArgument('Device accessory owner have to be device item instance');
@@ -111,7 +96,15 @@ final class AccessoryFactory
 			Types\ChannelPropertyIdentifier::IDENTIFIER_SERIAL_NUMBER,
 			$accessoryInformation,
 		);
-		$accessorySerialNumber->setActualValue($this->hashIds->encode((int) $owner->getId()->getInteger()->toString()));
+
+		$accessorySerialNumber->setActualValue(
+			$this->hashIds->encode(
+				...array_map(
+					static fn (string $part): int => intval($part),
+					str_split($owner->getId()->getInteger()->toString(), 5),
+				),
+			),
+		);
 
 		$accessoryInformation->addCharacteristic($accessorySerialNumber);
 
@@ -151,7 +144,35 @@ final class AccessoryFactory
 
 		$accessoryInformation->addCharacteristic($accessoryModel);
 
+		$accessoryIdentify = $this->characteristicsFactory->create(
+			Types\ChannelPropertyIdentifier::IDENTIFIER_IDENTIFY,
+			$accessoryInformation,
+		);
+		$accessoryIdentify->setActualValue(false);
+
+		$accessoryInformation->addCharacteristic($accessoryIdentify);
+
 		$accessory->addService($accessoryInformation);
+
+		if ($accessory instanceof Bridge) {
+			$accessoryProtocolInformation = new Service(
+				Uuid\Uuid::fromString(Service::HAP_PROTOCOL_INFORMATION_SERVICE_UUID),
+				'HAPProtocolInformation',
+				$accessory,
+				null,
+				['Version'],
+			);
+
+			$accessoryProtocolVersion = $this->characteristicsFactory->create(
+				Types\ChannelPropertyIdentifier::IDENTIFIER_VERSION,
+				$accessoryProtocolInformation,
+			);
+			$accessoryProtocolVersion->setActualValue(HomeKit\Constants::HAP_PROTOCOL_VERSION);
+
+			$accessoryProtocolInformation->addCharacteristic($accessoryProtocolVersion);
+
+			$accessory->addService($accessoryProtocolInformation);
+		}
 
 		return $accessory;
 	}

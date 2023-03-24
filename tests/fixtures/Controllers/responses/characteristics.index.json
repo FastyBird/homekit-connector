@@ -1,9 +1,9 @@
 {
-  "characteristics" : [
+  "characteristics": [
     {
-      "aid" : 1,
-      "iid" : 6,
-      "value" : "0.0.0"
+      "aid": 1,
+      "iid": 6,
+      "value": "Virtual bridge"
     }
   ]
 }

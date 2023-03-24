@@ -17,16 +17,16 @@
 HomeKit connector is extension for [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) ecosystem
 which is integrating [HomeKit Accessory Protoccol](https://www.homekit.org).
 
-HomeKit connector is an [Apache2 licensed](http://www.apache.org/licenses/LICENSE-2.0) distributed extension, developed
-in [PHP](https://www.php.net) on top of the [Nette framework](https://nette.org) and [Symfony framework](https://symfony.com).
+HomeKit Connector is a distributed extension that is developed in [PHP](https://www.php.net), built on the [Nette](https://nette.org) and [Symfony](https://symfony.com) frameworks,
+and is licensed under [Apache2](http://www.apache.org/licenses/LICENSE-2.0).
 
 ### Features:
 
-- Preconfigured Apple supported devices
-- Integrated mapping multiple devices into one HomeKit device
-- HomeKit connector management for [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) [devices module](https://github.com/FastyBird/devices-module)
-- HomeKit device management for [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) [devices module](https://github.com/FastyBird/devices-module)
-- [{JSON:API}](https://jsonapi.org/) schemas for full api access
+- Out-of-the-box support for Apple devices
+- Ability to map multiple devices into a single HomeKit device
+- Integration with the [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) [devices module](https://github.com/FastyBird/devices-module) for easy management and monitoring of Modbus devices
+- [{JSON:API}](https://jsonapi.org/) schemas for full API access, providing a standardized and consistent way for developers to access and manipulate HomeKit device data
+- Regular updates with new features and bug fixes, ensuring that the HomeKit Connector is always up-to-date and reliable.
 
 ## Requirements
 
@@ -52,7 +52,7 @@ application under marketplace section.
 ## Documentation
 
 Learn how to connect your devices from [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things)
-system with [Apple HomeKit]((https://www.homekit.org)) in [documentation](https://github.com/FastyBird/homekit-connector/blob/main/docs/index.md).
+system with [Apple HomeKit]((https://www.homekit.org)) in [documentation](https://github.com/FastyBird/modbus-connector/wiki).
 
 ## Feedback
 

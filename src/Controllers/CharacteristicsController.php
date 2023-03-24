@@ -36,6 +36,7 @@ use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
+use FastyBird\Module\Devices\States as DevicesStates;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
@@ -52,6 +53,7 @@ use function explode;
 use function in_array;
 use function intval;
 use function is_array;
+use function is_scalar;
 use function strval;
 
 /**
@@ -69,6 +71,7 @@ final class CharacteristicsController extends BaseController
 	private array $preparedWrites = [];
 
 	public function __construct(
+		private readonly bool $useExchange,
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
@@ -80,6 +83,8 @@ final class CharacteristicsController extends BaseController
 		private readonly DevicesModels\Devices\Properties\PropertiesManager $devicesPropertiesManager,
 		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly DevicesModels\Channels\Properties\PropertiesManager $channelsPropertiesManager,
+		private readonly DevicesUtilities\DevicePropertiesStates $devicePropertiesStateManager,
+		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStateManager,
 		private readonly DevicesUtilities\Database $databaseHelper,
 		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
 	)
@@ -515,6 +520,7 @@ final class CharacteristicsController extends BaseController
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws DevicesExceptions\Runtime
+	 * @throws Exceptions\InvalidState
 	 * @throws ExchangeExceptions\InvalidState
 	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
@@ -683,25 +689,44 @@ final class CharacteristicsController extends BaseController
 					|| $characteristic->getProperty() instanceof DevicesEntities\Devices\Properties\Variable
 				) {
 					if ($characteristic->getProperty() instanceof DevicesEntities\Devices\Properties\Mapped) {
-						$this->publisher->publish(
-							Metadata\Types\ModuleSource::get(
-								Metadata\Types\ModuleSource::SOURCE_MODULE_DEVICES,
-							),
-							Metadata\Types\RoutingKey::get(
-								Metadata\Types\RoutingKey::ROUTE_DEVICE_PROPERTY_ACTION,
-							),
-							$this->entityFactory->create(
-								Utils\Json::encode([
-									'action' => Metadata\Types\PropertyAction::ACTION_SET,
-									'device' => $characteristic->getProperty()->getDevice()->getPlainId(),
-									'property' => $characteristic->getProperty()->getPlainId(),
-									'expected_value' => $characteristic->getExpectedValue(),
-								]),
+						$propertyValue = Protocol\Transformer::toMappedParent(
+							$characteristic->getProperty(),
+							$characteristic->getProperty()->getParent(),
+							$characteristic->getExpectedValue(),
+						);
+
+						if ($this->useExchange) {
+							$this->publisher->publish(
+								Metadata\Types\ModuleSource::get(
+									Metadata\Types\ModuleSource::SOURCE_MODULE_DEVICES,
+								),
 								Metadata\Types\RoutingKey::get(
 									Metadata\Types\RoutingKey::ROUTE_DEVICE_PROPERTY_ACTION,
 								),
-							),
-						);
+								$this->entityFactory->create(
+									Utils\Json::encode([
+										'action' => Metadata\Types\PropertyAction::ACTION_SET,
+										'device' => $characteristic->getProperty()->getDevice()->getPlainId(),
+										'property' => $characteristic->getProperty()->getPlainId(),
+										'expected_value' => !is_scalar($propertyValue) ? strval(
+											$propertyValue,
+										) : $propertyValue,
+									]),
+									Metadata\Types\RoutingKey::get(
+										Metadata\Types\RoutingKey::ROUTE_DEVICE_PROPERTY_ACTION,
+									),
+								),
+							);
+						} else {
+							$this->devicePropertiesStateManager->setValue(
+								$characteristic->getProperty(),
+								Utils\ArrayHash::from([
+									DevicesStates\Property::VALID_KEY => true,
+									DevicesStates\Property::EXPECTED_VALUE_KEY => $propertyValue,
+									DevicesStates\Property::PENDING_KEY => true,
+								]),
+							);
+						}
 					} else {
 						$this->databaseHelper->transaction(function () use ($characteristic): void {
 							$findPropertyQuery = new DevicesQueries\FindDeviceProperties();
@@ -761,26 +786,45 @@ final class CharacteristicsController extends BaseController
 					|| $characteristic->getProperty() instanceof DevicesEntities\Channels\Properties\Variable
 				) {
 					if ($characteristic->getProperty() instanceof DevicesEntities\Channels\Properties\Mapped) {
-						$this->publisher->publish(
-							Metadata\Types\ModuleSource::get(
-								Metadata\Types\ModuleSource::SOURCE_MODULE_DEVICES,
-							),
-							Metadata\Types\RoutingKey::get(
-								Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
-							),
-							$this->entityFactory->create(
-								Utils\Json::encode([
-									'action' => Metadata\Types\PropertyAction::ACTION_SET,
-									'device' => $characteristic->getProperty()->getChannel()->getDevice()->getPlainId(),
-									'channel' => $characteristic->getProperty()->getChannel()->getPlainId(),
-									'property' => $characteristic->getProperty()->getPlainId(),
-									'expected_value' => $characteristic->getExpectedValue(),
-								]),
+						$propertyValue = Protocol\Transformer::toMappedParent(
+							$characteristic->getProperty(),
+							$characteristic->getProperty()->getParent(),
+							$characteristic->getExpectedValue(),
+						);
+
+						if ($this->useExchange) {
+							$this->publisher->publish(
+								Metadata\Types\ModuleSource::get(
+									Metadata\Types\ModuleSource::SOURCE_MODULE_DEVICES,
+								),
 								Metadata\Types\RoutingKey::get(
 									Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
 								),
-							),
-						);
+								$this->entityFactory->create(
+									Utils\Json::encode([
+										'action' => Metadata\Types\PropertyAction::ACTION_SET,
+										'device' => $characteristic->getProperty()->getChannel()->getDevice()->getPlainId(),
+										'channel' => $characteristic->getProperty()->getChannel()->getPlainId(),
+										'property' => $characteristic->getProperty()->getPlainId(),
+										'expected_value' => !is_scalar($propertyValue) ? strval(
+											$propertyValue,
+										) : $propertyValue,
+									]),
+									Metadata\Types\RoutingKey::get(
+										Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+									),
+								),
+							);
+						} else {
+							$this->channelPropertiesStateManager->setValue(
+								$characteristic->getProperty(),
+								Utils\ArrayHash::from([
+									DevicesStates\Property::VALID_KEY => true,
+									DevicesStates\Property::EXPECTED_VALUE_KEY => $propertyValue,
+									DevicesStates\Property::PENDING_KEY => true,
+								]),
+							);
+						}
 					} else {
 						$this->databaseHelper->transaction(function () use ($characteristic): void {
 							$findPropertyQuery = new DevicesQueries\FindChannelProperties();

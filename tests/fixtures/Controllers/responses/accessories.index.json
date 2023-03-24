@@ -5,29 +5,10 @@
       "services": [
         {
           "iid": 1,
-          "type": "a2",
-          "characteristics": [
-            {
-              "iid": 2,
-              "type": "37",
-              "perms": [
-                "pr",
-                "ev"
-              ],
-              "format": "string",
-              "value": "01.01.00",
-              "ev": true
-            }
-          ],
-          "primary": false,
-          "hidden": false
-        },
-        {
-          "iid": 3,
           "type": "3e",
           "characteristics": [
             {
-              "iid": 4,
+              "iid": 2,
               "type": "23",
               "perms": [
                 "pr"
@@ -37,17 +18,17 @@
               "ev": false
             },
             {
-              "iid": 5,
+              "iid": 3,
               "type": "30",
               "perms": [
                 "pr"
               ],
               "format": "string",
-              "value": "p21ZD04m8GQ42",
+              "value": "on3ZHAo1uGzRf9RkTJ3EU77lECEVVTWxR",
               "ev": false
             },
             {
-              "iid": 6,
+              "iid": 4,
               "type": "52",
               "perms": [
                 "pr"
@@ -57,7 +38,7 @@
               "ev": false
             },
             {
-              "iid": 7,
+              "iid": 5,
               "type": "20",
               "perms": [
                 "pr"
@@ -67,7 +48,7 @@
               "ev": false
             },
             {
-              "iid": 8,
+              "iid": 6,
               "type": "21",
               "perms": [
                 "pr"
@@ -75,6 +56,34 @@
               "format": "string",
               "value": "Virtual bridge",
               "ev": false
+            },
+            {
+              "iid": 7,
+              "type": "14",
+              "perms": [
+                "pw"
+              ],
+              "format": "bool",
+              "ev": false
+            }
+          ],
+          "primary": false,
+          "hidden": false
+        },
+        {
+          "iid": 8,
+          "type": "a2",
+          "characteristics": [
+            {
+              "iid": 9,
+              "type": "37",
+              "perms": [
+                "pr",
+                "ev"
+              ],
+              "format": "string",
+              "value": "01.01.00",
+              "ev": true
             }
           ],
           "primary": false,

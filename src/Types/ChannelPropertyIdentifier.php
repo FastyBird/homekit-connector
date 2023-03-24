@@ -44,6 +44,8 @@ class ChannelPropertyIdentifier extends Consistence\Enum\Enum
 
 	public const IDENTIFIER_MODEL = 'model';
 
+	public const IDENTIFIER_IDENTIFY = 'identify';
+
 	public function __toString(): string
 	{
 		return strval(self::getValue());

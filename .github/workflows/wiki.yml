@@ -1,0 +1,22 @@
+name: "wiki"
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  deploy:
+    name: "Deploy docs to wiki"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
+
+      - name: "Deploy to Wiki"
+        uses: "SwiftDocOrg/github-wiki-publish-action@v1"
+        with:
+          path: "docs"
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

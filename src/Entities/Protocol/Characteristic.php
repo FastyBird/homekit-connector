@@ -63,9 +63,10 @@ class Characteristic
 			'00000073-0000-1000-8000-0026BB765291', // PROGRAMMABLE SWITCH
 		];
 
-	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null $actualValue = null;
-
-	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null $expectedValue = null;
+	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $actualValue = null;
+	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $expectedValue = null;
 
 	/**
 	 * @param array<string> $permissions
@@ -148,8 +149,8 @@ class Characteristic
 	{
 		return $this->property;
 	}
-
-	public function getActualValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null
+	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+	public function getActualValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
 	{
 		if ($this->expectedValue !== null) {
 			return $this->expectedValue;
@@ -159,7 +160,7 @@ class Characteristic
 	}
 
 	public function setActualValue(
-		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null $value,
+		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
 	): void
 	{
 		$this->actualValue = $value;
@@ -168,14 +169,14 @@ class Characteristic
 			$this->expectedValue = null;
 		}
 	}
-
-	public function getExpectedValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null
+	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+	public function getExpectedValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
 	{
 		return $this->expectedValue;
 	}
 
 	public function setExpectedValue(
-		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|null $value,
+		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
 	): void
 	{
 		$this->expectedValue = $value;

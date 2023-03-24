@@ -34,6 +34,8 @@ class DevicePropertyIdentifier extends Consistence\Enum\Enum
 	 */
 	public const IDENTIFIER_CATEGORY = 'category';
 
+	public const IDENTIFIER_AID = 'aid';
+
 	public function __toString(): string
 	{
 		return strval(self::getValue());

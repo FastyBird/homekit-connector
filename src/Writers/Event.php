@@ -17,11 +17,13 @@ namespace FastyBird\Connector\HomeKit\Writers;
 
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Events as DevicesEvents;
+use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use Nette;
 use Psr\Log;
 use Symfony\Component\EventDispatcher;
@@ -65,17 +67,19 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 		];
 	}
 
-	public function connect(Entities\HomeKitConnector $connector): void
+	public function connect(Entities\HomeKitConnector $connector, array $servers): void
 	{
 		$this->connectors[$connector->getPlainId()] = $connector;
 	}
 
-	public function disconnect(Entities\HomeKitConnector $connector): void
+	public function disconnect(Entities\HomeKitConnector $connector, array $servers): void
 	{
 		unset($this->connectors[$connector->getPlainId()]);
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
@@ -123,6 +127,8 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
@@ -138,7 +144,11 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 					$characteristic->getProperty() !== null
 					&& $characteristic->getProperty()->getId()->equals($property->getId())
 				) {
-					$characteristic->setActualValue($event->getState()->getActualValue());
+					$characteristic->setActualValue(Protocol\Transformer::fromMappedParent(
+						$property,
+						$property->getParent(),
+						$event->getState()->getActualValue(),
+					));
 
 					$this->subscriber->publish(
 						intval($accessory->getAid()),

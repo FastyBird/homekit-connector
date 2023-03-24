@@ -75,7 +75,7 @@ class Bridge extends Accessory
 			$newAid = 2;
 			$searching = true;
 
-			while ($searching || $newAid > 100) {
+			while ($searching || $newAid > 150) {
 				// For some reason AID=7 gets unsupported
 				if ($newAid === 7) {
 					$newAid++;
@@ -87,7 +87,7 @@ class Bridge extends Accessory
 					if ($existingAccessory->getAid() !== null && $existingAccessory->getAid() === $newAid) {
 						$newAid++;
 
-						break;
+						continue 2;
 					}
 				}
 
