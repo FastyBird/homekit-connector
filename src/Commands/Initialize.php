@@ -83,17 +83,7 @@ class Initialize extends Console\Command\Command
 	{
 		$this
 			->setName(self::NAME)
-			->setDescription('HomeKit connector initialization')
-			->setDefinition(
-				new Input\InputDefinition([
-					new Input\InputOption(
-						'no-confirm',
-						null,
-						Input\InputOption::VALUE_NONE,
-						'Do not ask for any confirmation',
-					),
-				]),
-			);
+			->setDescription('HomeKit connector initialization');
 	}
 
 	/**
@@ -112,7 +102,7 @@ class Initialize extends Console\Command\Command
 
 		$io->note($this->translator->translate('//homekit-connector.cmd.initialize.subtitle'));
 
-		if ($input->getOption('no-confirm') === false) {
+		if ($input->getOption('no-interaction') === false) {
 			$question = new Console\Question\ConfirmationQuestion(
 				$this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
 				false,

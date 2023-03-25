@@ -56,8 +56,8 @@ When the connector is successfully started, you will receive instructions on how
  [INFO] Or enter this code in your HomeKit app on your iOS device: 394-45-281.      
 ```
 
-- Open the Home ![](https://github.com/FastyBird/homekit-connector/blob/main/docs/_media/home_icon.png) app on your device.
-- Tap the Home tab, then tap ![](https://github.com/FastyBird/homekit-connector/blob/main/docs/_media/plus_icon.png).
+- Open the Home <img alt="home" height="16.42px" src="https://github.com/FastyBird/homekit-connector/blob/main/docs/_media/home_icon.png" /> app on your device.
+- Tap the Home tab, then tap <img alt="plus" height="16.42px" src="https://github.com/FastyBird/homekit-connector/blob/main/docs/_media/plus_icon.png" />.
 - Tap **Add Accessory**, then scan the QR code shown in the console.
 
 After the Apple Home and FastyBird HomeKit connector establish communication, they will exchange information.
