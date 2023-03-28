@@ -1726,8 +1726,9 @@ final class PairingController extends BaseController
 			$result[] = [
 				Types\TlvCode::CODE_IDENTIFIER => $client->getUid(),
 				Types\TlvCode::CODE_PUBLIC_KEY => (array) unpack('C*', $client->getPublicKey()),
-				Types\TlvCode::CODE_PERMISSIONS => $client->isAdmin() ?
-					Types\ClientPermission::PERMISSION_ADMIN : Types\ClientPermission::PERMISSION_USER,
+				Types\TlvCode::CODE_PERMISSIONS => $client->isAdmin()
+					? Types\ClientPermission::PERMISSION_ADMIN
+					: Types\ClientPermission::PERMISSION_USER,
 			];
 		}
 

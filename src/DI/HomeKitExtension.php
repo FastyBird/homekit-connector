@@ -67,7 +67,7 @@ class HomeKitExtension extends DI\CompilerExtension
 			BootstrapBoot\Configurator $config,
 			DI\Compiler $compiler,
 		) use ($extensionName): void {
-			$compiler->addExtension($extensionName, new HomeKitExtension());
+			$compiler->addExtension($extensionName, new self());
 		};
 	}
 

@@ -1101,8 +1101,9 @@ class Devices extends Console\Command\Command
 					$io,
 					(
 						$property instanceof DevicesEntities\Channels\Properties\Mapped
-						&& $property->getParent() instanceof DevicesEntities\Channels\Properties\Dynamic ?
-							$property->getParent() : null
+						&& $property->getParent() instanceof DevicesEntities\Channels\Properties\Dynamic
+							? $property->getParent()
+							: null
 					),
 				);
 
@@ -2259,9 +2260,9 @@ class Devices extends Console\Command\Command
 				$mappedFormat = [];
 
 				foreach ($characteristicMetadata->offsetGet('ValidValues') as $name => $item) {
-					$options = $connectProperty->getFormat() instanceof MetadataValueObjects\StringEnumFormat ?
-						$connectProperty->getFormat()->toArray() :
-						array_map(
+					$options = $connectProperty->getFormat() instanceof MetadataValueObjects\StringEnumFormat
+						? $connectProperty->getFormat()->toArray()
+						: array_map(
 							static function (array $items): array|null {
 								if ($items[0] === null) {
 									return null;
