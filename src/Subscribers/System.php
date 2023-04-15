@@ -103,12 +103,12 @@ final class System implements Common\EventSubscriber
 	public function postFlush(): void
 	{
 		foreach ($this->doUpdate as $connectorId) {
-			$findPropertyQuery = new DevicesQueries\FindConnectorProperties();
-			$findPropertyQuery->byConnectorId(Uuid\Uuid::fromString($connectorId));
-			$findPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION);
+			$findConnectorPropertyQuery = new DevicesQueries\FindConnectorProperties();
+			$findConnectorPropertyQuery->byConnectorId(Uuid\Uuid::fromString($connectorId));
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION);
 
 			$property = $this->propertiesRepository->findOneBy(
-				$findPropertyQuery,
+				$findConnectorPropertyQuery,
 				DevicesEntities\Connectors\Properties\Variable::class,
 			);
 

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
          bootstrap="./phpunit-bootstrap.php"
          beStrictAboutOutputDuringTests="true"
          colors="true"
@@ -8,14 +8,15 @@
          failOnWarning="true"
          stderr="true"
          cacheDirectory="../var/tools/PHPUnit/.phpunit.cache"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
 >
     <testsuite name="all">
         <directory>../tests/cases/</directory>
     </testsuite>
-
-    <coverage cacheDirectory="../var/tools/PHPUnit/coverage">
+    <coverage cacheDirectory="../var/tools/PHPUnit/coverage"/>
+    <source>
         <include>
             <directory suffix=".php">../src</directory>
         </include>
-    </coverage>
+    </source>
 </phpunit>

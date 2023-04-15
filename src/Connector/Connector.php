@@ -65,7 +65,6 @@ final class Connector implements DevicesConnectors\Connector
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
-				'group' => 'connector',
 				'connector' => [
 					'id' => $this->connector->getPlainId(),
 				],
@@ -86,7 +85,6 @@ final class Connector implements DevicesConnectors\Connector
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
-				'group' => 'connector',
 				'connector' => [
 					'id' => $this->connector->getPlainId(),
 				],
@@ -109,7 +107,6 @@ final class Connector implements DevicesConnectors\Connector
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
-				'group' => 'connector',
 				'connector' => [
 					'id' => $this->connector->getPlainId(),
 				],

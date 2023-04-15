@@ -19,6 +19,7 @@ use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
@@ -118,7 +119,6 @@ final class Mdns implements Server
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
-				'group' => 'server',
 				'connector' => [
 					'id' => $this->connector->getPlainId(),
 				],
@@ -163,11 +163,7 @@ final class Mdns implements Server
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'mdns-server',
-							'group' => 'server',
-							'exception' => [
-								'message' => $ex->getMessage(),
-								'code' => $ex->getCode(),
-							],
+							'exception' => BootstrapHelpers\Logger::buildException($ex),
 							'connector' => [
 								'id' => $this->connector->getPlainId(),
 							],
@@ -187,7 +183,6 @@ final class Mdns implements Server
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'mdns-server',
-							'group' => 'server',
 							'connector' => [
 								'id' => $this->connector->getPlainId(),
 							],
@@ -212,11 +207,7 @@ final class Mdns implements Server
 					[
 						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'mdns-server',
-						'group' => 'server',
-						'exception' => [
-							'message' => $ex->getMessage(),
-							'code' => $ex->getCode(),
-						],
+						'exception' => BootstrapHelpers\Logger::buildException($ex),
 						'connector' => [
 							'id' => $this->connector->getPlainId(),
 						],
@@ -247,7 +238,6 @@ final class Mdns implements Server
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
-				'group' => 'server',
 				'connector' => [
 					'id' => $this->connector->getPlainId(),
 				],
@@ -304,7 +294,6 @@ final class Mdns implements Server
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'mdns-server',
-					'group' => 'server',
 					'connector' => [
 						'id' => $this->connector->getPlainId(),
 					],
@@ -323,7 +312,6 @@ final class Mdns implements Server
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
-				'group' => 'server',
 				'connector' => [
 					'id' => $this->connector->getPlainId(),
 				],

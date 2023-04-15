@@ -308,11 +308,18 @@
     "OptionalCharacteristics" : [
       "Brightness",
       "Hue",
+      "Name",
       "Saturation",
-      "Name"
+      "ColorTemperature"
     ],
     "RequiredCharacteristics" : [
       "On"
+    ],
+    "VirtualCharacteristics" : [
+      "ColorRed",
+      "ColorGreen",
+      "ColorBlue",
+      "ColorWhite"
     ],
     "UUID" : "00000043-0000-1000-8000-0026BB765291"
   },

@@ -23,6 +23,7 @@ use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Library\Metadata\ValueObjects as MetadataValueObjects;
@@ -46,6 +47,7 @@ use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function array_merge;
 use function array_search;
 use function array_values;
 use function asort;
@@ -284,11 +286,7 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -338,11 +336,11 @@ class Devices extends Console\Command\Command
 
 		$name = $this->askDeviceName($io, $device);
 
-		$findPropertyQuery = new DevicesQueries\FindDeviceProperties();
-		$findPropertyQuery->forDevice($device);
-		$findPropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::IDENTIFIER_CATEGORY);
+		$findDevicePropertyQuery = new DevicesQueries\FindDeviceProperties();
+		$findDevicePropertyQuery->forDevice($device);
+		$findDevicePropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::IDENTIFIER_CATEGORY);
 
-		$categoryProperty = $this->devicesPropertiesRepository->findOneBy($findPropertyQuery);
+		$categoryProperty = $this->devicesPropertiesRepository->findOneBy($findDevicePropertyQuery);
 
 		$category = $this->askCategory($io, $device);
 
@@ -384,11 +382,7 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -413,7 +407,12 @@ class Devices extends Console\Command\Command
 			return;
 		}
 
-		if (count($device->getChannels()) > 0) {
+		$findChannelsQuery = new DevicesQueries\FindChannels();
+		$findChannelsQuery->forDevice($device);
+
+		$channels = $this->channelsRepository->findAllBy($findChannelsQuery, Entities\HomeKitChannel::class);
+
+		if (count($channels) > 0) {
 			$this->askServiceAction($io, $device, true);
 
 			return;
@@ -479,11 +478,7 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -521,7 +516,7 @@ class Devices extends Console\Command\Command
 			$findChannelQuery->forDevice($device);
 			$findChannelQuery->byIdentifier($identifier);
 
-			$channel = $this->channelsRepository->findOneBy($findChannelQuery);
+			$channel = $this->channelsRepository->findOneBy($findChannelQuery, Entities\HomeKitChannel::class);
 
 			if ($channel === null) {
 				break;
@@ -550,13 +545,20 @@ class Devices extends Console\Command\Command
 		}
 
 		$requiredCharacteristics = (array) $serviceMetadata->offsetGet('RequiredCharacteristics');
-		$optionalCharacteristics = [];
+		$optionalCharacteristics = $virtualCharacteristics = [];
 
 		if (
 			$serviceMetadata->offsetExists('OptionalCharacteristics')
 			&& $serviceMetadata->offsetGet('OptionalCharacteristics') instanceof Utils\ArrayHash
 		) {
 			$optionalCharacteristics = (array) $serviceMetadata->offsetGet('OptionalCharacteristics');
+		}
+
+		if (
+			$serviceMetadata->offsetExists('VirtualCharacteristics')
+			&& $serviceMetadata->offsetGet('VirtualCharacteristics') instanceof Utils\ArrayHash
+		) {
+			$virtualCharacteristics = (array) $serviceMetadata->offsetGet('VirtualCharacteristics');
 		}
 
 		try {
@@ -572,7 +574,13 @@ class Devices extends Console\Command\Command
 
 			$this->createCharacteristics($io, $device, $channel, $requiredCharacteristics, true);
 
-			$this->createCharacteristics($io, $device, $channel, $optionalCharacteristics, false);
+			$this->createCharacteristics(
+				$io,
+				$device,
+				$channel,
+				array_merge($optionalCharacteristics, $virtualCharacteristics),
+				false,
+			);
 
 			// Commit all changes into database
 			$this->getOrmConnection()->commit();
@@ -590,11 +598,7 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -687,13 +691,20 @@ class Devices extends Console\Command\Command
 		}
 
 		$requiredCharacteristics = (array) $serviceMetadata->offsetGet('RequiredCharacteristics');
-		$optionalCharacteristics = [];
+		$optionalCharacteristics = $virtualCharacteristics = [];
 
 		if (
 			$serviceMetadata->offsetExists('OptionalCharacteristics')
 			&& $serviceMetadata->offsetGet('OptionalCharacteristics') instanceof Utils\ArrayHash
 		) {
 			$optionalCharacteristics = (array) $serviceMetadata->offsetGet('OptionalCharacteristics');
+		}
+
+		if (
+			$serviceMetadata->offsetExists('VirtualCharacteristics')
+			&& $serviceMetadata->offsetGet('VirtualCharacteristics') instanceof Utils\ArrayHash
+		) {
+			$virtualCharacteristics = (array) $serviceMetadata->offsetGet('VirtualCharacteristics');
 		}
 
 		$missingRequired = [];
@@ -714,7 +725,7 @@ class Devices extends Console\Command\Command
 
 		$missingOptional = [];
 
-		foreach ($optionalCharacteristics as $optionalCharacteristic) {
+		foreach (array_merge($optionalCharacteristics, $virtualCharacteristics) as $optionalCharacteristic) {
 			$findPropertyQuery = new DevicesQueries\FindChannelProperties();
 			$findPropertyQuery->forChannel($channel);
 			$findPropertyQuery->byIdentifier(
@@ -765,11 +776,7 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -832,11 +839,7 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -848,7 +851,12 @@ class Devices extends Console\Command\Command
 			}
 		}
 
-		if (count($device->getChannels()) > 0) {
+		$findChannelsQuery = new DevicesQueries\FindChannels();
+		$findChannelsQuery->forDevice($device);
+
+		$channels = $this->channelsRepository->findAllBy($findChannelsQuery, Entities\HomeKitChannel::class);
+
+		if (count($channels) > 0) {
 			$this->askServiceAction($io, $device, true);
 		}
 	}
@@ -891,6 +899,9 @@ class Devices extends Console\Command\Command
 		foreach ($deviceChannels as $index => $channel) {
 			assert($channel instanceof Entities\HomeKitChannel);
 
+			$findChannelPropertiesQuery = new DevicesQueries\FindChannelProperties();
+			$findChannelPropertiesQuery->forChannel($channel);
+
 			$table->addRow([
 				$index + 1,
 				$channel->getName() ?? $channel->getIdentifier(),
@@ -903,7 +914,7 @@ class Devices extends Console\Command\Command
 							'',
 							ucwords(str_replace('_', ' ', $property->getIdentifier())),
 						),
-						$channel->getProperties(),
+						$this->channelsPropertiesRepository->findAllBy($findChannelPropertiesQuery),
 					),
 				),
 			]);
@@ -913,7 +924,12 @@ class Devices extends Console\Command\Command
 
 		$io->newLine();
 
-		if (count($device->getChannels()) > 0) {
+		$findChannelsQuery = new DevicesQueries\FindChannels();
+		$findChannelsQuery->forDevice($device);
+
+		$channels = $this->channelsRepository->findAllBy($findChannelsQuery, Entities\HomeKitChannel::class);
+
+		if (count($channels) > 0) {
 			$this->askServiceAction($io, $device, true);
 		}
 	}
@@ -1185,11 +1201,7 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1254,11 +1266,7 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1272,7 +1280,10 @@ class Devices extends Console\Command\Command
 			}
 		}
 
-		if (count($channel->getProperties()) > 0) {
+		$findChannelPropertiesQuery = new DevicesQueries\FindChannelProperties();
+		$findChannelPropertiesQuery->forChannel($channel);
+
+		if (count($this->channelsPropertiesRepository->findAllBy($findChannelPropertiesQuery)) > 0) {
 			$this->askCharacteristicAction($io, $channel);
 		}
 	}
@@ -1349,7 +1360,10 @@ class Devices extends Console\Command\Command
 
 		$io->newLine();
 
-		if (count($channel->getProperties()) > 0) {
+		$findChannelPropertiesQuery = new DevicesQueries\FindChannelProperties();
+		$findChannelPropertiesQuery->forChannel($channel);
+
+		if (count($this->channelsPropertiesRepository->findAllBy($findChannelPropertiesQuery)) > 0) {
 			$this->askCharacteristicAction($io, $channel);
 		}
 	}
@@ -1395,7 +1409,7 @@ class Devices extends Console\Command\Command
 
 		$default = $device !== null ? array_search(
 			$this->translator->translate(
-				'//homekit-connector.cmd.base.category.' . $device->getCategory()->getValue(),
+				'//homekit-connector.cmd.base.category.' . $device->getAccessoryCategory()->getValue(),
 			),
 			array_values($categories),
 			true,
@@ -1895,11 +1909,11 @@ class Devices extends Console\Command\Command
 		if ($type === 0) {
 			$properties = [];
 
-			$findPropertiesQuery = new DevicesQueries\FindDeviceProperties();
-			$findPropertiesQuery->forDevice($device);
+			$findDevicePropertiesQuery = new DevicesQueries\FindDeviceProperties();
+			$findDevicePropertiesQuery->forDevice($device);
 
 			$deviceProperties = $this->devicesPropertiesRepository->findAllBy(
-				$findPropertiesQuery,
+				$findDevicePropertiesQuery,
 				DevicesEntities\Devices\Properties\Dynamic::class,
 			);
 			usort(
@@ -2082,11 +2096,11 @@ class Devices extends Console\Command\Command
 
 			$properties = [];
 
-			$findPropertiesQuery = new DevicesQueries\FindChannelProperties();
-			$findPropertiesQuery->forChannel($channel);
+			$findDevicePropertiesQuery = new DevicesQueries\FindChannelProperties();
+			$findDevicePropertiesQuery->forChannel($channel);
 
 			$channelProperties = $this->channelsPropertiesRepository->findAllBy(
-				$findPropertiesQuery,
+				$findDevicePropertiesQuery,
 				DevicesEntities\Channels\Properties\Dynamic::class,
 			);
 			usort(
@@ -2791,7 +2805,6 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
 				],
 			);
 
@@ -2812,7 +2825,6 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
 				],
 			);
 
@@ -2853,7 +2865,6 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
 				],
 			);
 
@@ -2874,7 +2885,6 @@ class Devices extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'devices-cmd',
-					'group' => 'cmd',
 				],
 			);
 
@@ -2900,7 +2910,7 @@ class Devices extends Console\Command\Command
 		$findChannelsQuery = new DevicesQueries\FindChannels();
 		$findChannelsQuery->forDevice($device);
 
-		$deviceChannels = $this->channelsRepository->findAllBy($findChannelsQuery);
+		$deviceChannels = $this->channelsRepository->findAllBy($findChannelsQuery, Entities\HomeKitChannel::class);
 		usort(
 			$deviceChannels,
 			static function (DevicesEntities\Channels\Channel $a, DevicesEntities\Channels\Channel $b): int {
@@ -2969,7 +2979,7 @@ class Devices extends Console\Command\Command
 			return $connection;
 		}
 
-		throw new Exceptions\Runtime('Entity manager could not be loaded');
+		throw new Exceptions\Runtime('Transformer manager could not be loaded');
 	}
 
 }

@@ -19,11 +19,16 @@ use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
+use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Events as DevicesEvents;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
+use FastyBird\Module\Devices\Models as DevicesModels;
+use FastyBird\Module\Devices\Queries as DevicesQueries;
+use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
 use Psr\Log;
 use Symfony\Component\EventDispatcher;
@@ -53,6 +58,8 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	public function __construct(
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
+		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelPropertiesRepository,
+		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStates,
 		Log\LoggerInterface|null $logger = null,
 	)
 	{
@@ -79,7 +86,6 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
@@ -87,25 +93,21 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	{
 		$property = $event->getProperty();
 
-		if (
-			$property instanceof DevicesEntities\Devices\Properties\Mapped
-			|| $property instanceof DevicesEntities\Channels\Properties\Mapped
-		) {
-			if ($property instanceof DevicesEntities\Devices\Properties\Mapped) {
-				if (!array_key_exists($property->getDevice()->getConnector()->getPlainId(), $this->connectors)) {
-					return;
+		foreach ($this->findChildren($property) as $child) {
+			if ($child instanceof DevicesEntities\Channels\Properties\Mapped) {
+				if (
+					!array_key_exists(
+						$child->getChannel()->getDevice()->getConnector()->getPlainId(),
+						$this->connectors,
+					)
+				) {
+					continue;
 				}
 
-				$accessory = $this->accessoryDriver->findAccessory($property->getDevice()->getId());
+				$accessory = $this->accessoryDriver->findAccessory($child->getChannel()->getDevice()->getId());
+
 			} else {
-				if (!array_key_exists(
-					$property->getChannel()->getDevice()->getConnector()->getPlainId(),
-					$this->connectors,
-				)) {
-					return;
-				}
-
-				$accessory = $this->accessoryDriver->findAccessory($property->getChannel()->getDevice()->getId());
+				continue;
 			}
 
 			if (!$accessory instanceof Entities\Protocol\Device) {
@@ -114,64 +116,112 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 					[
 						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'event-writer',
-						'group' => 'writer',
 						'state' => $event->getState()->toArray(),
 					],
 				);
 
-				return;
+				continue;
 			}
 
-			$this->processProperty($property, $event, $accessory);
+			$this->processProperty($child, $event, $accessory);
 		}
 	}
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	private function processProperty(
-		DevicesEntities\Devices\Properties\Mapped|DevicesEntities\Channels\Properties\Mapped $property,
+		DevicesEntities\Channels\Properties\Mapped $property,
 		DevicesEvents\StateEntityCreated|DevicesEvents\StateEntityUpdated $event,
 		Entities\Protocol\Device $accessory,
 	): void
 	{
+		$state = $this->channelPropertiesStates->readValue($property);
+
+		if ($state === null) {
+			return;
+		}
+
 		foreach ($accessory->getServices() as $service) {
 			foreach ($service->getCharacteristics() as $characteristic) {
 				if (
 					$characteristic->getProperty() !== null
 					&& $characteristic->getProperty()->getId()->equals($property->getId())
 				) {
-					$characteristic->setActualValue(Protocol\Transformer::fromMappedParent(
-						$property,
-						$property->getParent(),
-						$event->getState()->getActualValue(),
-					));
+					try {
+						$characteristic->setActualValue(Protocol\Transformer::fromMappedParent(
+							$property,
+							$state->getActualValue(),
+						));
+					} catch (Exceptions\InvalidState $ex) {
+						$this->logger->warning(
+							'State value could not be converted from mapped parent',
+							[
+								'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+								'type' => 'event-writer',
+								'exception' => BootstrapHelpers\Logger::buildException($ex),
+								'connector' => [
+									'id' => $accessory->getDevice()->getConnector()->getPlainId(),
+								],
+								'device' => [
+									'id' => $accessory->getDevice()->getPlainId(),
+								],
+								'channel' => [
+									'id' => $service->getChannel()?->getPlainId(),
+								],
+								'property' => [
+									'id' => $characteristic->getProperty()->getPlainId(),
+								],
+								'hap' => $accessory->toHap(),
+							],
+						);
 
-					$this->subscriber->publish(
-						intval($accessory->getAid()),
-						intval($accessory->getIidManager()->getIid($characteristic)),
-						Protocol\Transformer::toClient(
-							$characteristic->getProperty(),
-							$characteristic->getDataType(),
-							$characteristic->getValidValues(),
-							$characteristic->getMaxLength(),
-							$characteristic->getMinValue(),
-							$characteristic->getMaxValue(),
-							$characteristic->getMinStep(),
-							$characteristic->getActualValue(),
-						),
-						$characteristic->immediateNotify(),
-					);
+						return;
+					}
+
+					if (!$characteristic->isVirtual()) {
+						$this->subscriber->publish(
+							intval($accessory->getAid()),
+							intval($accessory->getIidManager()->getIid($characteristic)),
+							Protocol\Transformer::toClient(
+								$characteristic->getProperty(),
+								$characteristic->getDataType(),
+								$characteristic->getValidValues(),
+								$characteristic->getMaxLength(),
+								$characteristic->getMinValue(),
+								$characteristic->getMaxValue(),
+								$characteristic->getMinStep(),
+								$characteristic->getValue(),
+							),
+							$characteristic->immediateNotify(),
+						);
+					} else {
+						foreach ($service->getCharacteristics() as $serviceCharacteristic) {
+							$this->subscriber->publish(
+								intval($accessory->getAid()),
+								intval($accessory->getIidManager()->getIid($serviceCharacteristic)),
+								Protocol\Transformer::toClient(
+									$serviceCharacteristic->getProperty(),
+									$serviceCharacteristic->getDataType(),
+									$serviceCharacteristic->getValidValues(),
+									$serviceCharacteristic->getMaxLength(),
+									$serviceCharacteristic->getMinValue(),
+									$serviceCharacteristic->getMaxValue(),
+									$serviceCharacteristic->getMinStep(),
+									$serviceCharacteristic->getValue(),
+								),
+								$serviceCharacteristic->immediateNotify(),
+							);
+						}
+					}
 
 					$this->logger->debug(
 						'Processed received property message',
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'event-writer',
-							'group' => 'writer',
 							'connector' => [
 								'id' => $accessory->getDevice()->getConnector()->getPlainId(),
 							],
@@ -184,11 +234,7 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 							'property' => [
 								'id' => $characteristic->getProperty()?->getPlainId(),
 							],
-							'hap' => [
-								'accessory' => $service->toHap(),
-								'service' => $service->toHap(),
-								'characteristic' => $characteristic->toHap(),
-							],
+							'hap' => $accessory->toHap(),
 						],
 					);
 
@@ -196,6 +242,29 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return array<DevicesEntities\Devices\Properties\Property|DevicesEntities\Channels\Properties\Property>
+	 *
+	 * @throws DevicesExceptions\InvalidState
+	 */
+	private function findChildren(
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		MetadataEntities\DevicesModule\DynamicProperty|DevicesEntities\Connectors\Properties\Dynamic|DevicesEntities\Devices\Properties\Dynamic|DevicesEntities\Channels\Properties\Dynamic $property,
+	): array
+	{
+		if ($property instanceof MetadataEntities\DevicesModule\ChannelDynamicProperty) {
+			$findPropertyQuery = new DevicesQueries\FindChannelProperties();
+			$findPropertyQuery->byParentId($property->getId());
+
+			return $this->channelPropertiesRepository->findAllBy(
+				$findPropertyQuery,
+				DevicesEntities\Channels\Properties\Mapped::class,
+			);
+		}
+
+		return [];
 	}
 
 }

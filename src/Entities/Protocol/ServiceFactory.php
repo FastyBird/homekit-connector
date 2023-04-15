@@ -83,6 +83,11 @@ final class ServiceFactory
 			) instanceof Utils\ArrayHash ? (array) $serviceMetadata->offsetGet(
 				'OptionalCharacteristics',
 			) : [],
+			$serviceMetadata->offsetExists('VirtualCharacteristics') && $serviceMetadata->offsetGet(
+				'VirtualCharacteristics',
+			) instanceof Utils\ArrayHash ? (array) $serviceMetadata->offsetGet(
+				'VirtualCharacteristics',
+			) : [],
 		);
 	}
 

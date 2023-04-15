@@ -72,11 +72,13 @@ final class AccessoryFactory
 
 			$accessory = new Bridge($owner->getName() ?? $owner->getIdentifier(), $owner);
 		} else {
+
 			if (!$owner instanceof Entities\HomeKitDevice) {
 				throw new Exceptions\InvalidArgument('Device accessory owner have to be device item instance');
 			}
 
-			$accessory = new Device($owner->getName() ?? $owner->getIdentifier(), $aid, $category, $owner);
+			$accessoryClassName = $this->getDeviceClass($category);
+			$accessory = new $accessoryClassName($owner->getName() ?? $owner->getIdentifier(), $aid, $category, $owner);
 		}
 
 		$accessoryInformation = $this->serviceFactory->create(
@@ -88,7 +90,7 @@ final class AccessoryFactory
 			Types\ChannelPropertyIdentifier::IDENTIFIER_NAME,
 			$accessoryInformation,
 		);
-		$accessoryName->setActualValue($owner->getName() ?? $owner->getIdentifier());
+		$accessoryName->setValue($owner->getName() ?? $owner->getIdentifier());
 
 		$accessoryInformation->addCharacteristic($accessoryName);
 
@@ -97,7 +99,7 @@ final class AccessoryFactory
 			$accessoryInformation,
 		);
 
-		$accessorySerialNumber->setActualValue(
+		$accessorySerialNumber->setValue(
 			$this->hashIds->encode(
 				...array_map(
 					static fn (string $part): int => intval($part),
@@ -114,7 +116,7 @@ final class AccessoryFactory
 			Types\ChannelPropertyIdentifier::IDENTIFIER_FIRMWARE_REVISION,
 			$accessoryInformation,
 		);
-		$accessoryFirmwareRevision->setActualValue(
+		$accessoryFirmwareRevision->setValue(
 			$packageRevision !== null && preg_match(
 				HomeKit\Constants::VERSION_REGEXP,
 				$packageRevision,
@@ -127,7 +129,7 @@ final class AccessoryFactory
 			Types\ChannelPropertyIdentifier::IDENTIFIER_MANUFACTURER,
 			$accessoryInformation,
 		);
-		$accessoryManufacturer->setActualValue(HomeKit\Constants::DEFAULT_MANUFACTURER);
+		$accessoryManufacturer->setValue(HomeKit\Constants::DEFAULT_MANUFACTURER);
 
 		$accessoryInformation->addCharacteristic($accessoryManufacturer);
 
@@ -137,9 +139,9 @@ final class AccessoryFactory
 		);
 
 		if ($accessory instanceof Bridge) {
-			$accessoryModel->setActualValue(HomeKit\Constants::DEFAULT_BRIDGE_MODEL);
+			$accessoryModel->setValue(HomeKit\Constants::DEFAULT_BRIDGE_MODEL);
 		} else {
-			$accessoryModel->setActualValue(HomeKit\Constants::DEFAULT_DEVICE_MODEL);
+			$accessoryModel->setValue(HomeKit\Constants::DEFAULT_DEVICE_MODEL);
 		}
 
 		$accessoryInformation->addCharacteristic($accessoryModel);
@@ -148,7 +150,7 @@ final class AccessoryFactory
 			Types\ChannelPropertyIdentifier::IDENTIFIER_IDENTIFY,
 			$accessoryInformation,
 		);
-		$accessoryIdentify->setActualValue(false);
+		$accessoryIdentify->setValue(false);
 
 		$accessoryInformation->addCharacteristic($accessoryIdentify);
 
@@ -167,7 +169,7 @@ final class AccessoryFactory
 				Types\ChannelPropertyIdentifier::IDENTIFIER_VERSION,
 				$accessoryProtocolInformation,
 			);
-			$accessoryProtocolVersion->setActualValue(HomeKit\Constants::HAP_PROTOCOL_VERSION);
+			$accessoryProtocolVersion->setValue(HomeKit\Constants::HAP_PROTOCOL_VERSION);
 
 			$accessoryProtocolInformation->addCharacteristic($accessoryProtocolVersion);
 
@@ -175,6 +177,18 @@ final class AccessoryFactory
 		}
 
 		return $accessory;
+	}
+
+	/**
+	 * @return class-string<Device>
+	 */
+	private function getDeviceClass(Types\AccessoryCategory $category): string
+	{
+		if ($category->equalsValue(Types\AccessoryCategory::CATEGORY_LIGHT_BULB)) {
+			return Entities\Protocol\Devices\LightBulb::class;
+		}
+
+		return Entities\Protocol\Devices\Generic::class;
 	}
 
 }

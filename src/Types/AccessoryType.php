@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * DevicePropertyIdentifier.php
+ * AccessoryType.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -10,7 +10,7 @@
  * @subpackage     Types
  * @since          1.0.0
  *
- * @date           13.02.23
+ * @date           12.04.23
  */
 
 namespace FastyBird\Connector\HomeKit\Types;
@@ -19,24 +19,33 @@ use Consistence;
 use function strval;
 
 /**
- * Device property identifier types
+ * HAP accessory type
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Types
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class DevicePropertyIdentifier extends Consistence\Enum\Enum
+class AccessoryType extends Consistence\Enum\Enum
 {
 
 	/**
-	 * Define device properties identifiers
+	 * Define categories
 	 */
-	public const IDENTIFIER_CATEGORY = 'category';
+	public const TYPE_GENERIC = 'generic';
 
-	public const IDENTIFIER_TYPE = 'type';
+	public const TYPE_LIGHT_HSB = 'light_hsb';
 
-	public const IDENTIFIER_AID = 'aid';
+	/**
+	 * @return array<int>
+	 */
+	public static function getValues(): array
+	{
+		/** @var iterable<int> $availableValues */
+		$availableValues = parent::getAvailableValues();
+
+		return (array) $availableValues;
+	}
 
 	public function __toString(): string
 	{

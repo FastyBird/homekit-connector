@@ -21,6 +21,7 @@ use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -238,11 +239,7 @@ class Initialize extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'initialize-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -309,7 +306,11 @@ class Initialize extends Console\Command\Command
 
 		$port = $this->askPort($io, $connector);
 
-		$portProperty = $connector->findProperty(Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT);
+		$findConnectorPropertyQuery = new DevicesQueries\FindConnectorProperties();
+		$findConnectorPropertyQuery->forConnector($connector);
+		$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT);
+
+		$portProperty = $this->propertiesRepository->findOneBy($findConnectorPropertyQuery);
 
 		try {
 			// Start transaction connection to the database
@@ -350,11 +351,7 @@ class Initialize extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'initialize-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -415,11 +412,7 @@ class Initialize extends Console\Command\Command
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'initialize-cmd',
-					'group' => 'cmd',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -465,11 +458,11 @@ class Initialize extends Console\Command\Command
 				);
 			}
 
-			$findProperties = new DevicesQueries\FindConnectorProperties();
-			$findProperties->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT);
+			$findConnectorPropertiesQuery = new DevicesQueries\FindConnectorProperties();
+			$findConnectorPropertiesQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT);
 
 			$properties = $this->propertiesRepository->findAllBy(
-				$findProperties,
+				$findConnectorPropertiesQuery,
 				DevicesEntities\Connectors\Properties\Variable::class,
 			);
 
@@ -590,7 +583,7 @@ class Initialize extends Console\Command\Command
 			return $connection;
 		}
 
-		throw new Exceptions\Runtime('Entity manager could not be loaded');
+		throw new Exceptions\Runtime('Transformer manager could not be loaded');
 	}
 
 }

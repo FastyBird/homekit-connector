@@ -22,6 +22,7 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Exchange\Consumers as ExchangeConsumers;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
@@ -120,7 +121,6 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'exchange-writer',
-							'group' => 'writer',
 							'message' => [
 								'source' => $source->getValue(),
 								'routing_key' => $routingKey->getValue(),
@@ -142,7 +142,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 				$findChannelQuery = new DevicesQueries\FindChannels();
 				$findChannelQuery->byId($entity->getChannel());
 
-				$channel = $this->channelsRepository->findOneBy($findChannelQuery);
+				$channel = $this->channelsRepository->findOneBy($findChannelQuery, Entities\HomeKitChannel::class);
 
 				if ($channel === null) {
 					$this->logger->error(
@@ -150,7 +150,6 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'exchange-writer',
-							'group' => 'writer',
 							'message' => [
 								'source' => $source->getValue(),
 								'routing_key' => $routingKey->getValue(),
@@ -176,7 +175,6 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 					[
 						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'exchange-writer',
-						'group' => 'writer',
 						'message' => [
 							'source' => $source->getValue(),
 							'routing_key' => $routingKey->getValue(),
@@ -218,7 +216,6 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
@@ -227,63 +224,107 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 		Entities\Protocol\Device $accessory,
 	): void
 	{
+		if (
+			!$entity instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
+			&& !$entity instanceof MetadataEntities\DevicesModule\ChannelDynamicProperty
+			&& !$entity instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
+		) {
+			return;
+		}
+
 		foreach ($accessory->getServices() as $service) {
 			foreach ($service->getCharacteristics() as $characteristic) {
 				if (
 					$characteristic->getProperty() !== null
 					&& $characteristic->getProperty()->getId()->equals($entity->getId())
 				) {
+					$findPropertyQuery = new DevicesQueries\FindChannelProperties();
+					$findPropertyQuery->byId($entity->getId());
+
+					$property = $this->channelsPropertiesRepository->findOneBy($findPropertyQuery);
+
 					if (
-						(
-							$entity instanceof MetadataEntities\DevicesModule\DeviceMappedProperty
-							|| $entity instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
-						)
-						&& $entity->getParent() !== null
+						$entity instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
+						&& $property instanceof DevicesEntities\Channels\Properties\Mapped
 					) {
-						$findPropertyQuery = new DevicesQueries\FindChannelProperties();
-						$findPropertyQuery->byId($entity->getParent());
-
-						$parent = $this->channelsPropertiesRepository->findOneBy(
-							$findPropertyQuery,
-							DevicesEntities\Channels\Properties\Dynamic::class,
-						);
-
-						if ($parent instanceof DevicesEntities\Channels\Properties\Dynamic) {
+						try {
 							$characteristic->setActualValue(Protocol\Transformer::fromMappedParent(
-								$entity,
-								$parent,
+								$property,
 								$entity->getActualValue(),
 							));
+						} catch (Exceptions\InvalidState $ex) {
+							$this->logger->warning(
+								'State value could not be converted from mapped parent',
+								[
+									'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+									'type' => 'event-writer',
+									'exception' => BootstrapHelpers\Logger::buildException($ex),
+									'connector' => [
+										'id' => $accessory->getDevice()->getConnector()->getPlainId(),
+									],
+									'device' => [
+										'id' => $accessory->getDevice()->getPlainId(),
+									],
+									'channel' => [
+										'id' => $service->getChannel()?->getPlainId(),
+									],
+									'property' => [
+										'id' => $characteristic->getProperty()->getPlainId(),
+									],
+									'hap' => $accessory->toHap(),
+								],
+							);
+
+							return;
 						}
 					} elseif (
-						$entity instanceof MetadataEntities\DevicesModule\DeviceVariableProperty
-						|| $entity instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
+						$entity instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
+						&& $property instanceof DevicesEntities\Channels\Properties\Variable
 					) {
-						$characteristic->setActualValue($entity->getValue());
+						$characteristic->setValue($entity->getValue());
 					}
 
-					$this->subscriber->publish(
-						intval($accessory->getAid()),
-						intval($accessory->getIidManager()->getIid($characteristic)),
-						Protocol\Transformer::toClient(
-							$characteristic->getProperty(),
-							$characteristic->getDataType(),
-							$characteristic->getValidValues(),
-							$characteristic->getMaxLength(),
-							$characteristic->getMinValue(),
-							$characteristic->getMaxValue(),
-							$characteristic->getMinStep(),
-							$characteristic->getActualValue(),
-						),
-						$characteristic->immediateNotify(),
-					);
+					if (!$characteristic->isVirtual()) {
+						$this->subscriber->publish(
+							intval($accessory->getAid()),
+							intval($accessory->getIidManager()->getIid($characteristic)),
+							Protocol\Transformer::toClient(
+								$characteristic->getProperty(),
+								$characteristic->getDataType(),
+								$characteristic->getValidValues(),
+								$characteristic->getMaxLength(),
+								$characteristic->getMinValue(),
+								$characteristic->getMaxValue(),
+								$characteristic->getMinStep(),
+								$characteristic->getValue(),
+							),
+							$characteristic->immediateNotify(),
+						);
+					} else {
+						foreach ($service->getCharacteristics() as $serviceCharacteristic) {
+							$this->subscriber->publish(
+								intval($accessory->getAid()),
+								intval($accessory->getIidManager()->getIid($serviceCharacteristic)),
+								Protocol\Transformer::toClient(
+									$serviceCharacteristic->getProperty(),
+									$serviceCharacteristic->getDataType(),
+									$serviceCharacteristic->getValidValues(),
+									$serviceCharacteristic->getMaxLength(),
+									$serviceCharacteristic->getMinValue(),
+									$serviceCharacteristic->getMaxValue(),
+									$serviceCharacteristic->getMinStep(),
+									$serviceCharacteristic->getValue(),
+								),
+								$serviceCharacteristic->immediateNotify(),
+							);
+						}
+					}
 
 					$this->logger->debug(
 						'Processed received property message',
 						[
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'exchange-writer',
-							'group' => 'writer',
 							'connector' => [
 								'id' => $accessory->getDevice()->getConnector()->getPlainId(),
 							],
@@ -296,11 +337,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 							'property' => [
 								'id' => $characteristic->getProperty()?->getPlainId(),
 							],
-							'hap' => [
-								'accessory' => $service->toHap(),
-								'service' => $service->toHap(),
-								'characteristic' => $characteristic->toHap(),
-							],
+							'hap' => $accessory->toHap(),
 						],
 					);
 

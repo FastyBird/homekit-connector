@@ -18,11 +18,11 @@ namespace FastyBird\Connector\HomeKit\Protocol;
 use DateTimeInterface;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Library\Metadata\ValueObjects as MetadataValueObjects;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
+use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use Nette\Utils;
 use function array_filter;
 use function array_values;
@@ -351,14 +351,19 @@ final class Transformer
 
 	/**
 	 * @throws Exceptions\InvalidState
+	 * @throws DevicesExceptions\InvalidState
 	 */
 	public static function fromMappedParent(
-		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		DevicesEntities\Devices\Properties\Mapped|DevicesEntities\Channels\Properties\Mapped|MetadataEntities\DevicesModule\DeviceMappedProperty|MetadataEntities\DevicesModule\ChannelMappedProperty $property,
-		DevicesEntities\Property|MetadataEntities\DevicesModule\DeviceDynamicProperty|MetadataEntities\DevicesModule\ChannelDynamicProperty $parent,
+		DevicesEntities\Channels\Properties\Mapped $property,
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
 	{
+		$parent = $property->getParent();
+
+		if (!$parent instanceof DevicesEntities\Channels\Properties\Dynamic) {
+			return $value;
+		}
+
 		if ($property->getDataType()->equals($parent->getDataType())) {
 			return $value;
 		}
@@ -388,14 +393,19 @@ final class Transformer
 
 	/**
 	 * @throws Exceptions\InvalidState
+	 * @throws DevicesExceptions\InvalidState
 	 */
 	public static function toMappedParent(
-		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		DevicesEntities\Devices\Properties\Mapped|DevicesEntities\Channels\Properties\Mapped|MetadataEntities\DevicesModule\DeviceMappedProperty|MetadataEntities\DevicesModule\ChannelMappedProperty $property,
-		DevicesEntities\Property|MetadataEntities\DevicesModule\DeviceDynamicProperty|MetadataEntities\DevicesModule\ChannelDynamicProperty $parent,
+		DevicesEntities\Channels\Properties\Mapped $property,
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
 	{
+		$parent = $property->getParent();
+
+		if (!$parent instanceof DevicesEntities\Channels\Properties\Dynamic) {
+			return $value;
+		}
+
 		if ($property->getDataType()->equals($parent->getDataType())) {
 			return $value;
 		}

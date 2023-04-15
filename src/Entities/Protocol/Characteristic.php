@@ -52,6 +52,8 @@ class Characteristic
 
 	private const ABSOLUTE_MAX_LENGTH = 256;
 
+	private const VIRTUAL_CHARACTERISTIC_UID = '00000000-0000-0000-0000-000000000000';
+
 	private const ALWAYS_NULL
 		= [
 			'00000073-0000-1000-8000-0026BB765291', // PROGRAMMABLE SWITCH
@@ -65,8 +67,6 @@ class Characteristic
 
 	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $actualValue = null;
-	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-	private bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $expectedValue = null;
 
 	/**
 	 * @param array<string> $permissions
@@ -80,7 +80,8 @@ class Characteristic
 		private readonly Types\DataType $dataType,
 		private readonly array $permissions,
 		private readonly Service $service,
-		private readonly DevicesEntities\Channels\Properties\Mapped|DevicesEntities\Channels\Properties\Variable|null $property = null,
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		private readonly DevicesEntities\Channels\Properties\Dynamic|DevicesEntities\Channels\Properties\Mapped|DevicesEntities\Channels\Properties\Variable|null $property = null,
 		private readonly array|null $validValues = [],
 		private readonly int|null $maxLength = null,
 		private readonly float|null $minValue = null,
@@ -145,41 +146,45 @@ class Characteristic
 		return $this->maxLength;
 	}
 
-	public function getProperty(): DevicesEntities\Property|null
+	public function getService(): Service
+	{
+		return $this->service;
+	}
+
+	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+	public function getProperty(): DevicesEntities\Channels\Properties\Dynamic|DevicesEntities\Channels\Properties\Mapped|DevicesEntities\Channels\Properties\Variable|null
 	{
 		return $this->property;
 	}
 	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-	public function getActualValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
+	public function getValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
 	{
-		if ($this->expectedValue !== null) {
-			return $this->expectedValue;
-		}
-
 		return $this->actualValue;
+	}
+
+	public function setValue(
+		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
+	): void
+	{
+		$this->actualValue = $value;
 	}
 
 	public function setActualValue(
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
 	): void
 	{
-		$this->actualValue = $value;
+		$this->setValue($value);
 
-		if ($this->actualValue === $this->expectedValue) {
-			$this->expectedValue = null;
-		}
-	}
-	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-	public function getExpectedValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
-	{
-		return $this->expectedValue;
+		$this->service->recalculateValues($this, true);
 	}
 
 	public function setExpectedValue(
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
 	): void
 	{
-		$this->expectedValue = $value;
+		$this->setValue($value);
+
+		$this->service->recalculateValues($this, false);
 	}
 
 	public function isAlwaysNull(): bool
@@ -190,6 +195,11 @@ class Characteristic
 	public function immediateNotify(): bool
 	{
 		return in_array($this->typeId->toString(), self::IMMEDIATE_NOTIFY, true);
+	}
+
+	public function isVirtual(): bool
+	{
+		return $this->typeId->toString() === self::VIRTUAL_CHARACTERISTIC_UID;
 	}
 
 	/**
@@ -268,7 +278,7 @@ class Characteristic
 				$this->minValue,
 				$this->maxValue,
 				$this->minStep,
-				$this->getActualValue(),
+				$this->getValue(),
 			);
 		}
 
@@ -314,7 +324,7 @@ class Characteristic
 		return sprintf(
 			'<characteristic name=%s value=%s properties=%s>',
 			$this->name,
-			strval($this->getActualValue()),
+			strval($this->getValue()),
 			Nette\Utils\Json::encode($properties),
 		);
 	}

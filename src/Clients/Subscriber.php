@@ -76,7 +76,6 @@ final class Subscriber
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'subscriber',
-					'group' => 'client',
 				],
 			);
 
@@ -88,7 +87,6 @@ final class Subscriber
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
-				'group' => 'client',
 				'connection' => [
 					'address' => $connection->getRemoteAddress(),
 				],
@@ -107,7 +105,6 @@ final class Subscriber
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
-				'group' => 'client',
 				'connection' => [
 					'address' => $connection->getRemoteAddress(),
 				],
@@ -132,7 +129,6 @@ final class Subscriber
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
-				'group' => 'client',
 				'subscription' => [
 					'aid' => $aid,
 					'iid' => $iid,
@@ -155,7 +151,6 @@ final class Subscriber
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'subscriber',
-				'group' => 'client',
 				'subscription' => [
 					'aid' => $aid,
 					'iid' => $iid,
@@ -224,7 +219,6 @@ final class Subscriber
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'subscriber',
-					'group' => 'client',
 					'data' => [
 						'aid' => $aid,
 						'iid' => $iid,

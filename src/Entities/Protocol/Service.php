@@ -22,8 +22,10 @@ use FastyBird\Module\Devices\Entities as DevicesEntities;
 use Nette;
 use Ramsey\Uuid;
 use SplObjectStorage;
+use function array_filter;
 use function array_map;
 use function array_merge;
+use function array_values;
 use function in_array;
 use function sprintf;
 
@@ -45,6 +47,8 @@ class Service
 
 	public const HAP_PROTOCOL_INFORMATION_SERVICE_UUID = '000000A2-0000-1000-8000-0026BB765291';
 
+	private const VIRTUAL_SERVICE_UID = '00000000-0000-0000-0000-000000000000';
+
 	private bool $hidden = false;
 
 	/** @var SplObjectStorage<Characteristic, null> */
@@ -53,6 +57,7 @@ class Service
 	/**
 	 * @param array<string> $requiredCharacteristics
 	 * @param array<string> $optionalCharacteristics
+	 * @param array<string> $virtualCharacteristics
 	 */
 	public function __construct(
 		private readonly Uuid\UuidInterface $typeId,
@@ -61,6 +66,7 @@ class Service
 		private readonly DevicesEntities\Channels\Channel|null $channel = null,
 		private readonly array $requiredCharacteristics = [],
 		private readonly array $optionalCharacteristics = [],
+		private readonly array $virtualCharacteristics = [],
 		private bool $primary = false,
 	)
 	{
@@ -92,7 +98,11 @@ class Service
 	 */
 	public function getAllowedCharacteristicsNames(): array
 	{
-		return array_merge($this->requiredCharacteristics, $this->optionalCharacteristics);
+		return array_merge(
+			$this->requiredCharacteristics,
+			$this->optionalCharacteristics,
+			$this->virtualCharacteristics,
+		);
 	}
 
 	/**
@@ -119,6 +129,7 @@ class Service
 		if (
 			!in_array($characteristic->getName(), $this->requiredCharacteristics, true)
 			&& !in_array($characteristic->getName(), $this->optionalCharacteristics, true)
+			&& !in_array($characteristic->getName(), $this->virtualCharacteristics, true)
 		) {
 			throw new Exceptions\InvalidArgument(sprintf(
 				'Characteristics: %s is not allowed for service: %s',
@@ -128,6 +139,32 @@ class Service
 		}
 
 		$this->characteristics->attach($characteristic);
+	}
+
+	public function hasCharacteristic(string $name): bool
+	{
+		$this->characteristics->rewind();
+
+		foreach ($this->characteristics as $characteristic) {
+			if ($characteristic->getName() === $name) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public function findCharacteristic(string $name): Characteristic|null
+	{
+		$this->characteristics->rewind();
+
+		foreach ($this->characteristics as $characteristic) {
+			if ($characteristic->getName() === $name) {
+				return $characteristic;
+			}
+		}
+
+		return null;
 	}
 
 	public function isPrimary(): bool
@@ -150,6 +187,19 @@ class Service
 		$this->hidden = $hidden;
 	}
 
+	public function isVirtual(): bool
+	{
+		return $this->typeId->toString() === self::VIRTUAL_SERVICE_UID;
+	}
+
+	/**
+	 * @interal
+	 */
+	public function recalculateValues(Characteristic $characteristic, bool $fromDevice): void
+	{
+		$this->accessory->recalculateValues($this, $characteristic, $fromDevice);
+	}
+
 	/**
 	 * Create a HAP representation of this Service
 	 * Used for json serialization
@@ -163,7 +213,10 @@ class Service
 			Types\Representation::REPR_TYPE => Helpers\Protocol::uuidToHapType($this->getTypeId()),
 			Types\Representation::REPR_CHARS => array_map(
 				static fn (Characteristic $characteristic): array => $characteristic->toHap(),
-				$this->getCharacteristics(),
+				array_values(array_filter(
+					$this->getCharacteristics(),
+					static fn (Characteristic $characteristic): bool => !$characteristic->isVirtual()
+				)),
 			),
 			Types\Representation::REPR_PRIMARY => $this->primary,
 			Types\Representation::REPR_HIDDEN => $this->hidden,
@@ -180,7 +233,7 @@ class Service
 		$this->characteristics->rewind();
 
 		foreach ($this->characteristics as $characteristic) {
-			$characteristics[$characteristic->getName()] = $characteristic->getActualValue();
+			$characteristics[$characteristic->getName()] = $characteristic->getValue();
 		}
 
 		return sprintf(

@@ -1,16 +1,16 @@
 #
 # Connector translations
 #
-# @language		en_US
+# @language       en_US
 #
-# @license		More in LICENSE.md
-# @copyright	https://www.fastybird.com
-# @author		Adam Kadlec <adam.kadlec@fastybird.com>
-# @package		FastyBird:HomeKitConnector!
-# @subpackage	Translations
-# @since		0.1.0
+# @license        More in LICENSE.md
+# @copyright      https://www.fastybird.com
+# @author         Adam Kadlec <adam.kadlec@fastybird.com>
+# @package        FastyBird:HomeKitConnector!
+# @subpackage     Translations
+# @since          1.0.0
 #
-# @date			14.02.23
+# @date           14.02.23
 #
 
 cmd:

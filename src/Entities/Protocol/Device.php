@@ -20,14 +20,14 @@ use FastyBird\Connector\HomeKit\Types;
 use Ramsey\Uuid;
 
 /**
- * HAP bridge accessory
+ * HAP device accessory
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Entities
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Device extends Accessory
+abstract class Device extends Accessory
 {
 
 	public function __construct(

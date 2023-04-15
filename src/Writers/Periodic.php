@@ -21,10 +21,13 @@ use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\DateTimeFactory;
+use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
+use FastyBird\Module\Devices\Models as DevicesModels;
+use FastyBird\Module\Devices\Queries as DevicesQueries;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
 use Psr\Log;
@@ -71,6 +74,7 @@ class Periodic implements Writer
 	public function __construct(
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
+		private readonly DevicesModels\Devices\DevicesRepository $devicesRepository,
 		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStates,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly EventLoop\LoopInterface $eventLoop,
@@ -108,14 +112,16 @@ class Periodic implements Writer
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	private function handleCommunication(): void
 	{
 		foreach ($this->connectors as $connector) {
-			foreach ($connector->getDevices() as $device) {
+			$findDevicesQuery = new DevicesQueries\FindDevices();
+			$findDevicesQuery->forConnector($connector);
+
+			foreach ($this->devicesRepository->findAllBy($findDevicesQuery, Entities\HomeKitDevice::class) as $device) {
 				assert($device instanceof Entities\HomeKitDevice);
 
 				$accessory = $this->accessoryDriver->findAccessory($device->getId());
@@ -143,7 +149,6 @@ class Periodic implements Writer
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
@@ -175,46 +180,92 @@ class Periodic implements Writer
 
 						$this->processedProperties[$characteristic->getProperty()->getPlainId()] = $now;
 
-						$state = $this->channelsPropertiesStates->getValue($characteristic->getProperty());
+						$state = $this->channelsPropertiesStates->readValue($characteristic->getProperty());
 
 						if ($state === null) {
 							continue;
 						}
 
-						$characteristicValue = Protocol\Transformer::fromMappedParent(
-							$characteristic->getProperty(),
-							$characteristic->getProperty()->getParent(),
-							$state->getActualValue(),
-						);
+						$propertyValue = $state->getExpectedValue() ?? $state->getActualValue();
 
-						if ($characteristic->getActualValue() === $characteristicValue) {
+						try {
+							$characteristicValue = Protocol\Transformer::fromMappedParent(
+								$characteristic->getProperty(),
+								$propertyValue,
+							);
+						} catch (Exceptions\InvalidState $ex) {
+							$this->logger->warning(
+								'State value could not be converted from mapped parent',
+								[
+									'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+									'type' => 'event-writer',
+									'exception' => BootstrapHelpers\Logger::buildException($ex),
+									'connector' => [
+										'id' => $accessory->getDevice()->getConnector()->getPlainId(),
+									],
+									'device' => [
+										'id' => $accessory->getDevice()->getPlainId(),
+									],
+									'channel' => [
+										'id' => $service->getChannel()->getPlainId(),
+									],
+									'property' => [
+										'id' => $characteristic->getProperty()->getPlainId(),
+									],
+									'hap' => $accessory->toHap(),
+								],
+							);
+
+							continue;
+						}
+
+						if ($characteristic->getValue() === $characteristicValue) {
 							continue;
 						}
 
 						$characteristic->setActualValue($characteristicValue);
 
-						$this->subscriber->publish(
-							intval($accessory->getAid()),
-							intval($accessory->getIidManager()->getIid($characteristic)),
-							Protocol\Transformer::toClient(
-								$characteristic->getProperty(),
-								$characteristic->getDataType(),
-								$characteristic->getValidValues(),
-								$characteristic->getMaxLength(),
-								$characteristic->getMinValue(),
-								$characteristic->getMaxValue(),
-								$characteristic->getMinStep(),
-								$characteristic->getActualValue(),
-							),
-							$characteristic->immediateNotify(),
-						);
+						if (!$characteristic->isVirtual()) {
+							$this->subscriber->publish(
+								intval($accessory->getAid()),
+								intval($accessory->getIidManager()->getIid($characteristic)),
+								Protocol\Transformer::toClient(
+									$characteristic->getProperty(),
+									$characteristic->getDataType(),
+									$characteristic->getValidValues(),
+									$characteristic->getMaxLength(),
+									$characteristic->getMinValue(),
+									$characteristic->getMaxValue(),
+									$characteristic->getMinStep(),
+									$characteristic->getValue(),
+								),
+								$characteristic->immediateNotify(),
+							);
+						} else {
+							foreach ($service->getCharacteristics() as $serviceCharacteristic) {
+								$this->subscriber->publish(
+									intval($accessory->getAid()),
+									intval($accessory->getIidManager()->getIid($serviceCharacteristic)),
+									Protocol\Transformer::toClient(
+										$serviceCharacteristic->getProperty(),
+										$serviceCharacteristic->getDataType(),
+										$serviceCharacteristic->getValidValues(),
+										$serviceCharacteristic->getMaxLength(),
+										$serviceCharacteristic->getMinValue(),
+										$serviceCharacteristic->getMaxValue(),
+										$serviceCharacteristic->getMinStep(),
+										$serviceCharacteristic->getValue(),
+									),
+									$serviceCharacteristic->immediateNotify(),
+								);
+							}
+						}
 
 						$this->logger->debug(
 							'Processed received property message',
 							[
 								'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 								'type' => 'periodic-writer',
-								'group' => 'writer',
 								'connector' => [
 									'id' => $accessory->getDevice()->getConnector()->getPlainId(),
 								],
@@ -227,11 +278,7 @@ class Periodic implements Writer
 								'property' => [
 									'id' => $characteristic->getProperty()?->getPlainId(),
 								],
-								'hap' => [
-									'accessory' => $service->toHap(),
-									'service' => $service->toHap(),
-									'characteristic' => $characteristic->toHap(),
-								],
+								'hap' => $accessory->toHap(),
 							],
 						);
 

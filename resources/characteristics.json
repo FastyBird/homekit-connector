@@ -230,9 +230,9 @@
       "ev"
     ],
     "UUID" : "000000CE-0000-1000-8000-0026BB765291",
-    "MaxValue" : 500,
+    "MaxValue" : 400,
     "MinStep" : 1,
-    "MinValue" : 140,
+    "MinValue" : 50,
     "DataType": "uint"
   },
   "ConfiguredName" : {
@@ -1781,7 +1781,47 @@
     "UUID" : "000000B5-0000-1000-8000-0026BB765291",
     "MaxValue" : 100,
     "MinValue" : 0,
-    "Unit" : "percentage"
+    "Unit" : "percentage",
+    "DataType": "uchar"
   },
-  "DataType": "uchar"
+  "ColorRed": {
+    "Format" : "uint8",
+    "Permissions" : [
+      "pw"
+    ],
+    "UUID" : "00000000-0000-0000-0000-000000000000",
+    "MaxValue" : 255,
+    "MinValue" : 0,
+    "DataType": "uchar"
+  },
+  "ColorGreen": {
+    "Format" : "uint8",
+    "Permissions" : [
+      "pw"
+    ],
+    "UUID" : "00000000-0000-0000-0000-000000000000",
+    "MaxValue" : 255,
+    "MinValue" : 0,
+    "DataType": "uchar"
+  },
+  "ColorBlue": {
+    "Format" : "uint8",
+    "Permissions" : [
+      "pw"
+    ],
+    "UUID" : "00000000-0000-0000-0000-000000000000",
+    "MaxValue" : 255,
+    "MinValue" : 0,
+    "DataType": "uchar"
+  },
+  "ColorWhite": {
+    "Format" : "uint8",
+    "Permissions" : [
+      "pw"
+    ],
+    "UUID" : "00000000-0000-0000-0000-000000000000",
+    "MaxValue" : 255,
+    "MinValue" : 0,
+    "DataType": "uchar"
+  }
 }

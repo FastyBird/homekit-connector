@@ -17,6 +17,7 @@ namespace FastyBird\Connector\HomeKit\Servers;
 
 use Evenement;
 use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Nette;
 use Psr\Log;
@@ -222,11 +223,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'secure-connection',
-					'group' => 'server',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
 						'id' => $this->connector->getPlainId(),
 					],
@@ -277,11 +274,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'secure-connection',
-					'group' => 'server',
-					'exception' => [
-						'message' => $ex->getMessage(),
-						'code' => $ex->getCode(),
-					],
+					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
 						'id' => $this->connector->getPlainId(),
 					],

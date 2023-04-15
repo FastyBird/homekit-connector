@@ -20,7 +20,9 @@ use FastyBird\Connector\HomeKit\Types;
 use Nette;
 use Ramsey\Uuid;
 use SplObjectStorage;
+use function array_filter;
 use function array_map;
+use function array_values;
 use function sprintf;
 
 /**
@@ -92,13 +94,38 @@ abstract class Accessory
 
 	public function addService(Service $service): void
 	{
-		$this->iidManager->assign($service);
+		if (!$service->isVirtual()) {
+			$this->iidManager->assign($service);
 
-		foreach ($service->getCharacteristics() as $characteristic) {
-			$this->iidManager->assign($characteristic);
+			foreach ($service->getCharacteristics() as $characteristic) {
+				if (!$characteristic->isVirtual()) {
+					$this->iidManager->assign($characteristic);
+				}
+			}
 		}
 
 		$this->services->attach($service);
+	}
+
+	public function findService(string $name): Service|null
+	{
+		$this->services->rewind();
+
+		foreach ($this->services as $service) {
+			if ($service->getName() === $name) {
+				return $service;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * @interal
+	 */
+	public function recalculateValues(Service $service, Characteristic $characteristic, bool $fromDevice): void
+	{
+		// Used only for specific accessories
 	}
 
 	public function getIidManager(): Helpers\IidManager
@@ -118,7 +145,10 @@ abstract class Accessory
 			Types\Representation::REPR_AID => $this->aid,
 			Types\Representation::REPR_SERVICES => array_map(
 				static fn (Service $service): array => $service->toHap(),
-				$this->getServices(),
+				array_values(array_filter(
+					$this->getServices(),
+					static fn (Service $service): bool => !$service->isVirtual()
+				)),
 			),
 		];
 	}
