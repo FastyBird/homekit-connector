@@ -82,6 +82,7 @@ final class Http implements Server
 		private readonly Entities\Protocol\ServiceFactory $serviceFactory,
 		private readonly Entities\Protocol\CharacteristicsFactory $characteristicsFactory,
 		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStates,
+		private readonly DevicesUtilities\DeviceConnection $deviceConnectionManager,
 		private readonly DevicesModels\Devices\DevicesRepository $devicesRepository,
 		private readonly DevicesModels\Channels\ChannelsRepository $channelsRepository,
 		private readonly DevicesModels\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
@@ -310,6 +311,11 @@ final class Http implements Server
 					}
 				}
 			}
+
+			$this->deviceConnectionManager->setState(
+				$accessory->getDevice(),
+				MetadataTypes\ConnectionState::get(MetadataTypes\ConnectionState::STATE_RUNNING),
+			);
 		}
 
 		try {
