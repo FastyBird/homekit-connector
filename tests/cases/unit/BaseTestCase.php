@@ -4,6 +4,7 @@ namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit;
 
 use FastyBird\Connector\HomeKit\DI;
 use FastyBird\Library\Bootstrap\Boot as BootstrapBoot;
+use FastyBird\Library\Bootstrap\Exceptions as BootstrapExceptions;
 use Nette;
 use PHPUnit\Framework\TestCase;
 use function constant;
@@ -17,6 +18,9 @@ abstract class BaseTestCase extends TestCase
 
 	protected Nette\DI\Container $container;
 
+	/**
+	 * @throws BootstrapExceptions\InvalidArgument
+	 */
 	protected function setUp(): void
 	{
 		parent::setUp();
@@ -24,12 +28,16 @@ abstract class BaseTestCase extends TestCase
 		$this->container = $this->createContainer();
 	}
 
+	/**
+	 * @throws BootstrapExceptions\InvalidArgument
+	 */
 	protected function createContainer(string|null $additionalConfig = null): Nette\DI\Container
 	{
 		$rootDir = __DIR__ . '/../..';
 		$vendorDir = defined('FB_VENDOR_DIR') ? constant('FB_VENDOR_DIR') : $rootDir . '/../vendor';
 
-		$config = new BootstrapBoot\Configurator();
+		$config = BootstrapBoot\Bootstrap::boot();
+		$config->setForceReloadContainer();
 		$config->setTempDirectory(FB_TEMP_DIR);
 
 		$config->addStaticParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);

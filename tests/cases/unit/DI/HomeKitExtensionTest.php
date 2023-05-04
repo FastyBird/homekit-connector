@@ -5,12 +5,14 @@ namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\DI;
 use FastyBird\Connector\HomeKit\Hydrators;
 use FastyBird\Connector\HomeKit\Schemas;
 use FastyBird\Connector\HomeKit\Tests\Cases\Unit\BaseTestCase;
+use FastyBird\Library\Bootstrap\Exceptions as BootstrapExceptions;
 use Nette;
 
 final class HomeKitExtensionTest extends BaseTestCase
 {
 
 	/**
+	 * @throws BootstrapExceptions\InvalidArgument
 	 * @throws Nette\DI\MissingServiceException
 	 */
 	public function testServicesRegistration(): void
