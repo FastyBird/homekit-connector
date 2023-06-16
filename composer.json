@@ -109,6 +109,9 @@
       },
       "react/event-loop": {
         "Bug: Use native return type": "https://raw.githubusercontent.com/FastyBird/libraries-patches/master/react-event-loop-src-loop-php.patch"
+      },
+      "dg/bypass-finals": {
+        "Bug: mkdir check": "https://raw.githubusercontent.com/FastyBird/libraries-patches/master/dg-bypass-finals-src-nativewrapper-php.patch"
       }
     }
   },
