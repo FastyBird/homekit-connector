@@ -9,6 +9,7 @@
          stderr="true"
          cacheDirectory="../var/tools/PHPUnit/.phpunit.cache"
          displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerWarnings="true"
 >
     <testsuite name="all">
         <directory>../tests/cases/</directory>
