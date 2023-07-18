@@ -51,7 +51,7 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	 * @ORM\Column(type="uuid_binary", name="client_id")
 	 * @ORM\CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
 	 */
-	private Uuid\UuidInterface $id;
+	protected Uuid\UuidInterface $id;
 
 	/**
 	 * @IPubDoctrine\Crud(is="required")
@@ -98,6 +98,11 @@ class Client implements DoctrineCrud\Entities\IEntity,
 	public function getId(): Uuid\UuidInterface
 	{
 		return $this->id;
+	}
+
+	public function getPlainId(): string
+	{
+		return $this->id->toString();
 	}
 
 	public function getConnector(): HomeKitConnector

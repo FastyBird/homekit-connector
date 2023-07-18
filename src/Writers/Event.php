@@ -53,17 +53,14 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	/** @var array<string, Entities\HomeKitConnector> */
 	private array $connectors = [];
 
-	private Log\LoggerInterface $logger;
-
 	public function __construct(
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
 		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelPropertiesRepository,
 		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStates,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
-		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	public static function getSubscribedEvents(): array

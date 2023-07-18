@@ -25,12 +25,12 @@ use function gmp_add;
 use function gmp_mod;
 use function gmp_mul;
 use function gmp_powm;
+use function gmp_strval;
 use function hash;
 use function implode;
 use function min;
 use function pack;
 use function random_bytes;
-use function strval;
 use function unpack;
 
 /**
@@ -120,9 +120,9 @@ final class Srp
 		);
 
 		$this->serverPasswordVerifier = Math\BigInteger::of(
-			strval(gmp_powm((string) self::G, (string) $x, (string) $this->n3072)),
+			gmp_strval(gmp_powm((string) self::G, (string) $x, (string) $this->n3072)),
 		);
-		$this->serverPublicKey = Math\BigInteger::of(strval(gmp_mod(
+		$this->serverPublicKey = Math\BigInteger::of(gmp_strval(gmp_mod(
 			gmp_add(
 				gmp_mul((string) $k, (string) $this->serverPasswordVerifier),
 				gmp_powm((string) self::G, (string) $this->serverPrivateKey, (string) $this->n3072),
@@ -183,7 +183,7 @@ final class Srp
 			false,
 		);
 
-		$this->premasterSecret = Math\BigInteger::of(strval(gmp_powm(
+		$this->premasterSecret = Math\BigInteger::of(gmp_strval(gmp_powm(
 			gmp_mul(
 				(string) $clientPublicKey,
 				gmp_powm(

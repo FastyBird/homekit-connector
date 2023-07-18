@@ -41,8 +41,6 @@ final class Connector implements DevicesConnectors\Connector
 	/** @var array<Servers\Server> */
 	private array $servers = [];
 
-	private Log\LoggerInterface $logger;
-
 	/**
 	 * @param array<Servers\ServerFactory> $serversFactories
 	 */
@@ -50,10 +48,9 @@ final class Connector implements DevicesConnectors\Connector
 		private readonly DevicesEntities\Connectors\Connector $connector,
 		private readonly Writers\Writer $writer,
 		private readonly array $serversFactories,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
-		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	public function execute(): void

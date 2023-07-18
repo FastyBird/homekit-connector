@@ -40,6 +40,7 @@ use function array_merge;
 use function array_unique;
 use function base64_encode;
 use function hash;
+use function implode;
 use function is_array;
 use function mt_rand;
 use function preg_match;
@@ -89,17 +90,13 @@ final class Mdns implements Server
 
 	private Datagram\SocketInterface|null $socket = null;
 
-	private Log\LoggerInterface $logger;
-
 	public function __construct(
 		private readonly HomeKit\Entities\HomeKitConnector $connector,
 		private readonly EventLoop\LoopInterface $eventLoop,
 		private readonly DevicesModels\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
-		$this->logger = $logger ?? new Log\NullLogger();
-
 		$this->parser = new Dns\Protocol\Parser();
 		$this->dumper = new Dns\Protocol\BinaryDumper();
 	}
@@ -504,13 +501,13 @@ final class Mdns implements Server
 			}
 
 			$queries[] = new Dns\Query\Query(
-				strval($answer->data),
+				is_array($answer->data) ? implode($answer->data) : $answer->data,
 				Dns\Model\Message::TYPE_SRV,
 				Dns\Model\Message::CLASS_IN,
 			);
 
 			$queries[] = new Dns\Query\Query(
-				strval($answer->data),
+				is_array($answer->data) ? implode($answer->data) : $answer->data,
 				Dns\Model\Message::TYPE_TXT,
 				Dns\Model\Message::CLASS_IN,
 			);

@@ -47,17 +47,13 @@ final class Router
 
 	private SlimRouterHttp\ResponseFactory $responseFactory;
 
-	private Log\LoggerInterface $logger;
-
 	public function __construct(
 		private readonly SlimRouterRouting\IRouter $router,
 		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
 		$this->responseFactory = new SlimRouterHttp\ResponseFactory();
-
-		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	/**

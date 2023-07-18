@@ -55,17 +55,13 @@ final class Subscriber
 	/** @var array<string, array<string>> */
 	private array $subscriptions;
 
-	private Log\LoggerInterface $logger;
-
 	public function __construct(
 		private readonly EventLoop\LoopInterface $eventLoop,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
 		$this->connections = new SplObjectStorage();
 		$this->subscriptions = [];
-
-		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	public function registerConnection(Socket\ConnectionInterface $connection): void

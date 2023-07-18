@@ -31,6 +31,7 @@ use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
+use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
 use Nette\Localization;
 use Nette\Utils;
@@ -86,8 +87,6 @@ class Devices extends Console\Command\Command
 
 	public const NAME = 'fb:homekit-connector:devices';
 
-	private Log\LoggerInterface $logger;
-
 	public function __construct(
 		private readonly Helpers\Loader $loader,
 		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsRepository,
@@ -101,12 +100,10 @@ class Devices extends Console\Command\Command
 		private readonly DevicesModels\Channels\Properties\PropertiesManager $channelsPropertiesManager,
 		private readonly Persistence\ManagerRegistry $managerRegistry,
 		private readonly Localization\Translator $translator,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 		string|null $name = null,
 	)
 	{
-		$this->logger = $logger ?? new Log\NullLogger();
-
 		parent::__construct($name);
 	}
 
@@ -1338,7 +1335,7 @@ class Devices extends Console\Command\Command
 				&& $metadata->offsetGet($type)->offsetGet('ValidValues') instanceof Utils\ArrayHash
 			) {
 				$enumValue = array_search(
-					intval($value),
+					intval(DevicesUtilities\ValueHelper::flattenValue($value)),
 					(array) $metadata->offsetGet($type)->offsetGet('ValidValues'),
 					true,
 				);
@@ -1619,14 +1616,16 @@ class Devices extends Console\Command\Command
 		} else {
 			$metadata = $this->loader->loadAccessories();
 
-			if (!$metadata->offsetExists(strval($category->getValue()))) {
+			if (!$metadata->offsetExists(strval(DevicesUtilities\ValueHelper::flattenValue($category->getValue())))) {
 				throw new Exceptions\InvalidArgument(sprintf(
 					'Definition for accessory category: %s was not found',
-					strval($category->getValue()),
+					strval(DevicesUtilities\ValueHelper::flattenValue($category->getValue())),
 				));
 			}
 
-			$accessoryMetadata = $metadata->offsetGet(strval($category->getValue()));
+			$accessoryMetadata = $metadata->offsetGet(
+				strval(DevicesUtilities\ValueHelper::flattenValue($category->getValue())),
+			);
 
 			if (
 				!$accessoryMetadata instanceof Utils\ArrayHash
@@ -2417,7 +2416,10 @@ class Devices extends Console\Command\Command
 			$question = new Console\Question\ChoiceQuestion(
 				$this->translator->translate('//homekit-connector.cmd.devices.questions.select.value'),
 				$options,
-				$value !== null ? array_key_exists(strval($value), $options) : null,
+				$value !== null ? array_key_exists(
+					strval(DevicesUtilities\ValueHelper::flattenValue($value)),
+					$options,
+				) : null,
 			);
 			$question->setErrorMessage(
 				$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),

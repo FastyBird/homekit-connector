@@ -69,8 +69,6 @@ class Periodic implements Writer
 
 	private EventLoop\TimerInterface|null $handlerTimer = null;
 
-	private Log\LoggerInterface $logger;
-
 	public function __construct(
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
@@ -78,10 +76,9 @@ class Periodic implements Writer
 		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStates,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly EventLoop\LoopInterface $eventLoop,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
-		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	public function connect(Entities\HomeKitConnector $connector, array $servers): void

@@ -70,8 +70,6 @@ final class Http implements Server
 
 	private SecureServer|null $socket = null;
 
-	private Log\LoggerInterface $logger;
-
 	public function __construct(
 		private readonly Entities\HomeKitConnector $connector,
 		private readonly Middleware\Router $routerMiddleware,
@@ -90,10 +88,9 @@ final class Http implements Server
 		private readonly DevicesModels\Devices\Properties\PropertiesManager $devicesPropertiesManager,
 		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelPropertiesRepository,
 		private readonly EventLoop\LoopInterface $eventLoop,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
-		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	/**
@@ -137,7 +134,7 @@ final class Http implements Server
 			$aid = $aidProperty?->getValue() ?? null;
 
 			if ($aid !== null) {
-				$aid = intval($aid);
+				$aid = intval(DevicesUtilities\ValueHelper::flattenValue($aid));
 			}
 
 			$accessory = $this->accessoryFactory->create($device, $aid, $device->getAccessoryCategory());

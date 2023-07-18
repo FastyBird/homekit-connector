@@ -23,6 +23,7 @@ use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
+use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
 use Ramsey\Uuid;
 use function array_merge;
@@ -324,7 +325,7 @@ class Characteristic
 		return sprintf(
 			'<characteristic name=%s value=%s properties=%s>',
 			$this->name,
-			strval($this->getValue()),
+			DevicesUtilities\ValueHelper::flattenValue($this->getValue()),
 			Nette\Utils\Json::encode($properties),
 		);
 	}

@@ -54,8 +54,6 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 	/** @var array<string, array<Servers\Server>> */
 	private array $servers = [];
 
-	private Log\LoggerInterface $logger;
-
 	public function __construct(
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
@@ -63,10 +61,9 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 		private readonly DevicesModels\Channels\ChannelsRepository $channelsRepository,
 		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly ExchangeConsumers\Container $consumer,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
-		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	public function connect(Entities\HomeKitConnector $connector, array $servers): void

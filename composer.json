@@ -55,6 +55,7 @@
     "react/datagram": "^1.8",
     "react/dns": "^1.10",
     "react/http": "^1.7",
+    "react/promise": "~2.2",
     "symplify/vendor-patches": "^11.2",
     "simplito/elliptic-php": "^1.0",
     "symfony/event-dispatcher": "^5.4"
@@ -68,7 +69,7 @@
     "pds/skeleton": "^1.0",
     "php-parallel-lint/php-parallel-lint": "^1.3",
     "phpstan/extension-installer": "^1.1",
-    "phpstan/phpstan": "1.10.11",
+    "phpstan/phpstan": "^1.10",
     "phpstan/phpstan-deprecation-rules": "^1.0",
     "phpstan/phpstan-doctrine": "^1.3",
     "phpstan/phpstan-nette": "^1.1",

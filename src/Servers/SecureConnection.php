@@ -70,13 +70,11 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 
 	private string|null $decryptionKey = null;
 
-	private Log\LoggerInterface $logger;
-
 	public function __construct(
 		private readonly Entities\HomeKitConnector $connector,
 		string|null $sharedKey,
 		private readonly Socket\ConnectionInterface $connection,
-		Log\LoggerInterface|null $logger = null,
+		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
 		$this->setSharedKey($sharedKey);
@@ -91,8 +89,6 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		);
 
 		Stream\Util::forwardEvents($connection, $this, ['end', 'error', 'close', 'pipe', 'drain']);
-
-		$this->logger = $logger ?? new Log\NullLogger();
 	}
 
 	public function setSharedKey(string|null $sharedKey): void

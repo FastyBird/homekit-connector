@@ -23,12 +23,14 @@ use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Library\Metadata\ValueObjects as MetadataValueObjects;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
+use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette\Utils;
 use function array_filter;
 use function array_values;
 use function boolval;
 use function count;
 use function in_array;
+use function intval;
 use function is_bool;
 use function is_float;
 use function is_int;
@@ -235,18 +237,20 @@ final class Transformer
 				if ($property->getFormat() instanceof MetadataValueObjects\StringEnumFormat) {
 					$filtered = array_values(array_filter(
 						$property->getFormat()->getItems(),
-						static fn (string $item): bool => Utils\Strings::lower(strval($value)) === $item,
+						static fn (string $item): bool => Utils\Strings::lower(
+							strval(DevicesUtilities\ValueHelper::flattenValue($value)),
+						) === $item,
 					));
 
 					if (count($filtered) === 1) {
-						$transformedValue = strval($value);
+						$transformedValue = strval(DevicesUtilities\ValueHelper::flattenValue($value));
 					}
 				} elseif ($property->getFormat() instanceof MetadataValueObjects\CombinedEnumFormat) {
 					$filtered = array_values(array_filter(
 						$property->getFormat()->getItems(),
 						static fn (array $item): bool => $item[0] !== null
 							&& Utils\Strings::lower(strval($item[0]->getValue())) === Utils\Strings::lower(
-								strval($value),
+								strval(DevicesUtilities\ValueHelper::flattenValue($value)),
 							),
 					));
 
@@ -289,18 +293,26 @@ final class Transformer
 			if ($transformedValue === null) {
 				$transformedValue = false;
 			} elseif (!is_bool($transformedValue)) {
-				$transformedValue = in_array(Utils\Strings::lower(strval($transformedValue)), [
-					'true',
-					't',
-					'yes',
-					'y',
-					'1',
-					'on',
-				], true);
+				$transformedValue = in_array(
+					Utils\Strings::lower(strval(DevicesUtilities\ValueHelper::flattenValue($transformedValue))),
+					[
+						'true',
+						't',
+						'yes',
+						'y',
+						'1',
+						'on',
+					],
+					true,
+				);
 			}
 		} elseif ($dataType->equalsValue(Types\DataType::DATA_TYPE_FLOAT)) {
 			if (!is_numeric($transformedValue)) {
-				$transformedValue = str_replace([' ', ','], ['', '.'], (string) $transformedValue);
+				$transformedValue = str_replace(
+					[' ', ','],
+					['', '.'],
+					strval(DevicesUtilities\ValueHelper::flattenValue($transformedValue)),
+				);
 
 				if (!is_numeric($transformedValue)) {
 					$transformedValue = 0.0;
@@ -323,7 +335,11 @@ final class Transformer
 			|| $dataType->equalsValue(Types\DataType::DATA_TYPE_UINT64)
 		) {
 			if (!is_numeric($transformedValue) || strval($transformedValue) !== strval((int) $transformedValue)) {
-				$transformedValue = preg_replace('~\s~', '', (string) $transformedValue);
+				$transformedValue = preg_replace(
+					'~\s~',
+					'',
+					strval(DevicesUtilities\ValueHelper::flattenValue($transformedValue)),
+				);
 			}
 
 			$transformedValue = (int) $transformedValue;
@@ -336,17 +352,20 @@ final class Transformer
 			$transformedValue = (int) max($minValue ?? $transformedValue, $transformedValue);
 		} elseif ($dataType->equalsValue(Types\DataType::DATA_TYPE_STRING)) {
 			$transformedValue = $value !== null ? substr(
-				strval($value),
+				strval(DevicesUtilities\ValueHelper::flattenValue($value)),
 				0,
-				($maxLength ?? strlen(strval($value))),
+				($maxLength ?? strlen(strval(DevicesUtilities\ValueHelper::flattenValue($value)))),
 			) : '';
 		}
 
-		if ($validValues !== null && !in_array((int) $transformedValue, $validValues, true)) {
+		if (
+			$validValues !== null
+			&& !in_array(intval(DevicesUtilities\ValueHelper::flattenValue($transformedValue)), $validValues, true)
+		) {
 			$transformedValue = null;
 		}
 
-		return $transformedValue;
+		return DevicesUtilities\ValueHelper::flattenValue($transformedValue);
 	}
 
 	/**
