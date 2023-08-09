@@ -5,13 +5,13 @@ namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Protocol;
 use Brick\Math;
 use Exception;
 use FastyBird\Connector\HomeKit\Protocol;
-use FastyBird\Connector\HomeKit\Tests\Cases\Unit\BaseTestCase;
+use PHPUnit\Framework\TestCase;
 use function hex2bin;
 use function pack;
 use function str_replace;
 use function unpack;
 
-final class SrpTest extends BaseTestCase
+final class SrpTest extends TestCase
 {
 
 	private const USERNAME = 'alice';

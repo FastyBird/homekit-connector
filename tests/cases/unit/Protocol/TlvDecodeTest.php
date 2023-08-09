@@ -4,13 +4,13 @@ namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Protocol;
 
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
-use FastyBird\Connector\HomeKit\Tests\Cases\Unit\BaseTestCase;
 use FastyBird\Connector\HomeKit\Types;
+use PHPUnit\Framework\TestCase;
 use function array_merge;
 use function ord;
 use function pack;
 
-final class TlvDecodeTest extends BaseTestCase
+final class TlvDecodeTest extends TestCase
 {
 
 	/**

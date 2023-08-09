@@ -2,6 +2,7 @@
 
 namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Controllers;
 
+use Error;
 use Exception;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Middleware;
@@ -39,6 +40,7 @@ final class CharacteristicsTest extends DbTestCase
 	 * @throws MetadataExceptions\Logic
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws RuntimeException
+	 * @throws Error
 	 * @throws Utils\JsonException
 	 */
 	public function setUp(): void
@@ -72,6 +74,7 @@ final class CharacteristicsTest extends DbTestCase
 	 * @throws InvalidArgumentException
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws RuntimeException
+	 * @throws Error
 	 * @throws Utils\JsonException
 	 *
 	 * @dataProvider characteristicsRead

@@ -31,18 +31,18 @@ use function ucwords;
 class HomeKitChannel extends DevicesEntities\Channels\Channel
 {
 
-	public const CHANNEL_TYPE = 'homekit';
+	public const TYPE = 'homekit';
 
 	public const SERVICE_IDENTIFIER = '/^(?P<type>[a-z_]+)(?:_(?P<cnt>[0-9]+){1})$/';
 
 	public function getType(): string
 	{
-		return self::CHANNEL_TYPE;
+		return self::TYPE;
 	}
 
 	public function getDiscriminatorName(): string
 	{
-		return self::CHANNEL_TYPE;
+		return self::TYPE;
 	}
 
 	public function getSource(): MetadataTypes\ConnectorSource

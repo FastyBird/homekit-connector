@@ -100,7 +100,7 @@ class HomeKitExtension extends DI\CompilerExtension
 			$writer = $builder->addDefinition($this->prefix('writers.exchange'), new DI\Definitions\ServiceDefinition())
 				->setType(Writers\Exchange::class)
 				->setAutowired(false)
-				->addTag(ExchangeDI\ExchangeExtension::CONSUMER_STATUS, false);
+				->addTag(ExchangeDI\ExchangeExtension::CONSUMER_STATE, false);
 		} elseif ($configuration->writer === Writers\Periodic::NAME) {
 			$writer = $builder->addDefinition($this->prefix('writers.periodic'), new DI\Definitions\ServiceDefinition())
 				->setType(Writers\Periodic::class)

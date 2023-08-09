@@ -66,8 +66,8 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	public static function getSubscribedEvents(): array
 	{
 		return [
-			DevicesEvents\StateEntityCreated::class => 'stateChanged',
-			DevicesEvents\StateEntityUpdated::class => 'stateChanged',
+			DevicesEvents\ChannelPropertyStateEntityCreated::class => 'stateChanged',
+			DevicesEvents\ChannelPropertyStateEntityUpdated::class => 'stateChanged',
 		];
 	}
 
@@ -86,26 +86,23 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
-	public function stateChanged(DevicesEvents\StateEntityCreated|DevicesEvents\StateEntityUpdated $event): void
+	public function stateChanged(
+		DevicesEvents\ChannelPropertyStateEntityCreated|DevicesEvents\ChannelPropertyStateEntityUpdated $event,
+	): void
 	{
 		$property = $event->getProperty();
 
 		foreach ($this->findChildren($property) as $child) {
-			if ($child instanceof DevicesEntities\Channels\Properties\Mapped) {
-				if (
-					!array_key_exists(
-						$child->getChannel()->getDevice()->getConnector()->getPlainId(),
-						$this->connectors,
-					)
-				) {
-					continue;
-				}
-
-				$accessory = $this->accessoryDriver->findAccessory($child->getChannel()->getDevice()->getId());
-
-			} else {
+			if (
+				!array_key_exists(
+					$child->getChannel()->getDevice()->getConnector()->getPlainId(),
+					$this->connectors,
+				)
+			) {
 				continue;
 			}
+
+			$accessory = $this->accessoryDriver->findAccessory($child->getChannel()->getDevice()->getId());
 
 			if (!$accessory instanceof Entities\Protocol\Device) {
 				$this->logger->warning(
@@ -120,7 +117,7 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 				continue;
 			}
 
-			$this->processProperty($child, $event, $accessory);
+			$this->processProperty($child, $accessory);
 		}
 	}
 
@@ -131,7 +128,6 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	 */
 	private function processProperty(
 		DevicesEntities\Channels\Properties\Mapped $property,
-		DevicesEvents\StateEntityCreated|DevicesEvents\StateEntityUpdated $event,
 		Entities\Protocol\Device $accessory,
 	): void
 	{
@@ -242,26 +238,28 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	}
 
 	/**
-	 * @return array<DevicesEntities\Devices\Properties\Property|DevicesEntities\Channels\Properties\Property>
+	 * @return array<DevicesEntities\Channels\Properties\Mapped>
 	 *
 	 * @throws DevicesExceptions\InvalidState
 	 */
 	private function findChildren(
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		MetadataEntities\DevicesModule\DynamicProperty|DevicesEntities\Connectors\Properties\Dynamic|DevicesEntities\Devices\Properties\Dynamic|DevicesEntities\Channels\Properties\Dynamic $property,
+		DevicesEntities\Channels\Properties\Dynamic|MetadataEntities\DevicesModule\ChannelDynamicProperty $property,
 	): array
 	{
-		if ($property instanceof MetadataEntities\DevicesModule\ChannelDynamicProperty) {
-			$findPropertyQuery = new DevicesQueries\FindChannelProperties();
-			$findPropertyQuery->byParentId($property->getId());
+		$findPropertyQuery = new DevicesQueries\FindChannelMappedProperties();
 
-			return $this->channelPropertiesRepository->findAllBy(
-				$findPropertyQuery,
-				DevicesEntities\Channels\Properties\Mapped::class,
-			);
+		if ($property instanceof DevicesEntities\Channels\Properties\Dynamic) {
+			$findPropertyQuery->forParent($property);
+
+		} else {
+			$findPropertyQuery->byParentId($property->getId());
 		}
 
-		return [];
+		return $this->channelPropertiesRepository->findAllBy(
+			$findPropertyQuery,
+			DevicesEntities\Channels\Properties\Mapped::class,
+		);
 	}
 
 }

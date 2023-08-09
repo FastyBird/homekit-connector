@@ -30,7 +30,6 @@ use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Exchange\Entities as ExchangeEntities;
 use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Exchange\Publisher as ExchangePublisher;
-use FastyBird\Library\Metadata;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -695,15 +694,15 @@ final class CharacteristicsController extends BaseController
 					if ($this->useExchange) {
 						if ($property instanceof DevicesEntities\Channels\Properties\Mapped) {
 							$this->publisher->publish(
-								Metadata\Types\ModuleSource::get(
-									Metadata\Types\ModuleSource::SOURCE_MODULE_DEVICES,
+								MetadataTypes\ModuleSource::get(
+									MetadataTypes\ModuleSource::SOURCE_MODULE_DEVICES,
 								),
-								Metadata\Types\RoutingKey::get(
-									Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+								MetadataTypes\RoutingKey::get(
+									MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
 								),
 								$this->entityFactory->create(
 									Utils\Json::encode([
-										'action' => Metadata\Types\PropertyAction::ACTION_SET,
+										'action' => MetadataTypes\PropertyAction::ACTION_SET,
 										'device' => $property->getChannel()->getDevice()->getPlainId(),
 										'channel' => $property->getChannel()->getPlainId(),
 										'property' => $property->getPlainId(),
@@ -711,8 +710,8 @@ final class CharacteristicsController extends BaseController
 											$propertyValue,
 										),
 									]),
-									Metadata\Types\RoutingKey::get(
-										Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+									MetadataTypes\RoutingKey::get(
+										MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
 									),
 								),
 							);
@@ -722,15 +721,15 @@ final class CharacteristicsController extends BaseController
 
 								if ($serviceCharacteristicProperty instanceof DevicesEntities\Channels\Properties\Dynamic) {
 									$this->publisher->publish(
-										Metadata\Types\ModuleSource::get(
-											Metadata\Types\ModuleSource::SOURCE_MODULE_DEVICES,
+										MetadataTypes\ModuleSource::get(
+											MetadataTypes\ModuleSource::SOURCE_MODULE_DEVICES,
 										),
-										Metadata\Types\RoutingKey::get(
-											Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+										MetadataTypes\RoutingKey::get(
+											MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
 										),
 										$this->entityFactory->create(
 											Utils\Json::encode([
-												'action' => Metadata\Types\PropertyAction::ACTION_SET,
+												'action' => MetadataTypes\PropertyAction::ACTION_SET,
 												'device' => $serviceCharacteristicProperty->getChannel()->getDevice()->getPlainId(),
 												'channel' => $serviceCharacteristicProperty->getChannel()->getPlainId(),
 												'property' => $serviceCharacteristicProperty->getPlainId(),
@@ -738,23 +737,23 @@ final class CharacteristicsController extends BaseController
 													$propertyValue,
 												),
 											]),
-											Metadata\Types\RoutingKey::get(
-												Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+											MetadataTypes\RoutingKey::get(
+												MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
 											),
 										),
 									);
 
 								} elseif ($serviceCharacteristicProperty instanceof DevicesEntities\Channels\Properties\Mapped) {
 									$this->publisher->publish(
-										Metadata\Types\ModuleSource::get(
-											Metadata\Types\ModuleSource::SOURCE_MODULE_DEVICES,
+										MetadataTypes\ModuleSource::get(
+											MetadataTypes\ModuleSource::SOURCE_MODULE_DEVICES,
 										),
-										Metadata\Types\RoutingKey::get(
-											Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+										MetadataTypes\RoutingKey::get(
+											MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
 										),
 										$this->entityFactory->create(
 											Utils\Json::encode([
-												'action' => Metadata\Types\PropertyAction::ACTION_SET,
+												'action' => MetadataTypes\PropertyAction::ACTION_SET,
 												'device' => $serviceCharacteristicProperty->getChannel()->getDevice()->getPlainId(),
 												'channel' => $serviceCharacteristicProperty->getChannel()->getPlainId(),
 												'property' => $serviceCharacteristicProperty->getPlainId(),
@@ -762,8 +761,8 @@ final class CharacteristicsController extends BaseController
 													$propertyValue,
 												),
 											]),
-											Metadata\Types\RoutingKey::get(
-												Metadata\Types\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+											MetadataTypes\RoutingKey::get(
+												MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
 											),
 										),
 									);

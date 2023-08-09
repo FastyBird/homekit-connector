@@ -2,6 +2,7 @@
 
 namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Models;
 
+use Error;
 use Exception;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
@@ -32,6 +33,7 @@ final class SessionsManagerTest extends DbTestCase
 	 * @throws Exceptions\InvalidState
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws Exception
+	 * @throws Error
 	 * @throws RuntimeException
 	 */
 	public function testCreate(): void
@@ -67,6 +69,7 @@ final class SessionsManagerTest extends DbTestCase
 	 * @throws Exceptions\InvalidState
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws Exception
+	 * @throws Error
 	 * @throws RuntimeException
 	 */
 	public function testUpdate(): void

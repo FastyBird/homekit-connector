@@ -311,7 +311,7 @@ final class Http implements Server
 
 			$this->deviceConnectionManager->setState(
 				$accessory->getDevice(),
-				MetadataTypes\ConnectionState::get(MetadataTypes\ConnectionState::STATE_RUNNING),
+				MetadataTypes\ConnectionState::get(MetadataTypes\ConnectionState::STATE_CONNECTED),
 			);
 		}
 

@@ -24,6 +24,7 @@ use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use IPub\DoctrineOrmQuery;
 use Nette;
+use function is_array;
 
 /**
  * Clients repository
@@ -49,7 +50,7 @@ final class ClientsRepository
 	}
 
 	/**
-	 * @phpstan-param Queries\FindClients<Entities\Client> $queryObject
+	 * @param Queries\FindClients<Entities\Client> $queryObject
 	 *
 	 * @throws DevicesExceptions\InvalidState
 	 */
@@ -68,22 +69,21 @@ final class ClientsRepository
 	 * @return DoctrineOrmQuery\ResultSet<Entities\Client>
 	 *
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidState
 	 */
 	public function getResultSet(
 		Queries\FindClients $queryObject,
 	): DoctrineOrmQuery\ResultSet
 	{
-		return $this->database->query(
-			function () use ($queryObject): DoctrineOrmQuery\ResultSet {
-				$result = $queryObject->fetch($this->getRepository());
-
-				if (!$result instanceof DoctrineOrmQuery\ResultSet) {
-					throw new Exceptions\InvalidState('Result set for given query could not be loaded.');
-				}
-
-				return $result;
-			},
+		$result = $this->database->query(
+			fn (): DoctrineOrmQuery\ResultSet|array => $queryObject->fetch($this->getRepository()),
 		);
+
+		if (is_array($result)) {
+			throw new Exceptions\InvalidState('Result set could not be created');
+		}
+
+		return $result;
 	}
 
 	/**

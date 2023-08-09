@@ -2,13 +2,16 @@
 
 namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Controllers;
 
+use Error;
 use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Middleware;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Tests\Cases\Unit\DbTestCase;
 use FastyBird\Connector\HomeKit\Tests\Tools;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Bootstrap\Exceptions as BootstrapExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Fig\Http\Message\RequestMethodInterface;
@@ -30,6 +33,13 @@ use function call_user_func;
 final class AccessoriesTest extends DbTestCase
 {
 
+	/**
+	 * @throws BootstrapExceptions\InvalidArgument
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Nette\DI\MissingServiceException
+	 * @throws RuntimeException
+	 * @throws Error
+	 */
 	public function setUp(): void
 	{
 		parent::setUp();
@@ -61,6 +71,7 @@ final class AccessoriesTest extends DbTestCase
 	 * @throws InvalidArgumentException
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws RuntimeException
+	 * @throws Error
 	 * @throws Utils\JsonException
 	 *
 	 * @dataProvider accessoriesRead

@@ -89,6 +89,11 @@ final class Connector implements DevicesConnectors\Connector
 		);
 	}
 
+	public function discover(): void
+	{
+		// TODO: Implement it
+	}
+
 	public function terminate(): void
 	{
 		assert($this->connector instanceof Entities\HomeKitConnector);
