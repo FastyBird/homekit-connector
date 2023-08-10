@@ -20,7 +20,6 @@ use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -92,33 +91,43 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	{
 		$property = $event->getProperty();
 
-		foreach ($this->findChildren($property) as $child) {
-			if (
-				!array_key_exists(
-					$child->getChannel()->getDevice()->getConnector()->getPlainId(),
-					$this->connectors,
-				)
-			) {
-				continue;
-			}
+		$findPropertyQuery = new DevicesQueries\FindChannelMappedProperties();
+		$findPropertyQuery->byId($property->getId());
 
-			$accessory = $this->accessoryDriver->findAccessory($child->getChannel()->getDevice()->getId());
+		$property = $this->channelPropertiesRepository->findOneBy(
+			$findPropertyQuery,
+			DevicesEntities\Channels\Properties\Mapped::class,
+		);
 
-			if (!$accessory instanceof Entities\Protocol\Device) {
-				$this->logger->warning(
-					'Accessory for received property message was not found in accessory driver',
-					[
-						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-						'type' => 'event-writer',
-						'state' => $event->getState()->toArray(),
-					],
-				);
-
-				continue;
-			}
-
-			$this->processProperty($child, $accessory);
+		if ($property === null) {
+			return;
 		}
+
+		if (
+			!array_key_exists(
+				$property->getChannel()->getDevice()->getConnector()->getPlainId(),
+				$this->connectors,
+			)
+		) {
+			return;
+		}
+
+		$accessory = $this->accessoryDriver->findAccessory($property->getChannel()->getDevice()->getId());
+
+		if (!$accessory instanceof Entities\Protocol\Device) {
+			$this->logger->warning(
+				'Accessory for received property message was not found in accessory driver',
+				[
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'type' => 'event-writer',
+					'state' => $event->getState()->toArray(),
+				],
+			);
+
+			return;
+		}
+
+		$this->processProperty($property, $accessory);
 	}
 
 	/**
@@ -235,31 +244,6 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 				}
 			}
 		}
-	}
-
-	/**
-	 * @return array<DevicesEntities\Channels\Properties\Mapped>
-	 *
-	 * @throws DevicesExceptions\InvalidState
-	 */
-	private function findChildren(
-		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		DevicesEntities\Channels\Properties\Dynamic|MetadataEntities\DevicesModule\ChannelDynamicProperty $property,
-	): array
-	{
-		$findPropertyQuery = new DevicesQueries\FindChannelMappedProperties();
-
-		if ($property instanceof DevicesEntities\Channels\Properties\Dynamic) {
-			$findPropertyQuery->forParent($property);
-
-		} else {
-			$findPropertyQuery->byParentId($property->getId());
-		}
-
-		return $this->channelPropertiesRepository->findAllBy(
-			$findPropertyQuery,
-			DevicesEntities\Channels\Properties\Mapped::class,
-		);
 	}
 
 }
