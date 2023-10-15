@@ -32,11 +32,11 @@ class DevicePropertyIdentifier extends Consistence\Enum\Enum
 	/**
 	 * Define device properties identifiers
 	 */
-	public const IDENTIFIER_CATEGORY = 'category';
+	public const CATEGORY = 'category';
 
-	public const IDENTIFIER_TYPE = 'type';
+	public const TYPE = 'type';
 
-	public const IDENTIFIER_AID = 'aid';
+	public const AID = 'aid';
 
 	public function __toString(): string
 	{

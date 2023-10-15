@@ -71,7 +71,7 @@ class Driver
 		$this->accessories->rewind();
 
 		foreach ($this->accessories as $existingAccessory) {
-			if ($existingAccessory->getCategory()->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {
+			if ($existingAccessory->getCategory()->equalsValue(Types\AccessoryCategory::BRIDGE)) {
 				throw new Exceptions\InvalidState('There is already registered bridge');
 			}
 		}
@@ -88,7 +88,7 @@ class Driver
 		$this->accessories->rewind();
 
 		foreach ($this->accessories as $existingAccessory) {
-			if ($existingAccessory->getCategory()->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {
+			if ($existingAccessory->getCategory()->equalsValue(Types\AccessoryCategory::BRIDGE)) {
 				if (!$existingAccessory instanceof Entities\Protocol\Bridge) {
 					throw new Exceptions\InvalidState(
 						'Registered device in bridge category is not instance of bridge accessory',

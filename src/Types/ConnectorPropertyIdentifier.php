@@ -33,27 +33,27 @@ class ConnectorPropertyIdentifier extends Consistence\Enum\Enum
 	/**
 	 * Define connector properties identifiers
 	 */
-	public const IDENTIFIER_PORT = MetadataTypes\ConnectorPropertyIdentifier::IDENTIFIER_PORT;
+	public const PORT = MetadataTypes\ConnectorPropertyIdentifier::IDENTIFIER_PORT;
 
-	public const IDENTIFIER_PIN_CODE = 'pin_code';
+	public const PIN_CODE = 'pin_code';
 
-	public const IDENTIFIER_MAC_ADDRESS = 'mac_address';
+	public const MAC_ADDRESS = 'mac_address';
 
-	public const IDENTIFIER_SETUP_ID = 'setup_id';
+	public const SETUP_ID = 'setup_id';
 
-	public const IDENTIFIER_CONFIG_VERSION = 'configuration_version';
+	public const CONFIG_VERSION = 'configuration_version';
 
-	public const IDENTIFIER_PAIRED = 'paired';
+	public const PAIRED = 'paired';
 
-	public const IDENTIFIER_SERVER_SECRET = 'server_secret';
+	public const SERVER_SECRET = 'server_secret';
 
-	public const IDENTIFIER_CLIENT_PUBLIC_KEY = 'client_public_key';
+	public const CLIENT_PUBLIC_KEY = 'client_public_key';
 
-	public const IDENTIFIER_SHARED_KEY = 'shared_key';
+	public const SHARED_KEY = 'shared_key';
 
-	public const IDENTIFIER_HASHING_KEY = 'hashing_key';
+	public const HASHING_KEY = 'hashing_key';
 
-	public const IDENTIFIER_XHM_URI = 'xhm_uri';
+	public const XHM_URI = 'xhm_uri';
 
 	public function __toString(): string
 	{

@@ -16,11 +16,12 @@
 namespace FastyBird\Connector\HomeKit\Writers;
 
 use Exception;
+use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
-use FastyBird\Connector\HomeKit\Servers;
+use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Exchange\Consumers as ExchangeConsumers;
@@ -28,12 +29,12 @@ use FastyBird\Library\Metadata\Entities as MetadataEntities;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
+use FastyBird\Module\Devices\Events as DevicesEvents;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Nette;
-use Psr\Log;
-use function array_key_exists;
+use Psr\EventDispatcher as PsrEventDispatcher;
 use function intval;
 
 /**
@@ -51,35 +52,28 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 
 	public const NAME = 'exchange';
 
-	/** @var array<string, array<Servers\Server>> */
-	private array $servers = [];
-
 	public function __construct(
+		private readonly Entities\HomeKitConnector $connector,
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
+		private readonly HomeKit\Logger $logger,
 		private readonly DevicesModels\Devices\DevicesRepository $devicesRepository,
 		private readonly DevicesModels\Channels\ChannelsRepository $channelsRepository,
 		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly ExchangeConsumers\Container $consumer,
-		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
+		private readonly PsrEventDispatcher\EventDispatcherInterface|null $dispatcher = null,
 	)
 	{
 	}
 
-	public function connect(Entities\HomeKitConnector $connector, array $servers): void
+	public function connect(): void
 	{
-		$this->servers[$connector->getPlainId()] = $servers;
-
 		$this->consumer->enable(self::class);
 	}
 
-	public function disconnect(Entities\HomeKitConnector $connector, array $servers): void
+	public function disconnect(): void
 	{
-		unset($this->servers[$connector->getPlainId()]);
-
-		if ($this->servers === []) {
-			$this->consumer->disable(self::class);
-		}
+		$this->consumer->disable(self::class);
 	}
 
 	/**
@@ -107,7 +101,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 				$entity instanceof MetadataEntities\DevicesModule\DeviceMappedProperty
 				|| $entity instanceof MetadataEntities\DevicesModule\DeviceVariableProperty
 			) {
-				$findDeviceQuery = new DevicesQueries\FindDevices();
+				$findDeviceQuery = new Queries\FindDevices();
 				$findDeviceQuery->byId($entity->getDevice());
 
 				$device = $this->devicesRepository->findOneBy($findDeviceQuery, Entities\HomeKitDevice::class);
@@ -130,13 +124,13 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 					return;
 				}
 
-				if (!array_key_exists($device->getConnector()->getPlainId(), $this->servers)) {
+				if (!$device->getConnector()->getId()->equals($this->connector->getId())) {
 					return;
 				}
 
 				$accessory = $this->accessoryDriver->findAccessory($entity->getDevice());
 			} else {
-				$findChannelQuery = new DevicesQueries\FindChannels();
+				$findChannelQuery = new Queries\FindChannels();
 				$findChannelQuery->byId($entity->getChannel());
 
 				$channel = $this->channelsRepository->findOneBy($findChannelQuery, Entities\HomeKitChannel::class);
@@ -159,7 +153,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 					return;
 				}
 
-				if (!array_key_exists($channel->getDevice()->getConnector()->getPlainId(), $this->servers)) {
+				if (!$channel->getDevice()->getConnector()->getId()->equals($this->connector->getId())) {
 					return;
 				}
 
@@ -186,27 +180,29 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 
 			$this->processProperty($entity, $accessory);
 		} elseif ($entity instanceof MetadataEntities\DevicesModule\ConnectorVariableProperty) {
-			if (!array_key_exists($entity->getConnector()->toString(), $this->servers)) {
+			if (!$entity->getConnector()->equals($this->connector->getId())) {
 				return;
 			}
 
 			if (
-				$entity->getIdentifier() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED
-				|| $entity->getIdentifier() === Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION
+				$entity->getIdentifier() === Types\ConnectorPropertyIdentifier::PAIRED
+				|| $entity->getIdentifier() === Types\ConnectorPropertyIdentifier::CONFIG_VERSION
 			) {
-				foreach ($this->servers[$entity->getConnector()->toString()] as $server) {
-					if ($server instanceof Servers\Mdns) {
-						$server->refresh($entity);
-					}
-				}
+				$this->dispatcher?->dispatch(
+					new DevicesEvents\TerminateConnector(
+						MetadataTypes\ConnectorSource::get(MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT),
+						'Connector configuration changed, services have to restarted',
+					),
+				);
 			}
 
-			if ($entity->getIdentifier() === Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY) {
-				foreach ($this->servers[$entity->getConnector()->toString()] as $server) {
-					if ($server instanceof Servers\Http) {
-						$server->setSharedKey($entity);
-					}
-				}
+			if ($entity->getIdentifier() === Types\ConnectorPropertyIdentifier::SHARED_KEY) {
+				$this->dispatcher?->dispatch(
+					new DevicesEvents\TerminateConnector(
+						MetadataTypes\ConnectorSource::get(MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT),
+						'Connector shared key changed, services have to restarted',
+					),
+				);
 			}
 		}
 	}
@@ -257,16 +253,16 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 									'type' => 'event-writer',
 									'exception' => BootstrapHelpers\Logger::buildException($ex),
 									'connector' => [
-										'id' => $accessory->getDevice()->getConnector()->getPlainId(),
+										'id' => $accessory->getDevice()->getConnector()->getId()->toString(),
 									],
 									'device' => [
-										'id' => $accessory->getDevice()->getPlainId(),
+										'id' => $accessory->getDevice()->getId()->toString(),
 									],
 									'channel' => [
-										'id' => $service->getChannel()?->getPlainId(),
+										'id' => $service->getChannel()?->getId()->toString(),
 									],
 									'property' => [
-										'id' => $characteristic->getProperty()->getPlainId(),
+										'id' => $characteristic->getProperty()->getId()->toString(),
 									],
 									'hap' => $accessory->toHap(),
 								],
@@ -323,16 +319,16 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'exchange-writer',
 							'connector' => [
-								'id' => $accessory->getDevice()->getConnector()->getPlainId(),
+								'id' => $accessory->getDevice()->getConnector()->getId()->toString(),
 							],
 							'device' => [
-								'id' => $accessory->getDevice()->getPlainId(),
+								'id' => $accessory->getDevice()->getId()->toString(),
 							],
 							'channel' => [
-								'id' => $service->getChannel()?->getPlainId(),
+								'id' => $service->getChannel()?->getId()->toString(),
 							],
 							'property' => [
-								'id' => $characteristic->getProperty()?->getPlainId(),
+								'id' => $characteristic->getProperty()?->getId()->toString(),
 							],
 							'hap' => $accessory->toHap(),
 						],

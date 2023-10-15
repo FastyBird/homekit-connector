@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * Writer.php
+ * ExchangeFactory.php
  *
  * @license        More in LICENSE.md
  * @copyright      https://www.fastybird.com
@@ -10,24 +10,24 @@
  * @subpackage     Writers
  * @since          1.0.0
  *
- * @date           11.02.23
+ * @date           14.10.23
  */
 
 namespace FastyBird\Connector\HomeKit\Writers;
 
+use FastyBird\Connector\HomeKit\Entities;
+
 /**
- * Properties writer interface
+ * Event bus exchange device state periodic writer factory
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Writers
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-interface Writer
+interface ExchangeFactory extends WriterFactory
 {
 
-	public function connect(): void;
-
-	public function disconnect(): void;
+	public function create(Entities\HomeKitConnector $connector): Exchange;
 
 }

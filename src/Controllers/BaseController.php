@@ -15,8 +15,8 @@
 
 namespace FastyBird\Connector\HomeKit\Controllers;
 
+use FastyBird\Connector\HomeKit;
 use Nette;
-use Psr\Log;
 
 /**
  * API base controller
@@ -31,11 +31,11 @@ abstract class BaseController
 
 	use Nette\SmartObject;
 
-	protected Log\LoggerInterface $logger;
+	protected HomeKit\Logger $logger;
 
-	public function injectLogger(Log\LoggerInterface|null $logger = null): void
+	public function setLogger(HomeKit\Logger $logger): void
 	{
-		$this->logger = $logger ?? new Log\NullLogger();
+		$this->logger = $logger;
 	}
 
 }

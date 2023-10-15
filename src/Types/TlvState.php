@@ -32,17 +32,17 @@ class TlvState extends Consistence\Enum\Enum
 	/**
 	 * Define states
 	 */
-	public const STATE_M1 = 0x01;
+	public const M1 = 0x01;
 
-	public const STATE_M2 = 0x02;
+	public const M2 = 0x02;
 
-	public const STATE_M3 = 0x03;
+	public const M3 = 0x03;
 
-	public const STATE_M4 = 0x04;
+	public const M4 = 0x04;
 
-	public const STATE_M5 = 0x05;
+	public const M5 = 0x05;
 
-	public const STATE_M6 = 0x06;
+	public const M6 = 0x06;
 
 	public function __toString(): string
 	{

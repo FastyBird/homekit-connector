@@ -15,6 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Writers;
 
+use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
@@ -29,9 +30,7 @@ use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
-use Psr\Log;
 use Symfony\Component\EventDispatcher;
-use function array_key_exists;
 use function intval;
 
 /**
@@ -49,15 +48,13 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 
 	public const NAME = 'event';
 
-	/** @var array<string, Entities\HomeKitConnector> */
-	private array $connectors = [];
-
 	public function __construct(
+		private readonly Entities\HomeKitConnector $connector,
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
+		private readonly HomeKit\Logger $logger,
 		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelPropertiesRepository,
 		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStates,
-		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
 	}
@@ -70,14 +67,14 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 		];
 	}
 
-	public function connect(Entities\HomeKitConnector $connector, array $servers): void
+	public function connect(): void
 	{
-		$this->connectors[$connector->getPlainId()] = $connector;
+		// Nothing to do here
 	}
 
-	public function disconnect(Entities\HomeKitConnector $connector, array $servers): void
+	public function disconnect(): void
 	{
-		unset($this->connectors[$connector->getPlainId()]);
+		// Nothing to do here
 	}
 
 	/**
@@ -103,12 +100,7 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 			return;
 		}
 
-		if (
-			!array_key_exists(
-				$property->getChannel()->getDevice()->getConnector()->getPlainId(),
-				$this->connectors,
-			)
-		) {
+		if (!$property->getChannel()->getDevice()->getConnector()->getId()->equals($this->connector->getId())) {
 			return;
 		}
 
@@ -165,16 +157,16 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 								'type' => 'event-writer',
 								'exception' => BootstrapHelpers\Logger::buildException($ex),
 								'connector' => [
-									'id' => $accessory->getDevice()->getConnector()->getPlainId(),
+									'id' => $accessory->getDevice()->getConnector()->getId()->toString(),
 								],
 								'device' => [
-									'id' => $accessory->getDevice()->getPlainId(),
+									'id' => $accessory->getDevice()->getId()->toString(),
 								],
 								'channel' => [
-									'id' => $service->getChannel()?->getPlainId(),
+									'id' => $service->getChannel()?->getId()->toString(),
 								],
 								'property' => [
-									'id' => $characteristic->getProperty()->getPlainId(),
+									'id' => $characteristic->getProperty()->getId()->toString(),
 								],
 								'hap' => $accessory->toHap(),
 							],
@@ -225,16 +217,16 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'event-writer',
 							'connector' => [
-								'id' => $accessory->getDevice()->getConnector()->getPlainId(),
+								'id' => $accessory->getDevice()->getConnector()->getId()->toString(),
 							],
 							'device' => [
-								'id' => $accessory->getDevice()->getPlainId(),
+								'id' => $accessory->getDevice()->getId()->toString(),
 							],
 							'channel' => [
-								'id' => $service->getChannel()?->getPlainId(),
+								'id' => $service->getChannel()?->getId()->toString(),
 							],
 							'property' => [
-								'id' => $characteristic->getProperty()?->getPlainId(),
+								'id' => $characteristic->getProperty()?->getId()->toString(),
 							],
 							'hap' => $accessory->toHap(),
 						],

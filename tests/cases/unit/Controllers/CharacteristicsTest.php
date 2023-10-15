@@ -60,7 +60,7 @@ final class CharacteristicsTest extends DbTestCase
 		$accessory = $accessoryFactory->create(
 			$connector,
 			null,
-			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE),
+			Types\AccessoryCategory::get(Types\AccessoryCategory::BRIDGE),
 		);
 
 		$accessoryDriver = $this->getContainer()->getByType(Protocol\Driver::class);

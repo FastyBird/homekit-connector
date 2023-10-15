@@ -32,9 +32,9 @@ class AccessoryType extends Consistence\Enum\Enum
 	/**
 	 * Define categories
 	 */
-	public const TYPE_GENERIC = 'generic';
+	public const GENERIC = 'generic';
 
-	public const TYPE_LIGHT_HSB = 'light_hsb';
+	public const LIGHT_HSB = 'light_hsb';
 
 	/**
 	 * @return array<int>

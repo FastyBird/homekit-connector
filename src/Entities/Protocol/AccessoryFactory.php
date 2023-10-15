@@ -63,9 +63,9 @@ final class AccessoryFactory
 		Types\AccessoryCategory|null $category = null,
 	): Accessory
 	{
-		$category ??= Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_OTHER);
+		$category ??= Types\AccessoryCategory::get(Types\AccessoryCategory::OTHER);
 
-		if ($category->equalsValue(Types\AccessoryCategory::CATEGORY_BRIDGE)) {
+		if ($category->equalsValue(Types\AccessoryCategory::BRIDGE)) {
 			if (!$owner instanceof Entities\HomeKitConnector) {
 				throw new Exceptions\InvalidArgument('Bridge accessory owner have to be connector item instance');
 			}
@@ -82,12 +82,12 @@ final class AccessoryFactory
 		}
 
 		$accessoryInformation = $this->serviceFactory->create(
-			Types\ServiceType::get(Types\ServiceType::TYPE_ACCESSORY_INFORMATION),
+			Types\ServiceType::get(Types\ServiceType::ACCESSORY_INFORMATION),
 			$accessory,
 		);
 
 		$accessoryName = $this->characteristicsFactory->create(
-			Types\ChannelPropertyIdentifier::IDENTIFIER_NAME,
+			Types\ChannelPropertyIdentifier::NAME,
 			$accessoryInformation,
 		);
 		$accessoryName->setValue($owner->getName() ?? $owner->getIdentifier());
@@ -95,7 +95,7 @@ final class AccessoryFactory
 		$accessoryInformation->addCharacteristic($accessoryName);
 
 		$accessorySerialNumber = $this->characteristicsFactory->create(
-			Types\ChannelPropertyIdentifier::IDENTIFIER_SERIAL_NUMBER,
+			Types\ChannelPropertyIdentifier::SERIAL_NUMBER,
 			$accessoryInformation,
 		);
 
@@ -113,7 +113,7 @@ final class AccessoryFactory
 		$packageRevision = Composer\InstalledVersions::getVersion(HomeKit\Constants::PACKAGE_NAME);
 
 		$accessoryFirmwareRevision = $this->characteristicsFactory->create(
-			Types\ChannelPropertyIdentifier::IDENTIFIER_FIRMWARE_REVISION,
+			Types\ChannelPropertyIdentifier::FIRMWARE_REVISION,
 			$accessoryInformation,
 		);
 		$accessoryFirmwareRevision->setValue(
@@ -126,7 +126,7 @@ final class AccessoryFactory
 		$accessoryInformation->addCharacteristic($accessoryFirmwareRevision);
 
 		$accessoryManufacturer = $this->characteristicsFactory->create(
-			Types\ChannelPropertyIdentifier::IDENTIFIER_MANUFACTURER,
+			Types\ChannelPropertyIdentifier::MANUFACTURER,
 			$accessoryInformation,
 		);
 		$accessoryManufacturer->setValue(HomeKit\Constants::DEFAULT_MANUFACTURER);
@@ -134,7 +134,7 @@ final class AccessoryFactory
 		$accessoryInformation->addCharacteristic($accessoryManufacturer);
 
 		$accessoryModel = $this->characteristicsFactory->create(
-			Types\ChannelPropertyIdentifier::IDENTIFIER_MODEL,
+			Types\ChannelPropertyIdentifier::MODEL,
 			$accessoryInformation,
 		);
 
@@ -147,7 +147,7 @@ final class AccessoryFactory
 		$accessoryInformation->addCharacteristic($accessoryModel);
 
 		$accessoryIdentify = $this->characteristicsFactory->create(
-			Types\ChannelPropertyIdentifier::IDENTIFIER_IDENTIFY,
+			Types\ChannelPropertyIdentifier::IDENTIFY,
 			$accessoryInformation,
 		);
 		$accessoryIdentify->setValue(false);
@@ -166,7 +166,7 @@ final class AccessoryFactory
 			);
 
 			$accessoryProtocolVersion = $this->characteristicsFactory->create(
-				Types\ChannelPropertyIdentifier::IDENTIFIER_VERSION,
+				Types\ChannelPropertyIdentifier::VERSION,
 				$accessoryProtocolInformation,
 			);
 			$accessoryProtocolVersion->setValue(HomeKit\Constants::HAP_PROTOCOL_VERSION);
@@ -184,7 +184,7 @@ final class AccessoryFactory
 	 */
 	private function getDeviceClass(Types\AccessoryCategory $category): string
 	{
-		if ($category->equalsValue(Types\AccessoryCategory::CATEGORY_LIGHT_BULB)) {
+		if ($category->equalsValue(Types\AccessoryCategory::LIGHT_BULB)) {
 			return Entities\Protocol\Devices\LightBulb::class;
 		}
 

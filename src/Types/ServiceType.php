@@ -32,91 +32,91 @@ class ServiceType extends Consistence\Enum\Enum
 	/**
 	 * Define statuses
 	 */
-	public const TYPE_ACCESSORY_INFORMATION = 'AccessoryInformation';
+	public const ACCESSORY_INFORMATION = 'AccessoryInformation';
 
-	public const TYPE_AIR_PURIFIER = 'AirPurifier';
+	public const AIR_PURIFIER = 'AirPurifier';
 
-	public const TYPE_AIR_QUALITY_SENSOR = 'AirQualitySensor';
+	public const AIR_QUALITY_SENSOR = 'AirQualitySensor';
 
-	public const TYPE_BATTERY_SERVICE = 'BatteryService';
+	public const BATTERY_SERVICE = 'BatteryService';
 
-	public const TYPE_CAMERA_RTP_STREAM_MANAGEMENT = 'CameraRTPStreamManagement';
+	public const CAMERA_RTP_STREAM_MANAGEMENT = 'CameraRTPStreamManagement';
 
-	public const TYPE_CARBON_DIOXIDE_SENSOR = 'CarbonDioxideSensor';
+	public const CARBON_DIOXIDE_SENSOR = 'CarbonDioxideSensor';
 
-	public const TYPE_CARBON_MONOXIDE_SENSOR = 'CarbonMonoxideSensor';
+	public const CARBON_MONOXIDE_SENSOR = 'CarbonMonoxideSensor';
 
-	public const TYPE_CONTACT_SENSOR = 'ContactSensor';
+	public const CONTACT_SENSOR = 'ContactSensor';
 
-	public const TYPE_DOOR = 'Door';
+	public const DOOR = 'Door';
 
-	public const TYPE_DOORBELL = 'Doorbell';
+	public const DOORBELL = 'Doorbell';
 
-	public const TYPE_FAN = 'Fan';
+	public const FAN = 'Fan';
 
-	public const TYPE_FAN_V2 = 'Fanv2';
+	public const FAN_V2 = 'Fanv2';
 
-	public const TYPE_FAUCET = 'Faucet';
+	public const FAUCET = 'Faucet';
 
-	public const TYPE_FILTER_MAINTENANCE = 'FilterMaintenance';
+	public const FILTER_MAINTENANCE = 'FilterMaintenance';
 
-	public const TYPE_GARAGE_DOOR_OPENER = 'GarageDoorOpener';
+	public const GARAGE_DOOR_OPENER = 'GarageDoorOpener';
 
-	public const TYPE_HEATER_COOLER = 'HeaterCooler';
+	public const HEATER_COOLER = 'HeaterCooler';
 
-	public const TYPE_HUMIDIFIER_DEHUMIDIFIER = 'HumidifierDehumidifier';
+	public const HUMIDIFIER_DEHUMIDIFIER = 'HumidifierDehumidifier';
 
-	public const TYPE_HUMIDITY_SENSOR = 'HumiditySensor';
+	public const HUMIDITY_SENSOR = 'HumiditySensor';
 
-	public const TYPE_INPUT_SOURCE = 'InputSource';
+	public const INPUT_SOURCE = 'InputSource';
 
-	public const TYPE_IRRIGATION_SYSTEM = 'IrrigationSystem';
+	public const IRRIGATION_SYSTEM = 'IrrigationSystem';
 
-	public const TYPE_LEAK_SENSOR = 'LeakSensor';
+	public const LEAK_SENSOR = 'LeakSensor';
 
-	public const TYPE_LIGHT_SENSOR = 'LightSensor';
+	public const LIGHT_SENSOR = 'LightSensor';
 
-	public const TYPE_LIGHTBULB = 'Lightbulb';
+	public const LIGHTBULB = 'Lightbulb';
 
-	public const TYPE_LOCK_MANAGEMENT = 'LockManagement';
+	public const LOCK_MANAGEMENT = 'LockManagement';
 
-	public const TYPE_LOCK_MECHANISM = 'LockMechanism';
+	public const LOCK_MECHANISM = 'LockMechanism';
 
-	public const TYPE_MICROPHONE = 'Microphone';
+	public const MICROPHONE = 'Microphone';
 
-	public const TYPE_MOTION_SENSOR = 'MotionSensor';
+	public const MOTION_SENSOR = 'MotionSensor';
 
-	public const TYPE_OCCUPANCY_SENSOR = 'OccupancySensor';
+	public const OCCUPANCY_SENSOR = 'OccupancySensor';
 
-	public const TYPE_OUTLET = 'Outlet';
+	public const OUTLET = 'Outlet';
 
-	public const TYPE_SECURITY_SYSTEM = 'SecuritySystem';
+	public const SECURITY_SYSTEM = 'SecuritySystem';
 
-	public const TYPE_SERVICE_LABEL = 'ServiceLabel';
+	public const SERVICE_LABEL = 'ServiceLabel';
 
-	public const TYPE_SLAT = 'Slat';
+	public const SLAT = 'Slat';
 
-	public const type_smoke_sensor = 'SmokeSensor';
+	public const SMOKE_SENSOR = 'SmokeSensor';
 
-	public const TYPE_SPEAKER = 'Speaker';
+	public const SPEAKER = 'Speaker';
 
-	public const TYPE_STATELESS_PROGRAMMABLE_SWITCH = 'StatelessProgrammableSwitch';
+	public const STATELESS_PROGRAMMABLE_SWITCH = 'StatelessProgrammableSwitch';
 
-	public const TYPE_SWITCH = 'Switch';
+	public const SWITCH = 'Switch';
 
-	public const TYPE_TELEVISION = 'Television';
+	public const TELEVISION = 'Television';
 
-	public const TYPE_TELEVISION_SPEAKER = 'TelevisionSpeaker';
+	public const TELEVISION_SPEAKER = 'TelevisionSpeaker';
 
-	public const TYPE_TEMPERATURE_SENSOR = 'TemperatureSensor';
+	public const TEMPERATURE_SENSOR = 'TemperatureSensor';
 
-	public const TYPE_THERMOSTAT = 'Thermostat';
+	public const THERMOSTAT = 'Thermostat';
 
-	public const TYPE_VALVE = 'Valve';
+	public const VALVE = 'Valve';
 
-	public const TYPE_WINDOW = 'Window';
+	public const WINDOW = 'Window';
 
-	public const TYPE_WINDOW_COVERING = 'WindowCovering';
+	public const WINDOW_COVERING = 'WindowCovering';
 
 	public function __toString(): string
 	{

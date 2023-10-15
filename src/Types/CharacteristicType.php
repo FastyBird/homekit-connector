@@ -31,24 +31,24 @@ class CharacteristicType extends Consistence\Enum\Enum
 	/**
 	 * Define statuses
 	 */
-	public const TYPE_BRIGHTNESS = 'Brightness';
+	public const BRIGHTNESS = 'Brightness';
 
-	public const TYPE_HUE = 'Hue';
+	public const HUE = 'Hue';
 
-	public const TYPE_SATURATION = 'Saturation';
+	public const SATURATION = 'Saturation';
 
-	public const TYPE_COLOR_TEMPERATURE = 'ColorTemperature';
+	public const COLOR_TEMPERATURE = 'ColorTemperature';
 
-	public const TYPE_NAME = 'Name';
+	public const NAME = 'Name';
 
-	public const TYPE_ON = 'On';
+	public const ON = 'On';
 
-	public const TYPE_COLOR_RED = 'ColorRed';
+	public const COLOR_RED = 'ColorRed';
 
-	public const TYPE_COLOR_GREEN = 'ColorGreen';
+	public const COLOR_GREEN = 'ColorGreen';
 
-	public const TYPE_COLOR_BLUE = 'ColorBlue';
+	public const COLOR_BLUE = 'ColorBlue';
 
-	public const TYPE_COLOR_WHITE = 'ColorWhite';
+	public const COLOR_WHITE = 'ColorWhite';
 
 }

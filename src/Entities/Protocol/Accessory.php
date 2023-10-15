@@ -142,8 +142,8 @@ abstract class Accessory
 	public function toHap(): array
 	{
 		return [
-			Types\Representation::REPR_AID => $this->aid,
-			Types\Representation::REPR_SERVICES => array_map(
+			Types\Representation::AID => $this->aid,
+			Types\Representation::SERVICES => array_map(
 				static fn (Service $service): array => $service->toHap(),
 				array_values(array_filter(
 					$this->getServices(),

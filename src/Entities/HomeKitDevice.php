@@ -57,7 +57,7 @@ class HomeKitDevice extends DevicesEntities\Devices\Device
 		$property = $this->properties
 			->filter(
 				// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-				static fn (DevicesEntities\Devices\Properties\Property $property): bool => $property->getIdentifier() === Types\DevicePropertyIdentifier::IDENTIFIER_CATEGORY
+				static fn (DevicesEntities\Devices\Properties\Property $property): bool => $property->getIdentifier() === Types\DevicePropertyIdentifier::CATEGORY
 			)
 			->first();
 
@@ -69,7 +69,7 @@ class HomeKitDevice extends DevicesEntities\Devices\Device
 			return Types\AccessoryCategory::get($property->getValue());
 		}
 
-		return Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_OTHER);
+		return Types\AccessoryCategory::get(Types\AccessoryCategory::OTHER);
 	}
 
 	/**
@@ -82,7 +82,7 @@ class HomeKitDevice extends DevicesEntities\Devices\Device
 		$property = $this->properties
 			->filter(
 				// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-				static fn (DevicesEntities\Devices\Properties\Property $property): bool => $property->getIdentifier() === Types\DevicePropertyIdentifier::IDENTIFIER_TYPE
+				static fn (DevicesEntities\Devices\Properties\Property $property): bool => $property->getIdentifier() === Types\DevicePropertyIdentifier::TYPE
 			)
 			->first();
 
@@ -94,7 +94,7 @@ class HomeKitDevice extends DevicesEntities\Devices\Device
 			return Types\AccessoryType::get($property->getValue());
 		}
 
-		return Types\AccessoryType::get(Types\AccessoryType::TYPE_GENERIC);
+		return Types\AccessoryType::get(Types\AccessoryType::GENERIC);
 	}
 
 	/**

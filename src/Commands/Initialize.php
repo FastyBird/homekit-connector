@@ -20,6 +20,7 @@ use Doctrine\Persistence;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
@@ -30,7 +31,6 @@ use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Nette\Localization;
 use Nette\Utils;
-use Psr\Log;
 use Symfony\Component\Console;
 use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output;
@@ -60,13 +60,14 @@ class Initialize extends Console\Command\Command
 	public const NAME = 'fb:homekit-connector:initialize';
 
 	public function __construct(
+		private readonly HomeKit\Logger $logger,
 		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsRepository,
 		private readonly DevicesModels\Connectors\ConnectorsManager $connectorsManager,
+		private readonly DevicesModels\Devices\DevicesRepository $devicesRepository,
 		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $propertiesRepository,
 		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesManager,
 		private readonly Persistence\ManagerRegistry $managerRegistry,
 		private readonly Localization\Translator $translator,
-		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 		string|null $name = null,
 	)
 	{
@@ -112,30 +113,7 @@ class Initialize extends Console\Command\Command
 			}
 		}
 
-		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
-			[
-				0 => $this->translator->translate('//homekit-connector.cmd.initialize.actions.create'),
-				1 => $this->translator->translate('//homekit-connector.cmd.initialize.actions.update'),
-				2 => $this->translator->translate('//homekit-connector.cmd.initialize.actions.remove'),
-			],
-		);
-
-		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
-		);
-
-		$whatToDo = $io->askQuestion($question);
-
-		if ($whatToDo === $this->translator->translate('//homekit-connector.cmd.initialize.actions.create')) {
-			$this->createNewConfiguration($io);
-
-		} elseif ($whatToDo === $this->translator->translate('//homekit-connector.cmd.initialize.actions.update')) {
-			$this->editExistingConfiguration($io);
-
-		} elseif ($whatToDo === $this->translator->translate('//homekit-connector.cmd.initialize.actions.remove')) {
-			$this->deleteExistingConfiguration($io);
-		}
+		$this->askInitializeAction($io);
 
 		return Console\Command\Command::SUCCESS;
 	}
@@ -147,7 +125,7 @@ class Initialize extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
-	private function createNewConfiguration(Style\SymfonyStyle $io): void
+	private function createConfiguration(Style\SymfonyStyle $io): void
 	{
 		$question = new Console\Question\Question(
 			$this->translator->translate('//homekit-connector.cmd.initialize.questions.provide.identifier'),
@@ -155,7 +133,7 @@ class Initialize extends Console\Command\Command
 
 		$question->setValidator(function ($answer) {
 			if ($answer !== null) {
-				$findConnectorQuery = new DevicesQueries\FindConnectors();
+				$findConnectorQuery = new Queries\FindConnectors();
 				$findConnectorQuery->byIdentifier($answer);
 
 				if ($this->connectorsRepository->findOneBy(
@@ -179,7 +157,7 @@ class Initialize extends Console\Command\Command
 			for ($i = 1; $i <= 100; $i++) {
 				$identifier = sprintf($identifierPattern, $i);
 
-				$findConnectorQuery = new DevicesQueries\FindConnectors();
+				$findConnectorQuery = new Queries\FindConnectors();
 				$findConnectorQuery->byIdentifier($identifier);
 
 				if ($this->connectorsRepository->findOneBy(
@@ -213,7 +191,7 @@ class Initialize extends Console\Command\Command
 
 			$this->propertiesManager->create(Utils\ArrayHash::from([
 				'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-				'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
+				'identifier' => Types\ConnectorPropertyIdentifier::PORT,
 				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
 				'value' => $port,
 				'connector' => $connector,
@@ -255,7 +233,7 @@ class Initialize extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */
-	private function editExistingConfiguration(Style\SymfonyStyle $io): void
+	private function editConfiguration(Style\SymfonyStyle $io): void
 	{
 		$connector = $this->askWhichConnector($io);
 
@@ -270,7 +248,7 @@ class Initialize extends Console\Command\Command
 			$continue = (bool) $io->askQuestion($question);
 
 			if ($continue) {
-				$this->createNewConfiguration($io);
+				$this->createConfiguration($io);
 			}
 
 			return;
@@ -304,7 +282,7 @@ class Initialize extends Console\Command\Command
 
 		$findConnectorPropertyQuery = new DevicesQueries\FindConnectorProperties();
 		$findConnectorPropertyQuery->forConnector($connector);
-		$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT);
+		$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PORT);
 
 		$portProperty = $this->propertiesRepository->findOneBy($findConnectorPropertyQuery);
 
@@ -320,7 +298,7 @@ class Initialize extends Console\Command\Command
 			if ($portProperty === null) {
 				$this->propertiesManager->create(Utils\ArrayHash::from([
 					'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-					'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT,
+					'identifier' => Types\ConnectorPropertyIdentifier::PORT,
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
 					'value' => $port,
 					'connector' => $connector,
@@ -365,7 +343,7 @@ class Initialize extends Console\Command\Command
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 */
-	private function deleteExistingConfiguration(Style\SymfonyStyle $io): void
+	private function deleteConfiguration(Style\SymfonyStyle $io): void
 	{
 		$connector = $this->askWhichConnector($io);
 
@@ -421,6 +399,50 @@ class Initialize extends Console\Command\Command
 		}
 	}
 
+	/**
+	 * @throws DevicesExceptions\InvalidState
+	 */
+	private function listConfigurations(Style\SymfonyStyle $io): void
+	{
+		$findConnectorsQuery = new Queries\FindConnectors();
+
+		$connectors = $this->connectorsRepository->findAllBy($findConnectorsQuery, Entities\HomeKitConnector::class);
+		usort(
+			$connectors,
+			static function (Entities\HomeKitConnector $a, Entities\HomeKitConnector $b): int {
+				if ($a->getIdentifier() === $b->getIdentifier()) {
+					return $a->getName() <=> $b->getName();
+				}
+
+				return $a->getIdentifier() <=> $b->getIdentifier();
+			},
+		);
+
+		$table = new Console\Helper\Table($io);
+		$table->setHeaders([
+			'#',
+			$this->translator->translate('//homekit-connector.cmd.initialize.data.name'),
+			$this->translator->translate('//homekit-connector.cmd.initialize.data.devicesCnt'),
+		]);
+
+		foreach ($connectors as $index => $connector) {
+			$findDevicesQuery = new Queries\FindDevices();
+			$findDevicesQuery->forConnector($connector);
+
+			$devices = $this->devicesRepository->findAllBy($findDevicesQuery, Entities\HomeKitDevice::class);
+
+			$table->addRow([
+				$index + 1,
+				$connector->getName() ?? $connector->getIdentifier(),
+				count($devices),
+			]);
+		}
+
+		$table->render();
+
+		$io->newLine();
+	}
+
 	private function askName(Style\SymfonyStyle $io, Entities\HomeKitConnector|null $connector = null): string|null
 	{
 		$question = new Console\Question\Question(
@@ -455,7 +477,7 @@ class Initialize extends Console\Command\Command
 			}
 
 			$findConnectorPropertiesQuery = new DevicesQueries\FindConnectorProperties();
-			$findConnectorPropertiesQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_PORT);
+			$findConnectorPropertiesQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PORT);
 
 			$properties = $this->propertiesRepository->findAllBy(
 				$findConnectorPropertiesQuery,
@@ -492,7 +514,7 @@ class Initialize extends Console\Command\Command
 	{
 		$connectors = [];
 
-		$findConnectorsQuery = new DevicesQueries\FindConnectors();
+		$findConnectorsQuery = new Queries\FindConnectors();
 
 		$systemConnectors = $this->connectorsRepository->findAllBy(
 			$findConnectorsQuery,
@@ -505,8 +527,6 @@ class Initialize extends Console\Command\Command
 		);
 
 		foreach ($systemConnectors as $connector) {
-			assert($connector instanceof Entities\HomeKitConnector);
-
 			$connectors[$connector->getIdentifier()] = $connector->getIdentifier()
 				. ($connector->getName() !== null ? ' [' . $connector->getName() . ']' : '');
 		}
@@ -540,14 +560,13 @@ class Initialize extends Console\Command\Command
 			$identifier = array_search($answer, $connectors, true);
 
 			if ($identifier !== false) {
-				$findConnectorQuery = new DevicesQueries\FindConnectors();
+				$findConnectorQuery = new Queries\FindConnectors();
 				$findConnectorQuery->byIdentifier($identifier);
 
 				$connector = $this->connectorsRepository->findOneBy(
 					$findConnectorQuery,
 					Entities\HomeKitConnector::class,
 				);
-				assert($connector instanceof Entities\HomeKitConnector || $connector === null);
 
 				if ($connector !== null) {
 					return $connector;
@@ -566,6 +585,75 @@ class Initialize extends Console\Command\Command
 		assert($connector instanceof Entities\HomeKitConnector);
 
 		return $connector;
+	}
+
+	/**
+	 * @throws DBAL\Exception
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\Runtime
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 */
+	private function askInitializeAction(Style\SymfonyStyle $io): void
+	{
+		$question = new Console\Question\ChoiceQuestion(
+			$this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
+			[
+				0 => $this->translator->translate('//homekit-connector.cmd.initialize.actions.create'),
+				1 => $this->translator->translate('//homekit-connector.cmd.initialize.actions.update'),
+				2 => $this->translator->translate('//homekit-connector.cmd.initialize.actions.remove'),
+				3 => $this->translator->translate('//homekit-connector.cmd.initialize.actions.list'),
+				4 => $this->translator->translate('//homekit-connector.cmd.initialize.actions.nothing'),
+			],
+			4,
+		);
+
+		$question->setErrorMessage(
+			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+		);
+
+		$whatToDo = $io->askQuestion($question);
+
+		if (
+			$whatToDo === $this->translator->translate(
+				'//homekit-connector.cmd.initialize.actions.create',
+			)
+			|| $whatToDo === '0'
+		) {
+			$this->createConfiguration($io);
+
+			$this->askInitializeAction($io);
+
+		} elseif (
+			$whatToDo === $this->translator->translate(
+				'//homekit-connector.cmd.initialize.actions.update',
+			)
+			|| $whatToDo === '1'
+		) {
+			$this->editConfiguration($io);
+
+			$this->askInitializeAction($io);
+
+		} elseif (
+			$whatToDo === $this->translator->translate(
+				'//homekit-connector.cmd.initialize.actions.remove',
+			)
+			|| $whatToDo === '2'
+		) {
+			$this->deleteConfiguration($io);
+
+			$this->askInitializeAction($io);
+
+		} elseif (
+			$whatToDo === $this->translator->translate(
+				'//homekit-connector.cmd.initialize.actions.list',
+			)
+			|| $whatToDo === '3'
+		) {
+			$this->listConfigurations($io);
+
+			$this->askInitializeAction($io);
+		}
 	}
 
 	/**

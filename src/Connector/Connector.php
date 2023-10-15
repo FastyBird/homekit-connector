@@ -15,6 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Connector;
 
+use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Writers;
@@ -22,7 +23,6 @@ use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Connectors as DevicesConnectors;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use Nette;
-use Psr\Log;
 use function assert;
 
 /**
@@ -41,14 +41,16 @@ final class Connector implements DevicesConnectors\Connector
 	/** @var array<Servers\Server> */
 	private array $servers = [];
 
+	private Writers\Writer|null $writer = null;
+
 	/**
 	 * @param array<Servers\ServerFactory> $serversFactories
 	 */
 	public function __construct(
 		private readonly DevicesEntities\Connectors\Connector $connector,
-		private readonly Writers\Writer $writer,
+		private readonly Writers\WriterFactory $writerFactory,
 		private readonly array $serversFactories,
-		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
+		private readonly HomeKit\Logger $logger,
 	)
 	{
 	}
@@ -57,13 +59,13 @@ final class Connector implements DevicesConnectors\Connector
 	{
 		assert($this->connector instanceof Entities\HomeKitConnector);
 
-		$this->logger->debug(
-			'Registering bridge accessory from connector configuration',
+		$this->logger->info(
+			'Starting HomeKit connector service',
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
 				'connector' => [
-					'id' => $this->connector->getPlainId(),
+					'id' => $this->connector->getId()->toString(),
 				],
 			],
 		);
@@ -75,15 +77,16 @@ final class Connector implements DevicesConnectors\Connector
 			$this->servers[] = $server;
 		}
 
-		$this->writer->connect($this->connector, $this->servers);
+		$this->writer = $this->writerFactory->create($this->connector);
+		$this->writer->connect();
 
-		$this->logger->debug(
-			'Connector has been started',
+		$this->logger->info(
+			'HomeKit connector service has been started',
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
 				'connector' => [
-					'id' => $this->connector->getPlainId(),
+					'id' => $this->connector->getId()->toString(),
 				],
 			],
 		);
@@ -91,26 +94,37 @@ final class Connector implements DevicesConnectors\Connector
 
 	public function discover(): void
 	{
-		// TODO: Implement it
+		assert($this->connector instanceof Entities\HomeKitConnector);
+
+		$this->logger->error(
+			'Devices discovery is not allowed for HomeKit connector type',
+			[
+				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'type' => 'connector',
+				'connector' => [
+					'id' => $this->connector->getId()->toString(),
+				],
+			],
+		);
 	}
 
 	public function terminate(): void
 	{
 		assert($this->connector instanceof Entities\HomeKitConnector);
 
-		$this->writer->disconnect($this->connector, $this->servers);
+		$this->writer?->disconnect();
 
 		foreach ($this->servers as $server) {
 			$server->disconnect();
 		}
 
-		$this->logger->debug(
-			'Connector has been terminated',
+		$this->logger->info(
+			'HomeKit connector has been terminated',
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
 				'connector' => [
-					'id' => $this->connector->getPlainId(),
+					'id' => $this->connector->getId()->toString(),
 				],
 			],
 		);

@@ -32,19 +32,19 @@ class ChannelPropertyIdentifier extends Consistence\Enum\Enum
 	/**
 	 * Define channel properties identifiers
 	 */
-	public const IDENTIFIER_VERSION = 'version';
+	public const VERSION = 'version';
 
-	public const IDENTIFIER_NAME = 'name';
+	public const NAME = 'name';
 
-	public const IDENTIFIER_SERIAL_NUMBER = 'serial_number';
+	public const SERIAL_NUMBER = 'serial_number';
 
-	public const IDENTIFIER_FIRMWARE_REVISION = 'firmware_revision';
+	public const FIRMWARE_REVISION = 'firmware_revision';
 
-	public const IDENTIFIER_MANUFACTURER = 'manufacturer';
+	public const MANUFACTURER = 'manufacturer';
 
-	public const IDENTIFIER_MODEL = 'model';
+	public const MODEL = 'model';
 
-	public const IDENTIFIER_IDENTIFY = 'identify';
+	public const IDENTIFY = 'identify';
 
 	public function __toString(): string
 	{

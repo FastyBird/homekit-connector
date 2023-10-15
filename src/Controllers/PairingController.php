@@ -179,7 +179,7 @@ final class PairingController extends BaseController
 	{
 		$this->edDsa = new EdDSA('ed25519');
 
-		$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M1);
+		$this->expectedState = Types\TlvState::get(Types\TlvState::M1);
 	}
 
 	/**
@@ -218,7 +218,7 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorQuery = new DevicesQueries\FindConnectors();
+		$findConnectorQuery = new Queries\FindConnectors();
 		$findConnectorQuery->byId($connectorId);
 
 		$connector = $this->connectorsRepository->findOneBy(
@@ -230,13 +230,11 @@ final class PairingController extends BaseController
 			throw new Exceptions\InvalidState('Connector could not be loaded');
 		}
 
-		assert($connector instanceof Entities\HomeKitConnector);
-
 		if ($connector->isPaired()) {
 			$result = [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		} else {
@@ -248,58 +246,55 @@ final class PairingController extends BaseController
 
 			$tlvEntry = array_pop($tlv);
 
-			$requestedState = array_key_exists(
-				Types\TlvCode::CODE_STATE,
-				$tlvEntry,
-			)
-				? $tlvEntry[Types\TlvCode::CODE_STATE]
+			$requestedState = array_key_exists(Types\TlvCode::STATE, $tlvEntry)
+				? $tlvEntry[Types\TlvCode::STATE]
 				: null;
 
 			if (
-				$requestedState === Types\TlvState::STATE_M1
-				&& array_key_exists(Types\TlvCode::CODE_METHOD, $tlvEntry)
-				&& $tlvEntry[Types\TlvCode::CODE_METHOD] === Types\TlvMethod::METHOD_RESERVED
+				$requestedState === Types\TlvState::M1
+				&& array_key_exists(Types\TlvCode::METHOD, $tlvEntry)
+				&& $tlvEntry[Types\TlvCode::METHOD] === Types\TlvMethod::RESERVED
 			) {
 				$result = $this->srpStart($connector);
 
-				$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M3);
+				$this->expectedState = Types\TlvState::get(Types\TlvState::M3);
 
 			} elseif (
-				$requestedState === Types\TlvState::STATE_M3
-				&& array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
-				&& is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
-				&& array_key_exists(Types\TlvCode::CODE_PROOF, $tlvEntry)
-				&& is_array($tlvEntry[Types\TlvCode::CODE_PROOF])
+				$requestedState === Types\TlvState::M3
+				&& array_key_exists(Types\TlvCode::PUBLIC_KEY, $tlvEntry)
+				&& is_array($tlvEntry[Types\TlvCode::PUBLIC_KEY])
+				&& array_key_exists(Types\TlvCode::PROOF, $tlvEntry)
+				&& is_array($tlvEntry[Types\TlvCode::PROOF])
 			) {
 				$result = $this->srpFinish(
 					$connector,
-					$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY],
-					$tlvEntry[Types\TlvCode::CODE_PROOF],
+					$tlvEntry[Types\TlvCode::PUBLIC_KEY],
+					$tlvEntry[Types\TlvCode::PROOF],
 				);
 
-				$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M5);
+				$this->expectedState = Types\TlvState::get(Types\TlvState::M5);
 
 			} elseif (
-				$requestedState === Types\TlvState::STATE_M5
-				&& array_key_exists(Types\TlvCode::CODE_ENCRYPTED_DATA, $tlvEntry)
-				&& is_array($tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA])
+				$requestedState === Types\TlvState::M5
+				&& array_key_exists(Types\TlvCode::ENCRYPTED_DATA, $tlvEntry)
+				&& is_array($tlvEntry[Types\TlvCode::ENCRYPTED_DATA])
 			) {
 				$result = $this->exchange(
 					$connector,
-					$tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA],
+					$tlvEntry[Types\TlvCode::ENCRYPTED_DATA],
 				);
 
-				$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M1);
+				$this->expectedState = Types\TlvState::get(Types\TlvState::M1);
 
 			} else {
 				throw new Exceptions\InvalidState('Unknown data received');
 			}
 		}
 
-		if (array_key_exists(Types\TlvCode::CODE_ERROR, $result)) {
+		if (array_key_exists(Types\TlvCode::ERROR, $result)) {
 			$this->srp = null;
 			$this->activePairing = false;
-			$this->expectedState = Types\TlvState::get(Types\TlvState::STATE_M1);
+			$this->expectedState = Types\TlvState::get(Types\TlvState::M1);
 		}
 
 		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
@@ -345,7 +340,7 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorQuery = new DevicesQueries\FindConnectors();
+		$findConnectorQuery = new Queries\FindConnectors();
 		$findConnectorQuery->byId($connectorId);
 
 		$connector = $this->connectorsRepository->findOneBy(
@@ -357,13 +352,11 @@ final class PairingController extends BaseController
 			throw new Exceptions\InvalidState('Connector could not be loaded');
 		}
 
-		assert($connector instanceof Entities\HomeKitConnector);
-
 		if (!$connector->isPaired()) {
 			$result = [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		} else {
@@ -375,26 +368,23 @@ final class PairingController extends BaseController
 
 			$tlvEntry = array_pop($tlv);
 
-			$requestedState = array_key_exists(
-				Types\TlvCode::CODE_STATE,
-				$tlvEntry,
-			)
-				? $tlvEntry[Types\TlvCode::CODE_STATE]
+			$requestedState = array_key_exists(Types\TlvCode::STATE, $tlvEntry)
+				? $tlvEntry[Types\TlvCode::STATE]
 				: null;
 
 			if (
-				$requestedState === Types\TlvState::STATE_M1
-				&& array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
-				&& is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
+				$requestedState === Types\TlvState::M1
+				&& array_key_exists(Types\TlvCode::PUBLIC_KEY, $tlvEntry)
+				&& is_array($tlvEntry[Types\TlvCode::PUBLIC_KEY])
 			) {
-				$result = $this->verifyStart($connector, $tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]);
+				$result = $this->verifyStart($connector, $tlvEntry[Types\TlvCode::PUBLIC_KEY]);
 
 			} elseif (
-				$requestedState === Types\TlvState::STATE_M3
-				&& array_key_exists(Types\TlvCode::CODE_ENCRYPTED_DATA, $tlvEntry)
-				&& is_array($tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA])
+				$requestedState === Types\TlvState::M3
+				&& array_key_exists(Types\TlvCode::ENCRYPTED_DATA, $tlvEntry)
+				&& is_array($tlvEntry[Types\TlvCode::ENCRYPTED_DATA])
 			) {
-				$result = $this->verifyFinish($connector, $tlvEntry[Types\TlvCode::CODE_ENCRYPTED_DATA]);
+				$result = $this->verifyFinish($connector, $tlvEntry[Types\TlvCode::ENCRYPTED_DATA]);
 
 			} else {
 				throw new Exceptions\InvalidState('Unknown data received');
@@ -439,7 +429,7 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorQuery = new DevicesQueries\FindConnectors();
+		$findConnectorQuery = new Queries\FindConnectors();
 		$findConnectorQuery->byId($connectorId);
 
 		$connector = $this->connectorsRepository->findOneBy(
@@ -451,13 +441,11 @@ final class PairingController extends BaseController
 			throw new Exceptions\InvalidState('Connector could not be loaded');
 		}
 
-		assert($connector instanceof Entities\HomeKitConnector);
-
 		if (!$connector->isPaired()) {
 			$result = [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		} else {
@@ -469,47 +457,44 @@ final class PairingController extends BaseController
 
 			$tlvEntry = array_pop($tlv);
 
-			$requestedState = array_key_exists(
-				Types\TlvCode::CODE_STATE,
-				$tlvEntry,
-			)
-				? $tlvEntry[Types\TlvCode::CODE_STATE]
+			$requestedState = array_key_exists(Types\TlvCode::STATE, $tlvEntry)
+				? $tlvEntry[Types\TlvCode::STATE]
 				: null;
-			$method = array_key_exists(Types\TlvCode::CODE_METHOD, $tlvEntry)
-				? $tlvEntry[Types\TlvCode::CODE_METHOD]
+			$method = array_key_exists(Types\TlvCode::METHOD, $tlvEntry)
+				? $tlvEntry[Types\TlvCode::METHOD]
 				: null;
 
 			if (
-				$method === Types\TlvMethod::METHOD_LIST_PAIRINGS
-				&& $requestedState === Types\TlvState::STATE_M1
+				$method === Types\TlvMethod::LIST_PAIRINGS
+				&& $requestedState === Types\TlvState::M1
 			) {
 				$result = $this->listPairings($connector);
 
 			} elseif (
-				$method === Types\TlvMethod::METHOD_ADD_PAIRING
-				&& $requestedState === Types\TlvState::STATE_M1
-				&& array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
-				&& is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
-				&& array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
-				&& is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
-				&& array_key_exists(Types\TlvCode::CODE_PERMISSIONS, $tlvEntry)
-				&& is_int($tlvEntry[Types\TlvCode::CODE_PERMISSIONS])
+				$method === Types\TlvMethod::ADD_PAIRING
+				&& $requestedState === Types\TlvState::M1
+				&& array_key_exists(Types\TlvCode::IDENTIFIER, $tlvEntry)
+				&& is_string($tlvEntry[Types\TlvCode::IDENTIFIER])
+				&& array_key_exists(Types\TlvCode::PUBLIC_KEY, $tlvEntry)
+				&& is_array($tlvEntry[Types\TlvCode::PUBLIC_KEY])
+				&& array_key_exists(Types\TlvCode::PERMISSIONS, $tlvEntry)
+				&& is_int($tlvEntry[Types\TlvCode::PERMISSIONS])
 			) {
 				$result = $this->addPairing(
 					$connector,
-					$tlvEntry[Types\TlvCode::CODE_IDENTIFIER],
-					$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY],
-					$tlvEntry[Types\TlvCode::CODE_PERMISSIONS],
+					$tlvEntry[Types\TlvCode::IDENTIFIER],
+					$tlvEntry[Types\TlvCode::PUBLIC_KEY],
+					$tlvEntry[Types\TlvCode::PERMISSIONS],
 				);
 			} elseif (
-				$method === Types\TlvMethod::METHOD_REMOVE_PAIRING
-				&& $requestedState === Types\TlvState::STATE_M1
-				&& array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
-				&& is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
+				$method === Types\TlvMethod::REMOVE_PAIRING
+				&& $requestedState === Types\TlvState::M1
+				&& array_key_exists(Types\TlvCode::IDENTIFIER, $tlvEntry)
+				&& is_string($tlvEntry[Types\TlvCode::IDENTIFIER])
 			) {
 				$result = $this->removePairing(
 					$connector,
-					$tlvEntry[Types\TlvCode::CODE_IDENTIFIER],
+					$tlvEntry[Types\TlvCode::IDENTIFIER],
 				);
 			} else {
 				throw new Exceptions\InvalidState('Unknown data received');
@@ -544,19 +529,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'srp-start',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNAVAILABLE,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::UNAVAILABLE,
 				],
 			];
 		}
@@ -568,43 +553,43 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'srp-start',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_MAX_TRIES,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::MAX_TRIES,
 				],
 			];
 		}
 
-		if (!$this->expectedState->equalsValue(Types\TlvState::STATE_M1)) {
+		if (!$this->expectedState->equalsValue(Types\TlvState::M1)) {
 			$this->logger->error(
 				'Unexpected pairing setup state. Expected is M1',
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'srp-start',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -616,19 +601,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'srp-start',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_BUSY,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::BUSY,
 				],
 			];
 		}
@@ -646,19 +631,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'srp-start',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -672,19 +657,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'srp-start',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -695,20 +680,20 @@ final class PairingController extends BaseController
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
-					'id' => $connector->getPlainId(),
+					'id' => $connector->getId()->toString(),
 				],
 				'pairing' => [
 					'type' => 'srp-start',
-					'state' => Types\TlvState::STATE_M2,
+					'state' => Types\TlvState::M2,
 				],
 			],
 		);
 
 		return [
 			[
-				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-				Types\TlvCode::CODE_PUBLIC_KEY => $serverPublicKey,
-				Types\TlvCode::CODE_SALT => $salt,
+				Types\TlvCode::STATE => Types\TlvState::M2,
+				Types\TlvCode::PUBLIC_KEY => $serverPublicKey,
+				Types\TlvCode::SALT => $salt,
 			],
 		];
 	}
@@ -728,26 +713,26 @@ final class PairingController extends BaseController
 		array $clientProof,
 	): array
 	{
-		if ($this->srp === null || !$this->expectedState->equalsValue(Types\TlvState::STATE_M3)) {
+		if ($this->srp === null || !$this->expectedState->equalsValue(Types\TlvState::M3)) {
 			$this->logger->error(
 				'Unexpected pairing setup state. Expected is M3',
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'srp-finish',
-						'state' => Types\TlvState::STATE_M4,
+						'state' => Types\TlvState::M4,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -763,19 +748,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'srp-finish',
-						'state' => Types\TlvState::STATE_M4,
+						'state' => Types\TlvState::M4,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -787,19 +772,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'srp-finish',
-						'state' => Types\TlvState::STATE_M4,
+						'state' => Types\TlvState::M4,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -813,19 +798,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'srp-finish',
-						'state' => Types\TlvState::STATE_M4,
+						'state' => Types\TlvState::M4,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -836,19 +821,19 @@ final class PairingController extends BaseController
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
-					'id' => $connector->getPlainId(),
+					'id' => $connector->getId()->toString(),
 				],
 				'pairing' => [
 					'type' => 'srp-finish',
-					'state' => Types\TlvState::STATE_M4,
+					'state' => Types\TlvState::M4,
 				],
 			],
 		);
 
 		return [
 			[
-				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-				Types\TlvCode::CODE_PROOF => $serverProof,
+				Types\TlvCode::STATE => Types\TlvState::M4,
+				Types\TlvCode::PROOF => $serverProof,
 			],
 		];
 	}
@@ -871,26 +856,26 @@ final class PairingController extends BaseController
 		array $encryptedData,
 	): array
 	{
-		if ($this->srp === null || !$this->expectedState->equalsValue(Types\TlvState::STATE_M5)) {
+		if ($this->srp === null || !$this->expectedState->equalsValue(Types\TlvState::M5)) {
 			$this->logger->error(
 				'Unexpected pairing setup state. Expected is M5',
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'exchange',
-						'state' => Types\TlvState::STATE_M6,
+						'state' => Types\TlvState::M6,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M6,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -918,19 +903,19 @@ final class PairingController extends BaseController
 					'type' => 'pairing-controller',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'exchange',
-						'state' => Types\TlvState::STATE_M6,
+						'state' => Types\TlvState::M6,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M6,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -938,8 +923,8 @@ final class PairingController extends BaseController
 		if ($decryptedData === false) {
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M6,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -953,19 +938,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'exchange',
-						'state' => Types\TlvState::STATE_M6,
+						'state' => Types\TlvState::M6,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M6,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -977,19 +962,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'exchange',
-						'state' => Types\TlvState::STATE_M6,
+						'state' => Types\TlvState::M6,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M6,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -997,12 +982,12 @@ final class PairingController extends BaseController
 		$tlvEntry = array_pop($tlv);
 
 		if (
-			!array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
-			|| !is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
-			|| !array_key_exists(Types\TlvCode::CODE_PUBLIC_KEY, $tlvEntry)
-			|| !is_array($tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY])
-			|| !array_key_exists(Types\TlvCode::CODE_SIGNATURE, $tlvEntry)
-			|| !is_array($tlvEntry[Types\TlvCode::CODE_SIGNATURE])
+			!array_key_exists(Types\TlvCode::IDENTIFIER, $tlvEntry)
+			|| !is_string($tlvEntry[Types\TlvCode::IDENTIFIER])
+			|| !array_key_exists(Types\TlvCode::PUBLIC_KEY, $tlvEntry)
+			|| !is_array($tlvEntry[Types\TlvCode::PUBLIC_KEY])
+			|| !array_key_exists(Types\TlvCode::SIGNATURE, $tlvEntry)
+			|| !is_array($tlvEntry[Types\TlvCode::SIGNATURE])
 		) {
 			$this->logger->error(
 				'Data in decoded decrypted tlv data are invalid',
@@ -1010,19 +995,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'exchange',
-						'state' => Types\TlvState::STATE_M6,
+						'state' => Types\TlvState::M6,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M6,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -1036,14 +1021,14 @@ final class PairingController extends BaseController
 		);
 
 		$iosDeviceInfo = $iosDeviceX
-			. $tlvEntry[Types\TlvCode::CODE_IDENTIFIER]
-			. pack('C*', ...$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]);
+			. $tlvEntry[Types\TlvCode::IDENTIFIER]
+			. pack('C*', ...$tlvEntry[Types\TlvCode::PUBLIC_KEY]);
 
 		if (
 			!$this->edDsa->verify(
 				unpack('C*', $iosDeviceInfo),
-				$tlvEntry[Types\TlvCode::CODE_SIGNATURE],
-				$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY],
+				$tlvEntry[Types\TlvCode::SIGNATURE],
+				$tlvEntry[Types\TlvCode::PUBLIC_KEY],
 			)
 		) {
 			$this->logger->error(
@@ -1052,19 +1037,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'exchange',
-						'state' => Types\TlvState::STATE_M6,
+						'state' => Types\TlvState::M6,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M6,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -1073,18 +1058,18 @@ final class PairingController extends BaseController
 			function () use ($tlvEntry, $connector): void {
 				$findClientQuery = new Queries\FindClients();
 				$findClientQuery->forConnector($connector);
-				$findClientQuery->byUid($tlvEntry[Types\TlvCode::CODE_IDENTIFIER]);
+				$findClientQuery->byUid($tlvEntry[Types\TlvCode::IDENTIFIER]);
 
 				$client = $this->clientsRepository->findOneBy($findClientQuery);
 
 				if ($client !== null) {
 					$this->clientsManager->update($client, Utils\ArrayHash::from([
-						'publicKey' => pack('C*', ...$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]),
+						'publicKey' => pack('C*', ...$tlvEntry[Types\TlvCode::PUBLIC_KEY]),
 					]));
 				} else {
 					$this->clientsManager->create(Utils\ArrayHash::from([
-						'uid' => $tlvEntry[Types\TlvCode::CODE_IDENTIFIER],
-						'publicKey' => pack('C*', ...$tlvEntry[Types\TlvCode::CODE_PUBLIC_KEY]),
+						'uid' => $tlvEntry[Types\TlvCode::IDENTIFIER],
+						'publicKey' => pack('C*', ...$tlvEntry[Types\TlvCode::PUBLIC_KEY]),
 						'connector' => $connector,
 					]));
 				}
@@ -1108,7 +1093,7 @@ final class PairingController extends BaseController
 
 			$this->setConfiguration(
 				$connector,
-				Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET),
+				Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::SERVER_SECRET),
 				$serverSecret,
 			);
 		}
@@ -1125,9 +1110,9 @@ final class PairingController extends BaseController
 
 		$responseInnerData = [
 			[
-				Types\TlvCode::CODE_IDENTIFIER => $connector->getMacAddress(),
-				Types\TlvCode::CODE_PUBLIC_KEY => $serverPublicKey,
-				Types\TlvCode::CODE_SIGNATURE => $serverSignature,
+				Types\TlvCode::IDENTIFIER => $connector->getMacAddress(),
+				Types\TlvCode::PUBLIC_KEY => $serverPublicKey,
+				Types\TlvCode::SIGNATURE => $serverSignature,
 			],
 		];
 
@@ -1146,19 +1131,19 @@ final class PairingController extends BaseController
 					'type' => 'pairing-controller',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'exchange',
-						'state' => Types\TlvState::STATE_M6,
+						'state' => Types\TlvState::M6,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M6,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -1170,19 +1155,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'exchange',
-						'state' => Types\TlvState::STATE_M6,
+						'state' => Types\TlvState::M6,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M6,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -1195,25 +1180,25 @@ final class PairingController extends BaseController
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
-					'id' => $connector->getPlainId(),
+					'id' => $connector->getId()->toString(),
 				],
 				'pairing' => [
 					'type' => 'exchange',
-					'state' => Types\TlvState::STATE_M6,
+					'state' => Types\TlvState::M6,
 				],
 			],
 		);
 
 		$this->setConfiguration(
 			$connector,
-			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED),
+			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::PAIRED),
 			true,
 		);
 
 		return [
 			[
-				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M6,
-				Types\TlvCode::CODE_ENCRYPTED_DATA => $responseEncryptedData,
+				Types\TlvCode::STATE => Types\TlvState::M6,
+				Types\TlvCode::ENCRYPTED_DATA => $responseEncryptedData,
 			],
 		];
 	}
@@ -1243,7 +1228,7 @@ final class PairingController extends BaseController
 
 			$this->setConfiguration(
 				$connector,
-				Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET),
+				Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::SERVER_SECRET),
 				$serverSecret,
 			);
 		}
@@ -1262,8 +1247,8 @@ final class PairingController extends BaseController
 
 		$responseInnerData = [
 			[
-				Types\TlvCode::CODE_IDENTIFIER => $connector->getMacAddress(),
-				Types\TlvCode::CODE_SIGNATURE => $serverSignature,
+				Types\TlvCode::IDENTIFIER => $connector->getMacAddress(),
+				Types\TlvCode::SIGNATURE => $serverSignature,
 			],
 		];
 
@@ -1290,19 +1275,19 @@ final class PairingController extends BaseController
 					'type' => 'pairing-controller',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'verify-start',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -1314,19 +1299,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'verify-start',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -1340,38 +1325,38 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'verify-start',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
 
 		$this->setConfiguration(
 			$connector,
-			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_PUBLIC_KEY),
+			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::CLIENT_PUBLIC_KEY),
 			bin2hex(pack('C*', ...$clientPublicKey)),
 		);
 
 		$this->setConfiguration(
 			$connector,
-			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY),
+			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::SHARED_KEY),
 			bin2hex($sharedSecret),
 		);
 
 		$this->setConfiguration(
 			$connector,
-			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_HASHING_KEY),
+			Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::HASHING_KEY),
 			bin2hex($encodeKey),
 		);
 
@@ -1381,20 +1366,20 @@ final class PairingController extends BaseController
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
-					'id' => $connector->getPlainId(),
+					'id' => $connector->getId()->toString(),
 				],
 				'pairing' => [
 					'type' => 'verify-start',
-					'state' => Types\TlvState::STATE_M2,
+					'state' => Types\TlvState::M2,
 				],
 			],
 		);
 
 		return [
 			[
-				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-				Types\TlvCode::CODE_PUBLIC_KEY => $serverPublicKey,
-				Types\TlvCode::CODE_ENCRYPTED_DATA => $responseEncryptedData,
+				Types\TlvCode::STATE => Types\TlvState::M2,
+				Types\TlvCode::PUBLIC_KEY => $serverPublicKey,
+				Types\TlvCode::ENCRYPTED_DATA => $responseEncryptedData,
 			],
 		];
 	}
@@ -1431,19 +1416,19 @@ final class PairingController extends BaseController
 					'type' => 'pairing-controller',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'verify-finish',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -1451,8 +1436,8 @@ final class PairingController extends BaseController
 		if ($decryptedData === false) {
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -1466,19 +1451,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'verify-finish',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -1490,19 +1475,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'verify-finish',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -1510,10 +1495,10 @@ final class PairingController extends BaseController
 		$tlvEntry = array_pop($tlv);
 
 		if (
-			!array_key_exists(Types\TlvCode::CODE_IDENTIFIER, $tlvEntry)
-			|| !is_string($tlvEntry[Types\TlvCode::CODE_IDENTIFIER])
-			|| !array_key_exists(Types\TlvCode::CODE_SIGNATURE, $tlvEntry)
-			|| !is_array($tlvEntry[Types\TlvCode::CODE_SIGNATURE])
+			!array_key_exists(Types\TlvCode::IDENTIFIER, $tlvEntry)
+			|| !is_string($tlvEntry[Types\TlvCode::IDENTIFIER])
+			|| !array_key_exists(Types\TlvCode::SIGNATURE, $tlvEntry)
+			|| !is_array($tlvEntry[Types\TlvCode::SIGNATURE])
 		) {
 			$this->logger->error(
 				'Data in decoded decrypted tlv data are invalid',
@@ -1521,26 +1506,26 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'verify-finish',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
 
 		$findClientQuery = new Queries\FindClients();
 		$findClientQuery->forConnector($connector);
-		$findClientQuery->byUid($tlvEntry[Types\TlvCode::CODE_IDENTIFIER]);
+		$findClientQuery->byUid($tlvEntry[Types\TlvCode::IDENTIFIER]);
 
 		$client = $this->clientsRepository->findOneBy($findClientQuery);
 
@@ -1551,19 +1536,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'verify-finish',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -1575,7 +1560,7 @@ final class PairingController extends BaseController
 
 			$this->setConfiguration(
 				$connector,
-				Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET),
+				Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::SERVER_SECRET),
 				$serverSecret,
 			);
 		}
@@ -1584,13 +1569,13 @@ final class PairingController extends BaseController
 
 		$iosDeviceInfo
 			= hex2bin(strval($connector->getClientPublicKey()))
-			. $tlvEntry[Types\TlvCode::CODE_IDENTIFIER]
+			. $tlvEntry[Types\TlvCode::IDENTIFIER]
 			. publicKey($serverSecret);
 
 		if (
 			!$this->edDsa->verify(
 				array_values((array) unpack('C*', $iosDeviceInfo)),
-				$tlvEntry[Types\TlvCode::CODE_SIGNATURE],
+				$tlvEntry[Types\TlvCode::SIGNATURE],
 				array_values((array) unpack('C*', $client->getPublicKey())),
 			)
 		) {
@@ -1600,19 +1585,19 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'pairing-controller',
 					'connector' => [
-						'id' => $connector->getPlainId(),
+						'id' => $connector->getId()->toString(),
 					],
 					'pairing' => [
 						'type' => 'verify-finish',
-						'state' => Types\TlvState::STATE_M2,
+						'state' => Types\TlvState::M2,
 					],
 				],
 			);
 
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_AUTHENTICATION,
+					Types\TlvCode::STATE => Types\TlvState::M4,
+					Types\TlvCode::ERROR => Types\TlvError::AUTHENTICATION,
 				],
 			];
 		}
@@ -1623,18 +1608,18 @@ final class PairingController extends BaseController
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
-					'id' => $connector->getPlainId(),
+					'id' => $connector->getId()->toString(),
 				],
 				'pairing' => [
 					'type' => 'verify-start',
-					'state' => Types\TlvState::STATE_M2,
+					'state' => Types\TlvState::M2,
 				],
 			],
 		);
 
 		return [
 			[
-				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M4,
+				Types\TlvCode::STATE => Types\TlvState::M4,
 			],
 		];
 	}
@@ -1650,14 +1635,14 @@ final class PairingController extends BaseController
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
-					'id' => $connector->getPlainId(),
+					'id' => $connector->getId()->toString(),
 				],
 			],
 		);
 
 		$result = [
 			[
-				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
+				Types\TlvCode::STATE => Types\TlvState::M2,
 			],
 		];
 
@@ -1669,19 +1654,19 @@ final class PairingController extends BaseController
 		} catch (Throwable) {
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
 
 		foreach ($clients as $client) {
 			$result[] = [
-				Types\TlvCode::CODE_IDENTIFIER => $client->getUid(),
-				Types\TlvCode::CODE_PUBLIC_KEY => (array) unpack('C*', $client->getPublicKey()),
-				Types\TlvCode::CODE_PERMISSIONS => $client->isAdmin()
-					? Types\ClientPermission::PERMISSION_ADMIN
-					: Types\ClientPermission::PERMISSION_USER,
+				Types\TlvCode::IDENTIFIER => $client->getUid(),
+				Types\TlvCode::PUBLIC_KEY => (array) unpack('C*', $client->getPublicKey()),
+				Types\TlvCode::PERMISSIONS => $client->isAdmin()
+					? Types\ClientPermission::ADMIN
+					: Types\ClientPermission::USER,
 			];
 		}
 
@@ -1706,7 +1691,7 @@ final class PairingController extends BaseController
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
-					'id' => $connector->getPlainId(),
+					'id' => $connector->getId()->toString(),
 				],
 			],
 		);
@@ -1720,8 +1705,8 @@ final class PairingController extends BaseController
 		} catch (Throwable) {
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
@@ -1734,19 +1719,19 @@ final class PairingController extends BaseController
 						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'pairing-controller',
 						'connector' => [
-							'id' => $connector->getPlainId(),
+							'id' => $connector->getId()->toString(),
 						],
 						'pairing' => [
 							'type' => 'add-pairing',
-							'state' => Types\TlvState::STATE_M2,
+							'state' => Types\TlvState::M2,
 						],
 					],
 				);
 
 				return [
 					[
-						Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-						Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+						Types\TlvCode::STATE => Types\TlvState::M2,
+						Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 					],
 				];
 			} else {
@@ -1754,15 +1739,15 @@ final class PairingController extends BaseController
 					$this->databaseHelper->transaction(
 						function () use ($client, $clientPermission): void {
 							$this->clientsManager->update($client, Utils\ArrayHash::from([
-								'admin' => $clientPermission === Types\ClientPermission::PERMISSION_ADMIN,
+								'admin' => $clientPermission === Types\ClientPermission::ADMIN,
 							]));
 						},
 					);
 				} catch (Throwable) {
 					return [
 						[
-							Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-							Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+							Types\TlvCode::STATE => Types\TlvState::M2,
+							Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 						],
 					];
 				}
@@ -1774,7 +1759,7 @@ final class PairingController extends BaseController
 						$this->clientsManager->create(Utils\ArrayHash::from([
 							'uid' => $clientUid,
 							'publicKey' => pack('C*', ...$clientPublicKey),
-							'admin' => $clientPermission === Types\ClientPermission::PERMISSION_ADMIN,
+							'admin' => $clientPermission === Types\ClientPermission::ADMIN,
 							'connector' => $connector,
 						]));
 					},
@@ -1782,8 +1767,8 @@ final class PairingController extends BaseController
 			} catch (Throwable) {
 				return [
 					[
-						Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-						Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+						Types\TlvCode::STATE => Types\TlvState::M2,
+						Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 					],
 				];
 			}
@@ -1791,7 +1776,7 @@ final class PairingController extends BaseController
 
 		return [
 			[
-				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
+				Types\TlvCode::STATE => Types\TlvState::M2,
 			],
 		];
 	}
@@ -1810,7 +1795,7 @@ final class PairingController extends BaseController
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'pairing-controller',
 				'connector' => [
-					'id' => $connector->getPlainId(),
+					'id' => $connector->getId()->toString(),
 				],
 			],
 		);
@@ -1835,28 +1820,28 @@ final class PairingController extends BaseController
 				if ($clients->count() === 0) {
 					$this->setConfiguration(
 						$connector,
-						Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED),
+						Types\ConnectorPropertyIdentifier::get(Types\ConnectorPropertyIdentifier::PAIRED),
 						false,
 					);
 
 					$this->setConfiguration(
 						$connector,
 						Types\ConnectorPropertyIdentifier::get(
-							Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_PUBLIC_KEY,
+							Types\ConnectorPropertyIdentifier::CLIENT_PUBLIC_KEY,
 						),
 					);
 
 					$this->setConfiguration(
 						$connector,
 						Types\ConnectorPropertyIdentifier::get(
-							Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY,
+							Types\ConnectorPropertyIdentifier::SHARED_KEY,
 						),
 					);
 
 					$this->setConfiguration(
 						$connector,
 						Types\ConnectorPropertyIdentifier::get(
-							Types\ConnectorPropertyIdentifier::IDENTIFIER_HASHING_KEY,
+							Types\ConnectorPropertyIdentifier::HASHING_KEY,
 						),
 					);
 				}
@@ -1864,15 +1849,15 @@ final class PairingController extends BaseController
 		} catch (Throwable) {
 			return [
 				[
-					Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
-					Types\TlvCode::CODE_ERROR => Types\TlvError::ERROR_UNKNOWN,
+					Types\TlvCode::STATE => Types\TlvState::M2,
+					Types\TlvCode::ERROR => Types\TlvError::UNKNOWN,
 				],
 			];
 		}
 
 		return [
 			[
-				Types\TlvCode::CODE_STATE => Types\TlvState::STATE_M2,
+				Types\TlvCode::STATE => Types\TlvState::M2,
 			],
 		];
 	}
@@ -1903,10 +1888,10 @@ final class PairingController extends BaseController
 
 		if ($property === null) {
 			if (
-				$type->equalsValue(Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET)
-				|| $type->equalsValue(Types\ConnectorPropertyIdentifier::IDENTIFIER_CLIENT_PUBLIC_KEY)
-				|| $type->equalsValue(Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY)
-				|| $type->equalsValue(Types\ConnectorPropertyIdentifier::IDENTIFIER_HASHING_KEY)
+				$type->equalsValue(Types\ConnectorPropertyIdentifier::SERVER_SECRET)
+				|| $type->equalsValue(Types\ConnectorPropertyIdentifier::CLIENT_PUBLIC_KEY)
+				|| $type->equalsValue(Types\ConnectorPropertyIdentifier::SHARED_KEY)
+				|| $type->equalsValue(Types\ConnectorPropertyIdentifier::HASHING_KEY)
 			) {
 				$this->databaseHelper->transaction(
 					function () use ($connector, $type, $value): void {

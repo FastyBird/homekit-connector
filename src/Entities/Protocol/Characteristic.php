@@ -209,41 +209,41 @@ class Characteristic
 	public function getMeta(): array
 	{
 		$meta = [
-			Types\Representation::REPR_FORMAT => strval($this->dataType->getValue()),
+			Types\Representation::FORMAT => strval($this->dataType->getValue()),
 		];
 
 		if (
-			$this->dataType->equalsValue(Types\DataType::DATA_TYPE_INT)
-			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT8)
-			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT16)
-			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT32)
-			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_UINT64)
-			|| $this->dataType->equalsValue(Types\DataType::DATA_TYPE_FLOAT)
+			$this->dataType->equalsValue(Types\DataType::INT)
+			|| $this->dataType->equalsValue(Types\DataType::UINT8)
+			|| $this->dataType->equalsValue(Types\DataType::UINT16)
+			|| $this->dataType->equalsValue(Types\DataType::UINT32)
+			|| $this->dataType->equalsValue(Types\DataType::UINT64)
+			|| $this->dataType->equalsValue(Types\DataType::FLOAT)
 		) {
 			if ($this->maxValue !== null) {
-				$meta[Types\Representation::REPR_MAX_VALUE] = $this->maxValue;
+				$meta[Types\Representation::MAX_VALUE] = $this->maxValue;
 			}
 
 			if ($this->minValue !== null) {
-				$meta[Types\Representation::REPR_MIN_VALUE] = $this->minValue;
+				$meta[Types\Representation::MIN_VALUE] = $this->minValue;
 			}
 
 			if ($this->minStep !== null) {
-				$meta[Types\Representation::REPR_MIN_STEP] = $this->minStep;
+				$meta[Types\Representation::MIN_STEP] = $this->minStep;
 			}
 
 			if ($this->unit !== null) {
-				$meta[Types\Representation::REPR_UNIT] = strval($this->unit->getValue());
+				$meta[Types\Representation::UNIT] = strval($this->unit->getValue());
 			}
 		}
 
 		if ($this->validValues !== null) {
-			$meta[Types\Representation::REPR_VALID_VALUES] = $this->validValues;
+			$meta[Types\Representation::VALID_VALUES] = $this->validValues;
 		}
 
-		if ($this->dataType->equalsValue(Types\DataType::DATA_TYPE_STRING) && $this->maxLength !== null) {
+		if ($this->dataType->equalsValue(Types\DataType::STRING) && $this->maxLength !== null) {
 			if ($this->maxLength !== self::DEFAULT_MAX_LENGTH) {
-				$meta[Types\Representation::REPR_MAX_LEN] = $this->maxLength;
+				$meta[Types\Representation::MAX_LEN] = $this->maxLength;
 			}
 		}
 
@@ -262,16 +262,16 @@ class Characteristic
 	public function toHap(): array
 	{
 		$hapRepresentation = [
-			Types\Representation::REPR_IID => $this->service->getAccessory()->getIidManager()->getIid($this),
-			Types\Representation::REPR_TYPE => Helpers\Protocol::uuidToHapType($this->typeId),
-			Types\Representation::REPR_PERM => $this->permissions,
-			Types\Representation::REPR_FORMAT => strval($this->dataType->getValue()),
+			Types\Representation::IID => $this->service->getAccessory()->getIidManager()->getIid($this),
+			Types\Representation::TYPE => Helpers\Protocol::uuidToHapType($this->typeId),
+			Types\Representation::PERM => $this->permissions,
+			Types\Representation::FORMAT => strval($this->dataType->getValue()),
 		];
 
 		$hapRepresentation = array_merge($hapRepresentation, $this->getMeta());
 
-		if (in_array(Types\CharacteristicPermission::PERMISSION_READ, $this->permissions, true)) {
-			$hapRepresentation[Types\Representation::REPR_VALUE] = Transformer::toClient(
+		if (in_array(Types\CharacteristicPermission::READ, $this->permissions, true)) {
+			$hapRepresentation[Types\Representation::VALUE] = Transformer::toClient(
 				$this->property,
 				$this->dataType,
 				$this->validValues,
@@ -283,8 +283,8 @@ class Characteristic
 			);
 		}
 
-		$hapRepresentation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = in_array(
-			Types\CharacteristicPermission::PERMISSION_NOTIFY,
+		$hapRepresentation[Types\CharacteristicPermission::NOTIFY] = in_array(
+			Types\CharacteristicPermission::NOTIFY,
 			$this->permissions,
 			true,
 		);

@@ -77,6 +77,10 @@ cmd:
             select:
                 connector: "Please select connector to manage"
 
+        data:
+            name: "Name"
+            devicesCnt: "# Devices"
+
         messages:
             identifier:
                 used: "This identifier is already used."

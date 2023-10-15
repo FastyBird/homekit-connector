@@ -64,7 +64,7 @@ final class Tlv
 
 		foreach ($objects as $entry) {
 			if ($cnt > 0) {
-				$row = pack('C1', Types\TlvCode::CODE_SEPARATOR);
+				$row = pack('C1', Types\TlvCode::SEPARATOR);
 				$row .= pack('C1', 0); // Length of separator is 0
 
 				$data[] = $row;
@@ -81,18 +81,18 @@ final class Tlv
 
 				if (
 					(
-						$tlvCode->equalsValue(Types\TlvCode::CODE_METHOD)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_STATE)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_ERROR)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_RETRY_DELAY)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_PERMISSIONS)
+						$tlvCode->equalsValue(Types\TlvCode::METHOD)
+						|| $tlvCode->equalsValue(Types\TlvCode::STATE)
+						|| $tlvCode->equalsValue(Types\TlvCode::ERROR)
+						|| $tlvCode->equalsValue(Types\TlvCode::RETRY_DELAY)
+						|| $tlvCode->equalsValue(Types\TlvCode::PERMISSIONS)
 					) && is_numeric($value)
 				) {
 					$row .= pack('C1', 1); // Length of integer, only short (1-byte length) integers is supported
 					$row .= pack('C1', $value);
 
 				} elseif (
-					$tlvCode->equalsValue(Types\TlvCode::CODE_IDENTIFIER)
+					$tlvCode->equalsValue(Types\TlvCode::IDENTIFIER)
 					&& is_string($value)
 				) {
 					$chars = array_map(static fn (string $char): int => ord($char), str_split($value));
@@ -116,14 +116,14 @@ final class Tlv
 					}
 				} elseif (
 					(
-						$tlvCode->equalsValue(Types\TlvCode::CODE_SALT)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_PUBLIC_KEY)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_PROOF)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_ENCRYPTED_DATA)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_CERTIFICATE)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_SIGNATURE)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_FRAGMENT_DATA)
-						|| $tlvCode->equalsValue(Types\TlvCode::CODE_FRAGMENT_LAST)
+						$tlvCode->equalsValue(Types\TlvCode::SALT)
+						|| $tlvCode->equalsValue(Types\TlvCode::PUBLIC_KEY)
+						|| $tlvCode->equalsValue(Types\TlvCode::PROOF)
+						|| $tlvCode->equalsValue(Types\TlvCode::ENCRYPTED_DATA)
+						|| $tlvCode->equalsValue(Types\TlvCode::CERTIFICATE)
+						|| $tlvCode->equalsValue(Types\TlvCode::SIGNATURE)
+						|| $tlvCode->equalsValue(Types\TlvCode::FRAGMENT_DATA)
+						|| $tlvCode->equalsValue(Types\TlvCode::FRAGMENT_LAST)
 					) && is_array($value)
 				) {
 					if (count($value) > 255) {
@@ -187,7 +187,7 @@ final class Tlv
 
 			$tlvCode = Types\TlvCode::get($tag);
 
-			if ($tlvCode->equalsValue(Types\TlvCode::CODE_SEPARATOR)) {
+			if ($tlvCode->equalsValue(Types\TlvCode::SEPARATOR)) {
 				$objects[] = $entry;
 				$entry = [];
 
@@ -209,11 +209,11 @@ final class Tlv
 			$value = null;
 
 			if (
-				$tlvCode->equalsValue(Types\TlvCode::CODE_METHOD)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_STATE)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_ERROR)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_RETRY_DELAY)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_PERMISSIONS)
+				$tlvCode->equalsValue(Types\TlvCode::METHOD)
+				|| $tlvCode->equalsValue(Types\TlvCode::STATE)
+				|| $tlvCode->equalsValue(Types\TlvCode::ERROR)
+				|| $tlvCode->equalsValue(Types\TlvCode::RETRY_DELAY)
+				|| $tlvCode->equalsValue(Types\TlvCode::PERMISSIONS)
 			) {
 				if ($length !== 1) {
 					throw new Exceptions\InvalidArgument('Only short (1-byte length) integers is supported');
@@ -227,7 +227,7 @@ final class Tlv
 				} else {
 					$value = intval(array_sum($value));
 				}
-			} elseif ($tlvCode->equalsValue(Types\TlvCode::CODE_IDENTIFIER)) {
+			} elseif ($tlvCode->equalsValue(Types\TlvCode::IDENTIFIER)) {
 				// Str value
 				$value = unpack('C' . $length, substr($data, $position, $length));
 
@@ -247,14 +247,14 @@ final class Tlv
 					}
 				}
 			} elseif (
-				$tlvCode->equalsValue(Types\TlvCode::CODE_SALT)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_PUBLIC_KEY)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_PROOF)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_ENCRYPTED_DATA)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_CERTIFICATE)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_SIGNATURE)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_FRAGMENT_DATA)
-				|| $tlvCode->equalsValue(Types\TlvCode::CODE_FRAGMENT_LAST)
+				$tlvCode->equalsValue(Types\TlvCode::SALT)
+				|| $tlvCode->equalsValue(Types\TlvCode::PUBLIC_KEY)
+				|| $tlvCode->equalsValue(Types\TlvCode::PROOF)
+				|| $tlvCode->equalsValue(Types\TlvCode::ENCRYPTED_DATA)
+				|| $tlvCode->equalsValue(Types\TlvCode::CERTIFICATE)
+				|| $tlvCode->equalsValue(Types\TlvCode::SIGNATURE)
+				|| $tlvCode->equalsValue(Types\TlvCode::FRAGMENT_DATA)
+				|| $tlvCode->equalsValue(Types\TlvCode::FRAGMENT_LAST)
 			) {
 				// Bytes value
 				$value = unpack('C' . $length, substr($data, $position, $length));

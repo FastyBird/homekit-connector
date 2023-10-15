@@ -32,51 +32,51 @@ class Representation extends Consistence\Enum\Enum
 	/**
 	 * Define permissions identifiers
 	 */
-	public const REPR_ACCS = 'accessories';
+	public const ACCS = 'accessories';
 
-	public const REPR_AID = 'aid';
+	public const AID = 'aid';
 
-	public const REPR_CHARS = 'characteristics';
+	public const CHARS = 'characteristics';
 
-	public const REPR_DESC = 'description';
+	public const DESC = 'description';
 
-	public const REPR_FORMAT = 'format';
+	public const FORMAT = 'format';
 
-	public const REPR_IID = 'iid';
+	public const IID = 'iid';
 
-	public const REPR_MAX_LEN = 'maxLen';
+	public const MAX_LEN = 'maxLen';
 
-	public const REPR_PERM = 'perms';
+	public const PERM = 'perms';
 
-	public const REPR_PID = 'pid';
+	public const PID = 'pid';
 
-	public const REPR_PRIMARY = 'primary';
+	public const PRIMARY = 'primary';
 
-	public const REPR_HIDDEN = 'hidden';
+	public const HIDDEN = 'hidden';
 
-	public const REPR_SERVICES = 'services';
+	public const SERVICES = 'services';
 
-	public const REPR_LINKED = 'linked';
+	public const LINKED = 'linked';
 
-	public const REPR_STATUS = 'status';
+	public const STATUS = 'status';
 
-	public const REPR_TTL = 'ttl';
+	public const TTL = 'ttl';
 
-	public const REPR_TYPE = 'type';
+	public const TYPE = 'type';
 
-	public const REPR_VALUE = 'value';
+	public const VALUE = 'value';
 
-	public const REPR_VALID_VALUES = 'valid-values';
+	public const VALID_VALUES = 'valid-values';
 
-	public const REPR_MAX_VALUE = 'maxValue';
+	public const MAX_VALUE = 'maxValue';
 
-	public const REPR_MIN_STEP = 'minStep';
+	public const MIN_STEP = 'minStep';
 
-	public const REPR_MIN_VALUE = 'minValue';
+	public const MIN_VALUE = 'minValue';
 
-	public const REPR_UNIT = 'unit';
+	public const UNIT = 'unit';
 
-	public const REPR_META = 'meta';
+	public const META = 'meta';
 
 	public function __toString(): string
 	{

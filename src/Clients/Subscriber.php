@@ -15,12 +15,12 @@
 
 namespace FastyBird\Connector\HomeKit\Clients;
 
+use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Nette;
 use Nette\Utils;
-use Psr\Log;
 use React\EventLoop;
 use React\Socket;
 use SplObjectStorage;
@@ -56,8 +56,8 @@ final class Subscriber
 	private array $subscriptions;
 
 	public function __construct(
+		private readonly HomeKit\Logger $logger,
 		private readonly EventLoop\LoopInterface $eventLoop,
-		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
 		$this->connections = new SplObjectStorage();
@@ -247,11 +247,11 @@ final class Subscriber
 
 		try {
 			$content = Utils\Json::encode([
-				Types\Representation::REPR_CHARS => [
+				Types\Representation::CHARS => [
 					[
-						Types\Representation::REPR_AID => $aid,
-						Types\Representation::REPR_IID => $iid,
-						Types\Representation::REPR_VALUE => $value,
+						Types\Representation::AID => $aid,
+						Types\Representation::IID => $iid,
+						Types\Representation::VALUE => $value,
 					],
 				],
 			]);

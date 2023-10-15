@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\DI;
 
 use Doctrine\Persistence;
+use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Commands;
 use FastyBird\Connector\HomeKit\Connector;
@@ -88,32 +89,60 @@ class HomeKitExtension extends DI\CompilerExtension
 		$configuration = $this->getConfig();
 		assert($configuration instanceof stdClass);
 
-		$writer = null;
+		$logger = $builder->addDefinition($this->prefix('logger'), new DI\Definitions\ServiceDefinition())
+			->setType(HomeKit\Logger::class)
+			->setAutowired(false);
+
+		/**
+		 * WRITERS
+		 */
 
 		if ($configuration->writer === Writers\Event::NAME) {
-			$writer = $builder->addDefinition($this->prefix('writers.event'), new DI\Definitions\ServiceDefinition())
+			$builder->addFactoryDefinition($this->prefix('writers.event'))
+				->setImplement(Writers\EventFactory::class)
+				->getResultDefinition()
 				->setType(Writers\Event::class)
-				->setAutowired(false);
+				->setArguments([
+					'logger' => $logger,
+				]);
 		} elseif ($configuration->writer === Writers\Exchange::NAME) {
-			$writer = $builder->addDefinition($this->prefix('writers.exchange'), new DI\Definitions\ServiceDefinition())
+			$builder->addFactoryDefinition($this->prefix('writers.exchange'))
+				->setImplement(Writers\ExchangeFactory::class)
+				->getResultDefinition()
 				->setType(Writers\Exchange::class)
-				->setAutowired(false)
-				->addTag(ExchangeDI\ExchangeExtension::CONSUMER_STATE, false);
+				->addTag(ExchangeDI\ExchangeExtension::CONSUMER_STATE, false)
+				->setArguments([
+					'logger' => $logger,
+				]);
 		} elseif ($configuration->writer === Writers\Periodic::NAME) {
-			$writer = $builder->addDefinition($this->prefix('writers.periodic'), new DI\Definitions\ServiceDefinition())
+			$builder->addFactoryDefinition($this->prefix('writers.periodic'))
+				->setImplement(Writers\PeriodicFactory::class)
+				->getResultDefinition()
 				->setType(Writers\Periodic::class)
-				->setAutowired(false);
+				->setArguments([
+					'logger' => $logger,
+				]);
 		}
+
+		/**
+		 * SERVERS
+		 */
 
 		$builder->addFactoryDefinition($this->prefix('server.mdns'))
 			->setImplement(Servers\MdnsFactory::class)
 			->getResultDefinition()
-			->setType(Servers\Mdns::class);
+			->setType(Servers\Mdns::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
 
 		$builder->addFactoryDefinition($this->prefix('server.http'))
 			->setImplement(Servers\HttpFactory::class)
 			->getResultDefinition()
-			->setType(Servers\Http::class);
+			->setType(Servers\Http::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
 
 		$builder->addFactoryDefinition($this->prefix('server.http.secure.server'))
 			->setImplement(Servers\SecureServerFactory::class)
@@ -123,7 +152,14 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addFactoryDefinition($this->prefix('server.http.secure.connection'))
 			->setImplement(Servers\SecureConnectionFactory::class)
 			->getResultDefinition()
-			->setType(Servers\SecureConnection::class);
+			->setType(Servers\SecureConnection::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
+
+		/**
+		 * SUBSCRIBERS
+		 */
 
 		$builder->addDefinition($this->prefix('subscribers.properties'), new DI\Definitions\ServiceDefinition())
 			->setType(Subscribers\Properties::class);
@@ -134,6 +170,10 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('subscribers.system'), new DI\Definitions\ServiceDefinition())
 			->setType(Subscribers\System::class);
 
+		/**
+		 * JSON-API SCHEMAS
+		 */
+
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\HomeKitConnector::class);
 
@@ -142,6 +182,10 @@ class HomeKitExtension extends DI\CompilerExtension
 
 		$builder->addDefinition($this->prefix('schemas.channel.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Schemas\HomeKitChannel::class);
+
+		/**
+		 * JSON-API HYDRATORS
+		 */
 
 		$builder->addDefinition($this->prefix('hydrators.connector.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Hydrators\HomeKitConnector::class);
@@ -152,6 +196,10 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('hydrators.channel.homekit'), new DI\Definitions\ServiceDefinition())
 			->setType(Hydrators\HomeKitChannel::class);
 
+		/**
+		 * HELPERS
+		 */
+
 		$builder->addDefinition($this->prefix('helpers.loader'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Loader::class);
 
@@ -159,12 +207,24 @@ class HomeKitExtension extends DI\CompilerExtension
 			->setType(Router\Router::class)
 			->setAutowired(false);
 
+		/**
+		 * ROUTING
+		 */
+
 		$builder->addDefinition($this->prefix('http.middlewares.router'), new DI\Definitions\ServiceDefinition())
 			->setType(Middleware\Router::class)
-			->setArguments(['router' => $router]);
+			->setArguments([
+				'router' => $router,
+				'logger' => $logger,
+			]);
+
+		/**
+		 * CONTROLLERS
+		 */
 
 		$builder->addDefinition($this->prefix('http.controllers.accessories'), new DI\Definitions\ServiceDefinition())
 			->setType(Controllers\AccessoriesController::class)
+			->addSetup('setLogger', [$logger])
 			->addTag('nette.inject');
 
 		$builder->addDefinition(
@@ -172,6 +232,7 @@ class HomeKitExtension extends DI\CompilerExtension
 			new DI\Definitions\ServiceDefinition(),
 		)
 			->setType(Controllers\CharacteristicsController::class)
+			->addSetup('setLogger', [$logger])
 			->setArguments([
 				'useExchange' => $configuration->writer === Writers\Exchange::NAME,
 			])
@@ -179,7 +240,12 @@ class HomeKitExtension extends DI\CompilerExtension
 
 		$builder->addDefinition($this->prefix('http.controllers.pairing'), new DI\Definitions\ServiceDefinition())
 			->setType(Controllers\PairingController::class)
+			->addSetup('setLogger', [$logger])
 			->addTag('nette.inject');
+
+		/**
+		 * ENTITIES
+		 */
 
 		$builder->addDefinition($this->prefix('entities.accessory.factory'))
 			->setType(Entities\Protocol\AccessoryFactory::class);
@@ -190,6 +256,10 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('entities.characteristic.factory'))
 			->setType(Entities\Protocol\CharacteristicsFactory::class);
 
+		/**
+		 * HOMEKIT
+		 */
+
 		$builder->addDefinition($this->prefix('protocol.tlv'), new DI\Definitions\ServiceDefinition())
 			->setType(Protocol\Tlv::class);
 
@@ -197,7 +267,14 @@ class HomeKitExtension extends DI\CompilerExtension
 			->setType(Protocol\Driver::class);
 
 		$builder->addDefinition($this->prefix('clients.subscriber'))
-			->setType(Clients\Subscriber::class);
+			->setType(Clients\Subscriber::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
+
+		/**
+		 * MODELS
+		 */
 
 		$builder->addDefinition($this->prefix('models.clientsRepository'), new DI\Definitions\ServiceDefinition())
 			->setType(Models\Clients\ClientsRepository::class);
@@ -205,6 +282,29 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('models.clientsManager'), new DI\Definitions\ServiceDefinition())
 			->setType(Models\Clients\ClientsManager::class)
 			->setArgument('entityCrud', '__placeholder__');
+
+		/**
+		 * COMMANDS
+		 */
+
+		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
+			->setType(Commands\Initialize::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
+
+		$builder->addDefinition($this->prefix('commands.execute'), new DI\Definitions\ServiceDefinition())
+			->setType(Commands\Execute::class);
+
+		$builder->addDefinition($this->prefix('commands.devices'), new DI\Definitions\ServiceDefinition())
+			->setType(Commands\Devices::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
+
+		/**
+		 * CONNECTOR
+		 */
 
 		$builder->addFactoryDefinition($this->prefix('executor.factory'))
 			->setImplement(Connector\ConnectorFactory::class)
@@ -216,17 +316,8 @@ class HomeKitExtension extends DI\CompilerExtension
 			->setType(Connector\Connector::class)
 			->setArguments([
 				'serversFactories' => $builder->findByType(Servers\ServerFactory::class),
-				'writer' => $writer,
+				'logger' => $logger,
 			]);
-
-		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
-			->setType(Commands\Initialize::class);
-
-		$builder->addDefinition($this->prefix('commands.execute'), new DI\Definitions\ServiceDefinition())
-			->setType(Commands\Execute::class);
-
-		$builder->addDefinition($this->prefix('commands.devices'), new DI\Definitions\ServiceDefinition())
-			->setType(Commands\Devices::class);
 	}
 
 	/**

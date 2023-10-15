@@ -29,7 +29,6 @@ use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use Nette;
 use Nette\Utils;
-use Psr\Log;
 use React\Datagram;
 use React\Dns;
 use React\EventLoop;
@@ -93,8 +92,8 @@ final class Mdns implements Server
 	public function __construct(
 		private readonly HomeKit\Entities\HomeKitConnector $connector,
 		private readonly EventLoop\LoopInterface $eventLoop,
+		private readonly HomeKit\Logger $logger,
 		private readonly DevicesModels\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
-		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
 		$this->parser = new Dns\Protocol\Parser();
@@ -117,7 +116,7 @@ final class Mdns implements Server
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
 				'connector' => [
-					'id' => $this->connector->getPlainId(),
+					'id' => $this->connector->getId()->toString(),
 				],
 			],
 		);
@@ -162,7 +161,7 @@ final class Mdns implements Server
 							'type' => 'mdns-server',
 							'exception' => BootstrapHelpers\Logger::buildException($ex),
 							'connector' => [
-								'id' => $this->connector->getPlainId(),
+								'id' => $this->connector->getId()->toString(),
 							],
 						],
 					);
@@ -181,7 +180,7 @@ final class Mdns implements Server
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'mdns-server',
 							'connector' => [
-								'id' => $this->connector->getPlainId(),
+								'id' => $this->connector->getId()->toString(),
 							],
 						],
 					);
@@ -206,7 +205,7 @@ final class Mdns implements Server
 						'type' => 'mdns-server',
 						'exception' => BootstrapHelpers\Logger::buildException($ex),
 						'connector' => [
-							'id' => $this->connector->getPlainId(),
+							'id' => $this->connector->getId()->toString(),
 						],
 					],
 				);
@@ -236,7 +235,7 @@ final class Mdns implements Server
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
 				'connector' => [
-					'id' => $this->connector->getPlainId(),
+					'id' => $this->connector->getId()->toString(),
 				],
 			],
 		);
@@ -282,8 +281,8 @@ final class Mdns implements Server
 				)
 			)
 			&& (
-				$property->getIdentifier() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED
-				|| $property->getIdentifier() === Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION
+				$property->getIdentifier() === Types\ConnectorPropertyIdentifier::PAIRED
+				|| $property->getIdentifier() === Types\ConnectorPropertyIdentifier::CONFIG_VERSION
 			)
 		) {
 			$this->logger->debug(
@@ -292,7 +291,7 @@ final class Mdns implements Server
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'mdns-server',
 					'connector' => [
-						'id' => $this->connector->getPlainId(),
+						'id' => $this->connector->getId()->toString(),
 					],
 				],
 			);
@@ -310,7 +309,7 @@ final class Mdns implements Server
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'mdns-server',
 				'connector' => [
-					'id' => $this->connector->getPlainId(),
+					'id' => $this->connector->getId()->toString(),
 				],
 			],
 		);
@@ -436,7 +435,7 @@ final class Mdns implements Server
 				'c#=' . $this->connector->getVersion(),
 				's#=1', // Accessory state
 				'ff=0',
-				'ci=' . HomeKit\Types\AccessoryCategory::CATEGORY_BRIDGE,
+				'ci=' . HomeKit\Types\AccessoryCategory::BRIDGE,
 				// 'sf == 1' means "discoverable by HomeKit iOS clients"
 				'sf=' . ($this->connector->isPaired() ? 0 : 1),
 				'sh=' . $setupHash,

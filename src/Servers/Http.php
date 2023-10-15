@@ -15,11 +15,13 @@
 
 namespace FastyBird\Connector\HomeKit\Servers;
 
+use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Middleware;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Entities as MetadataEntities;
@@ -35,7 +37,6 @@ use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Log;
 use React\EventLoop;
 use React\Http as ReactHttp;
 use React\Socket;
@@ -79,6 +80,7 @@ final class Http implements Server
 		private readonly Entities\Protocol\AccessoryFactory $accessoryFactory,
 		private readonly Entities\Protocol\ServiceFactory $serviceFactory,
 		private readonly Entities\Protocol\CharacteristicsFactory $characteristicsFactory,
+		private readonly HomeKit\Logger $logger,
 		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStates,
 		private readonly DevicesUtilities\DeviceConnection $deviceConnectionManager,
 		private readonly DevicesModels\Devices\DevicesRepository $devicesRepository,
@@ -88,7 +90,6 @@ final class Http implements Server
 		private readonly DevicesModels\Devices\Properties\PropertiesManager $devicesPropertiesManager,
 		private readonly DevicesModels\Channels\Properties\PropertiesRepository $channelPropertiesRepository,
 		private readonly EventLoop\LoopInterface $eventLoop,
-		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
 	}
@@ -107,7 +108,7 @@ final class Http implements Server
 		$bridge = $this->accessoryFactory->create(
 			$this->connector,
 			null,
-			Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE),
+			Types\AccessoryCategory::get(Types\AccessoryCategory::BRIDGE),
 		);
 		assert($bridge instanceof Entities\Protocol\Bridge);
 
@@ -116,15 +117,13 @@ final class Http implements Server
 
 		$bridgedAccessories = [];
 
-		$findDevicesQuery = new DevicesQueries\FindDevices();
+		$findDevicesQuery = new Queries\FindDevices();
 		$findDevicesQuery->forConnector($this->connector);
 
 		foreach ($this->devicesRepository->findAllBy($findDevicesQuery, Entities\HomeKitDevice::class) as $device) {
-			assert($device instanceof Entities\HomeKitDevice);
-
 			$findDevicePropertyQuery = new DevicesQueries\FindDeviceProperties();
 			$findDevicePropertyQuery->forDevice($device);
-			$findDevicePropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::IDENTIFIER_AID);
+			$findDevicePropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::AID);
 
 			$aidProperty = $this->devicesPropertiesRepository->findOneBy(
 				$findDevicePropertyQuery,
@@ -140,15 +139,13 @@ final class Http implements Server
 			$accessory = $this->accessoryFactory->create($device, $aid, $device->getAccessoryCategory());
 			assert($accessory instanceof Entities\Protocol\Device);
 
-			$findChannelsQuery = new DevicesQueries\FindChannels();
+			$findChannelsQuery = new Queries\FindChannels();
 			$findChannelsQuery->forDevice($device);
 
 			foreach ($this->channelsRepository->findAllBy(
 				$findChannelsQuery,
 				Entities\HomeKitChannel::class,
 			) as $channel) {
-				assert($channel instanceof Entities\HomeKitChannel);
-
 				$service = $this->serviceFactory->create(
 					$channel->getServiceType(),
 					$accessory,
@@ -216,7 +213,7 @@ final class Http implements Server
 
 			$findDevicePropertyQuery = new DevicesQueries\FindDeviceProperties();
 			$findDevicePropertyQuery->forDevice($accessory->getDevice());
-			$findDevicePropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::IDENTIFIER_AID);
+			$findDevicePropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::AID);
 
 			$aidProperty = $this->devicesPropertiesRepository->findOneBy(
 				$findDevicePropertyQuery,
@@ -226,7 +223,7 @@ final class Http implements Server
 			if ($aidProperty === null) {
 				$this->devicesPropertiesManager->create(Nette\Utils\ArrayHash::from([
 					'entity' => DevicesEntities\Devices\Properties\Variable::class,
-					'identifier' => Types\DevicePropertyIdentifier::IDENTIFIER_AID,
+					'identifier' => Types\DevicePropertyIdentifier::AID,
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
 					'value' => $accessory->getAid(),
 					'device' => $accessory->getDevice(),
@@ -261,16 +258,16 @@ final class Http implements Server
 												'type' => 'http-server',
 												'exception' => BootstrapHelpers\Logger::buildException($ex),
 												'connector' => [
-													'id' => $this->connector->getPlainId(),
+													'id' => $this->connector->getId()->toString(),
 												],
 												'device' => [
-													'id' => $accessory->getDevice()->getPlainId(),
+													'id' => $accessory->getDevice()->getId()->toString(),
 												],
 												'channel' => [
-													'id' => $service->getChannel()?->getPlainId(),
+													'id' => $service->getChannel()?->getId()->toString(),
 												],
 												'property' => [
-													'id' => $property->getPlainId(),
+													'id' => $property->getId()->toString(),
 												],
 											],
 										);
@@ -289,16 +286,16 @@ final class Http implements Server
 									'type' => 'http-server',
 									'exception' => BootstrapHelpers\Logger::buildException($ex),
 									'connector' => [
-										'id' => $this->connector->getPlainId(),
+										'id' => $this->connector->getId()->toString(),
 									],
 									'device' => [
-										'id' => $accessory->getDevice()->getPlainId(),
+										'id' => $accessory->getDevice()->getId()->toString(),
 									],
 									'channel' => [
-										'id' => $service->getChannel()?->getPlainId(),
+										'id' => $service->getChannel()?->getId()->toString(),
 									],
 									'property' => [
-										'id' => $property->getPlainId(),
+										'id' => $property->getId()->toString(),
 									],
 								],
 							);
@@ -322,7 +319,7 @@ final class Http implements Server
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'http-server',
 					'connector' => [
-						'id' => $this->connector->getPlainId(),
+						'id' => $this->connector->getId()->toString(),
 					],
 					'server' => [
 						'address' => self::LISTENING_ADDRESS,
@@ -347,7 +344,7 @@ final class Http implements Server
 					'type' => 'http-server',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
-						'id' => $this->connector->getPlainId(),
+						'id' => $this->connector->getId()->toString(),
 					],
 				],
 			);
@@ -366,7 +363,7 @@ final class Http implements Server
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'http-server',
 					'connector' => [
-						'id' => $this->connector->getPlainId(),
+						'id' => $this->connector->getId()->toString(),
 					],
 					'client' => [
 						'address' => $connection->getRemoteAddress(),
@@ -383,7 +380,7 @@ final class Http implements Server
 						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 						'type' => 'http-server',
 						'connector' => [
-							'id' => $this->connector->getPlainId(),
+							'id' => $this->connector->getId()->toString(),
 						],
 						'client' => [
 							'address' => $connection->getRemoteAddress(),
@@ -403,7 +400,7 @@ final class Http implements Server
 					'type' => 'http-server',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
-						'id' => $this->connector->getPlainId(),
+						'id' => $this->connector->getId()->toString(),
 					],
 				],
 			);
@@ -422,7 +419,7 @@ final class Http implements Server
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'mdns-server',
 					'connector' => [
-						'id' => $this->connector->getPlainId(),
+						'id' => $this->connector->getId()->toString(),
 					],
 				],
 			);
@@ -433,7 +430,7 @@ final class Http implements Server
 			function (ServerRequestInterface $request, callable $next): ResponseInterface {
 				$request = $request->withAttribute(
 					self::REQUEST_ATTRIBUTE_CONNECTOR,
-					$this->connector->getPlainId(),
+					$this->connector->getId()->toString(),
 				);
 
 				return $next($request);
@@ -450,7 +447,7 @@ final class Http implements Server
 					'type' => 'http-server',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
-						'id' => $this->connector->getPlainId(),
+						'id' => $this->connector->getId()->toString(),
 					],
 				],
 			);
@@ -481,7 +478,7 @@ final class Http implements Server
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'http-server',
 				'connector' => [
-					'id' => $this->connector->getPlainId(),
+					'id' => $this->connector->getId()->toString(),
 				],
 			],
 		);
@@ -520,7 +517,7 @@ final class Http implements Server
 					&& $property->getConnector()->equals($this->connector->getId())
 				)
 			)
-			&& $property->getIdentifier() === Types\ConnectorPropertyIdentifier::IDENTIFIER_SHARED_KEY
+			&& $property->getIdentifier() === Types\ConnectorPropertyIdentifier::SHARED_KEY
 		) {
 			$this->logger->debug(
 				'Shared key has been updated',
@@ -528,7 +525,7 @@ final class Http implements Server
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 					'type' => 'http-server',
 					'connector' => [
-						'id' => $this->connector->getPlainId(),
+						'id' => $this->connector->getId()->toString(),
 					],
 				],
 			);

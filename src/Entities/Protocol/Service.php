@@ -209,17 +209,17 @@ class Service
 	public function toHap(): array
 	{
 		return [
-			Types\Representation::REPR_IID => $this->accessory->getIidManager()->getIid($this),
-			Types\Representation::REPR_TYPE => Helpers\Protocol::uuidToHapType($this->getTypeId()),
-			Types\Representation::REPR_CHARS => array_map(
+			Types\Representation::IID => $this->accessory->getIidManager()->getIid($this),
+			Types\Representation::TYPE => Helpers\Protocol::uuidToHapType($this->getTypeId()),
+			Types\Representation::CHARS => array_map(
 				static fn (Characteristic $characteristic): array => $characteristic->toHap(),
 				array_values(array_filter(
 					$this->getCharacteristics(),
 					static fn (Characteristic $characteristic): bool => !$characteristic->isVirtual()
 				)),
 			),
-			Types\Representation::REPR_PRIMARY => $this->primary,
-			Types\Representation::REPR_HIDDEN => $this->hidden,
+			Types\Representation::PRIMARY => $this->primary,
+			Types\Representation::HIDDEN => $this->hidden,
 		];
 	}
 

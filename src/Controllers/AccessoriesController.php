@@ -129,7 +129,7 @@ final class AccessoriesController extends BaseController
 
 		$findConnectorPropertyQuery = new DevicesQueries\FindConnectorProperties();
 		$findConnectorPropertyQuery->byConnectorId($connectorId);
-		$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED);
+		$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PAIRED);
 
 		$pairedProperty = $this->propertiesRepository->findOneBy(
 			$findConnectorPropertyQuery,
@@ -151,7 +151,7 @@ final class AccessoriesController extends BaseController
 
 			throw new Exceptions\HapRequestError(
 				$request,
-				Types\ServerStatus::get(Types\ServerStatus::STATUS_INSUFFICIENT_PRIVILEGES),
+				Types\ServerStatus::get(Types\ServerStatus::INSUFFICIENT_PRIVILEGES),
 				'Connector is already paired with client',
 				StatusCodeInterface::STATUS_BAD_REQUEST,
 			);

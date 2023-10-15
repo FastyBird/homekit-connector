@@ -23,8 +23,8 @@ final class TlvEncodeTest extends TestCase
 
 		$data = [
 			[
-				Types\TlvCode::CODE_STATE => 3,
-				Types\TlvCode::CODE_IDENTIFIER => 'hello',
+				Types\TlvCode::STATE => 3,
+				Types\TlvCode::IDENTIFIER => 'hello',
 			],
 		];
 
@@ -64,9 +64,9 @@ final class TlvEncodeTest extends TestCase
 
 		$data = [
 			[
-				Types\TlvCode::CODE_STATE => 3,
-				Types\TlvCode::CODE_CERTIFICATE => $certificate,
-				Types\TlvCode::CODE_IDENTIFIER => 'hello',
+				Types\TlvCode::STATE => 3,
+				Types\TlvCode::CERTIFICATE => $certificate,
+				Types\TlvCode::IDENTIFIER => 'hello',
 			],
 		];
 
@@ -120,12 +120,12 @@ final class TlvEncodeTest extends TestCase
 
 		$data = [
 			[
-				Types\TlvCode::CODE_IDENTIFIER => 'hello',
-				Types\TlvCode::CODE_PERMISSIONS => 0,
+				Types\TlvCode::IDENTIFIER => 'hello',
+				Types\TlvCode::PERMISSIONS => 0,
 			],
 			[
-				Types\TlvCode::CODE_IDENTIFIER => 'world',
-				Types\TlvCode::CODE_PERMISSIONS => 1,
+				Types\TlvCode::IDENTIFIER => 'world',
+				Types\TlvCode::PERMISSIONS => 1,
 			],
 		];
 

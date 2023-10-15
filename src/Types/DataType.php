@@ -32,25 +32,25 @@ class DataType extends Consistence\Enum\Enum
 	/**
 	 * Define data types
 	 */
-	public const DATA_TYPE_BOOLEAN = 'bool';
+	public const BOOLEAN = 'bool';
 
-	public const DATA_TYPE_INT = 'int';
+	public const INT = 'int';
 
-	public const DATA_TYPE_FLOAT = 'float';
+	public const FLOAT = 'float';
 
-	public const DATA_TYPE_STRING = 'string';
+	public const STRING = 'string';
 
-	public const DATA_TYPE_UINT8 = 'uint8';
+	public const UINT8 = 'uint8';
 
-	public const DATA_TYPE_UINT16 = 'uint16';
+	public const UINT16 = 'uint16';
 
-	public const DATA_TYPE_UINT32 = 'uint32';
+	public const UINT32 = 'uint32';
 
-	public const DATA_TYPE_UINT64 = 'uint64';
+	public const UINT64 = 'uint64';
 
-	public const DATA_TYPE_DATA = 'data';
+	public const DATA = 'data';
 
-	public const DATA_TYPE_TLV8 = 'tlv8';
+	public const TLV8 = 'tlv8';
 
 	public function __toString(): string
 	{

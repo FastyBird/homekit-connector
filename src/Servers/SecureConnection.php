@@ -16,11 +16,11 @@
 namespace FastyBird\Connector\HomeKit\Servers;
 
 use Evenement;
+use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Nette;
-use Psr\Log;
 use React\Socket;
 use React\Stream;
 use SodiumException;
@@ -74,7 +74,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		private readonly Entities\HomeKitConnector $connector,
 		string|null $sharedKey,
 		private readonly Socket\ConnectionInterface $connection,
-		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
+		private readonly HomeKit\Logger $logger,
 	)
 	{
 		$this->setSharedKey($sharedKey);
@@ -221,7 +221,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 					'type' => 'secure-connection',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
-						'id' => $this->connector->getPlainId(),
+						'id' => $this->connector->getId()->toString(),
 					],
 				],
 			);
@@ -272,7 +272,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 					'type' => 'secure-connection',
 					'exception' => BootstrapHelpers\Logger::buildException($ex),
 					'connector' => [
-						'id' => $this->connector->getPlainId(),
+						'id' => $this->connector->getId()->toString(),
 					],
 				],
 			);

@@ -100,11 +100,6 @@ class Client implements DoctrineCrud\Entities\IEntity,
 		return $this->id;
 	}
 
-	public function getPlainId(): string
-	{
-		return $this->id->toString();
-	}
-
 	public function getConnector(): HomeKitConnector
 	{
 		return $this->connector;

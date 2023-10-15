@@ -77,18 +77,20 @@ final class System implements Common\EventSubscriber
 			$uow->getScheduledEntityUpdates(),
 			$uow->getScheduledEntityDeletions(),
 		) as $object) {
-			if ($object instanceof Entities\HomeKitDevice) {
-				$this->doUpdate[] = $object->getConnector()->getPlainId();
+			if ($object instanceof Entities\HomeKitConnector) {
+				$this->doUpdate[] = $object->getId()->toString();
+			} elseif ($object instanceof Entities\HomeKitDevice) {
+				$this->doUpdate[] = $object->getConnector()->getId()->toString();
 			} elseif ($object instanceof DevicesEntities\Devices\Properties\Property) {
-				$this->doUpdate[] = $object->getDevice()->getConnector()->getPlainId();
+				$this->doUpdate[] = $object->getDevice()->getConnector()->getId()->toString();
 			} elseif ($object instanceof DevicesEntities\Devices\Controls\Control) {
-				$this->doUpdate[] = $object->getDevice()->getConnector()->getPlainId();
+				$this->doUpdate[] = $object->getDevice()->getConnector()->getId()->toString();
 			} elseif ($object instanceof Entities\HomeKitChannel) {
-				$this->doUpdate[] = $object->getDevice()->getConnector()->getPlainId();
+				$this->doUpdate[] = $object->getDevice()->getConnector()->getId()->toString();
 			} elseif ($object instanceof DevicesEntities\Channels\Properties\Property) {
-				$this->doUpdate[] = $object->getChannel()->getDevice()->getConnector()->getPlainId();
+				$this->doUpdate[] = $object->getChannel()->getDevice()->getConnector()->getId()->toString();
 			} elseif ($object instanceof DevicesEntities\Channels\Controls\Control) {
-				$this->doUpdate[] = $object->getChannel()->getDevice()->getConnector()->getPlainId();
+				$this->doUpdate[] = $object->getChannel()->getDevice()->getConnector()->getId()->toString();
 			}
 		}
 
@@ -106,7 +108,7 @@ final class System implements Common\EventSubscriber
 		foreach ($this->doUpdate as $connectorId) {
 			$findConnectorPropertyQuery = new DevicesQueries\FindConnectorProperties();
 			$findConnectorPropertyQuery->byConnectorId(Uuid\Uuid::fromString($connectorId));
-			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION);
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::CONFIG_VERSION);
 
 			$property = $this->propertiesRepository->findOneBy(
 				$findConnectorPropertyQuery,

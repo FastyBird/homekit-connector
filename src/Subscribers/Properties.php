@@ -77,7 +77,7 @@ final class Properties implements Common\EventSubscriber
 		if ($entity instanceof Entities\HomeKitConnector) {
 			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
-			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS);
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::MAC_ADDRESS);
 
 			$macAddressProperty = $this->propertiesRepository->findOneBy($findConnectorPropertyQuery);
 
@@ -85,7 +85,7 @@ final class Properties implements Common\EventSubscriber
 				$this->propertiesManager->create(Utils\ArrayHash::from([
 					'connector' => $entity,
 					'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-					'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_MAC_ADDRESS,
+					'identifier' => Types\ConnectorPropertyIdentifier::MAC_ADDRESS,
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 					'unit' => null,
 					'format' => null,
@@ -97,7 +97,7 @@ final class Properties implements Common\EventSubscriber
 
 			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
-			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID);
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::SETUP_ID);
 
 			$setupIdProperty = $this->propertiesRepository->findOneBy($findConnectorPropertyQuery);
 
@@ -105,7 +105,7 @@ final class Properties implements Common\EventSubscriber
 				$this->propertiesManager->create(Utils\ArrayHash::from([
 					'connector' => $entity,
 					'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-					'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID,
+					'identifier' => Types\ConnectorPropertyIdentifier::SETUP_ID,
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 					'unit' => null,
 					'format' => null,
@@ -117,7 +117,7 @@ final class Properties implements Common\EventSubscriber
 
 			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
-			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_PIN_CODE);
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PIN_CODE);
 
 			$pinCodeProperty = $this->propertiesRepository->findOneBy($findConnectorPropertyQuery);
 
@@ -125,7 +125,7 @@ final class Properties implements Common\EventSubscriber
 				$this->propertiesManager->create(Utils\ArrayHash::from([
 					'connector' => $entity,
 					'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-					'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PIN_CODE,
+					'identifier' => Types\ConnectorPropertyIdentifier::PIN_CODE,
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 					'unit' => null,
 					'format' => null,
@@ -137,7 +137,7 @@ final class Properties implements Common\EventSubscriber
 
 			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
-			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET);
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::SERVER_SECRET);
 
 			$serverSecretProperty = $this->propertiesRepository->findOneBy($findConnectorPropertyQuery);
 
@@ -145,7 +145,7 @@ final class Properties implements Common\EventSubscriber
 				$this->propertiesManager->create(Utils\ArrayHash::from([
 					'connector' => $entity,
 					'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-					'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_SERVER_SECRET,
+					'identifier' => Types\ConnectorPropertyIdentifier::SERVER_SECRET,
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 					'unit' => null,
 					'format' => null,
@@ -157,7 +157,7 @@ final class Properties implements Common\EventSubscriber
 
 			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
-			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION);
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::CONFIG_VERSION);
 
 			$versionProperty = $this->propertiesRepository->findOneBy($findConnectorPropertyQuery);
 
@@ -165,7 +165,7 @@ final class Properties implements Common\EventSubscriber
 				$this->propertiesManager->create(Utils\ArrayHash::from([
 					'connector' => $entity,
 					'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-					'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_CONFIG_VERSION,
+					'identifier' => Types\ConnectorPropertyIdentifier::CONFIG_VERSION,
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_USHORT),
 					'unit' => null,
 					'format' => null,
@@ -177,7 +177,7 @@ final class Properties implements Common\EventSubscriber
 
 			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
-			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED);
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PAIRED);
 
 			$pairedProperty = $this->propertiesRepository->findOneBy($findConnectorPropertyQuery);
 
@@ -185,7 +185,7 @@ final class Properties implements Common\EventSubscriber
 				$this->propertiesManager->create(Utils\ArrayHash::from([
 					'connector' => $entity,
 					'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-					'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_PAIRED,
+					'identifier' => Types\ConnectorPropertyIdentifier::PAIRED,
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_BOOLEAN),
 					'unit' => null,
 					'format' => null,
@@ -197,7 +197,7 @@ final class Properties implements Common\EventSubscriber
 
 			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
-			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_XHM_URI);
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::XHM_URI);
 
 			$xhmUriProperty = $this->propertiesRepository->findOneBy($findConnectorPropertyQuery);
 
@@ -205,13 +205,13 @@ final class Properties implements Common\EventSubscriber
 				$xhmUri = Helpers\Protocol::getXhmUri(
 					$entity->getPinCode(),
 					$entity->getSetupId(),
-					Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE),
+					Types\AccessoryCategory::get(Types\AccessoryCategory::BRIDGE),
 				);
 
 				$this->propertiesManager->create(Utils\ArrayHash::from([
 					'connector' => $entity,
 					'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-					'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_XHM_URI,
+					'identifier' => Types\ConnectorPropertyIdentifier::XHM_URI,
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 					'unit' => null,
 					'format' => null,
@@ -238,8 +238,8 @@ final class Properties implements Common\EventSubscriber
 
 		if ($entity instanceof DevicesEntities\Connectors\Properties\Variable) {
 			if (
-				$entity->getIdentifier() === Types\ConnectorPropertyIdentifier::IDENTIFIER_PIN_CODE
-				|| $entity->getIdentifier() === Types\ConnectorPropertyIdentifier::IDENTIFIER_SETUP_ID
+				$entity->getIdentifier() === Types\ConnectorPropertyIdentifier::PIN_CODE
+				|| $entity->getIdentifier() === Types\ConnectorPropertyIdentifier::SETUP_ID
 			) {
 				$connector = $entity->getConnector();
 				assert($connector instanceof Entities\HomeKitConnector);
@@ -247,12 +247,12 @@ final class Properties implements Common\EventSubscriber
 				$xhmUri = Helpers\Protocol::getXhmUri(
 					$connector->getPinCode(),
 					$connector->getSetupId(),
-					Types\AccessoryCategory::get(Types\AccessoryCategory::CATEGORY_BRIDGE),
+					Types\AccessoryCategory::get(Types\AccessoryCategory::BRIDGE),
 				);
 
 				$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
 				$findConnectorPropertyQuery->forConnector($connector);
-				$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::IDENTIFIER_XHM_URI);
+				$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::XHM_URI);
 
 				$xhmUriProperty = $this->propertiesRepository->findOneBy($findConnectorPropertyQuery);
 
@@ -260,7 +260,7 @@ final class Properties implements Common\EventSubscriber
 					$this->propertiesManager->create(Utils\ArrayHash::from([
 						'connector' => $entity,
 						'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-						'identifier' => Types\ConnectorPropertyIdentifier::IDENTIFIER_XHM_URI,
+						'identifier' => Types\ConnectorPropertyIdentifier::XHM_URI,
 						'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 						'unit' => null,
 						'format' => null,

@@ -18,12 +18,12 @@ namespace FastyBird\Connector\HomeKit\Commands;
 use Endroid\QrCode;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Module\Devices\Commands as DevicesCommands;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
-use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Nette\Localization;
 use Ramsey\Uuid;
 use Symfony\Component\Console;
@@ -128,7 +128,7 @@ class Execute extends Console\Command\Command
 		) {
 			$connectorId = $input->getOption('connector');
 
-			$findConnectorQuery = new DevicesQueries\FindConnectors();
+			$findConnectorQuery = new Queries\FindConnectors();
 
 			if (Uuid\Uuid::isValid($connectorId)) {
 				$findConnectorQuery->byId(Uuid\Uuid::fromString($connectorId));
@@ -148,7 +148,7 @@ class Execute extends Console\Command\Command
 		} else {
 			$connectors = [];
 
-			$findConnectorsQuery = new DevicesQueries\FindConnectors();
+			$findConnectorsQuery = new Queries\FindConnectors();
 
 			$systemConnectors = $this->connectorsRepository->findAllBy(
 				$findConnectorsQuery,
@@ -161,8 +161,6 @@ class Execute extends Console\Command\Command
 			);
 
 			foreach ($systemConnectors as $connector) {
-				assert($connector instanceof Entities\HomeKitConnector);
-
 				$connectors[$connector->getIdentifier()] = $connector->getIdentifier()
 					. ($connector->getName() !== null ? ' [' . $connector->getName() . ']' : '');
 			}
@@ -176,7 +174,7 @@ class Execute extends Console\Command\Command
 			if (count($connectors) === 1) {
 				$connectorIdentifier = array_key_first($connectors);
 
-				$findConnectorQuery = new DevicesQueries\FindConnectors();
+				$findConnectorQuery = new Queries\FindConnectors();
 				$findConnectorQuery->byIdentifier($connectorIdentifier);
 
 				$connector = $this->connectorsRepository->findOneBy(
@@ -233,14 +231,13 @@ class Execute extends Console\Command\Command
 						$identifier = array_search($answer, $connectors, true);
 
 						if ($identifier !== false) {
-							$findConnectorQuery = new DevicesQueries\FindConnectors();
+							$findConnectorQuery = new Queries\FindConnectors();
 							$findConnectorQuery->byIdentifier($identifier);
 
 							$connector = $this->connectorsRepository->findOneBy(
 								$findConnectorQuery,
 								Entities\HomeKitConnector::class,
 							);
-							assert($connector instanceof Entities\HomeKitConnector || $connector === null);
 
 							if ($connector !== null) {
 								return $connector;
@@ -260,8 +257,6 @@ class Execute extends Console\Command\Command
 				assert($connector instanceof Entities\HomeKitConnector);
 			}
 		}
-
-		assert($connector instanceof Entities\HomeKitConnector);
 
 		if (!$connector->isEnabled()) {
 			$io->warning($this->translator->translate('//homekit-connector.cmd.execute.messages.connector.disabled'));
@@ -300,7 +295,7 @@ class Execute extends Console\Command\Command
 		);
 
 		$result = $serviceCmd->run(new Input\ArrayInput([
-			'--connector' => $connector->getPlainId(),
+			'--connector' => $connector->getId()->toString(),
 			'--no-interaction' => true,
 			'--quiet' => true,
 		]), $output);

@@ -43,19 +43,19 @@ final class LightBulb extends Entities\Protocol\Device
 			$fromDevice ? MetadataTypes\PropertyType::TYPE_DYNAMIC : MetadataTypes\PropertyType::TYPE_MAPPED,
 		);
 
-		if ($service->getName() === Types\ServiceType::TYPE_LIGHTBULB) {
+		if ($service->getName() === Types\ServiceType::LIGHTBULB) {
 			if (
-				$characteristic->getName() === Types\CharacteristicType::TYPE_COLOR_RED
-				|| $characteristic->getName() === Types\CharacteristicType::TYPE_COLOR_GREEN
-				|| $characteristic->getName() === Types\CharacteristicType::TYPE_COLOR_BLUE
-				|| $characteristic->getName() === Types\CharacteristicType::TYPE_COLOR_WHITE
+				$characteristic->getName() === Types\CharacteristicType::COLOR_RED
+				|| $characteristic->getName() === Types\CharacteristicType::COLOR_GREEN
+				|| $characteristic->getName() === Types\CharacteristicType::COLOR_BLUE
+				|| $characteristic->getName() === Types\CharacteristicType::COLOR_WHITE
 			) {
 				$this->calculateRgbToHsb($service, $updatePropertyType);
 
 			} elseif (
-				$characteristic->getName() === Types\CharacteristicType::TYPE_HUE
-				|| $characteristic->getName() === Types\CharacteristicType::TYPE_SATURATION
-				|| $characteristic->getName() === Types\CharacteristicType::TYPE_BRIGHTNESS
+				$characteristic->getName() === Types\CharacteristicType::HUE
+				|| $characteristic->getName() === Types\CharacteristicType::SATURATION
+				|| $characteristic->getName() === Types\CharacteristicType::BRIGHTNESS
 			) {
 				$this->calculateHsbToRgb($service, $updatePropertyType);
 			}
@@ -67,11 +67,11 @@ final class LightBulb extends Entities\Protocol\Device
 		MetadataTypes\PropertyType $updatePropertyType,
 	): void
 	{
-		$redCharacteristic = $service->findCharacteristic(Types\CharacteristicType::TYPE_COLOR_RED);
-		$greenCharacteristic = $service->findCharacteristic(Types\CharacteristicType::TYPE_COLOR_GREEN);
-		$blueCharacteristic = $service->findCharacteristic(Types\CharacteristicType::TYPE_COLOR_BLUE);
+		$redCharacteristic = $service->findCharacteristic(Types\CharacteristicType::COLOR_RED);
+		$greenCharacteristic = $service->findCharacteristic(Types\CharacteristicType::COLOR_GREEN);
+		$blueCharacteristic = $service->findCharacteristic(Types\CharacteristicType::COLOR_BLUE);
 		// Optional white channel
-		$whiteCharacteristic = $service->findCharacteristic(Types\CharacteristicType::TYPE_COLOR_WHITE);
+		$whiteCharacteristic = $service->findCharacteristic(Types\CharacteristicType::COLOR_WHITE);
 
 		if (
 			is_int($redCharacteristic?->getValue())
@@ -91,7 +91,7 @@ final class LightBulb extends Entities\Protocol\Device
 			$hsb = new MetadataValueObjects\HsbTransformer(0, 0, 0);
 		}
 
-		$hue = $service->findCharacteristic(Types\CharacteristicType::TYPE_HUE);
+		$hue = $service->findCharacteristic(Types\CharacteristicType::HUE);
 
 		if (
 			$hue !== null
@@ -103,7 +103,7 @@ final class LightBulb extends Entities\Protocol\Device
 			$hue->setValue($hsb->getHue());
 		}
 
-		$saturation = $service->findCharacteristic(Types\CharacteristicType::TYPE_SATURATION);
+		$saturation = $service->findCharacteristic(Types\CharacteristicType::SATURATION);
 
 		if (
 			$saturation !== null
@@ -115,7 +115,7 @@ final class LightBulb extends Entities\Protocol\Device
 			$saturation->setValue($hsb->getSaturation());
 		}
 
-		$brightness = $service->findCharacteristic(Types\CharacteristicType::TYPE_BRIGHTNESS);
+		$brightness = $service->findCharacteristic(Types\CharacteristicType::BRIGHTNESS);
 
 		if (
 			$brightness !== null
@@ -133,9 +133,9 @@ final class LightBulb extends Entities\Protocol\Device
 		MetadataTypes\PropertyType $updatePropertyType,
 	): void
 	{
-		$hueCharacteristic = $service->findCharacteristic(Types\CharacteristicType::TYPE_HUE);
-		$saturationCharacteristic = $service->findCharacteristic(Types\CharacteristicType::TYPE_SATURATION);
-		$brightnessCharacteristic = $service->findCharacteristic(Types\CharacteristicType::TYPE_BRIGHTNESS);
+		$hueCharacteristic = $service->findCharacteristic(Types\CharacteristicType::HUE);
+		$saturationCharacteristic = $service->findCharacteristic(Types\CharacteristicType::SATURATION);
+		$brightnessCharacteristic = $service->findCharacteristic(Types\CharacteristicType::BRIGHTNESS);
 
 		if (
 			(
@@ -172,11 +172,11 @@ final class LightBulb extends Entities\Protocol\Device
 			$rgb = new MetadataValueObjects\RgbTransformer(0, 0, 0);
 		}
 
-		if ($service->hasCharacteristic(Types\CharacteristicType::TYPE_COLOR_WHITE)) {
+		if ($service->hasCharacteristic(Types\CharacteristicType::COLOR_WHITE)) {
 			$rgb = $rgb->toHsi()->toRgbw();
 		}
 
-		$red = $service->findCharacteristic(Types\CharacteristicType::TYPE_COLOR_RED);
+		$red = $service->findCharacteristic(Types\CharacteristicType::COLOR_RED);
 
 		if (
 			$red !== null
@@ -188,7 +188,7 @@ final class LightBulb extends Entities\Protocol\Device
 			$red->setValue($rgb->getRed());
 		}
 
-		$green = $service->findCharacteristic(Types\CharacteristicType::TYPE_COLOR_GREEN);
+		$green = $service->findCharacteristic(Types\CharacteristicType::COLOR_GREEN);
 
 		if (
 			$green !== null
@@ -200,7 +200,7 @@ final class LightBulb extends Entities\Protocol\Device
 			$green->setValue($rgb->getGreen());
 		}
 
-		$blue = $service->findCharacteristic(Types\CharacteristicType::TYPE_COLOR_BLUE);
+		$blue = $service->findCharacteristic(Types\CharacteristicType::COLOR_BLUE);
 
 		if (
 			$blue !== null
@@ -212,7 +212,7 @@ final class LightBulb extends Entities\Protocol\Device
 			$blue->setValue($rgb->getBlue());
 		}
 
-		$white = $service->findCharacteristic(Types\CharacteristicType::TYPE_COLOR_WHITE);
+		$white = $service->findCharacteristic(Types\CharacteristicType::COLOR_WHITE);
 
 		if (
 			$white !== null

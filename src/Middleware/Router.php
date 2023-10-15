@@ -15,6 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Middleware;
 
+use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Events;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Servers;
@@ -31,7 +32,6 @@ use Nette\Utils;
 use Psr\EventDispatcher;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Log;
 use Throwable;
 
 /**
@@ -48,9 +48,9 @@ final class Router
 	private SlimRouterHttp\ResponseFactory $responseFactory;
 
 	public function __construct(
+		private readonly HomeKit\Logger $logger,
 		private readonly SlimRouterRouting\IRouter $router,
 		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
-		private readonly Log\LoggerInterface $logger = new Log\NullLogger(),
 	)
 	{
 		$this->responseFactory = new SlimRouterHttp\ResponseFactory();
@@ -86,7 +86,7 @@ final class Router
 
 			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
-				Types\Representation::REPR_STATUS => $ex->getError()->getValue(),
+				Types\Representation::STATUS => $ex->getError()->getValue(),
 			])));
 		} catch (SlimRouterExceptions\HttpException $ex) {
 			$this->logger->warning(
@@ -106,7 +106,7 @@ final class Router
 
 			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
-				Types\Representation::REPR_STATUS => Types\ServerStatus::STATUS_SERVICE_COMMUNICATION_FAILURE,
+				Types\Representation::STATUS => Types\ServerStatus::SERVICE_COMMUNICATION_FAILURE,
 			])));
 		} catch (Throwable $ex) {
 			$this->logger->error(
@@ -122,7 +122,7 @@ final class Router
 
 			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
-				Types\Representation::REPR_STATUS => Types\ServerStatus::STATUS_SERVICE_COMMUNICATION_FAILURE,
+				Types\Representation::STATUS => Types\ServerStatus::SERVICE_COMMUNICATION_FAILURE,
 			])));
 		}
 

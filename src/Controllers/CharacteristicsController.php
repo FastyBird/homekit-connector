@@ -123,32 +123,32 @@ final class CharacteristicsController extends BaseController
 		if (!array_key_exists('id', $queryParams)) {
 			throw new Exceptions\HapRequestError(
 				$request,
-				Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
+				Types\ServerStatus::get(Types\ServerStatus::INVALID_VALUE_IN_REQUEST),
 				'Request query does not have required parameters',
 				StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
 			);
 		}
 
 		$meta
-			= array_key_exists(Types\Representation::REPR_META, $queryParams)
-			&& (int) $queryParams[Types\Representation::REPR_META] === 1;
+			= array_key_exists(Types\Representation::META, $queryParams)
+			&& (int) $queryParams[Types\Representation::META] === 1;
 		$perms
-			= array_key_exists(Types\Representation::REPR_PERM, $queryParams)
-			&& (int) $queryParams[Types\Representation::REPR_PERM] === 1;
+			= array_key_exists(Types\Representation::PERM, $queryParams)
+			&& (int) $queryParams[Types\Representation::PERM] === 1;
 		$type
-			= array_key_exists(Types\Representation::REPR_TYPE, $queryParams)
-			&& (int) $queryParams[Types\Representation::REPR_TYPE] === 1;
+			= array_key_exists(Types\Representation::TYPE, $queryParams)
+			&& (int) $queryParams[Types\Representation::TYPE] === 1;
 		$ev
 			= array_key_exists(
-				Types\CharacteristicPermission::PERMISSION_NOTIFY,
+				Types\CharacteristicPermission::NOTIFY,
 				$queryParams,
 			)
-			&& (int) $queryParams[Types\CharacteristicPermission::PERMISSION_NOTIFY] === 1;
+			&& (int) $queryParams[Types\CharacteristicPermission::NOTIFY] === 1;
 
 		$ids = explode(',', $queryParams['id']);
 
 		$result = [
-			Types\Representation::REPR_CHARS => [],
+			Types\Representation::CHARS => [],
 		];
 
 		foreach ($ids as $id) {
@@ -157,7 +157,7 @@ final class CharacteristicsController extends BaseController
 			if ($aid === null || $iid === null) {
 				throw new Exceptions\HapRequestError(
 					$request,
-					Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
+					Types\ServerStatus::get(Types\ServerStatus::INVALID_VALUE_IN_REQUEST),
 					'Request query has invalid format pro ID parameter',
 					StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
 				);
@@ -166,7 +166,7 @@ final class CharacteristicsController extends BaseController
 			$aid = (int) $aid;
 			$iid = (int) $iid;
 
-			$result[Types\Representation::REPR_CHARS][] = $this->readCharacteristic(
+			$result[Types\Representation::CHARS][] = $this->readCharacteristic(
 				$connectorId,
 				$aid,
 				$iid,
@@ -179,19 +179,19 @@ final class CharacteristicsController extends BaseController
 
 		$anyError = false;
 
-		foreach ($result[Types\Representation::REPR_CHARS] as $charResult) {
+		foreach ($result[Types\Representation::CHARS] as $charResult) {
 			if (
-				array_key_exists(Types\Representation::REPR_STATUS, $charResult)
-				&& $charResult[Types\Representation::REPR_STATUS] !== Types\ServerStatus::STATUS_SUCCESS
+				array_key_exists(Types\Representation::STATUS, $charResult)
+				&& $charResult[Types\Representation::STATUS] !== Types\ServerStatus::SUCCESS
 			) {
 				$anyError = true;
 			}
 		}
 
 		if ($anyError) {
-			foreach ($result[Types\Representation::REPR_CHARS] as $key => $charResult) {
-				if (!array_key_exists(Types\Representation::REPR_STATUS, $charResult)) {
-					$result[Types\Representation::REPR_CHARS][$key][Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_SUCCESS;
+			foreach ($result[Types\Representation::CHARS] as $key => $charResult) {
+				if (!array_key_exists(Types\Representation::STATUS, $charResult)) {
+					$result[Types\Representation::CHARS][$key][Types\Representation::STATUS] = Types\ServerStatus::SUCCESS;
 				}
 			}
 		}
@@ -252,7 +252,7 @@ final class CharacteristicsController extends BaseController
 		} catch (Utils\JsonException $ex) {
 			throw new Exceptions\HapRequestError(
 				$request,
-				Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
+				Types\ServerStatus::get(Types\ServerStatus::INVALID_VALUE_IN_REQUEST),
 				'Request body could not be decoded',
 				StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
 				$ex,
@@ -261,19 +261,19 @@ final class CharacteristicsController extends BaseController
 
 		if (
 			!is_array($body)
-			|| !array_key_exists(Types\Representation::REPR_CHARS, $body)
-			|| !is_array($body[Types\Representation::REPR_CHARS])
+			|| !array_key_exists(Types\Representation::CHARS, $body)
+			|| !is_array($body[Types\Representation::CHARS])
 		) {
 			throw new Exceptions\HapRequestError(
 				$request,
-				Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
+				Types\ServerStatus::get(Types\ServerStatus::INVALID_VALUE_IN_REQUEST),
 				'Request body does not have required attributes',
 				StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
 			);
 		}
 
-		$pid = array_key_exists(Types\Representation::REPR_PID, $body)
-			? (int) $body[Types\Representation::REPR_PID]
+		$pid = array_key_exists(Types\Representation::PID, $body)
+			? (int) $body[Types\Representation::PID]
 			: null;
 
 		$timedWriteError = false;
@@ -298,35 +298,35 @@ final class CharacteristicsController extends BaseController
 		}
 
 		$result = [
-			Types\Representation::REPR_CHARS => [],
+			Types\Representation::CHARS => [],
 		];
 
-		foreach ($body[Types\Representation::REPR_CHARS] as $setCharacteristic) {
+		foreach ($body[Types\Representation::CHARS] as $setCharacteristic) {
 			if (
 				is_array($setCharacteristic)
-				&& array_key_exists(Types\Representation::REPR_AID, $setCharacteristic)
-				&& array_key_exists(Types\Representation::REPR_IID, $setCharacteristic)
+				&& array_key_exists(Types\Representation::AID, $setCharacteristic)
+				&& array_key_exists(Types\Representation::IID, $setCharacteristic)
 			) {
-				$aid = intval($setCharacteristic[Types\Representation::REPR_AID]);
-				$iid = intval($setCharacteristic[Types\Representation::REPR_IID]);
+				$aid = intval($setCharacteristic[Types\Representation::AID]);
+				$iid = intval($setCharacteristic[Types\Representation::IID]);
 
 				$value = array_key_exists(
-					Types\Representation::REPR_VALUE,
+					Types\Representation::VALUE,
 					$setCharacteristic,
 				)
-					? $setCharacteristic[Types\Representation::REPR_VALUE]
+					? $setCharacteristic[Types\Representation::VALUE]
 					: null;
 				$events = array_key_exists(
-					Types\CharacteristicPermission::PERMISSION_NOTIFY,
+					Types\CharacteristicPermission::NOTIFY,
 					$setCharacteristic,
 				)
-					? (bool) $setCharacteristic[Types\CharacteristicPermission::PERMISSION_NOTIFY]
+					? (bool) $setCharacteristic[Types\CharacteristicPermission::NOTIFY]
 					: null;
 				$includeValue = array_key_exists('r', $setCharacteristic)
-					? (bool) $setCharacteristic[Types\CharacteristicPermission::PERMISSION_NOTIFY]
+					? (bool) $setCharacteristic[Types\CharacteristicPermission::NOTIFY]
 					: null;
 
-				$result[Types\Representation::REPR_CHARS][] = $this->writeCharacteristic(
+				$result[Types\Representation::CHARS][] = $this->writeCharacteristic(
 					$connectorId,
 					$aid,
 					$iid,
@@ -341,7 +341,7 @@ final class CharacteristicsController extends BaseController
 			} else {
 				throw new Exceptions\HapRequestError(
 					$request,
-					Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
+					Types\ServerStatus::get(Types\ServerStatus::INVALID_VALUE_IN_REQUEST),
 					'Request body does not have required attributes',
 					StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
 				);
@@ -350,10 +350,10 @@ final class CharacteristicsController extends BaseController
 
 		$anyError = false;
 
-		foreach ($result[Types\Representation::REPR_CHARS] as $charResult) {
+		foreach ($result[Types\Representation::CHARS] as $charResult) {
 			if (
-				array_key_exists(Types\Representation::REPR_STATUS, $charResult)
-				&& $charResult[Types\Representation::REPR_STATUS] !== Types\ServerStatus::STATUS_SUCCESS
+				array_key_exists(Types\Representation::STATUS, $charResult)
+				&& $charResult[Types\Representation::STATUS] !== Types\ServerStatus::SUCCESS
 			) {
 				$anyError = true;
 			}
@@ -391,7 +391,7 @@ final class CharacteristicsController extends BaseController
 		} catch (Utils\JsonException $ex) {
 			throw new Exceptions\HapRequestError(
 				$request,
-				Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
+				Types\ServerStatus::get(Types\ServerStatus::INVALID_VALUE_IN_REQUEST),
 				'Request body could not be decoded',
 				StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
 				$ex,
@@ -400,12 +400,12 @@ final class CharacteristicsController extends BaseController
 
 		if (
 			!is_array($body)
-			|| !array_key_exists(Types\Representation::REPR_TTL, $body)
-			|| !array_key_exists(Types\Representation::REPR_PID, $body)
+			|| !array_key_exists(Types\Representation::TTL, $body)
+			|| !array_key_exists(Types\Representation::PID, $body)
 		) {
 			throw new Exceptions\HapRequestError(
 				$request,
-				Types\ServerStatus::get(Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST),
+				Types\ServerStatus::get(Types\ServerStatus::INVALID_VALUE_IN_REQUEST),
 				'Request body does not have required attributes',
 				StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
 			);
@@ -417,12 +417,12 @@ final class CharacteristicsController extends BaseController
 			$this->preparedWrites[$clientAddress] = [];
 		}
 
-		$this->preparedWrites[$clientAddress][intval($body[Types\Representation::REPR_PID])]
+		$this->preparedWrites[$clientAddress][intval($body[Types\Representation::PID])]
 			= intval($this->dateTimeFactory->getNow()->getTimestamp())
-			+ (intval($body[Types\Representation::REPR_TTL]) / 1_000);
+			+ (intval($body[Types\Representation::TTL]) / 1_000);
 
 		$result = [
-			Types\Representation::REPR_STATUS => Types\ServerStatus::STATUS_SUCCESS,
+			Types\Representation::STATUS => Types\ServerStatus::SUCCESS,
 		];
 
 		$response = $response->withStatus(StatusCodeInterface::STATUS_OK);
@@ -456,14 +456,14 @@ final class CharacteristicsController extends BaseController
 			return $representation;
 		}
 
-		if (!in_array(Types\CharacteristicPermission::PERMISSION_READ, $characteristic->getPermissions(), true)) {
-			$representation[Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_WRITE_ONLY_CHARACTERISTIC;
+		if (!in_array(Types\CharacteristicPermission::READ, $characteristic->getPermissions(), true)) {
+			$representation[Types\Representation::STATUS] = Types\ServerStatus::WRITE_ONLY_CHARACTERISTIC;
 
 			return $representation;
 		}
 
-		$representation[Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_SUCCESS;
-		$representation[Types\Representation::REPR_VALUE] = Protocol\Transformer::toClient(
+		$representation[Types\Representation::STATUS] = Types\ServerStatus::SUCCESS;
+		$representation[Types\Representation::VALUE] = Protocol\Transformer::toClient(
 			$characteristic->getProperty(),
 			$characteristic->getDataType(),
 			$characteristic->getValidValues(),
@@ -475,11 +475,11 @@ final class CharacteristicsController extends BaseController
 		);
 
 		if ($perms) {
-			$representation[Types\Representation::REPR_PERM] = $characteristic->getPermissions();
+			$representation[Types\Representation::PERM] = $characteristic->getPermissions();
 		}
 
 		if ($type) {
-			$representation[Types\Representation::REPR_PERM] = Helpers\Protocol::uuidToHapType(
+			$representation[Types\Representation::PERM] = Helpers\Protocol::uuidToHapType(
 				$characteristic->getTypeId(),
 			);
 		}
@@ -489,18 +489,18 @@ final class CharacteristicsController extends BaseController
 		}
 
 		if ($ev) {
-			$representation[Types\CharacteristicPermission::PERMISSION_NOTIFY] = in_array(
-				Types\CharacteristicPermission::PERMISSION_NOTIFY,
+			$representation[Types\CharacteristicPermission::NOTIFY] = in_array(
+				Types\CharacteristicPermission::NOTIFY,
 				$characteristic->getPermissions(),
 				true,
 			);
 		}
 
 		if (
-			array_key_exists(Types\Representation::REPR_STATUS, $representation)
-			&& $representation[Types\Representation::REPR_STATUS] === Types\ServerStatus::STATUS_SUCCESS
+			array_key_exists(Types\Representation::STATUS, $representation)
+			&& $representation[Types\Representation::STATUS] === Types\ServerStatus::SUCCESS
 		) {
-			unset($representation[Types\Representation::REPR_STATUS]);
+			unset($representation[Types\Representation::STATUS]);
 		}
 
 		return $representation;
@@ -546,22 +546,22 @@ final class CharacteristicsController extends BaseController
 		if (
 			$value !== null
 			&& !in_array(
-				Types\CharacteristicPermission::PERMISSION_WRITE,
+				Types\CharacteristicPermission::WRITE,
 				$characteristic->getPermissions(),
 				true,
 			)
 			&& !in_array(
-				Types\CharacteristicPermission::PERMISSION_TIMED_WRITE,
+				Types\CharacteristicPermission::TIMED_WRITE,
 				$characteristic->getPermissions(),
 				true,
 			)
 			&& !in_array(
-				Types\CharacteristicPermission::PERMISSION_WRITE_RESPONSE,
+				Types\CharacteristicPermission::WRITE_RESPONSE,
 				$characteristic->getPermissions(),
 				true,
 			)
 		) {
-			$representation[Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_READ_ONLY_CHARACTERISTIC;
+			$representation[Types\Representation::STATUS] = Types\ServerStatus::READ_ONLY_CHARACTERISTIC;
 
 			return $representation;
 		}
@@ -569,7 +569,7 @@ final class CharacteristicsController extends BaseController
 		if (
 			$pid !== null
 			&& !in_array(
-				Types\CharacteristicPermission::PERMISSION_TIMED_WRITE,
+				Types\CharacteristicPermission::TIMED_WRITE,
 				$characteristic->getPermissions(),
 				true,
 			)
@@ -579,15 +579,15 @@ final class CharacteristicsController extends BaseController
 
 		if (
 			$pid === null
-			&& in_array(Types\CharacteristicPermission::PERMISSION_TIMED_WRITE, $characteristic->getPermissions(), true)
+			&& in_array(Types\CharacteristicPermission::TIMED_WRITE, $characteristic->getPermissions(), true)
 		) {
-			$representation[Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST;
+			$representation[Types\Representation::STATUS] = Types\ServerStatus::INVALID_VALUE_IN_REQUEST;
 
 			return $representation;
 		}
 
 		if ($timedWriteError) {
-			$representation[Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_INVALID_VALUE_IN_REQUEST;
+			$representation[Types\Representation::STATUS] = Types\ServerStatus::INVALID_VALUE_IN_REQUEST;
 
 			return $representation;
 		}
@@ -645,13 +645,13 @@ final class CharacteristicsController extends BaseController
 										'name' => $characteristic->getName(),
 									],
 									'device' => [
-										'id' => $characteristic->getProperty()->getChannel()->getDevice()->getPlainId(),
+										'id' => $characteristic->getProperty()->getChannel()->getDevice()->getId()->toString(),
 									],
 									'channel' => [
-										'id' => $characteristic->getProperty()->getChannel()->getPlainId(),
+										'id' => $characteristic->getProperty()->getChannel()->getId()->toString(),
 									],
 									'property' => [
-										'id' => $characteristic->getProperty()->getPlainId(),
+										'id' => $characteristic->getProperty()->getId()->toString(),
 									],
 								],
 							);
@@ -676,16 +676,16 @@ final class CharacteristicsController extends BaseController
 								'type' => 'characteristics-controller',
 								'exception' => BootstrapHelpers\Logger::buildException($ex),
 								'connector' => [
-									'id' => $property->getChannel()->getDevice()->getConnector()->getPlainId(),
+									'id' => $property->getChannel()->getDevice()->getConnector()->getId()->toString(),
 								],
 								'device' => [
-									'id' => $property->getChannel()->getDevice()->getPlainId(),
+									'id' => $property->getChannel()->getDevice()->getId()->toString(),
 								],
 								'channel' => [
-									'id' => $property->getChannel()->getPlainId(),
+									'id' => $property->getChannel()->getId()->toString(),
 								],
 								'property' => [
-									'id' => $property->getPlainId(),
+									'id' => $property->getId()->toString(),
 								],
 							],
 						);
@@ -703,9 +703,9 @@ final class CharacteristicsController extends BaseController
 								$this->entityFactory->create(
 									Utils\Json::encode([
 										'action' => MetadataTypes\PropertyAction::ACTION_SET,
-										'device' => $property->getChannel()->getDevice()->getPlainId(),
-										'channel' => $property->getChannel()->getPlainId(),
-										'property' => $property->getPlainId(),
+										'device' => $property->getChannel()->getDevice()->getId()->toString(),
+										'channel' => $property->getChannel()->getId()->toString(),
+										'property' => $property->getId()->toString(),
 										'expected_value' => DevicesUtilities\ValueHelper::flattenValue(
 											$propertyValue,
 										),
@@ -730,9 +730,9 @@ final class CharacteristicsController extends BaseController
 										$this->entityFactory->create(
 											Utils\Json::encode([
 												'action' => MetadataTypes\PropertyAction::ACTION_SET,
-												'device' => $serviceCharacteristicProperty->getChannel()->getDevice()->getPlainId(),
-												'channel' => $serviceCharacteristicProperty->getChannel()->getPlainId(),
-												'property' => $serviceCharacteristicProperty->getPlainId(),
+												'device' => $serviceCharacteristicProperty->getChannel()->getDevice()->getId()->toString(),
+												'channel' => $serviceCharacteristicProperty->getChannel()->getId()->toString(),
+												'property' => $serviceCharacteristicProperty->getId()->toString(),
 												'actual_value' => DevicesUtilities\ValueHelper::flattenValue(
 													$propertyValue,
 												),
@@ -754,9 +754,9 @@ final class CharacteristicsController extends BaseController
 										$this->entityFactory->create(
 											Utils\Json::encode([
 												'action' => MetadataTypes\PropertyAction::ACTION_SET,
-												'device' => $serviceCharacteristicProperty->getChannel()->getDevice()->getPlainId(),
-												'channel' => $serviceCharacteristicProperty->getChannel()->getPlainId(),
-												'property' => $serviceCharacteristicProperty->getPlainId(),
+												'device' => $serviceCharacteristicProperty->getChannel()->getDevice()->getId()->toString(),
+												'channel' => $serviceCharacteristicProperty->getChannel()->getId()->toString(),
+												'property' => $serviceCharacteristicProperty->getId()->toString(),
 												'expected_value' => DevicesUtilities\ValueHelper::flattenValue(
 													$propertyValue,
 												),
@@ -818,20 +818,20 @@ final class CharacteristicsController extends BaseController
 							'name' => $characteristic->getName(),
 						],
 						'device' => [
-							'id' => $characteristic->getProperty()?->getChannel()->getDevice()->getPlainId(),
+							'id' => $characteristic->getProperty()?->getChannel()->getDevice()->getId()->toString(),
 						],
 						'channel' => [
-							'id' => $characteristic->getProperty()?->getChannel()->getPlainId(),
+							'id' => $characteristic->getProperty()?->getChannel()->getId()->toString(),
 						],
 						'property' => [
-							'id' => $characteristic->getProperty()?->getPlainId(),
+							'id' => $characteristic->getProperty()?->getId()->toString(),
 						],
 					],
 				);
 			}
 
 			if ($includeValue === true) {
-				$representation[Types\Representation::REPR_VALUE] = Protocol\Transformer::toClient(
+				$representation[Types\Representation::VALUE] = Protocol\Transformer::toClient(
 					$characteristic->getProperty(),
 					$characteristic->getDataType(),
 					$characteristic->getValidValues(),
@@ -883,7 +883,7 @@ final class CharacteristicsController extends BaseController
 			}
 		}
 
-		$representation[Types\Representation::REPR_STATUS] = Types\ServerStatus::STATUS_SUCCESS;
+		$representation[Types\Representation::STATUS] = Types\ServerStatus::SUCCESS;
 
 		return $representation;
 	}
@@ -894,9 +894,9 @@ final class CharacteristicsController extends BaseController
 	private function getCharacteristicRepresentationSkeleton(int $aid, int $iid): array
 	{
 		return [
-			Types\Representation::REPR_AID => $aid,
-			Types\Representation::REPR_IID => $iid,
-			Types\Representation::REPR_STATUS => Types\ServerStatus::STATUS_SERVICE_COMMUNICATION_FAILURE,
+			Types\Representation::AID => $aid,
+			Types\Representation::IID => $iid,
+			Types\Representation::STATUS => Types\ServerStatus::SERVICE_COMMUNICATION_FAILURE,
 		];
 	}
 

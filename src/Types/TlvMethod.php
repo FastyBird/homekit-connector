@@ -32,17 +32,17 @@ class TlvMethod extends Consistence\Enum\Enum
 	/**
 	 * Define methods
 	 */
-	public const METHOD_RESERVED = 0;
+	public const RESERVED = 0;
 
-	public const METHOD_PAIR_SETUP = 1;
+	public const PAIR_SETUP = 1;
 
-	public const METHOD_PAIR_VERIFY = 2;
+	public const PAIR_VERIFY = 2;
 
-	public const METHOD_ADD_PAIRING = 3;
+	public const ADD_PAIRING = 3;
 
-	public const METHOD_REMOVE_PAIRING = 4;
+	public const REMOVE_PAIRING = 4;
 
-	public const METHOD_LIST_PAIRINGS = 5;
+	public const LIST_PAIRINGS = 5;
 
 	public function __toString(): string
 	{

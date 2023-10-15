@@ -32,9 +32,9 @@ class ClientPermission extends Consistence\Enum\Enum
 	/**
 	 * Define permissions identifiers
 	 */
-	public const PERMISSION_USER = 0;
+	public const USER = 0;
 
-	public const PERMISSION_ADMIN = 1;
+	public const ADMIN = 1;
 
 	public function __toString(): string
 	{
