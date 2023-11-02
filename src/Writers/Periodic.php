@@ -184,7 +184,7 @@ class Periodic implements Writer
 								'State value could not be converted from mapped parent',
 								[
 									'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-									'type' => 'event-writer',
+									'type' => 'periodic-writer',
 									'exception' => BootstrapHelpers\Logger::buildException($ex),
 									'connector' => [
 										'id' => $accessory->getDevice()->getConnector()->getId()->toString(),

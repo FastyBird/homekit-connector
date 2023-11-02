@@ -250,7 +250,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 								'State value could not be converted from mapped parent',
 								[
 									'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-									'type' => 'event-writer',
+									'type' => 'exchange-writer',
 									'exception' => BootstrapHelpers\Logger::buildException($ex),
 									'connector' => [
 										'id' => $accessory->getDevice()->getConnector()->getId()->toString(),

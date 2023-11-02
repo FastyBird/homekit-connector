@@ -417,7 +417,7 @@ final class Http implements Server
 				'Server was closed',
 				[
 					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'mdns-server',
+					'type' => 'http-server',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
