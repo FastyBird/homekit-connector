@@ -1021,8 +1021,6 @@ class Devices extends Console\Command\Command
 					'channel' => $channel,
 					'dataType' => $dataType,
 					'format' => $format,
-					'settable' => false,
-					'queryable' => false,
 					'value' => $value,
 				]));
 			}
@@ -1174,8 +1172,6 @@ class Devices extends Console\Command\Command
 						'channel' => $channel,
 						'dataType' => $dataType,
 						'format' => $format,
-						'settable' => false,
-						'queryable' => false,
 						'value' => $value,
 					]));
 				}
@@ -1377,7 +1373,6 @@ class Devices extends Console\Command\Command
 	}
 
 	/**
-	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 */

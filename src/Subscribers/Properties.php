@@ -89,8 +89,6 @@ final class Properties implements Common\EventSubscriber
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 					'unit' => null,
 					'format' => null,
-					'settable' => false,
-					'queryable' => false,
 					'value' => Helpers\Protocol::generateMacAddress(),
 				]));
 			}
@@ -109,8 +107,6 @@ final class Properties implements Common\EventSubscriber
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 					'unit' => null,
 					'format' => null,
-					'settable' => false,
-					'queryable' => false,
 					'value' => Helpers\Protocol::generateSetupId(),
 				]));
 			}
@@ -129,8 +125,6 @@ final class Properties implements Common\EventSubscriber
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 					'unit' => null,
 					'format' => null,
-					'settable' => false,
-					'queryable' => false,
 					'value' => Helpers\Protocol::generatePinCode(),
 				]));
 			}
@@ -149,8 +143,6 @@ final class Properties implements Common\EventSubscriber
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 					'unit' => null,
 					'format' => null,
-					'settable' => false,
-					'queryable' => false,
 					'value' => Helpers\Protocol::generateSignKey(),
 				]));
 			}
@@ -169,8 +161,6 @@ final class Properties implements Common\EventSubscriber
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_USHORT),
 					'unit' => null,
 					'format' => null,
-					'settable' => false,
-					'queryable' => false,
 					'value' => 1,
 				]));
 			}
@@ -189,8 +179,6 @@ final class Properties implements Common\EventSubscriber
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_BOOLEAN),
 					'unit' => null,
 					'format' => null,
-					'settable' => false,
-					'queryable' => false,
 					'value' => false,
 				]));
 			}
@@ -215,8 +203,6 @@ final class Properties implements Common\EventSubscriber
 					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 					'unit' => null,
 					'format' => null,
-					'settable' => false,
-					'queryable' => false,
 					'value' => $xhmUri,
 				]));
 			}
@@ -264,8 +250,6 @@ final class Properties implements Common\EventSubscriber
 						'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_STRING),
 						'unit' => null,
 						'format' => null,
-						'settable' => false,
-						'queryable' => false,
 						'value' => $xhmUri,
 					]));
 				} else {
