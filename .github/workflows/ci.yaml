@@ -179,7 +179,7 @@ jobs:
         run: "make tests"
 
       - name: "Upload logs"
-        uses: "actions/upload-artifact@v2"
+        uses: "actions/upload-artifact@v3"
         with:
           name: "Logs - Tests (${{ matrix.operating-system }}, ${{ matrix.php-version }})"
           path: "var/log"
@@ -327,7 +327,7 @@ jobs:
         run: "make mutations-infection ARGS='--logger-github'"
 
       - name: "Upload logs"
-        uses: "actions/upload-artifact@v2"
+        uses: "actions/upload-artifact@v3"
         with:
           name: "Logs - Mutations"
           path: "var/coverage/mutations/infection.log"
