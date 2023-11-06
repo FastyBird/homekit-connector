@@ -277,10 +277,10 @@ class HomeKitExtension extends DI\CompilerExtension
 		 */
 
 		$builder->addDefinition($this->prefix('models.clientsRepository'), new DI\Definitions\ServiceDefinition())
-			->setType(Models\Clients\ClientsRepository::class);
+			->setType(Models\Entities\Clients\ClientsRepository::class);
 
 		$builder->addDefinition($this->prefix('models.clientsManager'), new DI\Definitions\ServiceDefinition())
-			->setType(Models\Clients\ClientsManager::class)
+			->setType(Models\Entities\Clients\ClientsManager::class)
 			->setArgument('entityCrud', '__placeholder__');
 
 		/**
@@ -365,7 +365,7 @@ class HomeKitExtension extends DI\CompilerExtension
 
 		$devicesManagerService = $class->getMethod('createService' . ucfirst($this->name) . '__models__clientsManager');
 		$devicesManagerService->setBody(
-			'return new ' . Models\Clients\ClientsManager::class
+			'return new ' . Models\Entities\Clients\ClientsManager::class
 			. '($this->getService(\'' . $entityFactoryServiceName . '\')->create(\'' . Entities\Client::class . '\'));',
 		);
 	}

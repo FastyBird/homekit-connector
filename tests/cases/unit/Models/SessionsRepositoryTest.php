@@ -31,7 +31,7 @@ final class SessionsRepositoryTest extends DbTestCase
 	 */
 	public function testReadOne(): void
 	{
-		$repository = $this->getContainer()->getByType(Models\Clients\ClientsRepository::class);
+		$repository = $this->getContainer()->getByType(Models\Entities\Clients\ClientsRepository::class);
 
 		$findQuery = new Queries\FindClients();
 		$findQuery->byUid('e348f5fc-42de-459e-926e-2f4cd039c665');
@@ -54,7 +54,7 @@ final class SessionsRepositoryTest extends DbTestCase
 	 */
 	public function testReadResultSet(): void
 	{
-		$repository = $this->getContainer()->getByType(Models\Clients\ClientsRepository::class);
+		$repository = $this->getContainer()->getByType(Models\Entities\Clients\ClientsRepository::class);
 
 		$findQuery = new Queries\FindClients();
 

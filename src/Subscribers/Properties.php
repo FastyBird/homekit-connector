@@ -47,8 +47,8 @@ final class Properties implements Common\EventSubscriber
 	use Nette\SmartObject;
 
 	public function __construct(
-		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $propertiesRepository,
-		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesManager,
+		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesRepository $propertiesRepository,
+		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $propertiesManager,
 	)
 	{
 	}

@@ -13,7 +13,7 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\Connector\HomeKit\Models\Clients;
+namespace FastyBird\Connector\HomeKit\Models\Entities\Clients;
 
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Models;

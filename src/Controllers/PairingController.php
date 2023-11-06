@@ -169,11 +169,11 @@ final class PairingController extends BaseController
 
 	public function __construct(
 		private readonly Protocol\Tlv $tlv,
-		private readonly Models\Clients\ClientsRepository $clientsRepository,
-		private readonly Models\Clients\ClientsManager $clientsManager,
-		private readonly DevicesModels\Connectors\ConnectorsRepository $connectorsRepository,
-		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $propertiesRepository,
-		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesManagers,
+		private readonly Models\Entities\Clients\ClientsRepository $clientsRepository,
+		private readonly Models\Entities\Clients\ClientsManager $clientsManager,
+		private readonly DevicesModels\Entities\Connectors\ConnectorsRepository $connectorsRepository,
+		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesRepository $propertiesRepository,
+		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $propertiesManagers,
 		private readonly DevicesUtilities\Database $databaseHelper,
 	)
 	{

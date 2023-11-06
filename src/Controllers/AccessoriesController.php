@@ -47,7 +47,7 @@ final class AccessoriesController extends BaseController
 
 	public function __construct(
 		private readonly Protocol\Driver $accessoriesDriver,
-		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $propertiesRepository,
+		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesRepository $propertiesRepository,
 	)
 	{
 	}

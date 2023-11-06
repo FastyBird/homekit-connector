@@ -13,7 +13,7 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\Connector\HomeKit\Models\Clients;
+namespace FastyBird\Connector\HomeKit\Models\Entities\Clients;
 
 use Doctrine\ORM;
 use Doctrine\Persistence;

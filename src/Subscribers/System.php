@@ -50,8 +50,8 @@ final class System implements Common\EventSubscriber
 	private array $doUpdate = [];
 
 	public function __construct(
-		private readonly DevicesModels\Connectors\Properties\PropertiesRepository $propertiesRepository,
-		private readonly DevicesModels\Connectors\Properties\PropertiesManager $propertiesManager,
+		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesRepository $propertiesRepository,
+		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $propertiesManager,
 	)
 	{
 	}

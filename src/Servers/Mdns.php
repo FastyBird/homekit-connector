@@ -93,7 +93,7 @@ final class Mdns implements Server
 		private readonly HomeKit\Entities\HomeKitConnector $connector,
 		private readonly EventLoop\LoopInterface $eventLoop,
 		private readonly HomeKit\Logger $logger,
-		private readonly DevicesModels\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
+		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
 	)
 	{
 		$this->parser = new Dns\Protocol\Parser();

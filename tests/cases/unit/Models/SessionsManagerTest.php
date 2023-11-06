@@ -38,7 +38,7 @@ final class SessionsManagerTest extends DbTestCase
 	 */
 	public function testCreate(): void
 	{
-		$repository = $this->getContainer()->getByType(DevicesModels\Connectors\ConnectorsRepository::class);
+		$repository = $this->getContainer()->getByType(DevicesModels\Entities\Connectors\ConnectorsRepository::class);
 
 		$findConnectorQuery = new DevicesQueries\FindConnectors();
 		$findConnectorQuery->byId(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
@@ -47,7 +47,7 @@ final class SessionsManagerTest extends DbTestCase
 
 		self::assertIsObject($connector);
 
-		$manager = $this->getContainer()->getByType(Models\Clients\ClientsManager::class);
+		$manager = $this->getContainer()->getByType(Models\Entities\Clients\ClientsManager::class);
 
 		$clientPublicKey = random_bytes(32);
 
@@ -74,9 +74,9 @@ final class SessionsManagerTest extends DbTestCase
 	 */
 	public function testUpdate(): void
 	{
-		$manager = $this->getContainer()->getByType(Models\Clients\ClientsManager::class);
+		$manager = $this->getContainer()->getByType(Models\Entities\Clients\ClientsManager::class);
 
-		$repository = $this->getContainer()->getByType(Models\Clients\ClientsRepository::class);
+		$repository = $this->getContainer()->getByType(Models\Entities\Clients\ClientsRepository::class);
 
 		$findQuery = new Queries\FindClients();
 		$findQuery->byUid('e348f5fc-42de-459e-926e-2f4cd039c665');
