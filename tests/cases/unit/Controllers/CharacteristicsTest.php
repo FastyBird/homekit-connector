@@ -49,7 +49,7 @@ final class CharacteristicsTest extends DbTestCase
 
 		$repository = $this->getContainer()->getByType(DevicesModels\Entities\Connectors\ConnectorsRepository::class);
 
-		$findConnectorQuery = new DevicesQueries\FindConnectors();
+		$findConnectorQuery = new DevicesQueries\Entities\FindConnectors();
 		$findConnectorQuery->byId(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
 
 		$connector = $repository->findOneBy($findConnectorQuery, Entities\HomeKitConnector::class);

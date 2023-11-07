@@ -101,7 +101,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 				$entity instanceof MetadataEntities\DevicesModule\DeviceMappedProperty
 				|| $entity instanceof MetadataEntities\DevicesModule\DeviceVariableProperty
 			) {
-				$findDeviceQuery = new Queries\FindDevices();
+				$findDeviceQuery = new Queries\Entities\FindDevices();
 				$findDeviceQuery->byId($entity->getDevice());
 
 				$device = $this->devicesRepository->findOneBy($findDeviceQuery, Entities\HomeKitDevice::class);
@@ -130,7 +130,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 
 				$accessory = $this->accessoryDriver->findAccessory($entity->getDevice());
 			} else {
-				$findChannelQuery = new Queries\FindChannels();
+				$findChannelQuery = new Queries\Entities\FindChannels();
 				$findChannelQuery->byId($entity->getChannel());
 
 				$channel = $this->channelsRepository->findOneBy($findChannelQuery, Entities\HomeKitChannel::class);
@@ -231,7 +231,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 					$characteristic->getProperty() !== null
 					&& $characteristic->getProperty()->getId()->equals($entity->getId())
 				) {
-					$findPropertyQuery = new DevicesQueries\FindChannelProperties();
+					$findPropertyQuery = new DevicesQueries\Entities\FindChannelProperties();
 					$findPropertyQuery->byId($entity->getId());
 
 					$property = $this->channelsPropertiesRepository->findOneBy($findPropertyQuery);

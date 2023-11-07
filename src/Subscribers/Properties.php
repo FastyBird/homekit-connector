@@ -75,7 +75,7 @@ final class Properties implements Common\EventSubscriber
 
 		// Check for valid entity
 		if ($entity instanceof Entities\HomeKitConnector) {
-			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
+			$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
 			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::MAC_ADDRESS);
 
@@ -93,7 +93,7 @@ final class Properties implements Common\EventSubscriber
 				]));
 			}
 
-			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
+			$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
 			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::SETUP_ID);
 
@@ -111,7 +111,7 @@ final class Properties implements Common\EventSubscriber
 				]));
 			}
 
-			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
+			$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
 			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PIN_CODE);
 
@@ -129,7 +129,7 @@ final class Properties implements Common\EventSubscriber
 				]));
 			}
 
-			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
+			$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
 			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::SERVER_SECRET);
 
@@ -147,7 +147,7 @@ final class Properties implements Common\EventSubscriber
 				]));
 			}
 
-			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
+			$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
 			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::CONFIG_VERSION);
 
@@ -165,7 +165,7 @@ final class Properties implements Common\EventSubscriber
 				]));
 			}
 
-			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
+			$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
 			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PAIRED);
 
@@ -183,7 +183,7 @@ final class Properties implements Common\EventSubscriber
 				]));
 			}
 
-			$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
+			$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
 			$findConnectorPropertyQuery->forConnector($entity);
 			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::XHM_URI);
 
@@ -236,7 +236,7 @@ final class Properties implements Common\EventSubscriber
 					Types\AccessoryCategory::get(Types\AccessoryCategory::BRIDGE),
 				);
 
-				$findConnectorPropertyQuery = new Queries\FindConnectorProperties();
+				$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
 				$findConnectorPropertyQuery->forConnector($connector);
 				$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::XHM_URI);
 

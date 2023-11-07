@@ -13,7 +13,7 @@
  * @date           13.09.22
  */
 
-namespace FastyBird\Connector\HomeKit\Queries;
+namespace FastyBird\Connector\HomeKit\Queries\Entities;
 
 use Closure;
 use Doctrine\ORM;

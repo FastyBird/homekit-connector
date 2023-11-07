@@ -117,11 +117,11 @@ final class Http implements Server
 
 		$bridgedAccessories = [];
 
-		$findDevicesQuery = new Queries\FindDevices();
+		$findDevicesQuery = new Queries\Entities\FindDevices();
 		$findDevicesQuery->forConnector($this->connector);
 
 		foreach ($this->devicesRepository->findAllBy($findDevicesQuery, Entities\HomeKitDevice::class) as $device) {
-			$findDevicePropertyQuery = new DevicesQueries\FindDeviceProperties();
+			$findDevicePropertyQuery = new DevicesQueries\Entities\FindDeviceProperties();
 			$findDevicePropertyQuery->forDevice($device);
 			$findDevicePropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::AID);
 
@@ -139,7 +139,7 @@ final class Http implements Server
 			$accessory = $this->accessoryFactory->create($device, $aid, $device->getAccessoryCategory());
 			assert($accessory instanceof Entities\Protocol\Device);
 
-			$findChannelsQuery = new Queries\FindChannels();
+			$findChannelsQuery = new Queries\Entities\FindChannels();
 			$findChannelsQuery->forDevice($device);
 
 			foreach ($this->channelsRepository->findAllBy(
@@ -152,7 +152,7 @@ final class Http implements Server
 					$channel,
 				);
 
-				$findChannelPropertiesQuery = new DevicesQueries\FindChannelProperties();
+				$findChannelPropertiesQuery = new DevicesQueries\Entities\FindChannelProperties();
 				$findChannelPropertiesQuery->forChannel($channel);
 
 				foreach ($this->channelPropertiesRepository->findAllBy($findChannelPropertiesQuery) as $property) {
@@ -211,7 +211,7 @@ final class Http implements Server
 		foreach ($bridgedAccessories as $accessory) {
 			$this->accessoriesDriver->addBridgedAccessory($accessory);
 
-			$findDevicePropertyQuery = new DevicesQueries\FindDeviceProperties();
+			$findDevicePropertyQuery = new DevicesQueries\Entities\FindDeviceProperties();
 			$findDevicePropertyQuery->forDevice($accessory->getDevice());
 			$findDevicePropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::AID);
 

@@ -50,12 +50,12 @@ final class ClientsRepository
 	}
 
 	/**
-	 * @param Queries\FindClients<Entities\Client> $queryObject
+	 * @param Queries\Entities\FindClients<Entities\Client> $queryObject
 	 *
 	 * @throws DevicesExceptions\InvalidState
 	 */
 	public function findOneBy(
-		Queries\FindClients $queryObject,
+		Queries\Entities\FindClients $queryObject,
 	): Entities\Client|null
 	{
 		return $this->database->query(
@@ -64,7 +64,7 @@ final class ClientsRepository
 	}
 
 	/**
-	 * @param Queries\FindClients<Entities\Client> $queryObject
+	 * @param Queries\Entities\FindClients<Entities\Client> $queryObject
 	 *
 	 * @return DoctrineOrmQuery\ResultSet<Entities\Client>
 	 *
@@ -72,7 +72,7 @@ final class ClientsRepository
 	 * @throws Exceptions\InvalidState
 	 */
 	public function getResultSet(
-		Queries\FindClients $queryObject,
+		Queries\Entities\FindClients $queryObject,
 	): DoctrineOrmQuery\ResultSet
 	{
 		$result = $this->database->query(

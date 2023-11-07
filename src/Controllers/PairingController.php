@@ -218,7 +218,7 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorQuery = new Queries\FindConnectors();
+		$findConnectorQuery = new Queries\Entities\FindConnectors();
 		$findConnectorQuery->byId($connectorId);
 
 		$connector = $this->connectorsRepository->findOneBy(
@@ -340,7 +340,7 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorQuery = new Queries\FindConnectors();
+		$findConnectorQuery = new Queries\Entities\FindConnectors();
 		$findConnectorQuery->byId($connectorId);
 
 		$connector = $this->connectorsRepository->findOneBy(
@@ -429,7 +429,7 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorQuery = new Queries\FindConnectors();
+		$findConnectorQuery = new Queries\Entities\FindConnectors();
 		$findConnectorQuery->byId($connectorId);
 
 		$connector = $this->connectorsRepository->findOneBy(
@@ -1055,7 +1055,7 @@ final class PairingController extends BaseController
 
 		$this->databaseHelper->transaction(
 			function () use ($tlvEntry, $connector): void {
-				$findClientQuery = new Queries\FindClients();
+				$findClientQuery = new Queries\Entities\FindClients();
 				$findClientQuery->forConnector($connector);
 				$findClientQuery->byUid($tlvEntry[Types\TlvCode::IDENTIFIER]);
 
@@ -1522,7 +1522,7 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$findClientQuery = new Queries\FindClients();
+		$findClientQuery = new Queries\Entities\FindClients();
 		$findClientQuery->forConnector($connector);
 		$findClientQuery->byUid($tlvEntry[Types\TlvCode::IDENTIFIER]);
 
@@ -1646,7 +1646,7 @@ final class PairingController extends BaseController
 		];
 
 		try {
-			$findClientsQuery = new Queries\FindClients();
+			$findClientsQuery = new Queries\Entities\FindClients();
 			$findClientsQuery->forConnector($connector);
 
 			$clients = $this->clientsRepository->getResultSet($findClientsQuery);
@@ -1696,7 +1696,7 @@ final class PairingController extends BaseController
 		);
 
 		try {
-			$findClientQuery = new Queries\FindClients();
+			$findClientQuery = new Queries\Entities\FindClients();
 			$findClientQuery->byUid($clientUid);
 			$findClientQuery->forConnector($connector);
 
@@ -1801,7 +1801,7 @@ final class PairingController extends BaseController
 
 		try {
 			$this->databaseHelper->transaction(function () use ($connector, $clientUid): void {
-				$findClientQuery = new Queries\FindClients();
+				$findClientQuery = new Queries\Entities\FindClients();
 				$findClientQuery->byUid($clientUid);
 				$findClientQuery->forConnector($connector);
 
@@ -1811,7 +1811,7 @@ final class PairingController extends BaseController
 					$this->clientsManager->delete($client);
 				}
 
-				$findClientsQuery = new Queries\FindClients();
+				$findClientsQuery = new Queries\Entities\FindClients();
 				$findClientsQuery->forConnector($connector);
 
 				$clients = $this->clientsRepository->getResultSet($findClientsQuery);
@@ -1873,7 +1873,7 @@ final class PairingController extends BaseController
 		string|int|float|bool|null $value = null,
 	): void
 	{
-		$findConnectorPropertyQuery = new DevicesQueries\FindConnectorProperties();
+		$findConnectorPropertyQuery = new DevicesQueries\Entities\FindConnectorProperties();
 		$findConnectorPropertyQuery->forConnector($connector);
 		$findConnectorPropertyQuery->byIdentifier(strval($type->getValue()));
 

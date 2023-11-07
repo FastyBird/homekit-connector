@@ -40,7 +40,7 @@ final class SessionsManagerTest extends DbTestCase
 	{
 		$repository = $this->getContainer()->getByType(DevicesModels\Entities\Connectors\ConnectorsRepository::class);
 
-		$findConnectorQuery = new DevicesQueries\FindConnectors();
+		$findConnectorQuery = new DevicesQueries\Entities\FindConnectors();
 		$findConnectorQuery->byId(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
 
 		$connector = $repository->findOneBy($findConnectorQuery);
@@ -78,7 +78,7 @@ final class SessionsManagerTest extends DbTestCase
 
 		$repository = $this->getContainer()->getByType(Models\Entities\Clients\ClientsRepository::class);
 
-		$findQuery = new Queries\FindClients();
+		$findQuery = new Queries\Entities\FindClients();
 		$findQuery->byUid('e348f5fc-42de-459e-926e-2f4cd039c665');
 
 		$entity = $repository->findOneBy($findQuery);

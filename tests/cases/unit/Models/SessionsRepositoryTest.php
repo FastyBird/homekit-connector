@@ -33,7 +33,7 @@ final class SessionsRepositoryTest extends DbTestCase
 	{
 		$repository = $this->getContainer()->getByType(Models\Entities\Clients\ClientsRepository::class);
 
-		$findQuery = new Queries\FindClients();
+		$findQuery = new Queries\Entities\FindClients();
 		$findQuery->byUid('e348f5fc-42de-459e-926e-2f4cd039c665');
 
 		$entity = $repository->findOneBy($findQuery);
@@ -56,7 +56,7 @@ final class SessionsRepositoryTest extends DbTestCase
 	{
 		$repository = $this->getContainer()->getByType(Models\Entities\Clients\ClientsRepository::class);
 
-		$findQuery = new Queries\FindClients();
+		$findQuery = new Queries\Entities\FindClients();
 
 		$resultSet = $repository->getResultSet($findQuery);
 

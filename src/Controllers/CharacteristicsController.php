@@ -620,7 +620,7 @@ final class CharacteristicsController extends BaseController
 
 				if ($characteristic->getProperty() instanceof DevicesEntities\Channels\Properties\Variable) {
 					$this->databaseHelper->transaction(function () use ($characteristic): void {
-						$findPropertyQuery = new DevicesQueries\FindChannelProperties();
+						$findPropertyQuery = new DevicesQueries\Entities\FindChannelProperties();
 						$findPropertyQuery->byId($characteristic->getProperty()->getId());
 
 						$property = $this->channelsPropertiesRepository->findOneBy($findPropertyQuery);

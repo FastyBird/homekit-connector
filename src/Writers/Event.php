@@ -88,7 +88,7 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	{
 		$property = $event->getProperty();
 
-		$findPropertyQuery = new DevicesQueries\FindChannelMappedProperties();
+		$findPropertyQuery = new DevicesQueries\Entities\FindChannelMappedProperties();
 		$findPropertyQuery->byId($property->getId());
 
 		$property = $this->channelPropertiesRepository->findOneBy(
