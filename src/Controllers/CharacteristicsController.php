@@ -40,7 +40,6 @@ use FastyBird\Module\Devices\States as DevicesStates;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
-use IPub\Phone\Exceptions as PhoneExceptions;
 use IPub\SlimRouter;
 use Nette\Utils;
 use Psr\EventDispatcher;
@@ -211,8 +210,6 @@ final class CharacteristicsController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
-	 * @throws MetadataExceptions\FileNotFound
-	 * @throws MetadataExceptions\Logic
 	 * @throws RuntimeException
 	 * @throws Utils\JsonException
 	 */
@@ -512,15 +509,11 @@ final class CharacteristicsController extends BaseController
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws DevicesExceptions\Runtime
+	 * @throws ExchangeExceptions\InvalidArgument
 	 * @throws ExchangeExceptions\InvalidState
-	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
 	 * @throws MetadataExceptions\MalformedInput
-	 * @throws PhoneExceptions\NoValidCountryException
-	 * @throws PhoneExceptions\NoValidPhoneException
 	 * @throws Utils\JsonException
 	 */
 	public function writeCharacteristic(
