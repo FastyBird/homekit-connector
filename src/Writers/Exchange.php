@@ -25,7 +25,7 @@ use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Exchange\Consumers as ExchangeConsumers;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -88,18 +88,18 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 	public function consume(
 		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource|MetadataTypes\AutomatorSource $source,
 		MetadataTypes\RoutingKey $routingKey,
-		MetadataEntities\Entity|null $entity,
+		MetadataDocuments\Document|null $entity,
 	): void
 	{
 		if (
-			$entity instanceof MetadataEntities\DevicesModule\DeviceMappedProperty
-			|| $entity instanceof MetadataEntities\DevicesModule\DeviceVariableProperty
-			|| $entity instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
-			|| $entity instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
+			$entity instanceof MetadataDocuments\DevicesModule\DeviceMappedProperty
+			|| $entity instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty
+			|| $entity instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty
+			|| $entity instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty
 		) {
 			if (
-				$entity instanceof MetadataEntities\DevicesModule\DeviceMappedProperty
-				|| $entity instanceof MetadataEntities\DevicesModule\DeviceVariableProperty
+				$entity instanceof MetadataDocuments\DevicesModule\DeviceMappedProperty
+				|| $entity instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty
 			) {
 				$findDeviceQuery = new Queries\Entities\FindDevices();
 				$findDeviceQuery->byId($entity->getDevice());
@@ -179,7 +179,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 			}
 
 			$this->processProperty($entity, $accessory);
-		} elseif ($entity instanceof MetadataEntities\DevicesModule\ConnectorVariableProperty) {
+		} elseif ($entity instanceof MetadataDocuments\DevicesModule\ConnectorVariableProperty) {
 			if (!$entity->getConnector()->equals($this->connector->getId())) {
 				return;
 			}
@@ -213,14 +213,14 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	private function processProperty(
-		MetadataEntities\DevicesModule\Property $entity,
+		MetadataDocuments\DevicesModule\Property $entity,
 		Entities\Protocol\Device $accessory,
 	): void
 	{
 		if (
-			!$entity instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
-			&& !$entity instanceof MetadataEntities\DevicesModule\ChannelDynamicProperty
-			&& !$entity instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
+			!$entity instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty
+			&& !$entity instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty
+			&& !$entity instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty
 		) {
 			return;
 		}
@@ -237,7 +237,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 					$property = $this->channelsPropertiesRepository->findOneBy($findPropertyQuery);
 
 					if (
-						$entity instanceof MetadataEntities\DevicesModule\ChannelMappedProperty
+						$entity instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty
 						&& $property instanceof DevicesEntities\Channels\Properties\Mapped
 					) {
 						try {
@@ -271,7 +271,7 @@ class Exchange implements Writer, ExchangeConsumers\Consumer
 							return;
 						}
 					} elseif (
-						$entity instanceof MetadataEntities\DevicesModule\ChannelVariableProperty
+						$entity instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty
 						&& $property instanceof DevicesEntities\Channels\Properties\Variable
 					) {
 						$characteristic->setValue($entity->getValue());

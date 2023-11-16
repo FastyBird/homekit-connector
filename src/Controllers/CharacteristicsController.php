@@ -27,7 +27,7 @@ use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DateTimeFactory;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
-use FastyBird\Library\Exchange\Entities as ExchangeEntities;
+use FastyBird\Library\Exchange\Documents as ExchangeEntities;
 use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Exchange\Publisher as ExchangePublisher;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
@@ -73,7 +73,7 @@ final class CharacteristicsController extends BaseController
 		private readonly Protocol\Driver $accessoryDriver,
 		private readonly Clients\Subscriber $subscriber,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
-		private readonly ExchangeEntities\EntityFactory $entityFactory,
+		private readonly ExchangeEntities\DocumentFactory $entityFactory,
 		private readonly ExchangePublisher\Publisher $publisher,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesManager $channelsPropertiesManager,
@@ -691,7 +691,7 @@ final class CharacteristicsController extends BaseController
 									MetadataTypes\ModuleSource::SOURCE_MODULE_DEVICES,
 								),
 								MetadataTypes\RoutingKey::get(
-									MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+									MetadataTypes\RoutingKey::CHANNEL_PROPERTY_ACTION,
 								),
 								$this->entityFactory->create(
 									Utils\Json::encode([
@@ -704,7 +704,7 @@ final class CharacteristicsController extends BaseController
 										),
 									]),
 									MetadataTypes\RoutingKey::get(
-										MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+										MetadataTypes\RoutingKey::CHANNEL_PROPERTY_ACTION,
 									),
 								),
 							);
@@ -718,7 +718,7 @@ final class CharacteristicsController extends BaseController
 											MetadataTypes\ModuleSource::SOURCE_MODULE_DEVICES,
 										),
 										MetadataTypes\RoutingKey::get(
-											MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+											MetadataTypes\RoutingKey::CHANNEL_PROPERTY_ACTION,
 										),
 										$this->entityFactory->create(
 											Utils\Json::encode([
@@ -731,7 +731,7 @@ final class CharacteristicsController extends BaseController
 												),
 											]),
 											MetadataTypes\RoutingKey::get(
-												MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+												MetadataTypes\RoutingKey::CHANNEL_PROPERTY_ACTION,
 											),
 										),
 									);
@@ -742,7 +742,7 @@ final class CharacteristicsController extends BaseController
 											MetadataTypes\ModuleSource::SOURCE_MODULE_DEVICES,
 										),
 										MetadataTypes\RoutingKey::get(
-											MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+											MetadataTypes\RoutingKey::CHANNEL_PROPERTY_ACTION,
 										),
 										$this->entityFactory->create(
 											Utils\Json::encode([
@@ -755,7 +755,7 @@ final class CharacteristicsController extends BaseController
 												),
 											]),
 											MetadataTypes\RoutingKey::get(
-												MetadataTypes\RoutingKey::ROUTE_CHANNEL_PROPERTY_ACTION,
+												MetadataTypes\RoutingKey::CHANNEL_PROPERTY_ACTION,
 											),
 										),
 									);

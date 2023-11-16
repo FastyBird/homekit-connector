@@ -81,6 +81,7 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function stateChanged(
 		DevicesEvents\ChannelPropertyStateEntityCreated|DevicesEvents\ChannelPropertyStateEntityUpdated $event,
@@ -126,6 +127,7 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function processProperty(
 		DevicesEntities\Channels\Properties\Mapped $property,

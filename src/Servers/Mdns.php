@@ -20,7 +20,7 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
-use FastyBird\Library\Metadata\Entities as MetadataEntities;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Constants as DevicesConstants;
@@ -265,7 +265,7 @@ final class Mdns implements Server
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	public function refresh(
-		DevicesEntities\Connectors\Properties\Property|MetadataEntities\DevicesModule\ConnectorVariableProperty $property,
+		DevicesEntities\Connectors\Properties\Property|MetadataDocuments\DevicesModule\ConnectorVariableProperty $property,
 	): void
 	{
 		if (
@@ -274,7 +274,7 @@ final class Mdns implements Server
 					$property instanceof DevicesEntities\Connectors\Properties\Variable
 					&& $property->getConnector()->getId()->equals($this->connector->getId())
 				) || (
-					$property instanceof MetadataEntities\DevicesModule\ConnectorVariableProperty
+					$property instanceof MetadataDocuments\DevicesModule\ConnectorVariableProperty
 					&& $property->getConnector()->equals($this->connector->getId())
 				)
 			)

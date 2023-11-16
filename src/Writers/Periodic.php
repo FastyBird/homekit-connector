@@ -104,6 +104,7 @@ class Periodic implements Writer
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function handleCommunication(): void
 	{
@@ -137,6 +138,7 @@ class Periodic implements Writer
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function writeCharacteristic(
 		Entities\Protocol\Device $accessory,
