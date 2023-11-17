@@ -82,7 +82,7 @@ class FindClients extends DoctrineOrmQuery\QueryObject
 	}
 
 	/**
-	 * @phpstan-param ORM\EntityRepository<T> $repository
+	 * @param ORM\EntityRepository<T> $repository
 	 */
 	protected function doCreateQuery(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{
@@ -90,7 +90,7 @@ class FindClients extends DoctrineOrmQuery\QueryObject
 	}
 
 	/**
-	 * @phpstan-param ORM\EntityRepository<T> $repository
+	 * @param ORM\EntityRepository<T> $repository
 	 */
 	private function createBasicDql(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{
@@ -108,7 +108,7 @@ class FindClients extends DoctrineOrmQuery\QueryObject
 	}
 
 	/**
-	 * @phpstan-param ORM\EntityRepository<T> $repository
+	 * @param ORM\EntityRepository<T> $repository
 	 */
 	protected function doCreateCountQuery(ORM\EntityRepository $repository): ORM\QueryBuilder
 	{
