@@ -16,7 +16,6 @@
 namespace FastyBird\Connector\HomeKit\Protocol;
 
 use DateTimeInterface;
-use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
@@ -26,7 +25,6 @@ use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette\Utils;
 use function array_filter;
 use function array_values;
-use function boolval;
 use function count;
 use function in_array;
 use function intval;
@@ -365,74 +363,6 @@ final class Transformer
 		}
 
 		return DevicesUtilities\ValueHelper::flattenValue($transformedValue);
-	}
-
-	/**
-	 * @throws Exceptions\InvalidState
-	 */
-	public static function fromMappedParent(
-		MetadataDocuments\DevicesModule\ChannelMappedProperty $property,
-		MetadataDocuments\DevicesModule\ChannelDynamicProperty $parent,
-		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
-	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
-	{
-		if ($property->getDataType()->equals($parent->getDataType())) {
-			return $value;
-		}
-
-		if ($property->getDataType()->equalsValue(MetadataTypes\DataType::DATA_TYPE_BOOLEAN)) {
-			if (
-				$parent->getDataType()->equalsValue(MetadataTypes\DataType::DATA_TYPE_SWITCH)
-				&& (
-					$value instanceof MetadataTypes\SwitchPayload
-					|| $value === null
-				)
-			) {
-				return $value?->equalsValue(MetadataTypes\SwitchPayload::PAYLOAD_ON) ?? false;
-			} elseif (
-				$parent->getDataType()->equalsValue(MetadataTypes\DataType::DATA_TYPE_BUTTON)
-				&& (
-					$value instanceof MetadataTypes\ButtonPayload
-					|| $value === null
-				)
-			) {
-				return $value?->equalsValue(MetadataTypes\ButtonPayload::PAYLOAD_PRESSED) ?? false;
-			}
-		}
-
-		throw new Exceptions\InvalidState('Value received from mapped property could not be transformed into client');
-	}
-
-	/**
-	 * @throws Exceptions\InvalidState
-	 */
-	public static function toMappedParent(
-		MetadataDocuments\DevicesModule\ChannelMappedProperty $property,
-		MetadataDocuments\DevicesModule\ChannelDynamicProperty $parent,
-		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
-	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
-	{
-		if ($property->getDataType()->equals($parent->getDataType())) {
-			return $value;
-		}
-
-		if ($property->getDataType()->equalsValue(MetadataTypes\DataType::DATA_TYPE_BOOLEAN)) {
-			if ($parent->getDataType()->equalsValue(MetadataTypes\DataType::DATA_TYPE_SWITCH)) {
-				return MetadataTypes\SwitchPayload::get(
-					boolval(
-						$value,
-					) ? MetadataTypes\SwitchPayload::PAYLOAD_ON : MetadataTypes\SwitchPayload::PAYLOAD_OFF,
-				);
-			} elseif ($parent->getDataType()->equalsValue(MetadataTypes\DataType::DATA_TYPE_BUTTON)) {
-				return MetadataTypes\ButtonPayload::get(
-					boolval(
-						$value,
-					) ? MetadataTypes\ButtonPayload::PAYLOAD_PRESSED : MetadataTypes\ButtonPayload::PAYLOAD_RELEASED,
-				);
-			}
-		}
-
-		throw new Exceptions\InvalidState('Value received from client could not be transformed into mapped property');
 	}
 
 }

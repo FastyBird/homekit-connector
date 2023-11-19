@@ -18,10 +18,8 @@ namespace FastyBird\Connector\HomeKit\Writers;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
-use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\DateTimeFactory;
-use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
@@ -178,37 +176,7 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 						return;
 					}
 
-					try {
-						$characteristic->setActualValue(Protocol\Transformer::fromMappedParent(
-							$property,
-							$parent,
-							$state->getActualValue(),
-						));
-					} catch (Exceptions\InvalidState $ex) {
-						$this->logger->warning(
-							'State value could not be converted from mapped parent',
-							[
-								'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-								'type' => 'exchange-writer',
-								'exception' => BootstrapHelpers\Logger::buildException($ex),
-								'connector' => [
-									'id' => $accessory->getDevice()->getConnector()->toString(),
-								],
-								'device' => [
-									'id' => $accessory->getDevice()->getId()->toString(),
-								],
-								'channel' => [
-									'id' => $service->getChannel()?->getId()->toString(),
-								],
-								'property' => [
-									'id' => $characteristic->getProperty()->getId()->toString(),
-								],
-								'hap' => $accessory->toHap(),
-							],
-						);
-
-						return;
-					}
+					$characteristic->setActualValue($state->getExpectedValue() ?? $state->getActualValue());
 
 					if (!$characteristic->isVirtual()) {
 						$this->subscriber->publish(

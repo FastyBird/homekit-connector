@@ -109,6 +109,7 @@ final class Http implements Server
 
 	/**
 	 * @throws DBAL\Exception
+	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws DevicesExceptions\Runtime
 	 * @throws DevicesExceptions\Terminate
@@ -295,14 +296,12 @@ final class Http implements Server
 
 						if ($parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
 							try {
-								$state = $this->channelsPropertiesStates->readValue($parent);
+								$state = $this->channelsPropertiesStates->readValue($property);
 
 								if ($state !== null) {
-									$characteristic->setActualValue(Protocol\Transformer::fromMappedParent(
-										$property,
-										$parent,
+									$characteristic->setActualValue(
 										$state->getExpectedValue() ?? $state->getActualValue(),
-									));
+									);
 								}
 							} catch (Exceptions\InvalidState $ex) {
 								$this->logger->warning(

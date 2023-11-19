@@ -19,10 +19,8 @@ use DateTimeInterface;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
-use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\DateTimeFactory;
-use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
@@ -182,13 +180,17 @@ abstract class Periodic
 
 						$this->processedProperties[$property->getId()->toString()] = $now;
 
-						$state = $this->channelsPropertiesStates->readValue($property);
+						$characteristicValue = null;
 
-						if ($state === null) {
-							continue;
+						if ($property instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
+							$state = $this->channelsPropertiesStates->readValue($property);
+
+							if ($state === null) {
+								continue;
+							}
+
+							$characteristicValue = $state->getExpectedValue() ?? $state->getActualValue();
 						}
-
-						$characteristicValue = $state->getExpectedValue() ?? $state->getActualValue();
 
 						if ($property instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty) {
 							$findPropertyQuery = new DevicesQueries\Configuration\FindChannelProperties();
@@ -200,37 +202,13 @@ abstract class Periodic
 								continue;
 							}
 
-							try {
-								$characteristicValue = Protocol\Transformer::fromMappedParent(
-									$property,
-									$parent,
-									$characteristicValue,
-								);
-							} catch (Exceptions\InvalidState $ex) {
-								$this->logger->warning(
-									'State value could not be converted from mapped parent',
-									[
-										'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-										'type' => 'periodic-writer',
-										'exception' => BootstrapHelpers\Logger::buildException($ex),
-										'connector' => [
-											'id' => $accessory->getDevice()->getConnector()->toString(),
-										],
-										'device' => [
-											'id' => $accessory->getDevice()->getId()->toString(),
-										],
-										'channel' => [
-											'id' => $service->getChannel()->getId()->toString(),
-										],
-										'property' => [
-											'id' => $property->getId()->toString(),
-										],
-										'hap' => $accessory->toHap(),
-									],
-								);
+							$state = $this->channelsPropertiesStates->readValue($property);
 
+							if ($state === null) {
 								continue;
 							}
+
+							$characteristicValue = $state->getExpectedValue() ?? $state->getActualValue();
 						}
 
 						if ($characteristic->getValue() === $characteristicValue) {

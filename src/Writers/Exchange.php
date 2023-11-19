@@ -98,6 +98,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData
@@ -253,6 +254,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws MetadataExceptions\MalformedInput
@@ -283,10 +285,11 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 
 						if ($parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
 							try {
-								$characteristic->setActualValue(Protocol\Transformer::fromMappedParent(
-									$entity,
-									$parent,
-									$entity->getActualValue(),
+								$characteristic->setActualValue(DevicesUtilities\ValueHelper::normalizeValue(
+									$entity->getDataType(),
+									$entity->getExpectedValue() ?? $entity->getActualValue(),
+									$entity->getFormat(),
+									$entity->getInvalid(),
 								));
 							} catch (Exceptions\InvalidState $ex) {
 								$this->logger->warning(

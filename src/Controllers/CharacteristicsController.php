@@ -512,6 +512,7 @@ final class CharacteristicsController extends BaseController
 	 * @return array<string, bool|float|int|string|null>
 	 *
 	 * @throws DBAL\Exception
+	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws DevicesExceptions\Runtime
 	 * @throws ExchangeExceptions\InvalidArgument
@@ -662,9 +663,9 @@ final class CharacteristicsController extends BaseController
 						$this->channelsPropertiesStateManager->writeValue(
 							$row->getProperty(),
 							Utils\ArrayHash::from([
-								DevicesStates\Property::VALID_KEY => true,
-								DevicesStates\Property::ACTUAL_VALUE_KEY => $row->getValue(),
-								DevicesStates\Property::PENDING_KEY => false,
+								DevicesStates\Property::VALID_FIELD => true,
+								DevicesStates\Property::ACTUAL_VALUE_FIELD => $row->getValue(),
+								DevicesStates\Property::PENDING_FIELD => false,
 							]),
 						);
 
@@ -676,12 +677,6 @@ final class CharacteristicsController extends BaseController
 
 						if ($parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
 							try {
-								$propertyValue = Protocol\Transformer::toMappedParent(
-									$row->getProperty(),
-									$parent,
-									$row->getValue(),
-								);
-
 								if ($this->useExchange) {
 									$this->publisher->publish(
 										MetadataTypes\ModuleSource::get(
@@ -697,7 +692,7 @@ final class CharacteristicsController extends BaseController
 												'channel' => $row->getService()->getChannel()?->getId()->toString(),
 												'property' => $row->getProperty()->getId()->toString(),
 												'expected_value' => DevicesUtilities\ValueHelper::flattenValue(
-													$propertyValue,
+													$row->getValue(),
 												),
 											]),
 											MetadataTypes\RoutingKey::get(
@@ -709,9 +704,9 @@ final class CharacteristicsController extends BaseController
 									$this->channelsPropertiesStateManager->writeValue(
 										$row->getProperty(),
 										Utils\ArrayHash::from([
-											DevicesStates\Property::VALID_KEY => true,
-											DevicesStates\Property::EXPECTED_VALUE_KEY => $propertyValue,
-											DevicesStates\Property::PENDING_KEY => true,
+											DevicesStates\Property::VALID_FIELD => true,
+											DevicesStates\Property::EXPECTED_VALUE_FIELD => $row->getValue(),
+											DevicesStates\Property::PENDING_FIELD => true,
 										]),
 									);
 								}
