@@ -30,6 +30,7 @@ use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Exchange\Documents as ExchangeEntities;
 use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Exchange\Publisher as ExchangePublisher;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -68,6 +69,9 @@ final class CharacteristicsController extends BaseController
 	/** @var array<string, array<int, int>> */
 	private array $preparedWrites = [];
 
+	/**
+	 * @param DevicesModels\Configuration\Channels\Properties\Repository<MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty> $channelsPropertiesConfigurationRepository
+	 */
 	public function __construct(
 		private readonly bool $useExchange,
 		private readonly Protocol\Driver $accessoryDriver,
@@ -75,9 +79,10 @@ final class CharacteristicsController extends BaseController
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly ExchangeEntities\DocumentFactory $entityFactory,
 		private readonly ExchangePublisher\Publisher $publisher,
+		private readonly DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesManager $channelsPropertiesManager,
-		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStateManager,
+		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStateManager,
 		private readonly DevicesUtilities\Database $databaseHelper,
 		private readonly EventDispatcher\EventDispatcherInterface|null $dispatcher = null,
 	)
@@ -611,108 +616,73 @@ final class CharacteristicsController extends BaseController
 					$characteristic->setExpectedValue($value);
 				}
 
-				if ($characteristic->getProperty() instanceof DevicesEntities\Channels\Properties\Variable) {
-					$this->databaseHelper->transaction(function () use ($characteristic): void {
-						$findPropertyQuery = new DevicesQueries\Entities\FindChannelProperties();
-						$findPropertyQuery->byId($characteristic->getProperty()->getId());
+				foreach ($characteristic->getService()->getCharacteristics() as $row) {
+					if ($row->getProperty() instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
+						$this->databaseHelper->transaction(function () use ($row): void {
+							$findPropertyQuery = new DevicesQueries\Entities\FindChannelVariableProperties();
+							$findPropertyQuery->byId($row->getProperty()->getId());
 
-						$property = $this->channelsPropertiesRepository->findOneBy($findPropertyQuery);
-
-						if ($property !== null) {
-							$property = $this->channelsPropertiesManager->update(
-								$property,
-								Utils\ArrayHash::from([
-									'value' => $characteristic->getValue(),
-								]),
+							$property = $this->channelsPropertiesRepository->findOneBy(
+								$findPropertyQuery,
+								DevicesEntities\Channels\Properties\Variable::class,
 							);
 
-							$characteristic->setExpectedValue($property->getValue());
-						} else {
-							$this->logger->error(
-								'Variable property could not be updated',
-								[
-									'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-									'type' => 'characteristics-controller',
-									'characteristic' => [
-										'type' => $characteristic->getTypeId()->toString(),
-										'name' => $characteristic->getName(),
-									],
-									'device' => [
-										'id' => $characteristic->getProperty()->getChannel()->getDevice()->getId()->toString(),
-									],
-									'channel' => [
-										'id' => $characteristic->getProperty()->getChannel()->getId()->toString(),
-									],
-									'property' => [
-										'id' => $characteristic->getProperty()->getId()->toString(),
-									],
-								],
-							);
-						}
-					});
-
-				} else {
-					$property = $characteristic->getProperty();
-
-					try {
-						$propertyValue = $property instanceof DevicesEntities\Channels\Properties\Mapped ? Protocol\Transformer::toMappedParent(
-							$property,
-							$characteristic->getValue(),
-						) : $characteristic->getValue();
-					} catch (Exceptions\InvalidState $ex) {
-						$propertyValue = null;
-
-						$this->logger->warning(
-							'State value could not be converted to mapped parent',
-							[
-								'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-								'type' => 'characteristics-controller',
-								'exception' => BootstrapHelpers\Logger::buildException($ex),
-								'connector' => [
-									'id' => $property->getChannel()->getDevice()->getConnector()->getId()->toString(),
-								],
-								'device' => [
-									'id' => $property->getChannel()->getDevice()->getId()->toString(),
-								],
-								'channel' => [
-									'id' => $property->getChannel()->getId()->toString(),
-								],
-								'property' => [
-									'id' => $property->getId()->toString(),
-								],
-							],
-						);
-					}
-
-					if ($this->useExchange) {
-						if ($property instanceof DevicesEntities\Channels\Properties\Mapped) {
-							$this->publisher->publish(
-								MetadataTypes\ModuleSource::get(
-									MetadataTypes\ModuleSource::SOURCE_MODULE_DEVICES,
-								),
-								MetadataTypes\RoutingKey::get(
-									MetadataTypes\RoutingKey::CHANNEL_PROPERTY_ACTION,
-								),
-								$this->entityFactory->create(
-									Utils\Json::encode([
-										'action' => MetadataTypes\PropertyAction::ACTION_SET,
-										'device' => $property->getChannel()->getDevice()->getId()->toString(),
-										'channel' => $property->getChannel()->getId()->toString(),
-										'property' => $property->getId()->toString(),
-										'expected_value' => DevicesUtilities\ValueHelper::flattenValue(
-											$propertyValue,
-										),
+							if ($property !== null) {
+								$property = $this->channelsPropertiesManager->update(
+									$property,
+									Utils\ArrayHash::from([
+										'value' => $row->getValue(),
 									]),
-									MetadataTypes\RoutingKey::get(
-										MetadataTypes\RoutingKey::CHANNEL_PROPERTY_ACTION,
-									),
-								),
-							);
-						} else {
-							foreach ($characteristic->getService()->getCharacteristics() as $serviceCharacteristic) {
-								$serviceCharacteristicProperty = $serviceCharacteristic->getProperty();
+								);
+							} else {
+								$this->logger->error(
+									'Variable property could not be updated',
+									[
+										'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+										'type' => 'characteristics-controller',
+										'characteristic' => [
+											'type' => $row->getTypeId()->toString(),
+											'name' => $row->getName(),
+										],
+										'device' => [
+											'id' => $row->getService()->getChannel()?->getDevice()->toString(),
+										],
+										'channel' => [
+											'id' => $row->getService()->getChannel()?->getId()->toString(),
+										],
+										'property' => [
+											'id' => $row->getProperty()->getId()->toString(),
+										],
+									],
+								);
+							}
+						});
 
-								if ($serviceCharacteristicProperty instanceof DevicesEntities\Channels\Properties\Dynamic) {
+					} elseif ($row->getProperty() instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
+						$this->channelsPropertiesStateManager->writeValue(
+							$row->getProperty(),
+							Utils\ArrayHash::from([
+								DevicesStates\Property::VALID_KEY => true,
+								DevicesStates\Property::ACTUAL_VALUE_KEY => $row->getValue(),
+								DevicesStates\Property::PENDING_KEY => false,
+							]),
+						);
+
+					} elseif ($row->getProperty() instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty) {
+						$findPropertyQuery = new DevicesQueries\Configuration\FindChannelProperties();
+						$findPropertyQuery->byId($row->getProperty()->getParent());
+
+						$parent = $this->channelsPropertiesConfigurationRepository->findOneBy($findPropertyQuery);
+
+						if ($parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
+							try {
+								$propertyValue = Protocol\Transformer::toMappedParent(
+									$row->getProperty(),
+									$parent,
+									$row->getValue(),
+								);
+
+								if ($this->useExchange) {
 									$this->publisher->publish(
 										MetadataTypes\ModuleSource::get(
 											MetadataTypes\ModuleSource::SOURCE_MODULE_DEVICES,
@@ -723,33 +693,9 @@ final class CharacteristicsController extends BaseController
 										$this->entityFactory->create(
 											Utils\Json::encode([
 												'action' => MetadataTypes\PropertyAction::ACTION_SET,
-												'device' => $serviceCharacteristicProperty->getChannel()->getDevice()->getId()->toString(),
-												'channel' => $serviceCharacteristicProperty->getChannel()->getId()->toString(),
-												'property' => $serviceCharacteristicProperty->getId()->toString(),
-												'actual_value' => DevicesUtilities\ValueHelper::flattenValue(
-													$propertyValue,
-												),
-											]),
-											MetadataTypes\RoutingKey::get(
-												MetadataTypes\RoutingKey::CHANNEL_PROPERTY_ACTION,
-											),
-										),
-									);
-
-								} elseif ($serviceCharacteristicProperty instanceof DevicesEntities\Channels\Properties\Mapped) {
-									$this->publisher->publish(
-										MetadataTypes\ModuleSource::get(
-											MetadataTypes\ModuleSource::SOURCE_MODULE_DEVICES,
-										),
-										MetadataTypes\RoutingKey::get(
-											MetadataTypes\RoutingKey::CHANNEL_PROPERTY_ACTION,
-										),
-										$this->entityFactory->create(
-											Utils\Json::encode([
-												'action' => MetadataTypes\PropertyAction::ACTION_SET,
-												'device' => $serviceCharacteristicProperty->getChannel()->getDevice()->getId()->toString(),
-												'channel' => $serviceCharacteristicProperty->getChannel()->getId()->toString(),
-												'property' => $serviceCharacteristicProperty->getId()->toString(),
+												'device' => $row->getService()->getChannel()?->getDevice()->toString(),
+												'channel' => $row->getService()->getChannel()?->getId()->toString(),
+												'property' => $row->getProperty()->getId()->toString(),
 												'expected_value' => DevicesUtilities\ValueHelper::flattenValue(
 													$propertyValue,
 												),
@@ -759,36 +705,9 @@ final class CharacteristicsController extends BaseController
 											),
 										),
 									);
-								}
-							}
-						}
-					} else {
-						if ($property instanceof DevicesEntities\Channels\Properties\Mapped) {
-							$this->channelPropertiesStateManager->writeValue(
-								$property,
-								Utils\ArrayHash::from([
-									DevicesStates\Property::VALID_KEY => true,
-									DevicesStates\Property::EXPECTED_VALUE_KEY => $propertyValue,
-									DevicesStates\Property::PENDING_KEY => true,
-								]),
-							);
-						} else {
-							foreach ($characteristic->getService()->getCharacteristics() as $serviceCharacteristic) {
-								$serviceCharacteristicProperty = $serviceCharacteristic->getProperty();
-
-								if ($serviceCharacteristicProperty instanceof DevicesEntities\Channels\Properties\Dynamic) {
-									$this->channelPropertiesStateManager->writeValue(
-										$serviceCharacteristicProperty,
-										Utils\ArrayHash::from([
-											DevicesStates\Property::VALID_KEY => true,
-											DevicesStates\Property::ACTUAL_VALUE_KEY => $propertyValue,
-											DevicesStates\Property::PENDING_KEY => true,
-										]),
-									);
-
-								} elseif ($serviceCharacteristicProperty instanceof DevicesEntities\Channels\Properties\Mapped) {
-									$this->channelPropertiesStateManager->writeValue(
-										$serviceCharacteristicProperty,
+								} else {
+									$this->channelsPropertiesStateManager->writeValue(
+										$row->getProperty(),
 										Utils\ArrayHash::from([
 											DevicesStates\Property::VALID_KEY => true,
 											DevicesStates\Property::EXPECTED_VALUE_KEY => $propertyValue,
@@ -796,7 +715,69 @@ final class CharacteristicsController extends BaseController
 										]),
 									);
 								}
+							} catch (Exceptions\InvalidState $ex) {
+								$this->logger->warning(
+									'State value could not be converted to mapped parent',
+									[
+										'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+										'type' => 'characteristics-controller',
+										'exception' => BootstrapHelpers\Logger::buildException($ex),
+										'characteristic' => [
+											'type' => $row->getTypeId()->toString(),
+											'name' => $row->getName(),
+										],
+										'device' => [
+											'id' => $row->getService()->getChannel()?->getDevice()->toString(),
+										],
+										'channel' => [
+											'id' => $row->getService()->getChannel()?->getId()->toString(),
+										],
+										'property' => [
+											'id' => $row->getProperty()->getId()->toString(),
+										],
+									],
+								);
 							}
+						} elseif ($parent instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
+							$this->databaseHelper->transaction(function () use ($row, $parent): void {
+								$findPropertyQuery = new DevicesQueries\Entities\FindChannelVariableProperties();
+								$findPropertyQuery->byId($parent->getId());
+
+								$property = $this->channelsPropertiesRepository->findOneBy(
+									$findPropertyQuery,
+									DevicesEntities\Channels\Properties\Variable::class,
+								);
+
+								if ($property !== null) {
+									$this->channelsPropertiesManager->update(
+										$property,
+										Utils\ArrayHash::from([
+											'value' => $row->getValue(),
+										]),
+									);
+								} else {
+									$this->logger->error(
+										'Mapped variable property could not be updated',
+										[
+											'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+											'type' => 'characteristics-controller',
+											'characteristic' => [
+												'type' => $row->getTypeId()->toString(),
+												'name' => $row->getName(),
+											],
+											'device' => [
+												'id' => $row->getService()->getChannel()?->getDevice()->toString(),
+											],
+											'channel' => [
+												'id' => $row->getService()->getChannel()?->getId()->toString(),
+											],
+											'property' => [
+												'id' => $row->getProperty()->getId()->toString(),
+											],
+										],
+									);
+								}
+							});
 						}
 					}
 				}
@@ -811,10 +792,10 @@ final class CharacteristicsController extends BaseController
 							'name' => $characteristic->getName(),
 						],
 						'device' => [
-							'id' => $characteristic->getProperty()?->getChannel()->getDevice()->getId()->toString(),
+							'id' => $characteristic->getService()->getChannel()?->getDevice()->toString(),
 						],
 						'channel' => [
-							'id' => $characteristic->getProperty()?->getChannel()->getId()->toString(),
+							'id' => $characteristic->getService()->getChannel()?->getId()->toString(),
 						],
 						'property' => [
 							'id' => $characteristic->getProperty()?->getId()->toString(),

@@ -20,6 +20,7 @@ use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Middleware;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
@@ -72,8 +73,14 @@ final class Http implements Server
 
 	private SecureServer|null $socket = null;
 
+	/**
+	 * @param DevicesModels\Configuration\Devices\Repository<MetadataDocuments\DevicesModule\Device> $devicesConfigurationRepository
+	 * @param DevicesModels\Configuration\Devices\Properties\Repository<MetadataDocuments\DevicesModule\DeviceVariableProperty> $devicesPropertiesConfigurationRepository
+	 * @param DevicesModels\Configuration\Channels\Repository<MetadataDocuments\DevicesModule\Channel> $channelsConfigurationRepository
+	 * @param DevicesModels\Configuration\Channels\Properties\Repository<MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty> $channelsPropertiesConfigurationRepository
+	 */
 	public function __construct(
-		private readonly Entities\HomeKitConnector $connector,
+		private readonly MetadataDocuments\DevicesModule\Connector $connector,
 		private readonly Middleware\Router $routerMiddleware,
 		private readonly SecureServerFactory $secureServerFactory,
 		private readonly Clients\Subscriber $subscriber,
@@ -81,15 +88,20 @@ final class Http implements Server
 		private readonly Entities\Protocol\AccessoryFactory $accessoryFactory,
 		private readonly Entities\Protocol\ServiceFactory $serviceFactory,
 		private readonly Entities\Protocol\CharacteristicsFactory $characteristicsFactory,
+		private readonly Helpers\Connector $connectorHelper,
+		private readonly Helpers\Device $deviceHelper,
+		private readonly Helpers\Channel $channelHelper,
 		private readonly HomeKit\Logger $logger,
 		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStates,
 		private readonly DevicesUtilities\DeviceConnection $deviceConnectionManager,
-		private readonly DevicesModels\Entities\Devices\DevicesRepository $devicesRepository,
-		private readonly DevicesModels\Entities\Channels\ChannelsRepository $channelsRepository,
+		private readonly DevicesUtilities\Database $databaseHelper,
 		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
-		private readonly DevicesModels\Entities\Devices\Properties\PropertiesRepository $devicesPropertiesRepository,
+		private readonly DevicesModels\Entities\Devices\DevicesRepository $devicesRepository,
 		private readonly DevicesModels\Entities\Devices\Properties\PropertiesManager $devicesPropertiesManager,
-		private readonly DevicesModels\Entities\Channels\Properties\PropertiesRepository $channelPropertiesRepository,
+		private readonly DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
+		private readonly DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
+		private readonly DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
+		private readonly DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
 		private readonly EventLoop\LoopInterface $eventLoop,
 	)
 	{
@@ -121,17 +133,17 @@ final class Http implements Server
 
 		$bridgedAccessories = [];
 
-		$findDevicesQuery = new Queries\Entities\FindDevices();
+		$findDevicesQuery = new DevicesQueries\Configuration\FindDevices();
 		$findDevicesQuery->forConnector($this->connector);
 
-		foreach ($this->devicesRepository->findAllBy($findDevicesQuery, Entities\HomeKitDevice::class) as $device) {
-			$findDevicePropertyQuery = new DevicesQueries\Entities\FindDeviceProperties();
+		foreach ($this->devicesConfigurationRepository->findAllBy($findDevicesQuery) as $device) {
+			$findDevicePropertyQuery = new DevicesQueries\Configuration\FindDeviceVariableProperties();
 			$findDevicePropertyQuery->forDevice($device);
 			$findDevicePropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::AID);
 
-			$aidProperty = $this->devicesPropertiesRepository->findOneBy(
+			$aidProperty = $this->devicesPropertiesConfigurationRepository->findOneBy(
 				$findDevicePropertyQuery,
-				DevicesEntities\Devices\Properties\Variable::class,
+				MetadataDocuments\DevicesModule\DeviceVariableProperty::class,
 			);
 
 			$aid = $aidProperty?->getValue() ?? null;
@@ -140,51 +152,45 @@ final class Http implements Server
 				$aid = intval(DevicesUtilities\ValueHelper::flattenValue($aid));
 			}
 
-			$accessory = $this->accessoryFactory->create($device, $aid, $device->getAccessoryCategory());
+			$accessory = $this->accessoryFactory->create(
+				$device,
+				$aid,
+				$this->deviceHelper->getAccessoryCategory($device),
+			);
 			assert($accessory instanceof Entities\Protocol\Device);
 
-			$findChannelsQuery = new Queries\Entities\FindChannels();
+			$findChannelsQuery = new DevicesQueries\Configuration\FindChannels();
 			$findChannelsQuery->forDevice($device);
 
-			foreach ($this->channelsRepository->findAllBy(
-				$findChannelsQuery,
-				Entities\HomeKitChannel::class,
-			) as $channel) {
+			foreach ($this->channelsConfigurationRepository->findAllBy($findChannelsQuery) as $channel) {
 				$service = $this->serviceFactory->create(
-					$channel->getServiceType(),
+					$this->channelHelper->getServiceType($channel),
 					$accessory,
 					$channel,
 				);
 
-				$findChannelPropertiesQuery = new DevicesQueries\Entities\FindChannelProperties();
+				$findChannelPropertiesQuery = new DevicesQueries\Configuration\FindChannelProperties();
 				$findChannelPropertiesQuery->forChannel($channel);
 
-				foreach ($this->channelPropertiesRepository->findAllBy($findChannelPropertiesQuery) as $property) {
-					assert(
-						$property instanceof DevicesEntities\Channels\Properties\Variable
-						|| $property instanceof DevicesEntities\Channels\Properties\Dynamic
-						|| $property instanceof DevicesEntities\Channels\Properties\Mapped,
-					);
-
+				foreach ($this->channelsPropertiesConfigurationRepository->findAllBy(
+					$findChannelPropertiesQuery,
+				) as $property) {
 					$format = $property->getFormat();
 
 					$characteristic = $this->characteristicsFactory->create(
 						$property->getIdentifier(),
 						$service,
 						$property,
-						$format instanceof MetadataValueObjects\StringEnumFormat ? array_map(
-							static fn (string $item): int => intval($item),
-							$format->toArray(),
-						) : null,
+						$format instanceof MetadataValueObjects\StringEnumFormat
+							? array_map(static fn (string $item): int => intval($item), $format->toArray())
+							: null,
 						null,
 						$format instanceof MetadataValueObjects\NumberRangeFormat ? $format->getMin() : null,
 						$format instanceof MetadataValueObjects\NumberRangeFormat ? $format->getMax() : null,
 						$property->getStep(),
-						$property->getUnit() !== null && Types\CharacteristicUnit::isValidValue(
-							$property->getUnit(),
-						) ? Types\CharacteristicUnit::get(
-							$property->getUnit(),
-						) : null,
+						$property->getUnit() !== null && Types\CharacteristicUnit::isValidValue($property->getUnit())
+							? Types\CharacteristicUnit::get($property->getUnit())
+							: null,
 					);
 
 					$service->addCharacteristic($characteristic);
@@ -215,72 +221,47 @@ final class Http implements Server
 		foreach ($bridgedAccessories as $accessory) {
 			$this->accessoriesDriver->addBridgedAccessory($accessory);
 
-			$findDevicePropertyQuery = new DevicesQueries\Entities\FindDeviceProperties();
+			$findDevicePropertyQuery = new DevicesQueries\Configuration\FindDeviceVariableProperties();
 			$findDevicePropertyQuery->forDevice($accessory->getDevice());
 			$findDevicePropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::AID);
 
-			$aidProperty = $this->devicesPropertiesRepository->findOneBy(
+			$aidProperty = $this->devicesPropertiesConfigurationRepository->findOneBy(
 				$findDevicePropertyQuery,
-				DevicesEntities\Devices\Properties\Variable::class,
+				MetadataDocuments\DevicesModule\DeviceVariableProperty::class,
 			);
 
 			if ($aidProperty === null) {
-				$this->devicesPropertiesManager->create(Nette\Utils\ArrayHash::from([
-					'entity' => DevicesEntities\Devices\Properties\Variable::class,
-					'identifier' => Types\DevicePropertyIdentifier::AID,
-					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
-					'value' => $accessory->getAid(),
-					'device' => $accessory->getDevice(),
-				]));
+				$this->databaseHelper->transaction(
+					function () use ($accessory): void {
+						$findDeviceQuery = new Queries\Entities\FindDevices();
+						$findDeviceQuery->byId($accessory->getDevice()->getId());
+
+						$device = $this->devicesRepository->findOneBy($findDeviceQuery, Entities\HomeKitDevice::class);
+						assert($device instanceof Entities\HomeKitDevice);
+
+						$this->devicesPropertiesManager->create(Nette\Utils\ArrayHash::from([
+							'entity' => DevicesEntities\Devices\Properties\Variable::class,
+							'identifier' => Types\DevicePropertyIdentifier::AID,
+							'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
+							'value' => $accessory->getAid(),
+							'device' => $device,
+						]));
+					},
+				);
 			}
 
 			foreach ($accessory->getServices() as $service) {
 				foreach ($service->getCharacteristics() as $characteristic) {
 					$property = $characteristic->getProperty();
 
-					if ($property instanceof DevicesEntities\Channels\Properties\Variable) {
+					if ($property instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
 						$characteristic->setValue($property->getValue());
-					} elseif (
-						$property instanceof DevicesEntities\Channels\Properties\Mapped
-						|| $property instanceof DevicesEntities\Channels\Properties\Dynamic
-					) {
+					} elseif ($property instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
 						try {
 							$state = $this->channelsPropertiesStates->readValue($property);
 
 							if ($state !== null) {
-								if ($property instanceof DevicesEntities\Channels\Properties\Mapped) {
-									try {
-										$characteristic->setActualValue(Protocol\Transformer::fromMappedParent(
-											$property,
-											$state->getExpectedValue() ?? $state->getActualValue(),
-										));
-									} catch (Exceptions\InvalidState $ex) {
-										$this->logger->warning(
-											'State value could not be converted from mapped parent',
-											[
-												'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-												'type' => 'http-server',
-												'exception' => BootstrapHelpers\Logger::buildException($ex),
-												'connector' => [
-													'id' => $this->connector->getId()->toString(),
-												],
-												'device' => [
-													'id' => $accessory->getDevice()->getId()->toString(),
-												],
-												'channel' => [
-													'id' => $service->getChannel()?->getId()->toString(),
-												],
-												'property' => [
-													'id' => $property->getId()->toString(),
-												],
-											],
-										);
-									}
-								} else {
-									$characteristic->setActualValue(
-										$state->getExpectedValue() ?? $state->getActualValue(),
-									);
-								}
+								$characteristic->setActualValue($state->getExpectedValue() ?? $state->getActualValue());
 							}
 						} catch (Exceptions\InvalidState $ex) {
 							$this->logger->warning(
@@ -306,6 +287,50 @@ final class Http implements Server
 						} catch (DevicesExceptions\NotImplemented) {
 							// Ignore error
 						}
+					} elseif ($property instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty) {
+						$findParentPropertyQuery = new DevicesQueries\Configuration\FindChannelProperties();
+						$findParentPropertyQuery->byId($property->getParent());
+
+						$parent = $this->channelsPropertiesConfigurationRepository->findOneBy($findParentPropertyQuery);
+
+						if ($parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
+							try {
+								$state = $this->channelsPropertiesStates->readValue($parent);
+
+								if ($state !== null) {
+									$characteristic->setActualValue(Protocol\Transformer::fromMappedParent(
+										$property,
+										$parent,
+										$state->getExpectedValue() ?? $state->getActualValue(),
+									));
+								}
+							} catch (Exceptions\InvalidState $ex) {
+								$this->logger->warning(
+									'State value could not be set to characteristic',
+									[
+										'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+										'type' => 'http-server',
+										'exception' => BootstrapHelpers\Logger::buildException($ex),
+										'connector' => [
+											'id' => $this->connector->getId()->toString(),
+										],
+										'device' => [
+											'id' => $accessory->getDevice()->getId()->toString(),
+										],
+										'channel' => [
+											'id' => $service->getChannel()?->getId()->toString(),
+										],
+										'property' => [
+											'id' => $property->getId()->toString(),
+										],
+									],
+								);
+							} catch (DevicesExceptions\NotImplemented) {
+								// Ignore error
+							}
+						} elseif ($parent instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
+							$characteristic->setValue($parent->getValue());
+						}
 					}
 				}
 			}
@@ -327,7 +352,7 @@ final class Http implements Server
 					],
 					'server' => [
 						'address' => self::LISTENING_ADDRESS,
-						'port' => $this->connector->getPort(),
+						'port' => $this->connectorHelper->getPort($this->connector),
 					],
 				],
 			);
@@ -335,7 +360,7 @@ final class Http implements Server
 			$this->socket = $this->secureServerFactory->create(
 				$this->connector,
 				new Socket\SocketServer(
-					self::LISTENING_ADDRESS . ':' . $this->connector->getPort(),
+					self::LISTENING_ADDRESS . ':' . $this->connectorHelper->getPort($this->connector),
 					[],
 					$this->eventLoop,
 				),
@@ -507,18 +532,13 @@ final class Http implements Server
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	public function setSharedKey(
-		DevicesEntities\Connectors\Properties\Property|MetadataDocuments\DevicesModule\ConnectorVariableProperty $property,
+		DevicesEntities\Connectors\Properties\Property $property,
 	): void
 	{
 		if (
 			(
-				(
-					$property instanceof DevicesEntities\Connectors\Properties\Variable
-					&& $property->getConnector()->getId()->equals($this->connector->getId())
-				) || (
-					$property instanceof MetadataDocuments\DevicesModule\ConnectorVariableProperty
-					&& $property->getConnector()->equals($this->connector->getId())
-				)
+				$property instanceof DevicesEntities\Connectors\Properties\Variable
+				&& $property->getConnector()->getId()->equals($this->connector->getId())
 			)
 			&& $property->getIdentifier() === Types\ConnectorPropertyIdentifier::SHARED_KEY
 		) {

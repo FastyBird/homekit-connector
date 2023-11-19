@@ -19,9 +19,14 @@ use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Writers;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
+use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Connectors as DevicesConnectors;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
+use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
+use FastyBird\Module\Devices\Models as DevicesModels;
+use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Nette;
 use function assert;
 
@@ -45,16 +50,24 @@ final class Connector implements DevicesConnectors\Connector
 
 	/**
 	 * @param array<Servers\ServerFactory> $serversFactories
+	 * @param DevicesModels\Configuration\Connectors\Repository<MetadataDocuments\DevicesModule\Connector> $connectorsConfigurationRepository
 	 */
 	public function __construct(
 		private readonly DevicesEntities\Connectors\Connector $connector,
 		private readonly Writers\WriterFactory $writerFactory,
 		private readonly array $serversFactories,
 		private readonly HomeKit\Logger $logger,
+		private readonly DevicesModels\Configuration\Connectors\Repository $connectorsConfigurationRepository,
 	)
 	{
 	}
 
+	/**
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
+	 */
 	public function execute(): void
 	{
 		assert($this->connector instanceof Entities\HomeKitConnector);
@@ -70,14 +83,34 @@ final class Connector implements DevicesConnectors\Connector
 			],
 		);
 
+		$findConnector = new DevicesQueries\Configuration\FindConnectors();
+		$findConnector->byId($this->connector->getId());
+
+		$connector = $this->connectorsConfigurationRepository->findOneBy($findConnector);
+
+		if ($connector === null) {
+			$this->logger->error(
+				'Connector could not be loaded',
+				[
+					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'type' => 'connector',
+					'connector' => [
+						'id' => $this->connector->getId()->toString(),
+					],
+				],
+			);
+
+			return;
+		}
+
 		foreach ($this->serversFactories as $serverFactory) {
-			$server = $serverFactory->create($this->connector);
+			$server = $serverFactory->create($connector);
 			$server->connect();
 
 			$this->servers[] = $server;
 		}
 
-		$this->writer = $this->writerFactory->create($this->connector);
+		$this->writer = $this->writerFactory->create($connector);
 		$this->writer->connect();
 
 		$this->logger->info(
@@ -86,7 +119,7 @@ final class Connector implements DevicesConnectors\Connector
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
 				'connector' => [
-					'id' => $this->connector->getId()->toString(),
+					'id' => $connector->getId()->toString(),
 				],
 			],
 		);

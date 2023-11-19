@@ -90,7 +90,8 @@ final class Mdns implements Server
 	private Datagram\SocketInterface|null $socket = null;
 
 	public function __construct(
-		private readonly HomeKit\Entities\HomeKitConnector $connector,
+		private readonly MetadataDocuments\DevicesModule\Connector $connector,
+		private readonly Helpers\Connector $connectorHelper,
 		private readonly EventLoop\LoopInterface $eventLoop,
 		private readonly HomeKit\Logger $logger,
 		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
@@ -101,9 +102,11 @@ final class Mdns implements Server
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function connect(): void
 	{
@@ -260,23 +263,20 @@ final class Mdns implements Server
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function refresh(
-		DevicesEntities\Connectors\Properties\Property|MetadataDocuments\DevicesModule\ConnectorVariableProperty $property,
+		DevicesEntities\Connectors\Properties\Property $property,
 	): void
 	{
 		if (
 			(
-				(
-					$property instanceof DevicesEntities\Connectors\Properties\Variable
-					&& $property->getConnector()->getId()->equals($this->connector->getId())
-				) || (
-					$property instanceof MetadataDocuments\DevicesModule\ConnectorVariableProperty
-					&& $property->getConnector()->equals($this->connector->getId())
-				)
+				$property instanceof DevicesEntities\Connectors\Properties\Variable
+				&& $property->getConnector()->getId()->equals($this->connector->getId())
 			)
 			&& (
 				$property->getIdentifier() === Types\ConnectorPropertyIdentifier::PAIRED
@@ -335,9 +335,11 @@ final class Mdns implements Server
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function createZone(): void
 	{
@@ -370,13 +372,13 @@ final class Mdns implements Server
 			),
 		);
 
-		$macAddress = $this->connector->getMacAddress();
+		$macAddress = $this->connectorHelper->getMacAddress($this->connector);
 
 		$shortMacAddress = str_replace(':', '', Utils\Strings::substring($macAddress, -8));
 
 		$setupHash = base64_encode(
 			substr(
-				hash('sha512', $this->connector->getSetupId() . $macAddress, true),
+				hash('sha512', $this->connectorHelper->getSetupId($this->connector) . $macAddress, true),
 				0,
 				4,
 			),
@@ -412,7 +414,7 @@ final class Mdns implements Server
 			[
 				'priority' => '0',
 				'weight' => '0',
-				'port' => (string) $this->connector->getPort(),
+				'port' => (string) $this->connectorHelper->getPort($this->connector),
 				'target' => $hostName . '-' . $shortMacAddress . '.local',
 			],
 		);
@@ -429,12 +431,12 @@ final class Mdns implements Server
 				// Represents the 'configuration version' of an Accessory.
 				// Increasing this 'version number' signals iOS devices to
 				// re-fetch accessories data
-				'c#=' . $this->connector->getVersion(),
+				'c#=' . $this->connectorHelper->getVersion($this->connector),
 				's#=1', // Accessory state
 				'ff=0',
 				'ci=' . HomeKit\Types\AccessoryCategory::BRIDGE,
 				// 'sf == 1' means "discoverable by HomeKit iOS clients"
-				'sf=' . ($this->connector->isPaired() ? 0 : 1),
+				'sf=' . ($this->connectorHelper->isPaired($this->connector) ? 0 : 1),
 				'sh=' . $setupHash,
 			],
 		);

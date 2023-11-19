@@ -17,8 +17,8 @@ namespace FastyBird\Connector\HomeKit\Servers;
 
 use Evenement;
 use FastyBird\Connector\HomeKit;
-use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Nette;
 use React\Socket;
@@ -71,7 +71,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	private string|null $decryptionKey = null;
 
 	public function __construct(
-		private readonly Entities\HomeKitConnector $connector,
+		private readonly MetadataDocuments\DevicesModule\Connector $connector,
 		string|null $sharedKey,
 		private readonly Socket\ConnectionInterface $connection,
 		private readonly HomeKit\Logger $logger,

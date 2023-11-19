@@ -19,9 +19,9 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
@@ -45,9 +45,12 @@ use function strval;
 final class AccessoriesController extends BaseController
 {
 
+	/**
+	 * @param DevicesModels\Configuration\Connectors\Properties\Repository<MetadataDocuments\DevicesModule\ConnectorVariableProperty> $connectorsPropertiesConfigurationRepository
+	 */
 	public function __construct(
 		private readonly Protocol\Driver $accessoriesDriver,
-		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesRepository $propertiesRepository,
+		private readonly DevicesModels\Configuration\Connectors\Properties\Repository $connectorsPropertiesConfigurationRepository,
 	)
 	{
 	}
@@ -101,6 +104,7 @@ final class AccessoriesController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function identify(
 		Message\ServerRequestInterface $request,
@@ -127,13 +131,13 @@ final class AccessoriesController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorPropertyQuery = new DevicesQueries\Entities\FindConnectorProperties();
+		$findConnectorPropertyQuery = new DevicesQueries\Configuration\FindConnectorVariableProperties();
 		$findConnectorPropertyQuery->byConnectorId($connectorId);
 		$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PAIRED);
 
-		$pairedProperty = $this->propertiesRepository->findOneBy(
+		$pairedProperty = $this->connectorsPropertiesConfigurationRepository->findOneBy(
 			$findConnectorPropertyQuery,
-			DevicesEntities\Connectors\Properties\Variable::class,
+			MetadataDocuments\DevicesModule\ConnectorVariableProperty::class,
 		);
 
 		if ($pairedProperty !== null && boolval($pairedProperty->getValue()) === true) {

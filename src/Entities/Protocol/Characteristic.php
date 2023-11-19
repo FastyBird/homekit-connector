@@ -20,9 +20,9 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Protocol\Transformer;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
 use Ramsey\Uuid;
@@ -82,7 +82,7 @@ class Characteristic
 		private readonly array $permissions,
 		private readonly Service $service,
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		private readonly DevicesEntities\Channels\Properties\Dynamic|DevicesEntities\Channels\Properties\Mapped|DevicesEntities\Channels\Properties\Variable|null $property = null,
+		private readonly MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty|null $property = null,
 		private readonly array|null $validValues = [],
 		private readonly int|null $maxLength = null,
 		private readonly float|null $minValue = null,
@@ -153,7 +153,7 @@ class Characteristic
 	}
 
 	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-	public function getProperty(): DevicesEntities\Channels\Properties\Dynamic|DevicesEntities\Channels\Properties\Mapped|DevicesEntities\Channels\Properties\Variable|null
+	public function getProperty(): MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty|null
 	{
 		return $this->property;
 	}

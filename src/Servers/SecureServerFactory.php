@@ -15,7 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Servers;
 
-use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use React\Socket;
 
 /**
@@ -30,7 +30,7 @@ interface SecureServerFactory
 {
 
 	public function create(
-		Entities\HomeKitConnector $connector,
+		MetadataDocuments\DevicesModule\Connector $connector,
 		Socket\ServerInterface $server,
 		string|null $sharedKey = null,
 	): SecureServer;

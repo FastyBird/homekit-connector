@@ -11,7 +11,9 @@ use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Tests\Cases\Unit\DbTestCase;
 use FastyBird\Connector\HomeKit\Tests\Tools;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Fig\Http\Message\RequestMethodInterface;
@@ -34,10 +36,14 @@ final class CharacteristicsTest extends DbTestCase
 {
 
 	/**
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exception
 	 * @throws InvalidArgumentException
 	 * @throws MetadataExceptions\FileNotFound
 	 * @throws MetadataExceptions\Logic
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws RuntimeException
 	 * @throws Error
@@ -47,13 +53,13 @@ final class CharacteristicsTest extends DbTestCase
 	{
 		parent::setUp();
 
-		$repository = $this->getContainer()->getByType(DevicesModels\Entities\Connectors\ConnectorsRepository::class);
+		$repository = $this->getContainer()->getByType(DevicesModels\Configuration\Connectors\Repository::class);
 
-		$findConnectorQuery = new DevicesQueries\Entities\FindConnectors();
+		$findConnectorQuery = new DevicesQueries\Configuration\FindConnectors();
 		$findConnectorQuery->byId(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
 
-		$connector = $repository->findOneBy($findConnectorQuery, Entities\HomeKitConnector::class);
-		assert($connector instanceof Entities\HomeKitConnector);
+		$connector = $repository->findOneBy($findConnectorQuery);
+		assert($connector instanceof MetadataDocuments\DevicesModule\Connector);
 
 		$accessoryFactory = $this->getContainer()->getByType(Entities\Protocol\AccessoryFactory::class);
 

@@ -18,7 +18,7 @@ namespace FastyBird\Connector\HomeKit\Entities\Protocol;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Module\Devices\Entities as DevicesEntities;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use Nette;
 use Nette\Utils;
 use function array_intersect;
@@ -59,7 +59,7 @@ final class CharacteristicsFactory
 		string $name,
 		Service $service,
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		DevicesEntities\Channels\Properties\Dynamic|DevicesEntities\Channels\Properties\Mapped|DevicesEntities\Channels\Properties\Variable|null $property = null,
+		MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty|null $property = null,
 		array|null $validValues = [],
 		int|null $maxLength = null,
 		float|null $minValue = null,

@@ -95,9 +95,7 @@ class Driver
 					);
 				}
 
-				if ($existingAccessory->getConnector()->getId()->equals(
-					$accessory->getDevice()->getConnector()->getId(),
-				)) {
+				if ($existingAccessory->getConnector()->getId()->equals($accessory->getDevice()->getConnector())) {
 					$this->accessories->detach($existingAccessory);
 
 					$existingAccessory->addAccessory($accessory);

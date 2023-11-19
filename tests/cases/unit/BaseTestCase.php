@@ -11,7 +11,9 @@ use PHPUnit\Framework\TestCase;
 use function constant;
 use function defined;
 use function file_exists;
+use function getmypid;
 use function md5;
+use function strval;
 use function time;
 
 abstract class BaseTestCase extends TestCase
@@ -43,7 +45,9 @@ abstract class BaseTestCase extends TestCase
 		$config->setForceReloadContainer();
 		$config->setTempDirectory(FB_TEMP_DIR);
 
-		$config->addStaticParameters(['container' => ['class' => 'SystemContainer_' . md5((string) time())]]);
+		$config->addStaticParameters(
+			['container' => ['class' => 'SystemContainer_' . strval(getmypid()) . md5((string) time())]],
+		);
 		$config->addStaticParameters(['appDir' => $rootDir, 'wwwDir' => $rootDir, 'vendorDir' => $vendorDir]);
 
 		$config->addConfig(__DIR__ . '/../../common.neon');

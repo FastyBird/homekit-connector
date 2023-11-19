@@ -19,6 +19,7 @@ use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use Ramsey\Uuid;
 use SplObjectStorage;
 
@@ -38,7 +39,7 @@ class Bridge extends Accessory
 
 	public function __construct(
 		string $name,
-		private readonly Entities\HomeKitConnector $connector,
+		private readonly MetadataDocuments\DevicesModule\Connector $connector,
 	)
 	{
 		parent::__construct(
@@ -55,7 +56,7 @@ class Bridge extends Accessory
 		return $this->connector->getId();
 	}
 
-	public function getConnector(): Entities\HomeKitConnector
+	public function getConnector(): MetadataDocuments\DevicesModule\Connector
 	{
 		return $this->connector;
 	}

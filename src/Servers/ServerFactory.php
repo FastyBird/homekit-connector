@@ -15,7 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Servers;
 
-use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 
 /**
  * Base server factory
@@ -28,6 +28,6 @@ use FastyBird\Connector\HomeKit\Entities;
 interface ServerFactory
 {
 
-	public function create(Entities\HomeKitConnector $connector): Server;
+	public function create(MetadataDocuments\DevicesModule\Connector $connector): Server;
 
 }

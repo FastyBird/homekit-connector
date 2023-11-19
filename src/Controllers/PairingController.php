@@ -18,7 +18,6 @@ namespace FastyBird\Connector\HomeKit\Controllers;
 use Brick\Math;
 use Doctrine\DBAL;
 use Elliptic\EdDSA;
-use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
@@ -28,6 +27,7 @@ use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -167,10 +167,15 @@ final class PairingController extends BaseController
 
 	private EdDSA $edDsa;
 
+	/**
+	 * @param DevicesModels\Configuration\Connectors\Repository<MetadataDocuments\DevicesModule\Connector> $connectorsConfigurationRepository
+	 */
 	public function __construct(
 		private readonly Protocol\Tlv $tlv,
 		private readonly Models\Entities\Clients\ClientsRepository $clientsRepository,
 		private readonly Models\Entities\Clients\ClientsManager $clientsManager,
+		private readonly Helpers\Connector $connectorHelper,
+		private readonly DevicesModels\Configuration\Connectors\Repository $connectorsConfigurationRepository,
 		private readonly DevicesModels\Entities\Connectors\ConnectorsRepository $connectorsRepository,
 		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesRepository $propertiesRepository,
 		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $propertiesManagers,
@@ -218,19 +223,16 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorQuery = new Queries\Entities\FindConnectors();
+		$findConnectorQuery = new DevicesQueries\Configuration\FindConnectors();
 		$findConnectorQuery->byId($connectorId);
 
-		$connector = $this->connectorsRepository->findOneBy(
-			$findConnectorQuery,
-			HomeKit\Entities\HomeKitConnector::class,
-		);
+		$connector = $this->connectorsConfigurationRepository->findOneBy($findConnectorQuery);
 
 		if ($connector === null) {
 			throw new Exceptions\InvalidState('Connector could not be loaded');
 		}
 
-		if ($connector->isPaired()) {
+		if ($this->connectorHelper->isPaired($connector)) {
 			$result = [
 				[
 					Types\TlvCode::STATE => Types\TlvState::M2,
@@ -340,19 +342,16 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorQuery = new Queries\Entities\FindConnectors();
+		$findConnectorQuery = new DevicesQueries\Configuration\FindConnectors();
 		$findConnectorQuery->byId($connectorId);
 
-		$connector = $this->connectorsRepository->findOneBy(
-			$findConnectorQuery,
-			HomeKit\Entities\HomeKitConnector::class,
-		);
+		$connector = $this->connectorsConfigurationRepository->findOneBy($findConnectorQuery);
 
 		if ($connector === null) {
 			throw new Exceptions\InvalidState('Connector could not be loaded');
 		}
 
-		if (!$connector->isPaired()) {
+		if (!$this->connectorHelper->isPaired($connector)) {
 			$result = [
 				[
 					Types\TlvCode::STATE => Types\TlvState::M2,
@@ -429,19 +428,16 @@ final class PairingController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorQuery = new Queries\Entities\FindConnectors();
+		$findConnectorQuery = new DevicesQueries\Configuration\FindConnectors();
 		$findConnectorQuery->byId($connectorId);
 
-		$connector = $this->connectorsRepository->findOneBy(
-			$findConnectorQuery,
-			HomeKit\Entities\HomeKitConnector::class,
-		);
+		$connector = $this->connectorsConfigurationRepository->findOneBy($findConnectorQuery);
 
 		if ($connector === null) {
 			throw new Exceptions\InvalidState('Connector could not be loaded');
 		}
 
-		if (!$connector->isPaired()) {
+		if (!$this->connectorHelper->isPaired($connector)) {
 			$result = [
 				[
 					Types\TlvCode::STATE => Types\TlvState::M2,
@@ -511,6 +507,7 @@ final class PairingController extends BaseController
 	/**
 	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
+	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
@@ -518,10 +515,11 @@ final class PairingController extends BaseController
 	 * @throws Math\Exception\NegativeNumberException
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
-	private function srpStart(Entities\HomeKitConnector $connector): array
+	private function srpStart(MetadataDocuments\DevicesModule\Connector $connector): array
 	{
-		if ($connector->isPaired()) {
+		if ($this->connectorHelper->isPaired($connector)) {
 			$this->logger->error(
 				'Accessory already paired, cannot accept additional pairings',
 				[
@@ -619,7 +617,7 @@ final class PairingController extends BaseController
 
 		$this->activePairing = true;
 
-		$this->srp = new Protocol\Srp(self::SRP_USERNAME, $connector->getPinCode());
+		$this->srp = new Protocol\Srp(self::SRP_USERNAME, $this->connectorHelper->getPinCode($connector));
 
 		$serverPublicKey = unpack('C*', $this->srp->getServerPublicKey()->toBytes(false));
 
@@ -707,7 +705,7 @@ final class PairingController extends BaseController
 	 * @throws Math\Exception\NumberFormatException
 	 */
 	private function srpFinish(
-		Entities\HomeKitConnector $connector,
+		MetadataDocuments\DevicesModule\Connector $connector,
 		array $clientPublicKey,
 		array $clientProof,
 	): array
@@ -849,9 +847,10 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function exchange(
-		Entities\HomeKitConnector $connector,
+		MetadataDocuments\DevicesModule\Connector $connector,
 		array $encryptedData,
 	): array
 	{
@@ -1055,6 +1054,12 @@ final class PairingController extends BaseController
 
 		$this->databaseHelper->transaction(
 			function () use ($tlvEntry, $connector): void {
+				$findConnector = new Queries\Entities\FindConnectors();
+				$findConnector->byId($connector->getId());
+
+				$connector = $this->connectorsRepository->findOneBy($findConnector, Entities\HomeKitConnector::class);
+				assert($connector instanceof Entities\HomeKitConnector);
+
 				$findClientQuery = new Queries\Entities\FindClients();
 				$findClientQuery->forConnector($connector);
 				$findClientQuery->byUid($tlvEntry[Types\TlvCode::IDENTIFIER]);
@@ -1085,7 +1090,7 @@ final class PairingController extends BaseController
 			self::SALT_ACCESSORY,
 		);
 
-		$serverSecret = $connector->getServerSecret();
+		$serverSecret = $this->connectorHelper->getServerSecret($connector);
 
 		if ($serverSecret === null) {
 			$serverSecret = Helpers\Protocol::generateSignKey();
@@ -1104,12 +1109,12 @@ final class PairingController extends BaseController
 		);
 		$serverPublicKey = $serverPrivateKey->getPublic();
 
-		$serverInfo = $serverX . $connector->getMacAddress() . pack('C*', ...$serverPublicKey);
+		$serverInfo = $serverX . $this->connectorHelper->getMacAddress($connector) . pack('C*', ...$serverPublicKey);
 		$serverSignature = $serverPrivateKey->sign(unpack('C*', $serverInfo))->toBytes();
 
 		$responseInnerData = [
 			[
-				Types\TlvCode::IDENTIFIER => $connector->getMacAddress(),
+				Types\TlvCode::IDENTIFIER => $this->connectorHelper->getMacAddress($connector),
 				Types\TlvCode::PUBLIC_KEY => $serverPublicKey,
 				Types\TlvCode::SIGNATURE => $serverSignature,
 			],
@@ -1214,13 +1219,14 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function verifyStart(
-		Entities\HomeKitConnector $connector,
+		MetadataDocuments\DevicesModule\Connector $connector,
 		array $clientPublicKey,
 	): array
 	{
-		$serverSecret = $connector->getServerSecret();
+		$serverSecret = $this->connectorHelper->getServerSecret($connector);
 
 		if ($serverSecret === null) {
 			$serverSecret = Helpers\Protocol::generateSignKey();
@@ -1237,7 +1243,10 @@ final class PairingController extends BaseController
 		$serverPublicKey = publicKey($serverSecret);
 		$sharedSecret = sharedKey($serverSecret, pack('C*', ...$clientPublicKey));
 
-		$serverInfo = $serverPublicKey . $connector->getMacAddress() . pack('C*', ...$clientPublicKey);
+		$serverInfo = $serverPublicKey . $this->connectorHelper->getMacAddress($connector) . pack(
+			'C*',
+			...$clientPublicKey,
+		);
 
 		$serverPrivateKey = $this->edDsa->keyFromSecret(
 			unpack('C*', (string) $serverSecret),
@@ -1246,7 +1255,7 @@ final class PairingController extends BaseController
 
 		$responseInnerData = [
 			[
-				Types\TlvCode::IDENTIFIER => $connector->getMacAddress(),
+				Types\TlvCode::IDENTIFIER => $this->connectorHelper->getMacAddress($connector),
 				Types\TlvCode::SIGNATURE => $serverSignature,
 			],
 		];
@@ -1394,9 +1403,10 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function verifyFinish(
-		Entities\HomeKitConnector $connector,
+		MetadataDocuments\DevicesModule\Connector $connector,
 		array $encryptedData,
 	): array
 	{
@@ -1405,7 +1415,7 @@ final class PairingController extends BaseController
 				pack('C*', ...$encryptedData),
 				'',
 				pack('C*', ...self::NONCE_VERIFY_M3),
-				(string) hex2bin(strval($connector->getHashingKey())),
+				(string) hex2bin(strval($this->connectorHelper->getHashingKey($connector))),
 			);
 		} catch (SodiumException $ex) {
 			$this->logger->error(
@@ -1523,7 +1533,7 @@ final class PairingController extends BaseController
 		}
 
 		$findClientQuery = new Queries\Entities\FindClients();
-		$findClientQuery->forConnector($connector);
+		$findClientQuery->byConnectorId($connector->getId());
 		$findClientQuery->byUid($tlvEntry[Types\TlvCode::IDENTIFIER]);
 
 		$client = $this->clientsRepository->findOneBy($findClientQuery);
@@ -1552,7 +1562,7 @@ final class PairingController extends BaseController
 			];
 		}
 
-		$serverSecret = $connector->getServerSecret();
+		$serverSecret = $this->connectorHelper->getServerSecret($connector);
 
 		if ($serverSecret === null) {
 			$serverSecret = Helpers\Protocol::generateSignKey();
@@ -1567,7 +1577,7 @@ final class PairingController extends BaseController
 		$serverSecret = hex2bin($serverSecret);
 
 		$iosDeviceInfo
-			= hex2bin(strval($connector->getClientPublicKey()))
+			= hex2bin(strval($this->connectorHelper->getClientPublicKey($connector)))
 			. $tlvEntry[Types\TlvCode::IDENTIFIER]
 			. publicKey($serverSecret);
 
@@ -1626,7 +1636,7 @@ final class PairingController extends BaseController
 	/**
 	 * @return array<int, array<int, (int|array<int>|string)>>
 	 */
-	private function listPairings(Entities\HomeKitConnector $connector): array
+	private function listPairings(MetadataDocuments\DevicesModule\Connector $connector): array
 	{
 		$this->logger->debug(
 			'Requested list pairings',
@@ -1647,7 +1657,7 @@ final class PairingController extends BaseController
 
 		try {
 			$findClientsQuery = new Queries\Entities\FindClients();
-			$findClientsQuery->forConnector($connector);
+			$findClientsQuery->byConnectorId($connector->getId());
 
 			$clients = $this->clientsRepository->getResultSet($findClientsQuery);
 		} catch (Throwable) {
@@ -1678,7 +1688,7 @@ final class PairingController extends BaseController
 	 * @return array<int, array<int, int>>
 	 */
 	private function addPairing(
-		Entities\HomeKitConnector $connector,
+		MetadataDocuments\DevicesModule\Connector $connector,
 		string $clientUid,
 		array $clientPublicKey,
 		int $clientPermission,
@@ -1698,7 +1708,7 @@ final class PairingController extends BaseController
 		try {
 			$findClientQuery = new Queries\Entities\FindClients();
 			$findClientQuery->byUid($clientUid);
-			$findClientQuery->forConnector($connector);
+			$findClientQuery->byConnectorId($connector->getId());
 
 			$client = $this->clientsRepository->findOneBy($findClientQuery);
 		} catch (Throwable) {
@@ -1755,6 +1765,15 @@ final class PairingController extends BaseController
 			try {
 				$this->databaseHelper->transaction(
 					function () use ($connector, $clientUid, $clientPublicKey, $clientPermission): void {
+						$findConnectorQuery = new Queries\Entities\FindConnectors();
+						$findConnectorQuery->byId($connector->getId());
+
+						$connector = $this->connectorsRepository->findOneBy(
+							$findConnectorQuery,
+							Entities\HomeKitConnector::class,
+						);
+						assert($connector instanceof Entities\HomeKitConnector);
+
 						$this->clientsManager->create(Utils\ArrayHash::from([
 							'uid' => $clientUid,
 							'publicKey' => pack('C*', ...$clientPublicKey),
@@ -1784,7 +1803,7 @@ final class PairingController extends BaseController
 	 * @return array<int, array<int, int>>
 	 */
 	private function removePairing(
-		Entities\HomeKitConnector $connector,
+		MetadataDocuments\DevicesModule\Connector $connector,
 		string $clientUid,
 	): array
 	{
@@ -1803,7 +1822,7 @@ final class PairingController extends BaseController
 			$this->databaseHelper->transaction(function () use ($connector, $clientUid): void {
 				$findClientQuery = new Queries\Entities\FindClients();
 				$findClientQuery->byUid($clientUid);
-				$findClientQuery->forConnector($connector);
+				$findClientQuery->byConnectorId($connector->getId());
 
 				$client = $this->clientsRepository->findOneBy($findClientQuery);
 
@@ -1812,7 +1831,7 @@ final class PairingController extends BaseController
 				}
 
 				$findClientsQuery = new Queries\Entities\FindClients();
-				$findClientsQuery->forConnector($connector);
+				$findClientsQuery->byConnectorId($connector->getId());
 
 				$clients = $this->clientsRepository->getResultSet($findClientsQuery);
 
@@ -1868,13 +1887,13 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 */
 	private function setConfiguration(
-		Entities\HomeKitConnector $connector,
+		MetadataDocuments\DevicesModule\Connector $connector,
 		Types\ConnectorPropertyIdentifier $type,
 		string|int|float|bool|null $value = null,
 	): void
 	{
 		$findConnectorPropertyQuery = new DevicesQueries\Entities\FindConnectorProperties();
-		$findConnectorPropertyQuery->forConnector($connector);
+		$findConnectorPropertyQuery->byConnectorId($connector->getId());
 		$findConnectorPropertyQuery->byIdentifier(strval($type->getValue()));
 
 		$property = $this->propertiesRepository->findOneBy(
@@ -1894,6 +1913,15 @@ final class PairingController extends BaseController
 			) {
 				$this->databaseHelper->transaction(
 					function () use ($connector, $type, $value): void {
+						$findConnectorQuery = new Queries\Entities\FindConnectors();
+						$findConnectorQuery->byId($connector->getId());
+
+						$connector = $this->connectorsRepository->findOneBy(
+							$findConnectorQuery,
+							Entities\HomeKitConnector::class,
+						);
+						assert($connector instanceof Entities\HomeKitConnector);
+
 						$this->propertiesManagers->create(
 							Utils\ArrayHash::from([
 								'entity' => DevicesEntities\Connectors\Properties\Variable::class,

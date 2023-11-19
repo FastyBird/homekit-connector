@@ -15,7 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Writers;
 
-use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 
 /**
  * Device state writer interface factory
@@ -28,6 +28,6 @@ use FastyBird\Connector\HomeKit\Entities;
 interface WriterFactory
 {
 
-	public function create(Entities\HomeKitConnector $connector): Writer;
+	public function create(MetadataDocuments\DevicesModule\Connector $connector): Writer;
 
 }

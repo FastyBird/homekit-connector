@@ -20,16 +20,17 @@ use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\DateTimeFactory;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Events as DevicesEvents;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
-use Nette;
+use React\EventLoop;
 use Symfony\Component\EventDispatcher;
 use function intval;
 
@@ -41,22 +42,40 @@ use function intval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class Event implements Writer, EventDispatcher\EventSubscriberInterface
+class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberInterface
 {
-
-	use Nette\SmartObject;
 
 	public const NAME = 'event';
 
+	/**
+	 * @param DevicesModels\Configuration\Devices\Repository<MetadataDocuments\DevicesModule\Device> $devicesConfigurationRepository
+	 * @param DevicesModels\Configuration\Channels\Repository<MetadataDocuments\DevicesModule\Channel> $channelsConfigurationRepository
+	 * @param DevicesModels\Configuration\Channels\Properties\Repository<MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty> $channelsPropertiesConfigurationRepository
+	 */
 	public function __construct(
-		private readonly Entities\HomeKitConnector $connector,
-		private readonly Protocol\Driver $accessoryDriver,
-		private readonly Clients\Subscriber $subscriber,
-		private readonly HomeKit\Logger $logger,
-		private readonly DevicesModels\Entities\Channels\Properties\PropertiesRepository $channelPropertiesRepository,
-		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStates,
+		MetadataDocuments\DevicesModule\Connector $connector,
+		Protocol\Driver $accessoryDriver,
+		Clients\Subscriber $subscriber,
+		HomeKit\Logger $logger,
+		DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
+		DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
+		DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStates,
+		DateTimeFactory\Factory $dateTimeFactory,
+		EventLoop\LoopInterface $eventLoop,
+		private readonly DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
 	)
 	{
+		parent::__construct(
+			$connector,
+			$accessoryDriver,
+			$subscriber,
+			$logger,
+			$devicesConfigurationRepository,
+			$channelsPropertiesConfigurationRepository,
+			$channelsPropertiesStates,
+			$dateTimeFactory,
+			$eventLoop,
+		);
 	}
 
 	public static function getSubscribedEvents(): array
@@ -65,16 +84,6 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 			DevicesEvents\ChannelPropertyStateEntityCreated::class => 'stateChanged',
 			DevicesEvents\ChannelPropertyStateEntityUpdated::class => 'stateChanged',
 		];
-	}
-
-	public function connect(): void
-	{
-		// Nothing to do here
-	}
-
-	public function disconnect(): void
-	{
-		// Nothing to do here
 	}
 
 	/**
@@ -87,40 +96,54 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 		DevicesEvents\ChannelPropertyStateEntityCreated|DevicesEvents\ChannelPropertyStateEntityUpdated $event,
 	): void
 	{
-		$property = $event->getProperty();
+		$findPropertiesQuery = new DevicesQueries\Configuration\FindChannelMappedProperties();
+		$findPropertiesQuery->forParent($event->getProperty());
 
-		$findPropertyQuery = new DevicesQueries\Entities\FindChannelMappedProperties();
-		$findPropertyQuery->byId($property->getId());
-
-		$property = $this->channelPropertiesRepository->findOneBy(
-			$findPropertyQuery,
-			DevicesEntities\Channels\Properties\Mapped::class,
+		$properties = $this->channelsPropertiesConfigurationRepository->findAllBy(
+			$findPropertiesQuery,
+			MetadataDocuments\DevicesModule\ChannelMappedProperty::class,
 		);
 
-		if ($property === null) {
-			return;
+		foreach ($properties as $property) {
+			$findChannelQuery = new DevicesQueries\Configuration\FindChannels();
+			$findChannelQuery->byId($property->getChannel());
+
+			$channel = $this->channelsConfigurationRepository->findOneBy($findChannelQuery);
+
+			if ($channel === null) {
+				return;
+			}
+
+			$findDeviceQuery = new DevicesQueries\Configuration\FindDevices();
+			$findDeviceQuery->byId($property->getChannel());
+
+			$device = $this->devicesConfigurationRepository->findOneBy($findDeviceQuery);
+
+			if ($device === null) {
+				return;
+			}
+
+			if (!$device->getConnector()->equals($this->connector->getId())) {
+				return;
+			}
+
+			$accessory = $this->accessoryDriver->findAccessory($device->getId());
+
+			if (!$accessory instanceof Entities\Protocol\Device) {
+				$this->logger->warning(
+					'Accessory for received property message was not found in accessory driver',
+					[
+						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+						'type' => 'event-writer',
+						'state' => $event->getState()->toArray(),
+					],
+				);
+
+				return;
+			}
+
+			$this->processProperty($property, $accessory);
 		}
-
-		if (!$property->getChannel()->getDevice()->getConnector()->getId()->equals($this->connector->getId())) {
-			return;
-		}
-
-		$accessory = $this->accessoryDriver->findAccessory($property->getChannel()->getDevice()->getId());
-
-		if (!$accessory instanceof Entities\Protocol\Device) {
-			$this->logger->warning(
-				'Accessory for received property message was not found in accessory driver',
-				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'event-writer',
-					'state' => $event->getState()->toArray(),
-				],
-			);
-
-			return;
-		}
-
-		$this->processProperty($property, $accessory);
 	}
 
 	/**
@@ -130,11 +153,11 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function processProperty(
-		DevicesEntities\Channels\Properties\Mapped $property,
+		MetadataDocuments\DevicesModule\ChannelMappedProperty $property,
 		Entities\Protocol\Device $accessory,
 	): void
 	{
-		$state = $this->channelPropertiesStates->readValue($property);
+		$state = $this->channelsPropertiesStates->readValue($property);
 
 		if ($state === null) {
 			return;
@@ -146,9 +169,19 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 					$characteristic->getProperty() !== null
 					&& $characteristic->getProperty()->getId()->equals($property->getId())
 				) {
+					$findPropertyQuery = new DevicesQueries\Configuration\FindChannelProperties();
+					$findPropertyQuery->byId($property->getParent());
+
+					$parent = $this->channelsPropertiesConfigurationRepository->findOneBy($findPropertyQuery);
+
+					if (!$parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
+						return;
+					}
+
 					try {
 						$characteristic->setActualValue(Protocol\Transformer::fromMappedParent(
 							$property,
+							$parent,
 							$state->getActualValue(),
 						));
 					} catch (Exceptions\InvalidState $ex) {
@@ -156,10 +189,10 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 							'State value could not be converted from mapped parent',
 							[
 								'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-								'type' => 'event-writer',
+								'type' => 'exchange-writer',
 								'exception' => BootstrapHelpers\Logger::buildException($ex),
 								'connector' => [
-									'id' => $accessory->getDevice()->getConnector()->getId()->toString(),
+									'id' => $accessory->getDevice()->getConnector()->toString(),
 								],
 								'device' => [
 									'id' => $accessory->getDevice()->getId()->toString(),
@@ -219,7 +252,7 @@ class Event implements Writer, EventDispatcher\EventSubscriberInterface
 							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 							'type' => 'event-writer',
 							'connector' => [
-								'id' => $accessory->getDevice()->getConnector()->getId()->toString(),
+								'id' => $accessory->getDevice()->getConnector()->toString(),
 							],
 							'device' => [
 								'id' => $accessory->getDevice()->getId()->toString(),

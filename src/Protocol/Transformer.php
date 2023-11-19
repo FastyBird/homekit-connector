@@ -18,11 +18,10 @@ namespace FastyBird\Connector\HomeKit\Protocol;
 use DateTimeInterface;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Library\Metadata\ValueObjects as MetadataValueObjects;
-use FastyBird\Module\Devices\Entities as DevicesEntities;
-use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette\Utils;
 use function array_filter;
@@ -61,7 +60,7 @@ final class Transformer
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	public static function fromClient(
-		DevicesEntities\Property|null $property,
+		MetadataDocuments\DevicesModule\Property|null $property,
 		Types\DataType $dataType,
 		bool|float|int|string|null $value,
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
@@ -214,7 +213,7 @@ final class Transformer
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	public static function toClient(
-		DevicesEntities\Property|null $property,
+		MetadataDocuments\DevicesModule\Property|null $property,
 		Types\DataType $dataType,
 		array|null $validValues,
 		int|null $maxLength,
@@ -370,19 +369,13 @@ final class Transformer
 
 	/**
 	 * @throws Exceptions\InvalidState
-	 * @throws DevicesExceptions\InvalidState
 	 */
 	public static function fromMappedParent(
-		DevicesEntities\Channels\Properties\Mapped $property,
+		MetadataDocuments\DevicesModule\ChannelMappedProperty $property,
+		MetadataDocuments\DevicesModule\ChannelDynamicProperty $parent,
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
 	{
-		$parent = $property->getParent();
-
-		if (!$parent instanceof DevicesEntities\Channels\Properties\Dynamic) {
-			return $value;
-		}
-
 		if ($property->getDataType()->equals($parent->getDataType())) {
 			return $value;
 		}
@@ -412,19 +405,13 @@ final class Transformer
 
 	/**
 	 * @throws Exceptions\InvalidState
-	 * @throws DevicesExceptions\InvalidState
 	 */
 	public static function toMappedParent(
-		DevicesEntities\Channels\Properties\Mapped $property,
+		MetadataDocuments\DevicesModule\ChannelMappedProperty $property,
+		MetadataDocuments\DevicesModule\ChannelDynamicProperty $parent,
 		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value,
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
 	{
-		$parent = $property->getParent();
-
-		if (!$parent instanceof DevicesEntities\Channels\Properties\Dynamic) {
-			return $value;
-		}
-
 		if ($property->getDataType()->equals($parent->getDataType())) {
 			return $value;
 		}
