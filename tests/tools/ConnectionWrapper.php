@@ -9,8 +9,10 @@ use Doctrine\DBAL\Driver;
 use function getenv;
 use function getmypid;
 use function is_string;
+use function md5;
 use function register_shutdown_function;
 use function sprintf;
+use function time;
 
 class ConnectionWrapper extends DBAL\Connection
 {
