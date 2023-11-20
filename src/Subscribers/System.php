@@ -20,11 +20,11 @@ use Doctrine\ORM;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
-use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use IPub\DoctrineCrud;
 use Nette;
 use Nette\Utils;
@@ -117,7 +117,7 @@ final class System implements Common\EventSubscriber
 
 			if ($property !== null) {
 				$this->propertiesManager->update($property, Utils\ArrayHash::from([
-					'value' => intval(DevicesUtilities\ValueHelper::flattenValue($property->getValue())) + 1,
+					'value' => intval(MetadataUtilities\ValueHelper::flattenValue($property->getValue())) + 1,
 				]));
 			}
 		}

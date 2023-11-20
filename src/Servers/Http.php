@@ -29,6 +29,7 @@ use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Library\Metadata\ValueObjects as MetadataValueObjects;
 use FastyBird\Module\Devices\Constants as DevicesConstants;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -150,7 +151,7 @@ final class Http implements Server
 			$aid = $aidProperty?->getValue() ?? null;
 
 			if ($aid !== null) {
-				$aid = intval(DevicesUtilities\ValueHelper::flattenValue($aid));
+				$aid = intval(MetadataUtilities\ValueHelper::flattenValue($aid));
 			}
 
 			$accessory = $this->accessoryFactory->create(

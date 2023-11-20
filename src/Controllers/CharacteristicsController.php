@@ -33,6 +33,7 @@ use FastyBird\Library\Exchange\Publisher as ExchangePublisher;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
@@ -691,7 +692,7 @@ final class CharacteristicsController extends BaseController
 												'device' => $row->getService()->getChannel()?->getDevice()->toString(),
 												'channel' => $row->getService()->getChannel()?->getId()->toString(),
 												'property' => $row->getProperty()->getId()->toString(),
-												'expected_value' => DevicesUtilities\ValueHelper::flattenValue(
+												'expected_value' => MetadataUtilities\ValueHelper::flattenValue(
 													$row->getValue(),
 												),
 											]),

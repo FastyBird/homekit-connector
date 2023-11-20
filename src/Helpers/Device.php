@@ -21,8 +21,8 @@ use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
-use function intval;
-use function strval;
+use function is_int;
+use function is_string;
 
 /**
  * Device helper
@@ -63,8 +63,8 @@ final class Device
 
 		$value = $property?->getValue();
 
-		if (Types\AccessoryCategory::isValidValue(intval($value))) {
-			return Types\AccessoryCategory::get(intval($value));
+		if (is_int($value) && Types\AccessoryCategory::isValidValue($value)) {
+			return Types\AccessoryCategory::get($value);
 		}
 
 		return Types\AccessoryCategory::get(Types\AccessoryCategory::OTHER);
@@ -89,8 +89,8 @@ final class Device
 
 		$value = $property?->getValue();
 
-		if (Types\AccessoryType::isValidValue(strval($value))) {
-			return Types\AccessoryType::get(strval($value));
+		if (is_string($value) && Types\AccessoryType::isValidValue($value)) {
+			return Types\AccessoryType::get($value);
 		}
 
 		return Types\AccessoryType::get(Types\AccessoryType::GENERIC);

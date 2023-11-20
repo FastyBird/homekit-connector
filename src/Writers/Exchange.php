@@ -29,6 +29,7 @@ use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Module\Devices\Events as DevicesEvents;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
@@ -268,7 +269,6 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws MetadataExceptions\MalformedInput
@@ -299,7 +299,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 
 						if ($parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
 							try {
-								$characteristic->setActualValue(DevicesUtilities\ValueHelper::normalizeValue(
+								$characteristic->setActualValue(MetadataUtilities\ValueHelper::normalizeValue(
 									$entity->getDataType(),
 									$entity->getExpectedValue() ?? $entity->getActualValue(),
 									$entity->getFormat(),

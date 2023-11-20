@@ -28,12 +28,12 @@ use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Library\Metadata\ValueObjects as MetadataValueObjects;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
-use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
 use Nette\Localization;
 use Nette\Utils;
@@ -1330,7 +1330,7 @@ class Devices extends Console\Command\Command
 				&& $metadata->offsetGet($type)->offsetGet('ValidValues') instanceof Utils\ArrayHash
 			) {
 				$enumValue = array_search(
-					intval(DevicesUtilities\ValueHelper::flattenValue($value)),
+					intval(MetadataUtilities\ValueHelper::flattenValue($value)),
 					(array) $metadata->offsetGet($type)->offsetGet('ValidValues'),
 					true,
 				);
@@ -1610,15 +1610,15 @@ class Devices extends Console\Command\Command
 		} else {
 			$metadata = $this->loader->loadAccessories();
 
-			if (!$metadata->offsetExists(strval(DevicesUtilities\ValueHelper::flattenValue($category->getValue())))) {
+			if (!$metadata->offsetExists(strval(MetadataUtilities\ValueHelper::flattenValue($category->getValue())))) {
 				throw new Exceptions\InvalidArgument(sprintf(
 					'Definition for accessory category: %s was not found',
-					strval(DevicesUtilities\ValueHelper::flattenValue($category->getValue())),
+					strval(MetadataUtilities\ValueHelper::flattenValue($category->getValue())),
 				));
 			}
 
 			$accessoryMetadata = $metadata->offsetGet(
-				strval(DevicesUtilities\ValueHelper::flattenValue($category->getValue())),
+				strval(MetadataUtilities\ValueHelper::flattenValue($category->getValue())),
 			);
 
 			if (
@@ -2411,7 +2411,7 @@ class Devices extends Console\Command\Command
 				$this->translator->translate('//homekit-connector.cmd.devices.questions.select.value'),
 				$options,
 				$value !== null ? array_key_exists(
-					strval(DevicesUtilities\ValueHelper::flattenValue($value)),
+					strval(MetadataUtilities\ValueHelper::flattenValue($value)),
 					$options,
 				) : null,
 			);
