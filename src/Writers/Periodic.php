@@ -46,7 +46,7 @@ abstract class Periodic
 
 	private const HANDLER_START_DELAY = 5.0;
 
-	private const HANDLER_DEBOUNCE_INTERVAL = 5_000.0;
+	private const HANDLER_DEBOUNCE_INTERVAL = 2_500.0;
 
 	private const HANDLER_PROCESSING_INTERVAL = 0.01;
 
@@ -114,6 +114,7 @@ abstract class Periodic
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
@@ -145,6 +146,7 @@ abstract class Periodic
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState

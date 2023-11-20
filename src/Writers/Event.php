@@ -85,6 +85,7 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
@@ -145,6 +146,7 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
