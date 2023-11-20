@@ -331,10 +331,10 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 								return;
 							}
 						} elseif ($parent instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
-							$characteristic->setValue($entity->getValue());
+							$characteristic->setActualValue($entity->getValue());
 						}
 					} elseif ($entity instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
-						$characteristic->setValue($entity->getValue());
+						$characteristic->setActualValue($entity->getValue());
 					}
 
 					if (!$characteristic->isVirtual()) {

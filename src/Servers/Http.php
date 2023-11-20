@@ -256,7 +256,7 @@ final class Http implements Server
 					$property = $characteristic->getProperty();
 
 					if ($property instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
-						$characteristic->setValue($property->getValue());
+						$characteristic->setActualValue($property->getValue());
 					} elseif ($property instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
 						try {
 							$state = $this->channelsPropertiesStates->readValue($property);
@@ -328,7 +328,7 @@ final class Http implements Server
 								// Ignore error
 							}
 						} elseif ($parent instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
-							$characteristic->setValue($parent->getValue());
+							$characteristic->setActualValue($parent->getValue());
 						}
 					}
 				}

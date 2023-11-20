@@ -629,7 +629,7 @@ final class CharacteristicsController extends BaseController
 							);
 
 							if ($property !== null) {
-								$property = $this->channelsPropertiesManager->update(
+								$this->channelsPropertiesManager->update(
 									$property,
 									Utils\ArrayHash::from([
 										'value' => $row->getValue(),

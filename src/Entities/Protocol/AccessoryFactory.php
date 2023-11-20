@@ -73,7 +73,6 @@ final class AccessoryFactory
 
 			$accessory = new Bridge($owner->getName() ?? $owner->getIdentifier(), $owner);
 		} else {
-
 			if (!$owner instanceof MetadataDocuments\DevicesModule\Device) {
 				throw new Exceptions\InvalidArgument('Device accessory owner have to be device item instance');
 			}

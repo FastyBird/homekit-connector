@@ -194,10 +194,6 @@ class HomeKitExtension extends DI\CompilerExtension
 		$builder->addDefinition($this->prefix('helpers.loader'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Loader::class);
 
-		$router = $builder->addDefinition($this->prefix('http.router'), new DI\Definitions\ServiceDefinition())
-			->setType(Router\Router::class)
-			->setAutowired(false);
-
 		$builder->addDefinition($this->prefix('helpers.connector'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Connector::class);
 
@@ -210,6 +206,10 @@ class HomeKitExtension extends DI\CompilerExtension
 		/**
 		 * ROUTING
 		 */
+
+		$router = $builder->addDefinition($this->prefix('http.router'), new DI\Definitions\ServiceDefinition())
+			->setType(Router\Router::class)
+			->setAutowired(false);
 
 		$builder->addDefinition($this->prefix('http.middlewares.router'), new DI\Definitions\ServiceDefinition())
 			->setType(Middleware\Router::class)
