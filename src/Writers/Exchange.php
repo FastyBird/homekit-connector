@@ -29,7 +29,6 @@ use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Module\Devices\Events as DevicesEvents;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
@@ -299,12 +298,9 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 
 						if ($parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
 							try {
-								$characteristic->setActualValue(MetadataUtilities\ValueHelper::normalizeValue(
-									$entity->getDataType(),
+								$characteristic->setActualValue(
 									$entity->getExpectedValue() ?? $entity->getActualValue(),
-									$entity->getFormat(),
-									$entity->getInvalid(),
-								));
+								);
 							} catch (Exceptions\InvalidState $ex) {
 								$this->logger->warning(
 									'State value could not be converted from mapped parent',

@@ -521,7 +521,6 @@ final class CharacteristicsController extends BaseController
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws MetadataExceptions\MalformedInput
-	 * @throws Utils\JsonException
 	 */
 	public function writeCharacteristic(
 		Uuid\UuidInterface $connectorId,
@@ -705,13 +704,12 @@ final class CharacteristicsController extends BaseController
 									$this->channelsPropertiesStateManager->writeValue(
 										$row->getProperty(),
 										Utils\ArrayHash::from([
-											DevicesStates\Property::VALID_FIELD => true,
 											DevicesStates\Property::EXPECTED_VALUE_FIELD => $row->getValue(),
 											DevicesStates\Property::PENDING_FIELD => true,
 										]),
 									);
 								}
-							} catch (Exceptions\InvalidState $ex) {
+							} catch (DevicesExceptions\InvalidState | Utils\JsonException $ex) {
 								$this->logger->warning(
 									'State value could not be converted to mapped parent',
 									[
