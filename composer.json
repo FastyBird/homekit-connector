@@ -55,7 +55,7 @@
     "react/datagram": "^1.8",
     "react/dns": "^1.10",
     "react/http": "^1.7",
-    "react/promise": "~2.2",
+    "react/promise": "^3|^2.2",
     "symplify/vendor-patches": "^11.2",
     "simplito/elliptic-php": "^1.0",
     "symfony/event-dispatcher": "^5.4"

@@ -29,7 +29,7 @@ use function is_int;
 use function is_string;
 
 /**
- * Device helper
+ * Connector helper
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Helpers

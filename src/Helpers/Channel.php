@@ -25,7 +25,7 @@ use function str_replace;
 use function ucwords;
 
 /**
- * Device helper
+ * Channel helper
  *
  * @package        FastyBird:HomeKitConnector!
  * @subpackage     Helpers

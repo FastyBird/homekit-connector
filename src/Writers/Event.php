@@ -57,7 +57,7 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 		HomeKit\Logger $logger,
 		DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
 		DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
-		DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStates,
+		DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStatesManager,
 		DateTimeFactory\Factory $dateTimeFactory,
 		EventLoop\LoopInterface $eventLoop,
 		private readonly DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
@@ -70,7 +70,7 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 			$logger,
 			$devicesConfigurationRepository,
 			$channelsPropertiesConfigurationRepository,
-			$channelsPropertiesStates,
+			$channelsPropertiesStatesManager,
 			$dateTimeFactory,
 			$eventLoop,
 		);
@@ -157,7 +157,7 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 		Entities\Protocol\Device $accessory,
 	): void
 	{
-		$state = $this->channelsPropertiesStates->readValue($property);
+		$state = $this->channelsPropertiesStatesManager->readValue($property);
 
 		if ($state === null) {
 			return;

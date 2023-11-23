@@ -199,7 +199,7 @@ final class Mdns implements Server
 					}),
 				);
 			})
-			->otherwise(function (Throwable $ex): void {
+			->catch(function (Throwable $ex): void {
 				$this->logger->error(
 					'Could not create mDNS discovery server',
 					[

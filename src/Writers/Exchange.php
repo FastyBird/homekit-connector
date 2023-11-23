@@ -65,7 +65,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 		HomeKit\Logger $logger,
 		DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
 		DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
-		DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStates,
+		DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStatesManager,
 		DateTimeFactory\Factory $dateTimeFactory,
 		EventLoop\LoopInterface $eventLoop,
 		private readonly DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
@@ -80,7 +80,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 			$logger,
 			$devicesConfigurationRepository,
 			$channelsPropertiesConfigurationRepository,
-			$channelsPropertiesStates,
+			$channelsPropertiesStatesManager,
 			$dateTimeFactory,
 			$eventLoop,
 		);

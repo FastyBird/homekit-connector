@@ -72,7 +72,7 @@ abstract class Periodic
 		protected readonly HomeKit\Logger $logger,
 		protected readonly DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
 		protected readonly DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
-		protected readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStates,
+		protected readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStatesManager,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly EventLoop\LoopInterface $eventLoop,
 	)
@@ -185,7 +185,7 @@ abstract class Periodic
 						$characteristicValue = null;
 
 						if ($property instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
-							$state = $this->channelsPropertiesStates->readValue($property);
+							$state = $this->channelsPropertiesStatesManager->readValue($property);
 
 							if ($state === null) {
 								continue;
@@ -204,7 +204,7 @@ abstract class Periodic
 								continue;
 							}
 
-							$state = $this->channelsPropertiesStates->readValue($property);
+							$state = $this->channelsPropertiesStatesManager->readValue($property);
 
 							if ($state === null) {
 								continue;
