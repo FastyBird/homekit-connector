@@ -45,9 +45,6 @@ use function strval;
 final class AccessoriesController extends BaseController
 {
 
-	/**
-	 * @param DevicesModels\Configuration\Connectors\Properties\Repository<MetadataDocuments\DevicesModule\ConnectorVariableProperty> $connectorsPropertiesConfigurationRepository
-	 */
 	public function __construct(
 		private readonly Protocol\Driver $accessoriesDriver,
 		private readonly DevicesModels\Configuration\Connectors\Properties\Repository $connectorsPropertiesConfigurationRepository,
@@ -104,7 +101,6 @@ final class AccessoriesController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function identify(
 		Message\ServerRequestInterface $request,

@@ -58,7 +58,8 @@ final class Transformer
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	public static function fromClient(
-		MetadataDocuments\DevicesModule\Property|null $property,
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		MetadataDocuments\DevicesModule\ConnectorProperty|MetadataDocuments\DevicesModule\DeviceProperty|MetadataDocuments\DevicesModule\ChannelProperty|null $property,
 		Types\DataType $dataType,
 		bool|float|int|string|null $value,
 	): bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null
@@ -211,7 +212,8 @@ final class Transformer
 	 * @throws MetadataExceptions\InvalidState
 	 */
 	public static function toClient(
-		MetadataDocuments\DevicesModule\Property|null $property,
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		MetadataDocuments\DevicesModule\ConnectorProperty|MetadataDocuments\DevicesModule\DeviceProperty|MetadataDocuments\DevicesModule\ChannelProperty|null $property,
 		Types\DataType $dataType,
 		array|null $validValues,
 		int|null $maxLength,

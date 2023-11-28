@@ -35,9 +35,6 @@ use function is_string;
 final class Device
 {
 
-	/**
-	 * @param DevicesModels\Configuration\Devices\Properties\Repository<MetadataDocuments\DevicesModule\DeviceVariableProperty> $devicesPropertiesConfigurationRepository
-	 */
 	public function __construct(
 		private readonly DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
 	)
@@ -48,7 +45,6 @@ final class Device
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function getAccessoryCategory(MetadataDocuments\DevicesModule\Device $device): Types\AccessoryCategory
 	{
@@ -74,7 +70,6 @@ final class Device
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function getAccessoryType(MetadataDocuments\DevicesModule\Device $device): Types\AccessoryType
 	{

@@ -45,6 +45,8 @@ services:
       type: React\EventLoop\LoopInterface
     }
 
+    cache.storage: Nette\Caching\Storages\MemoryStorage
+
 contributteTranslation:
     locales:
         default: en_US

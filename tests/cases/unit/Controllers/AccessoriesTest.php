@@ -40,7 +40,6 @@ final class AccessoriesTest extends DbTestCase
 	 * @throws BootstrapExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws MetadataExceptions\MalformedInput
 	 * @throws Nette\DI\MissingServiceException

@@ -70,9 +70,6 @@ final class CharacteristicsController extends BaseController
 	/** @var array<string, array<int, int>> */
 	private array $preparedWrites = [];
 
-	/**
-	 * @param DevicesModels\Configuration\Channels\Properties\Repository<MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty> $channelsPropertiesConfigurationRepository
-	 */
 	public function __construct(
 		private readonly bool $useExchange,
 		private readonly Protocol\Driver $accessoryDriver,

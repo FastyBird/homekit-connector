@@ -45,11 +45,6 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 
 	public const NAME = 'event';
 
-	/**
-	 * @param DevicesModels\Configuration\Devices\Repository<MetadataDocuments\DevicesModule\Device> $devicesConfigurationRepository
-	 * @param DevicesModels\Configuration\Channels\Repository<MetadataDocuments\DevicesModule\Channel> $channelsConfigurationRepository
-	 * @param DevicesModels\Configuration\Channels\Properties\Repository<MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty> $channelsPropertiesConfigurationRepository
-	 */
 	public function __construct(
 		MetadataDocuments\DevicesModule\Connector $connector,
 		Protocol\Driver $accessoryDriver,

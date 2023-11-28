@@ -19,8 +19,6 @@ use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Writers;
-use FastyBird\Library\Metadata\Documents as MetadataDocuments;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Connectors as DevicesConnectors;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -50,7 +48,6 @@ final class Connector implements DevicesConnectors\Connector
 
 	/**
 	 * @param array<Servers\ServerFactory> $serversFactories
-	 * @param DevicesModels\Configuration\Connectors\Repository<MetadataDocuments\DevicesModule\Connector> $connectorsConfigurationRepository
 	 */
 	public function __construct(
 		private readonly DevicesEntities\Connectors\Connector $connector,
@@ -64,9 +61,6 @@ final class Connector implements DevicesConnectors\Connector
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function execute(): void
 	{

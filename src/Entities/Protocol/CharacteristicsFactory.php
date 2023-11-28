@@ -58,8 +58,7 @@ final class CharacteristicsFactory
 	public function create(
 		string $name,
 		Service $service,
-		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty|null $property = null,
+		MetadataDocuments\DevicesModule\ChannelProperty|null $property = null,
 		array|null $validValues = [],
 		int|null $maxLength = null,
 		float|null $minValue = null,

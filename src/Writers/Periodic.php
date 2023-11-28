@@ -61,10 +61,6 @@ abstract class Periodic
 
 	private EventLoop\TimerInterface|null $handlerTimer = null;
 
-	/**
-	 * @param DevicesModels\Configuration\Devices\Repository<MetadataDocuments\DevicesModule\Device> $devicesConfigurationRepository
-	 * @param DevicesModels\Configuration\Channels\Properties\Repository<MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty> $channelsPropertiesConfigurationRepository
-	 */
 	public function __construct(
 		protected readonly MetadataDocuments\DevicesModule\Connector $connector,
 		protected readonly Protocol\Driver $accessoryDriver,
@@ -81,8 +77,6 @@ abstract class Periodic
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 */
 	public function connect(): void
 	{

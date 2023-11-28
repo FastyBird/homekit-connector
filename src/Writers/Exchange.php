@@ -52,10 +52,6 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 	public const NAME = 'exchange';
 
 	/**
-	 * @param DevicesModels\Configuration\Devices\Repository<MetadataDocuments\DevicesModule\Device> $devicesConfigurationRepository
-	 * @param DevicesModels\Configuration\Channels\Repository<MetadataDocuments\DevicesModule\Channel> $channelsConfigurationRepository
-	 * @param DevicesModels\Configuration\Channels\Properties\Repository<MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty> $channelsPropertiesConfigurationRepository
-	 *
 	 * @throws ExchangeExceptions\InvalidArgument
 	 */
 	public function __construct(
@@ -91,8 +87,6 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 	/**
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws ExchangeExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 */
 	public function connect(): void
 	{
@@ -270,10 +264,10 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function processProperty(
-		MetadataDocuments\DevicesModule\Property $entity,
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		MetadataDocuments\DevicesModule\ConnectorProperty|MetadataDocuments\DevicesModule\DeviceProperty|MetadataDocuments\DevicesModule\ChannelProperty $entity,
 		Entities\Protocol\Device $accessory,
 	): void
 	{

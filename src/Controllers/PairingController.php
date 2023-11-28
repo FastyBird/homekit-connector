@@ -167,9 +167,6 @@ final class PairingController extends BaseController
 
 	private EdDSA $edDsa;
 
-	/**
-	 * @param DevicesModels\Configuration\Connectors\Repository<MetadataDocuments\DevicesModule\Connector> $connectorsConfigurationRepository
-	 */
 	public function __construct(
 		private readonly Protocol\Tlv $tlv,
 		private readonly Models\Entities\Clients\ClientsRepository $clientsRepository,
@@ -196,7 +193,6 @@ final class PairingController extends BaseController
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 * @throws RuntimeException
 	 */
 	public function setup(
@@ -315,7 +311,6 @@ final class PairingController extends BaseController
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidData
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 * @throws RuntimeException
 	 */
 	public function verify(
@@ -515,7 +510,6 @@ final class PairingController extends BaseController
 	 * @throws Math\Exception\NegativeNumberException
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function srpStart(MetadataDocuments\DevicesModule\Connector $connector): array
 	{
@@ -847,7 +841,6 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	public function exchange(
 		MetadataDocuments\DevicesModule\Connector $connector,
@@ -1219,7 +1212,6 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function verifyStart(
 		MetadataDocuments\DevicesModule\Connector $connector,
@@ -1403,7 +1395,6 @@ final class PairingController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 */
 	private function verifyFinish(
 		MetadataDocuments\DevicesModule\Connector $connector,

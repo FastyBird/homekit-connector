@@ -81,8 +81,7 @@ class Characteristic
 		private readonly Types\DataType $dataType,
 		private readonly array $permissions,
 		private readonly Service $service,
-		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		private readonly MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty|null $property = null,
+		private readonly MetadataDocuments\DevicesModule\ChannelProperty|null $property = null,
 		private readonly array|null $validValues = [],
 		private readonly int|null $maxLength = null,
 		private readonly float|null $minValue = null,
@@ -152,8 +151,7 @@ class Characteristic
 		return $this->service;
 	}
 
-	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-	public function getProperty(): MetadataDocuments\DevicesModule\ChannelDynamicProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty|null
+	public function getProperty(): MetadataDocuments\DevicesModule\ChannelProperty|null
 	{
 		return $this->property;
 	}
