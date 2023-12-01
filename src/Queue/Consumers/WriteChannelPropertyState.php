@@ -319,7 +319,7 @@ final class WriteChannelPropertyState implements Queue\Consumer
 		}
 
 		$this->logger->debug(
-			'Consumed write channel state message',
+			'Consumed write device state message',
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'write-channel-property-state-message-consumer',

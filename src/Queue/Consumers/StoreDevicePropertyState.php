@@ -271,7 +271,7 @@ final class StoreDevicePropertyState implements Queue\Consumer
 		}
 
 		$this->logger->debug(
-			'Consumed device status message',
+			'Consumed store device state message',
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'store-device-property-state-message-consumer',
