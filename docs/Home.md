@@ -1,3 +1,7 @@
+<p align="center">
+	<img src="https://github.com/fastybird/.github/blob/main/assets/repo_title.png?raw=true" alt="FastyBird"/>
+</p>
+
 The [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) HomeKit Connector is
 an extension of the [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things)
 ecosystem that enables effortless integration  with [Apple HomeKit](https://en.wikipedia.org/wiki/HomeKit). It provides
@@ -256,8 +260,8 @@ And if you choose to connect characteristic with device:
 ```shell
  Select device for mapping:
   [0] thermometer-living-room [Living room thermometer]
-  [1] floor-heating-livin-room [Living room floor heating]
-  [2] window-sensor-lifing-room [Living room window sensor]
+  [1] floor-heating-living-room [Living room floor heating]
+  [2] window-sensor-living-room [Living room window sensor]
  > 0
 ```
 

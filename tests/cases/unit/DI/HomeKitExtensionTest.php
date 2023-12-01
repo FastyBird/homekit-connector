@@ -13,6 +13,7 @@ use FastyBird\Connector\HomeKit\Hydrators;
 use FastyBird\Connector\HomeKit\Middleware;
 use FastyBird\Connector\HomeKit\Models;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Schemas;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Subscribers;
@@ -37,6 +38,14 @@ final class HomeKitExtensionTest extends BaseTestCase
 		self::assertNotNull($container->getByType(Servers\SecureServerFactory::class, false));
 		self::assertNotNull($container->getByType(Servers\SecureConnectionFactory::class, false));
 
+		self::assertNotNull($container->getByType(Queue\Consumers\StoreDeviceConnectionState::class, false));
+		self::assertNotNull($container->getByType(Queue\Consumers\StoreDevicePropertyState::class, false));
+		self::assertNotNull($container->getByType(Queue\Consumers\StoreChannelPropertyState::class, false));
+		self::assertNotNull($container->getByType(Queue\Consumers\WriteDevicePropertyState::class, false));
+		self::assertNotNull($container->getByType(Queue\Consumers\WriteChannelPropertyState::class, false));
+		self::assertNotNull($container->getByType(Queue\Consumers::class, false));
+		self::assertNotNull($container->getByType(Queue\Queue::class, false));
+
 		self::assertNotNull($container->getByType(Subscribers\Properties::class, false));
 		self::assertNotNull($container->getByType(Subscribers\Controls::class, false));
 		self::assertNotNull($container->getByType(Subscribers\System::class, false));
@@ -49,6 +58,7 @@ final class HomeKitExtensionTest extends BaseTestCase
 		self::assertNotNull($container->getByType(Hydrators\HomeKitDevice::class, false));
 		self::assertNotNull($container->getByType(Hydrators\HomeKitChannel::class, false));
 
+		self::assertNotNull($container->getByType(Helpers\Entity::class, false));
 		self::assertNotNull($container->getByType(Helpers\Loader::class, false));
 		self::assertNotNull($container->getByType(Helpers\Connector::class, false));
 		self::assertNotNull($container->getByType(Helpers\Device::class, false));

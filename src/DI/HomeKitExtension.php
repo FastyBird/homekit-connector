@@ -27,6 +27,7 @@ use FastyBird\Connector\HomeKit\Hydrators;
 use FastyBird\Connector\HomeKit\Middleware;
 use FastyBird\Connector\HomeKit\Models;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Router;
 use FastyBird\Connector\HomeKit\Schemas;
 use FastyBird\Connector\HomeKit\Servers;
@@ -149,6 +150,76 @@ class HomeKitExtension extends DI\CompilerExtension
 			]);
 
 		/**
+		 * MESSAGES QUEUE
+		 */
+
+		$builder->addDefinition(
+			$this->prefix('queue.consumers.store.deviceConnectionState'),
+			new DI\Definitions\ServiceDefinition(),
+		)
+			->setType(Queue\Consumers\StoreDeviceConnectionState::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
+
+		$builder->addDefinition(
+			$this->prefix('queue.consumers.store.devicePropertyState'),
+			new DI\Definitions\ServiceDefinition(),
+		)
+			->setType(Queue\Consumers\StoreDevicePropertyState::class)
+			->setArguments([
+				'useExchange' => $configuration->writer === Writers\Exchange::NAME,
+				'logger' => $logger,
+			]);
+
+		$builder->addDefinition(
+			$this->prefix('queue.consumers.store.channelPropertyState'),
+			new DI\Definitions\ServiceDefinition(),
+		)
+			->setType(Queue\Consumers\StoreChannelPropertyState::class)
+			->setArguments([
+				'useExchange' => $configuration->writer === Writers\Exchange::NAME,
+				'logger' => $logger,
+			]);
+
+		$builder->addDefinition(
+			$this->prefix('queue.consumers.write.devicePropertyState'),
+			new DI\Definitions\ServiceDefinition(),
+		)
+			->setType(Queue\Consumers\WriteDevicePropertyState::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
+
+		$builder->addDefinition(
+			$this->prefix('queue.consumers.write.channelPropertyState'),
+			new DI\Definitions\ServiceDefinition(),
+		)
+			->setType(Queue\Consumers\WriteChannelPropertyState::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
+
+		$builder->addDefinition(
+			$this->prefix('queue.consumers'),
+			new DI\Definitions\ServiceDefinition(),
+		)
+			->setType(Queue\Consumers::class)
+			->setArguments([
+				'consumers' => $builder->findByType(Queue\Consumer::class),
+				'logger' => $logger,
+			]);
+
+		$builder->addDefinition(
+			$this->prefix('queue.queue'),
+			new DI\Definitions\ServiceDefinition(),
+		)
+			->setType(Queue\Queue::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
+
+		/**
 		 * SUBSCRIBERS
 		 */
 
@@ -190,6 +261,9 @@ class HomeKitExtension extends DI\CompilerExtension
 		/**
 		 * HELPERS
 		 */
+
+		$builder->addDefinition($this->prefix('helpers.entity'), new DI\Definitions\ServiceDefinition())
+			->setType(Helpers\Entity::class);
 
 		$builder->addDefinition($this->prefix('helpers.loader'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Loader::class);
@@ -233,9 +307,6 @@ class HomeKitExtension extends DI\CompilerExtension
 		)
 			->setType(Controllers\CharacteristicsController::class)
 			->addSetup('setLogger', [$logger])
-			->setArguments([
-				'useExchange' => $configuration->writer === Writers\Exchange::NAME,
-			])
 			->addTag('nette.inject');
 
 		$builder->addDefinition($this->prefix('http.controllers.pairing'), new DI\Definitions\ServiceDefinition())

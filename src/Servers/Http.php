@@ -24,6 +24,7 @@ use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Middleware;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
+use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
@@ -83,12 +84,13 @@ final class Http implements Server
 		private readonly Entities\Protocol\AccessoryFactory $accessoryFactory,
 		private readonly Entities\Protocol\ServiceFactory $serviceFactory,
 		private readonly Entities\Protocol\CharacteristicsFactory $characteristicsFactory,
+		private readonly Helpers\Entity $entityHelper,
 		private readonly Helpers\Connector $connectorHelper,
 		private readonly Helpers\Device $deviceHelper,
 		private readonly Helpers\Channel $channelHelper,
+		private readonly Queue\Queue $queue,
 		private readonly HomeKit\Logger $logger,
 		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStatesManager,
-		private readonly DevicesUtilities\DeviceConnection $deviceConnectionManager,
 		private readonly DevicesUtilities\Database $databaseHelper,
 		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
 		private readonly DevicesModels\Entities\Devices\DevicesRepository $devicesRepository,
@@ -110,6 +112,7 @@ final class Http implements Server
 	 * @throws DevicesExceptions\Terminate
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws MetadataExceptions\MalformedInput
@@ -329,9 +332,15 @@ final class Http implements Server
 				}
 			}
 
-			$this->deviceConnectionManager->setState(
-				$accessory->getDevice(),
-				MetadataTypes\ConnectionState::get(MetadataTypes\ConnectionState::STATE_CONNECTED),
+			$this->queue->append(
+				$this->entityHelper->create(
+					Entities\Messages\StoreDeviceConnectionState::class,
+					[
+						'connector' => $accessory->getDevice()->getConnector()->toString(),
+						'device' => $accessory->getDevice()->getId()->toString(),
+						'state' => MetadataTypes\ConnectionState::STATE_CONNECTED,
+					],
+				),
 			);
 		}
 

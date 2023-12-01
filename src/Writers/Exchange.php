@@ -17,13 +17,13 @@ namespace FastyBird\Connector\HomeKit\Writers;
 
 use Exception;
 use FastyBird\Connector\HomeKit;
-use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DateTimeFactory;
-use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Exchange\Consumers as ExchangeConsumers;
 use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
@@ -36,7 +36,6 @@ use FastyBird\Module\Devices\Queries as DevicesQueries;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Psr\EventDispatcher as PsrEventDispatcher;
 use React\EventLoop;
-use function intval;
 
 /**
  * Exchange based properties writer
@@ -56,26 +55,32 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 	 */
 	public function __construct(
 		MetadataDocuments\DevicesModule\Connector $connector,
-		Protocol\Driver $accessoryDriver,
-		Clients\Subscriber $subscriber,
-		HomeKit\Logger $logger,
+		Helpers\Entity $entityHelper,
+		Queue\Queue $queue,
 		DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
+		DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
+		DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
 		DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
+		Protocol\Driver $accessoryDriver,
+		DevicesUtilities\DevicePropertiesStates $devicesPropertiesStatesManager,
 		DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStatesManager,
 		DateTimeFactory\Factory $dateTimeFactory,
 		EventLoop\LoopInterface $eventLoop,
-		private readonly DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
+		private readonly HomeKit\Logger $logger,
 		private readonly ExchangeConsumers\Container $consumer,
 		private readonly PsrEventDispatcher\EventDispatcherInterface|null $dispatcher = null,
 	)
 	{
 		parent::__construct(
 			$connector,
-			$accessoryDriver,
-			$subscriber,
-			$logger,
+			$entityHelper,
+			$queue,
 			$devicesConfigurationRepository,
+			$devicesPropertiesConfigurationRepository,
+			$channelsConfigurationRepository,
 			$channelsPropertiesConfigurationRepository,
+			$accessoryDriver,
+			$devicesPropertiesStatesManager,
 			$channelsPropertiesStatesManager,
 			$dateTimeFactory,
 			$eventLoop,
@@ -158,7 +163,17 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 					return;
 				}
 
-				$accessory = $this->accessoryDriver->findAccessory($device->getId());
+				$this->queue->append(
+					$this->entityHelper->create(
+						Entities\Messages\WriteDevicePropertyState::class,
+						[
+							'connector' => $device->getConnector(),
+							'device' => $device->getId(),
+							'property' => $entity->getId(),
+						],
+					),
+				);
+
 			} else {
 				$findChannelQuery = new DevicesQueries\Configuration\FindChannels();
 				$findChannelQuery->byId($entity->getChannel());
@@ -210,28 +225,18 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 					return;
 				}
 
-				$accessory = $this->accessoryDriver->findAccessory($device->getId());
-			}
-
-			if (!$accessory instanceof Entities\Protocol\Device) {
-				$this->logger->warning(
-					'Accessory for received property message was not found in accessory driver',
-					[
-						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-						'type' => 'exchange-writer',
-						'message' => [
-							'source' => $source->getValue(),
-							'routing_key' => $routingKey->getValue(),
-							'entity' => $entity->toArray(),
+				$this->queue->append(
+					$this->entityHelper->create(
+						Entities\Messages\WriteChannelPropertyState::class,
+						[
+							'connector' => $device->getConnector(),
+							'device' => $device->getId(),
+							'channel' => $channel->getId(),
+							'property' => $entity->getId(),
 						],
-						'property' => $entity->toArray(),
-					],
+					),
 				);
-
-				return;
 			}
-
-			$this->processProperty($entity, $accessory);
 		} elseif ($entity instanceof MetadataDocuments\DevicesModule\ConnectorVariableProperty) {
 			if (!$entity->getConnector()->equals($this->connector->getId())) {
 				return;
@@ -256,136 +261,6 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 						'Connector shared key changed, services have to restarted',
 					),
 				);
-			}
-		}
-	}
-
-	/**
-	 * @throws DevicesExceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
-	 */
-	private function processProperty(
-		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		MetadataDocuments\DevicesModule\ConnectorProperty|MetadataDocuments\DevicesModule\DeviceProperty|MetadataDocuments\DevicesModule\ChannelProperty $entity,
-		Entities\Protocol\Device $accessory,
-	): void
-	{
-		if (
-			!$entity instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty
-			&& !$entity instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty
-		) {
-			return;
-		}
-
-		foreach ($accessory->getServices() as $service) {
-			foreach ($service->getCharacteristics() as $characteristic) {
-				if (
-					$characteristic->getProperty() !== null
-					&& $characteristic->getProperty()->getId()->equals($entity->getId())
-				) {
-					if ($entity instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty) {
-						$findPropertyQuery = new DevicesQueries\Configuration\FindChannelProperties();
-						$findPropertyQuery->byId($entity->getParent());
-
-						$parent = $this->channelsPropertiesConfigurationRepository->findOneBy($findPropertyQuery);
-
-						if ($parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
-							try {
-								$characteristic->setActualValue(
-									$entity->getExpectedValue() ?? $entity->getActualValue(),
-								);
-							} catch (Exceptions\InvalidState $ex) {
-								$this->logger->warning(
-									'State value could not be converted from mapped parent',
-									[
-										'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-										'type' => 'exchange-writer',
-										'exception' => BootstrapHelpers\Logger::buildException($ex),
-										'connector' => [
-											'id' => $accessory->getDevice()->getConnector()->toString(),
-										],
-										'device' => [
-											'id' => $accessory->getDevice()->getId()->toString(),
-										],
-										'channel' => [
-											'id' => $service->getChannel()?->getId()->toString(),
-										],
-										'property' => [
-											'id' => $characteristic->getProperty()->getId()->toString(),
-										],
-										'hap' => $accessory->toHap(),
-									],
-								);
-
-								return;
-							}
-						} elseif ($parent instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
-							$characteristic->setActualValue($entity->getValue());
-						}
-					} elseif ($entity instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
-						$characteristic->setActualValue($entity->getValue());
-					}
-
-					if (!$characteristic->isVirtual()) {
-						$this->subscriber->publish(
-							intval($accessory->getAid()),
-							intval($accessory->getIidManager()->getIid($characteristic)),
-							Protocol\Transformer::toClient(
-								$characteristic->getProperty(),
-								$characteristic->getDataType(),
-								$characteristic->getValidValues(),
-								$characteristic->getMaxLength(),
-								$characteristic->getMinValue(),
-								$characteristic->getMaxValue(),
-								$characteristic->getMinStep(),
-								$characteristic->getValue(),
-							),
-							$characteristic->immediateNotify(),
-						);
-					} else {
-						foreach ($service->getCharacteristics() as $serviceCharacteristic) {
-							$this->subscriber->publish(
-								intval($accessory->getAid()),
-								intval($accessory->getIidManager()->getIid($serviceCharacteristic)),
-								Protocol\Transformer::toClient(
-									$serviceCharacteristic->getProperty(),
-									$serviceCharacteristic->getDataType(),
-									$serviceCharacteristic->getValidValues(),
-									$serviceCharacteristic->getMaxLength(),
-									$serviceCharacteristic->getMinValue(),
-									$serviceCharacteristic->getMaxValue(),
-									$serviceCharacteristic->getMinStep(),
-									$serviceCharacteristic->getValue(),
-								),
-								$serviceCharacteristic->immediateNotify(),
-							);
-						}
-					}
-
-					$this->logger->debug(
-						'Processed received property message',
-						[
-							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-							'type' => 'exchange-writer',
-							'connector' => [
-								'id' => $accessory->getDevice()->getConnector()->toString(),
-							],
-							'device' => [
-								'id' => $accessory->getDevice()->getId()->toString(),
-							],
-							'channel' => [
-								'id' => $service->getChannel()?->getId()->toString(),
-							],
-							'property' => [
-								'id' => $characteristic->getProperty()?->getId()->toString(),
-							],
-							'hap' => $accessory->toHap(),
-						],
-					);
-
-					return;
-				}
 			}
 		}
 	}

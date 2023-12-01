@@ -16,22 +16,22 @@
 namespace FastyBird\Connector\HomeKit\Writers;
 
 use DateTimeInterface;
-use FastyBird\Connector\HomeKit;
-use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\DateTimeFactory;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
 use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use React\EventLoop;
 use function array_key_exists;
+use function assert;
 use function in_array;
-use function intval;
 
 /**
  * Periodic properties writer
@@ -52,6 +52,9 @@ abstract class Periodic
 
 	/** @var array<string, MetadataDocuments\DevicesModule\Device>  */
 	private array $devices = [];
+	// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+	/** @var array<string, array<string, MetadataDocuments\DevicesModule\DeviceVariableProperty|MetadataDocuments\DevicesModule\DeviceMappedProperty|MetadataDocuments\DevicesModule\ChannelVariableProperty|MetadataDocuments\DevicesModule\ChannelMappedProperty>>  */
+	private array $properties = [];
 
 	/** @var array<string> */
 	private array $processedDevices = [];
@@ -63,12 +66,15 @@ abstract class Periodic
 
 	public function __construct(
 		protected readonly MetadataDocuments\DevicesModule\Connector $connector,
-		protected readonly Protocol\Driver $accessoryDriver,
-		protected readonly Clients\Subscriber $subscriber,
-		protected readonly HomeKit\Logger $logger,
+		protected readonly Helpers\Entity $entityHelper,
+		protected readonly Queue\Queue $queue,
 		protected readonly DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
+		protected readonly DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
+		protected readonly DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
 		protected readonly DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
-		protected readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStatesManager,
+		private readonly Protocol\Driver $accessoryDriver,
+		private readonly DevicesUtilities\DevicePropertiesStates $devicesPropertiesStatesManager,
+		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStatesManager,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly EventLoop\LoopInterface $eventLoop,
 	)
@@ -88,6 +94,45 @@ abstract class Periodic
 
 		foreach ($this->devicesConfigurationRepository->findAllBy($findDevicesQuery) as $device) {
 			$this->devices[$device->getId()->toString()] = $device;
+
+			if (!array_key_exists($device->getId()->toString(), $this->properties)) {
+				$this->properties[$device->getId()->toString()] = [];
+			}
+
+			$findDevicePropertiesQuery = new DevicesQueries\Configuration\FindDeviceProperties();
+			$findDevicePropertiesQuery->forDevice($device);
+
+			$properties = $this->devicesPropertiesConfigurationRepository->findAllBy($findDevicePropertiesQuery);
+
+			foreach ($properties as $property) {
+				if (
+					$property instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty
+					|| $property instanceof MetadataDocuments\DevicesModule\DeviceMappedProperty
+				) {
+					$this->properties[$device->getId()->toString()][$property->getId()->toString()] = $property;
+				}
+			}
+
+			$findChannelsQuery = new DevicesQueries\Configuration\FindChannels();
+			$findChannelsQuery->forDevice($device);
+
+			$channels = $this->channelsConfigurationRepository->findAllBy($findChannelsQuery);
+
+			foreach ($channels as $channel) {
+				$findChannelPropertiesQuery = new DevicesQueries\Configuration\FindChannelProperties();
+				$findChannelPropertiesQuery->forChannel($channel);
+
+				$properties = $this->channelsPropertiesConfigurationRepository->findAllBy($findChannelPropertiesQuery);
+
+				foreach ($properties as $property) {
+					if (
+						$property instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty
+						|| $property instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty
+					) {
+						$this->properties[$device->getId()->toString()][$property->getId()->toString()] = $property;
+					}
+				}
+			}
 		}
 
 		$this->eventLoop->addTimer(
@@ -110,6 +155,7 @@ abstract class Periodic
 	/**
 	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws MetadataExceptions\MalformedInput
@@ -117,16 +163,10 @@ abstract class Periodic
 	private function handleCommunication(): void
 	{
 		foreach ($this->devices as $device) {
-			$accessory = $this->accessoryDriver->findAccessory($device->getId());
-
-			if (!$accessory instanceof Entities\Protocol\Device) {
-				continue;
-			}
-
 			if (!in_array($device->getId()->toString(), $this->processedDevices, true)) {
 				$this->processedDevices[] = $device->getId()->toString();
 
-				if ($this->writeCharacteristic($accessory)) {
+				if ($this->writeProperty($device)) {
 					$this->registerLoopHandler();
 
 					return;
@@ -142,135 +182,121 @@ abstract class Periodic
 	/**
 	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws MetadataExceptions\MalformedInput
 	 */
-	private function writeCharacteristic(
-		Entities\Protocol\Device $accessory,
-	): bool
+	private function writeProperty(MetadataDocuments\DevicesModule\Device $device): bool
 	{
 		$now = $this->dateTimeFactory->getNow();
 
-		foreach ($accessory->getServices() as $service) {
-			if ($service->getChannel() !== null) {
-				foreach ($service->getCharacteristics() as $characteristic) {
-					$property = $characteristic->getProperty();
+		$accessory = $this->accessoryDriver->findAccessory($device->getId());
 
-					if (
-						$property instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty
-						|| $property instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty
-					) {
-						$debounce = array_key_exists($property->getId()->toString(), $this->processedProperties)
-							? $this->processedProperties[$property->getId()->toString()]
-							: false;
+		if ($accessory === null) {
+			return true;
+		}
 
+		foreach ($this->properties[$device->getId()->toString()] as $property) {
+			$debounce = array_key_exists($property->getId()->toString(), $this->processedProperties)
+				? $this->processedProperties[$property->getId()->toString()]
+				: false;
+
+			if (
+				$debounce !== false
+				&& (float) $now->format('Uv') - (float) $debounce->format('Uv') < self::HANDLER_DEBOUNCE_INTERVAL
+			) {
+				continue;
+			}
+
+			$this->processedProperties[$property->getId()->toString()] = $now;
+
+			$characteristicValue = null;
+
+			if ($property instanceof MetadataDocuments\DevicesModule\DeviceMappedProperty) {
+				$state = $this->devicesPropertiesStatesManager->readValue($property);
+
+				if ($state === null) {
+					continue;
+				}
+
+				$characteristicValue = $state->getExpectedValue() ?? $state->getActualValue();
+
+			} elseif ($property instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty) {
+				$state = $this->channelsPropertiesStatesManager->readValue($property);
+
+				if ($state === null) {
+					continue;
+				}
+
+				$characteristicValue = $state->getExpectedValue() ?? $state->getActualValue();
+
+			} elseif ($property instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty) {
+				$findDevicePropertyQuery = new DevicesQueries\Configuration\FindDeviceVariableProperties();
+				$findDevicePropertyQuery->byId($property->getId());
+
+				$property = $this->devicesPropertiesConfigurationRepository->findOneBy(
+					$findDevicePropertyQuery,
+					MetadataDocuments\DevicesModule\DeviceVariableProperty::class,
+				);
+				assert($property instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty);
+
+				$characteristicValue = $property->getValue();
+
+			} elseif ($property instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
+				$findChannelPropertyQuery = new DevicesQueries\Configuration\FindChannelVariableProperties();
+				$findChannelPropertyQuery->byId($property->getId());
+
+				$property = $this->channelsPropertiesConfigurationRepository->findOneBy(
+					$findChannelPropertyQuery,
+					MetadataDocuments\DevicesModule\ChannelVariableProperty::class,
+				);
+				assert($property instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty);
+
+				$characteristicValue = $property->getValue();
+			}
+
+			foreach ($accessory->getServices() as $service) {
+				if ($service->getChannel() !== null) {
+					foreach ($service->getCharacteristics() as $characteristic) {
 						if (
-							$debounce !== false
-							&& (float) $now->format('Uv') - (float) $debounce->format(
-								'Uv',
-							) < self::HANDLER_DEBOUNCE_INTERVAL
+							$characteristic->getProperty() !== null
+							&& $characteristic->getProperty()->getId()->equals($property->getId())
 						) {
-							continue;
-						}
-
-						$this->processedProperties[$property->getId()->toString()] = $now;
-
-						$characteristicValue = null;
-
-						if ($property instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
-							$state = $this->channelsPropertiesStatesManager->readValue($property);
-
-							if ($state === null) {
-								continue;
+							if ($characteristic->getValue() === $characteristicValue) {
+								return true;
 							}
 
-							$characteristicValue = $state->getExpectedValue() ?? $state->getActualValue();
-						}
-
-						if ($property instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty) {
-							$findPropertyQuery = new DevicesQueries\Configuration\FindChannelProperties();
-							$findPropertyQuery->byId($property->getParent());
-
-							$parent = $this->channelsPropertiesConfigurationRepository->findOneBy($findPropertyQuery);
-
-							if (!$parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
-								continue;
-							}
-
-							$state = $this->channelsPropertiesStatesManager->readValue($property);
-
-							if ($state === null) {
-								continue;
-							}
-
-							$characteristicValue = $state->getExpectedValue() ?? $state->getActualValue();
-						}
-
-						if ($characteristic->getValue() === $characteristicValue) {
-							continue;
-						}
-
-						$characteristic->setActualValue($characteristicValue);
-
-						if (!$characteristic->isVirtual()) {
-							$this->subscriber->publish(
-								intval($accessory->getAid()),
-								intval($accessory->getIidManager()->getIid($characteristic)),
-								Protocol\Transformer::toClient(
-									$property,
-									$characteristic->getDataType(),
-									$characteristic->getValidValues(),
-									$characteristic->getMaxLength(),
-									$characteristic->getMinValue(),
-									$characteristic->getMaxValue(),
-									$characteristic->getMinStep(),
-									$characteristic->getValue(),
-								),
-								$characteristic->immediateNotify(),
-							);
-						} else {
-							foreach ($service->getCharacteristics() as $serviceCharacteristic) {
-								$this->subscriber->publish(
-									intval($accessory->getAid()),
-									intval($accessory->getIidManager()->getIid($serviceCharacteristic)),
-									Protocol\Transformer::toClient(
-										$serviceCharacteristic->getProperty(),
-										$serviceCharacteristic->getDataType(),
-										$serviceCharacteristic->getValidValues(),
-										$serviceCharacteristic->getMaxLength(),
-										$serviceCharacteristic->getMinValue(),
-										$serviceCharacteristic->getMaxValue(),
-										$serviceCharacteristic->getMinStep(),
-										$serviceCharacteristic->getValue(),
+							if (
+								$property instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty
+								|| $property instanceof MetadataDocuments\DevicesModule\DeviceMappedProperty
+							) {
+								$this->queue->append(
+									$this->entityHelper->create(
+										Entities\Messages\WriteDevicePropertyState::class,
+										[
+											'connector' => $device->getConnector(),
+											'device' => $device->getId(),
+											'property' => $property->getId(),
+										],
 									),
-									$serviceCharacteristic->immediateNotify(),
+								);
+							} else {
+								$this->queue->append(
+									$this->entityHelper->create(
+										Entities\Messages\WriteChannelPropertyState::class,
+										[
+											'connector' => $device->getConnector(),
+											'device' => $device->getId(),
+											'channel' => $property->getChannel(),
+											'property' => $property->getId(),
+										],
+									),
 								);
 							}
+
+							return true;
 						}
-
-						$this->logger->debug(
-							'Processed received property message',
-							[
-								'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-								'type' => 'periodic-writer',
-								'connector' => [
-									'id' => $accessory->getDevice()->getConnector()->toString(),
-								],
-								'device' => [
-									'id' => $accessory->getDevice()->getId()->toString(),
-								],
-								'channel' => [
-									'id' => $service->getChannel()->getId()->toString(),
-								],
-								'property' => [
-									'id' => $property->getId()->toString(),
-								],
-								'hap' => $accessory->toHap(),
-							],
-						);
-
-						return true;
 					}
 				}
 			}

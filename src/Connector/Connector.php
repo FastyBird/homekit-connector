@@ -17,6 +17,7 @@ namespace FastyBird\Connector\HomeKit\Connector;
 
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Writers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
@@ -26,7 +27,9 @@ use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Nette;
+use React\EventLoop;
 use function assert;
+use function React\Async\async;
 
 /**
  * Connector service executor
@@ -41,10 +44,14 @@ final class Connector implements DevicesConnectors\Connector
 
 	use Nette\SmartObject;
 
+	private const QUEUE_PROCESSING_INTERVAL = 0.01;
+
 	/** @var array<Servers\Server> */
 	private array $servers = [];
 
 	private Writers\Writer|null $writer = null;
+
+	private EventLoop\TimerInterface|null $consumersTimer = null;
 
 	/**
 	 * @param array<Servers\ServerFactory> $serversFactories
@@ -52,9 +59,12 @@ final class Connector implements DevicesConnectors\Connector
 	public function __construct(
 		private readonly DevicesEntities\Connectors\Connector $connector,
 		private readonly Writers\WriterFactory $writerFactory,
+		private readonly Queue\Queue $queue,
+		private readonly Queue\Consumers $consumers,
 		private readonly array $serversFactories,
 		private readonly HomeKit\Logger $logger,
 		private readonly DevicesModels\Configuration\Connectors\Repository $connectorsConfigurationRepository,
+		private readonly EventLoop\LoopInterface $eventLoop,
 	)
 	{
 	}
@@ -107,6 +117,13 @@ final class Connector implements DevicesConnectors\Connector
 		$this->writer = $this->writerFactory->create($connector);
 		$this->writer->connect();
 
+		$this->consumersTimer = $this->eventLoop->addPeriodicTimer(
+			self::QUEUE_PROCESSING_INTERVAL,
+			async(function (): void {
+				$this->consumers->consume();
+			}),
+		);
+
 		$this->logger->info(
 			'HomeKit connector service has been started',
 			[
@@ -141,6 +158,10 @@ final class Connector implements DevicesConnectors\Connector
 
 		$this->writer?->disconnect();
 
+		if ($this->consumersTimer !== null && $this->queue->isEmpty()) {
+			$this->eventLoop->cancelTimer($this->consumersTimer);
+		}
+
 		foreach ($this->servers as $server) {
 			$server->disconnect();
 		}
@@ -159,7 +180,7 @@ final class Connector implements DevicesConnectors\Connector
 
 	public function hasUnfinishedTasks(): bool
 	{
-		return false;
+		return !$this->queue->isEmpty() && $this->consumersTimer !== null;
 	}
 
 }
