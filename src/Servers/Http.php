@@ -336,8 +336,8 @@ final class Http implements Server
 				$this->entityHelper->create(
 					Entities\Messages\StoreDeviceConnectionState::class,
 					[
-						'connector' => $accessory->getDevice()->getConnector()->toString(),
-						'device' => $accessory->getDevice()->getId()->toString(),
+						'connector' => $accessory->getDevice()->getConnector(),
+						'device' => $accessory->getDevice()->getId(),
 						'state' => MetadataTypes\ConnectionState::STATE_CONNECTED,
 					],
 				),
