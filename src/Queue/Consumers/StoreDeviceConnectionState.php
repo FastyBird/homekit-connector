@@ -48,8 +48,8 @@ final class StoreDeviceConnectionState implements Queue\Consumer
 		private readonly DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
 		private readonly DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
 		private readonly DevicesUtilities\DeviceConnection $deviceConnectionManager,
-		private readonly DevicesUtilities\DevicePropertiesStates $devicePropertiesStateManager,
-		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStateManager,
+		private readonly DevicesUtilities\DevicePropertiesStates $devicePropertiesStatesManager,
+		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStatesManager,
 	)
 	{
 	}
@@ -116,7 +116,7 @@ final class StoreDeviceConnectionState implements Queue\Consumer
 					$findDevicePropertiesQuery,
 					Metadata\Documents\DevicesModule\DeviceDynamicProperty::class,
 				) as $property) {
-					$this->devicePropertiesStateManager->setValidState($property, false);
+					$this->devicePropertiesStatesManager->setValidState($property, false);
 				}
 
 				$findChannelsQuery = new DevicesQueries\Configuration\FindChannels();
@@ -132,7 +132,7 @@ final class StoreDeviceConnectionState implements Queue\Consumer
 						$findChannelPropertiesQuery,
 						Metadata\Documents\DevicesModule\ChannelDynamicProperty::class,
 					) as $property) {
-						$this->channelPropertiesStateManager->setValidState($property, false);
+						$this->channelPropertiesStatesManager->setValidState($property, false);
 					}
 				}
 			}

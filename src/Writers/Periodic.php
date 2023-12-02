@@ -73,8 +73,8 @@ abstract class Periodic
 		protected readonly DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
 		protected readonly DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
 		private readonly Protocol\Driver $accessoryDriver,
-		private readonly DevicesUtilities\DevicePropertiesStates $devicesPropertiesStatesManager,
-		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStatesManager,
+		private readonly DevicesUtilities\DevicePropertiesStates $devicePropertiesStatesManager,
+		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStatesManager,
 		private readonly DateTimeFactory\Factory $dateTimeFactory,
 		private readonly EventLoop\LoopInterface $eventLoop,
 	)
@@ -214,7 +214,7 @@ abstract class Periodic
 			$characteristicValue = null;
 
 			if ($property instanceof MetadataDocuments\DevicesModule\DeviceMappedProperty) {
-				$state = $this->devicesPropertiesStatesManager->readValue($property);
+				$state = $this->devicePropertiesStatesManager->readValue($property);
 
 				if ($state === null) {
 					continue;
@@ -223,7 +223,7 @@ abstract class Periodic
 				$characteristicValue = $state->getExpectedValue() ?? $state->getActualValue();
 
 			} elseif ($property instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty) {
-				$state = $this->channelsPropertiesStatesManager->readValue($property);
+				$state = $this->channelPropertiesStatesManager->readValue($property);
 
 				if ($state === null) {
 					continue;

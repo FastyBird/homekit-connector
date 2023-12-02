@@ -90,7 +90,7 @@ final class Http implements Server
 		private readonly Helpers\Channel $channelHelper,
 		private readonly Queue\Queue $queue,
 		private readonly HomeKit\Logger $logger,
-		private readonly DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStatesManager,
+		private readonly DevicesUtilities\ChannelPropertiesStates $channelPropertiesStatesManager,
 		private readonly DevicesUtilities\Database $databaseHelper,
 		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
 		private readonly DevicesModels\Entities\Devices\DevicesRepository $devicesRepository,
@@ -257,7 +257,7 @@ final class Http implements Server
 						$characteristic->setActualValue($property->getValue());
 					} elseif ($property instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
 						try {
-							$state = $this->channelsPropertiesStatesManager->readValue($property);
+							$state = $this->channelPropertiesStatesManager->readValue($property);
 
 							if ($state !== null) {
 								$characteristic->setActualValue($state->getExpectedValue() ?? $state->getActualValue());
@@ -294,7 +294,7 @@ final class Http implements Server
 
 						if ($parent instanceof MetadataDocuments\DevicesModule\ChannelDynamicProperty) {
 							try {
-								$state = $this->channelsPropertiesStatesManager->readValue($property);
+								$state = $this->channelPropertiesStatesManager->readValue($property);
 
 								if ($state !== null) {
 									$characteristic->setActualValue(

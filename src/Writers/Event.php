@@ -52,8 +52,8 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 		DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
 		DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
 		Protocol\Driver $accessoryDriver,
-		DevicesUtilities\DevicePropertiesStates $devicesPropertiesStatesManager,
-		DevicesUtilities\ChannelPropertiesStates $channelsPropertiesStatesManager,
+		DevicesUtilities\DevicePropertiesStates $devicePropertiesStatesManager,
+		DevicesUtilities\ChannelPropertiesStates $channelPropertiesStatesManager,
 		DateTimeFactory\Factory $dateTimeFactory,
 		EventLoop\LoopInterface $eventLoop,
 	)
@@ -67,8 +67,8 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 			$channelsConfigurationRepository,
 			$channelsPropertiesConfigurationRepository,
 			$accessoryDriver,
-			$devicesPropertiesStatesManager,
-			$channelsPropertiesStatesManager,
+			$devicePropertiesStatesManager,
+			$channelPropertiesStatesManager,
 			$dateTimeFactory,
 			$eventLoop,
 		);
