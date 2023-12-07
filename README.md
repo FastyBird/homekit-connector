@@ -54,6 +54,22 @@ composer require fastybird/homekit-connector
 Learn how to connect your devices from [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things)
 system with [Apple HomeKit]((https://www.homekit.org)) in [documentation](https://github.com/FastyBird/modbus-connector/wiki).
 
+# FastyBird
+
+<p align="center">
+	<img src="https://github.com/fastybird/.github/blob/main/assets/fastybird_row.svg?raw=true" alt="FastyBird"/>
+</p>
+
+FastyBird is an Open Source IOT solution built from decoupled components with powerful API and the highest quality code. Read more on [fastybird.com.com](https://www.fastybird.com).
+
+## Documentation
+
+Documentation is available on [docs.fastybird.com](https://docs.fastybird.com).
+
+## Contributing
+
+The sources of this package are contained in the [FastyBird monorepo](https://github.com/FastyBird/fastybird). We welcome contributions for this package on [FastyBird/fastybird](https://github.com/FastyBird/).
+
 ## Feedback
 
 Use the [issue tracker](https://github.com/FastyBird/fastybird/issues) for bugs
@@ -65,10 +81,6 @@ Thank you for testing, reporting and contributing.
 ## Changelog
 
 For release info check [release page](https://github.com/FastyBird/fastybird/releases).
-
-## Contribute
-
-The sources of this package are contained in the [FastyBird monorepo](https://github.com/FastyBird/fastybird). We welcome contributions for this package on [FastyBird/fastybird](https://github.com/FastyBird/).
 
 ## Maintainers
 
