@@ -17,17 +17,10 @@ namespace FastyBird\Connector\HomeKit\Writers;
 
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
-use FastyBird\Connector\HomeKit\Helpers;
-use FastyBird\Connector\HomeKit\Protocol;
-use FastyBird\Connector\HomeKit\Queue;
-use FastyBird\DateTimeFactory;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Module\Devices\Events as DevicesEvents;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
-use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
-use FastyBird\Module\Devices\Utilities as DevicesUtilities;
-use React\EventLoop;
 use Symfony\Component\EventDispatcher;
 
 /**
@@ -42,37 +35,6 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 {
 
 	public const NAME = 'event';
-
-	public function __construct(
-		MetadataDocuments\DevicesModule\Connector $connector,
-		Helpers\Entity $entityHelper,
-		Queue\Queue $queue,
-		DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
-		DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
-		DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
-		DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
-		Protocol\Driver $accessoryDriver,
-		DevicesUtilities\DevicePropertiesStates $devicePropertiesStatesManager,
-		DevicesUtilities\ChannelPropertiesStates $channelPropertiesStatesManager,
-		DateTimeFactory\Factory $dateTimeFactory,
-		EventLoop\LoopInterface $eventLoop,
-	)
-	{
-		parent::__construct(
-			$connector,
-			$entityHelper,
-			$queue,
-			$devicesConfigurationRepository,
-			$devicesPropertiesConfigurationRepository,
-			$channelsConfigurationRepository,
-			$channelsPropertiesConfigurationRepository,
-			$accessoryDriver,
-			$devicePropertiesStatesManager,
-			$channelPropertiesStatesManager,
-			$dateTimeFactory,
-			$eventLoop,
-		);
-	}
 
 	public static function getSubscribedEvents(): array
 	{
