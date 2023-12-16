@@ -118,6 +118,11 @@ class ServiceType extends Consistence\Enum\Enum
 
 	public const WINDOW_COVERING = 'WindowCovering';
 
+	public function getValue(): string
+	{
+		return strval(parent::getValue());
+	}
+
 	public function __toString(): string
 	{
 		return strval(self::getValue());

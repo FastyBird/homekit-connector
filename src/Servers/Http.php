@@ -134,6 +134,7 @@ final class Http implements Server
 
 		$findDevicesQuery = new DevicesQueries\Configuration\FindDevices();
 		$findDevicesQuery->forConnector($this->connector);
+		$findDevicesQuery->byType(Entities\HomeKitDevice::TYPE);
 
 		foreach ($this->devicesConfigurationRepository->findAllBy($findDevicesQuery) as $device) {
 			$findDevicePropertyQuery = new DevicesQueries\Configuration\FindDeviceVariableProperties();
@@ -160,6 +161,7 @@ final class Http implements Server
 
 			$findChannelsQuery = new DevicesQueries\Configuration\FindChannels();
 			$findChannelsQuery->forDevice($device);
+			$findChannelsQuery->byType(Entities\HomeKitChannel::TYPE);
 
 			foreach ($this->channelsConfigurationRepository->findAllBy($findChannelsQuery) as $channel) {
 				$service = $this->serviceFactory->create(

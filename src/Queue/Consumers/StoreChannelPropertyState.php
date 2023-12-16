@@ -86,6 +86,7 @@ final class StoreChannelPropertyState implements Queue\Consumer
 		$findDeviceQuery = new DevicesQueries\Configuration\FindDevices();
 		$findDeviceQuery->byConnectorId($entity->getConnector());
 		$findDeviceQuery->byId($entity->getDevice());
+		$findDeviceQuery->byType(Entities\HomeKitDevice::TYPE);
 
 		$device = $this->devicesConfigurationRepository->findOneBy($findDeviceQuery);
 
@@ -117,6 +118,7 @@ final class StoreChannelPropertyState implements Queue\Consumer
 		$findChannelQuery = new DevicesQueries\Configuration\FindChannels();
 		$findChannelQuery->forDevice($device);
 		$findChannelQuery->byId($entity->getChannel());
+		$findChannelQuery->byType(Entities\HomeKitChannel::TYPE);
 
 		$channel = $this->channelsConfigurationRepository->findOneBy($findChannelQuery);
 
@@ -294,7 +296,7 @@ final class StoreChannelPropertyState implements Queue\Consumer
 							'Mapped variable property could not be updated',
 							[
 								'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-								'type' => 'characteristics-controller',
+								'type' => 'store-channel-property-state-message-consumer',
 								'connector' => [
 									'id' => $entity->getConnector()->toString(),
 								],
@@ -320,8 +322,17 @@ final class StoreChannelPropertyState implements Queue\Consumer
 			[
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'store-channel-property-state-message-consumer',
+				'connector' => [
+					'id' => $entity->getConnector()->toString(),
+				],
 				'device' => [
-					'id' => $device->getId()->toString(),
+					'id' => $entity->getDevice()->toString(),
+				],
+				'channel' => [
+					'id' => $entity->getChannel()->toString(),
+				],
+				'property' => [
+					'id' => $entity->getProperty()->toString(),
 				],
 				'data' => $entity->toArray(),
 			],

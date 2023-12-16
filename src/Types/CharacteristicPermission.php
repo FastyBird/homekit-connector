@@ -46,6 +46,11 @@ class CharacteristicPermission extends Consistence\Enum\Enum
 
 	public const ADDITIONAL_AUTHORIZATION = 'aa';
 
+	public function getValue(): string
+	{
+		return strval(parent::getValue());
+	}
+
 	public function __toString(): string
 	{
 		return strval(self::getValue());

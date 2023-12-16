@@ -78,6 +78,11 @@ class Representation extends Consistence\Enum\Enum
 
 	public const META = 'meta';
 
+	public function getValue(): string
+	{
+		return strval(parent::getValue());
+	}
+
 	public function __toString(): string
 	{
 		return strval(self::getValue());

@@ -35,7 +35,7 @@ use function is_string;
 class HomeKitConnector extends DevicesEntities\Connectors\Connector
 {
 
-	public const CONNECTOR_TYPE = 'homekit';
+	public const TYPE = 'homekit';
 
 	/**
 	 * @var Common\Collections\Collection<int, Entities\Client>
@@ -47,12 +47,12 @@ class HomeKitConnector extends DevicesEntities\Connectors\Connector
 
 	public function getType(): string
 	{
-		return self::CONNECTOR_TYPE;
+		return self::TYPE;
 	}
 
 	public function getDiscriminatorName(): string
 	{
-		return self::CONNECTOR_TYPE;
+		return self::TYPE;
 	}
 
 	public function getSource(): MetadataTypes\ConnectorSource

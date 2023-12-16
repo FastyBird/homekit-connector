@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Types;
 
 use Consistence;
+use function intval;
 use function strval;
 
 /**
@@ -35,6 +36,11 @@ class ClientPermission extends Consistence\Enum\Enum
 	public const USER = 0;
 
 	public const ADMIN = 1;
+
+	public function getValue(): int
+	{
+		return intval(parent::getValue());
+	}
 
 	public function __toString(): string
 	{

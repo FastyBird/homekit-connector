@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Types;
 
 use Consistence;
+use function intval;
 use function strval;
 
 /**
@@ -61,6 +62,11 @@ class TlvCode extends Consistence\Enum\Enum
 	public const FRAGMENT_LAST = 0x0d; // last fragment data
 
 	public const SEPARATOR = 0xff; // zero-length tlv that separates different tlvs in a list
+
+	public function getValue(): int
+	{
+		return intval(parent::getValue());
+	}
 
 	public function __toString(): string
 	{

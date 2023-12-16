@@ -29,16 +29,16 @@ use function is_int;
 class HomeKitDevice extends DevicesEntities\Devices\Device
 {
 
-	public const DEVICE_TYPE = 'homekit';
+	public const TYPE = 'homekit';
 
 	public function getType(): string
 	{
-		return self::DEVICE_TYPE;
+		return self::TYPE;
 	}
 
 	public function getDiscriminatorName(): string
 	{
-		return self::DEVICE_TYPE;
+		return self::TYPE;
 	}
 
 	public function getSource(): MetadataTypes\ConnectorSource

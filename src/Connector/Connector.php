@@ -89,6 +89,7 @@ final class Connector implements DevicesConnectors\Connector
 
 		$findConnector = new DevicesQueries\Configuration\FindConnectors();
 		$findConnector->byId($this->connector->getId());
+		$findConnector->byType(Entities\HomeKitConnector::TYPE);
 
 		$connector = $this->connectorsConfigurationRepository->findOneBy($findConnector);
 
@@ -130,7 +131,7 @@ final class Connector implements DevicesConnectors\Connector
 				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
 				'type' => 'connector',
 				'connector' => [
-					'id' => $connector->getId()->toString(),
+					'id' => $this->connector->getId()->toString(),
 				],
 			],
 		);

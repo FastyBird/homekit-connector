@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Types;
 
 use Consistence;
+use function strval;
 
 /**
  * HAP service characteristic type types
@@ -50,5 +51,15 @@ class CharacteristicType extends Consistence\Enum\Enum
 	public const COLOR_BLUE = 'ColorBlue';
 
 	public const COLOR_WHITE = 'ColorWhite';
+
+	public function getValue(): string
+	{
+		return strval(parent::getValue());
+	}
+
+	public function __toString(): string
+	{
+		return strval(self::getValue());
+	}
 
 }

@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Types;
 
 use Consistence;
+use function intval;
 use function strval;
 
 /**
@@ -45,6 +46,11 @@ class TlvError extends Consistence\Enum\Enum
 	public const UNAVAILABLE = 0x06; // server pairing method is unavailable
 
 	public const BUSY = 0x07; // server busy and cannot accept pairing request at this time
+
+	public function getValue(): int
+	{
+		return intval(parent::getValue());
+	}
 
 	public function __toString(): string
 	{

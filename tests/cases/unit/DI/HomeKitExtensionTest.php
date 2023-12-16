@@ -81,9 +81,8 @@ final class HomeKitExtensionTest extends BaseTestCase
 		self::assertNotNull($container->getByType(Models\Entities\Clients\ClientsRepository::class, false));
 		self::assertNotNull($container->getByType(Models\Entities\Clients\ClientsManager::class, false));
 
-		self::assertNotNull($container->getByType(Commands\Initialize::class, false));
 		self::assertNotNull($container->getByType(Commands\Execute::class, false));
-		self::assertNotNull($container->getByType(Commands\Devices::class, false));
+		self::assertNotNull($container->getByType(Commands\Install::class, false));
 
 		self::assertNotNull($container->getByType(Connector\ConnectorFactory::class, false));
 	}

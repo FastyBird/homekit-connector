@@ -358,17 +358,11 @@ class HomeKitExtension extends DI\CompilerExtension
 		 * COMMANDS
 		 */
 
-		$builder->addDefinition($this->prefix('commands.initialize'), new DI\Definitions\ServiceDefinition())
-			->setType(Commands\Initialize::class)
-			->setArguments([
-				'logger' => $logger,
-			]);
-
 		$builder->addDefinition($this->prefix('commands.execute'), new DI\Definitions\ServiceDefinition())
 			->setType(Commands\Execute::class);
 
-		$builder->addDefinition($this->prefix('commands.devices'), new DI\Definitions\ServiceDefinition())
-			->setType(Commands\Devices::class)
+		$builder->addDefinition($this->prefix('commands.install'), new DI\Definitions\ServiceDefinition())
+			->setType(Commands\Install::class)
 			->setArguments([
 				'logger' => $logger,
 			]);
@@ -381,7 +375,7 @@ class HomeKitExtension extends DI\CompilerExtension
 			->setImplement(Connector\ConnectorFactory::class)
 			->addTag(
 				DevicesDI\DevicesExtension::CONNECTOR_TYPE_TAG,
-				Entities\HomeKitConnector::CONNECTOR_TYPE,
+				Entities\HomeKitConnector::TYPE,
 			)
 			->getResultDefinition()
 			->setType(Connector\Connector::class)

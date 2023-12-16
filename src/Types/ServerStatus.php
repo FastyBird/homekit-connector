@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Types;
 
 use Consistence;
+use function intval;
 use function strval;
 
 /**
@@ -55,6 +56,11 @@ class ServerStatus extends Consistence\Enum\Enum
 	public const INVALID_VALUE_IN_REQUEST = -70_410;
 
 	public const INSUFFICIENT_AUTHORIZATION = -70_411;
+
+	public function getValue(): int
+	{
+		return intval(parent::getValue());
+	}
 
 	public function __toString(): string
 	{

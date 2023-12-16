@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Types;
 
 use Consistence;
+use function intval;
 use function strval;
 
 /**
@@ -43,6 +44,11 @@ class TlvState extends Consistence\Enum\Enum
 	public const M5 = 0x05;
 
 	public const M6 = 0x06;
+
+	public function getValue(): int
+	{
+		return intval(parent::getValue());
+	}
 
 	public function __toString(): string
 	{

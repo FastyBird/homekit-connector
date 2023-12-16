@@ -70,6 +70,7 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 			foreach ($properties as $property) {
 				$findDeviceQuery = new DevicesQueries\Configuration\FindDevices();
 				$findDeviceQuery->byId($property->getDevice());
+				$findDeviceQuery->byType(Entities\HomeKitDevice::TYPE);
 
 				$device = $this->devicesConfigurationRepository->findOneBy($findDeviceQuery);
 
@@ -104,6 +105,7 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 			foreach ($properties as $property) {
 				$findChannelQuery = new DevicesQueries\Configuration\FindChannels();
 				$findChannelQuery->byId($property->getChannel());
+				$findChannelQuery->byType(Entities\HomeKitChannel::TYPE);
 
 				$channel = $this->channelsConfigurationRepository->findOneBy($findChannelQuery);
 
@@ -113,6 +115,7 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 
 				$findDeviceQuery = new DevicesQueries\Configuration\FindDevices();
 				$findDeviceQuery->byId($property->getChannel());
+				$findDeviceQuery->byType(Entities\HomeKitDevice::TYPE);
 
 				$device = $this->devicesConfigurationRepository->findOneBy($findDeviceQuery);
 

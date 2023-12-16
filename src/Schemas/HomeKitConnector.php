@@ -37,7 +37,7 @@ final class HomeKitConnector extends DevicesSchemas\Connectors\Connector
 	public const SCHEMA_TYPE
 		= MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT
 		. '/connector/'
-		. Entities\HomeKitConnector::CONNECTOR_TYPE;
+		. Entities\HomeKitConnector::TYPE;
 
 	public function getEntityClass(): string
 	{

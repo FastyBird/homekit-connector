@@ -26,7 +26,7 @@ A device is an entity that represents a virtual [Apple HomeKit](https://en.wikip
 A service is an entity that refers to a specific functionality or feature that a device provides. For example,
 a thermostat device might provide a "temperature control" service and a "humidity control" service.
 
-## Device Service Characteristic
+## Service Characteristic
 
 A characteristic is an entity that refers to the individual attribute of a service that can be queried or manipulated.
 Characteristic represent specific data point that describe the state of a device or allow control over it.
@@ -39,36 +39,34 @@ with [Apple HomeKit](https://en.wikipedia.org/wiki/HomeKit), you will need to co
 The connector can be configured using the [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things)
 user interface or through the console.
 
-## Configuring the Connector through the Console
+## Configuring the Connectors, Devices, Services and Characteristic through the Console
 
 To configure the connector through the console, run the following command:
 
 ```shell
-php bin/fb-console fb:homekit-connector:initialize
+php bin/fb-console fb:homekit-connector:install
 ```
 
 > **NOTE:**
 The path to the console command may vary depending on your FastyBird application distribution. For more information, refer to the FastyBird documentation.
 
 ```shell
-HomeKit connector - initialization
-==================================
+HomeKit connector - installer
+=============================
 
  ! [NOTE] This action will create|update|delete connector configuration
 
- Would you like to continue? (yes/no) [no]:
- > y
-```
-
-You will then be prompted to choose an action:
-
-```shell
- What would you like to do?:
-  [0] Create new connector configuration
-  [1] Edit existing connector configuration
-  [2] Delete existing connector configuration
+ What would you like to do? [Nothing]:
+  [0] Create connector
+  [1] Edit connector
+  [2] Delete connector
+  [3] Manage connector
+  [4] List connectors
+  [5] Nothing
  > 0
 ```
+
+### Create connector
 
 If you choose to create a new connector, you will be asked to provide basic connector configuration:
 
@@ -96,56 +94,16 @@ After providing the necessary information, your new [Apple HomeKit](https://en.w
  [OK] Connector "My HomeKit server" was successfully created.
  ```
 
-## Configuring the Connector with the FastyBird User Interface
+### Create device
 
-You can also configure the [Apple HomeKit](https://en.wikipedia.org/wiki/HomeKit) connector using the [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) user interface. For more information on how to do this,
-please refer to the [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) documentation.
-
-# Devices Configuration
-
-With your new connector set up, you must now configure the devices with which the connector will communicate.
-This can be accomplished either through a console command or through the user interface of the [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things).
-
-## Manual Console Command
-
-To manually trigger device configuration, use the following command:
+After new connector is created you will be asked if you want to create new device:
 
 ```shell
-php bin/fb-console fb:homekit-connector:devices
+ Would you like to configure connector device(s)? (yes/no) [yes]:
+ > 
 ```
 
-> **NOTE:**
-The path to the console command may vary depending on your FastyBird application distribution. For more information, refer to the FastyBird documentation.
-
-The console will prompt for confirmation before proceeding with the devices configuration process.
-
-```shell
-HomeKit connector - devices management
-======================================
-
- ! [NOTE] This action will create|update|delete connector device
-
- Would you like to continue? (yes/no) [no]:
- > y
-```
-
-You will then be prompted to select connector to manage devices.
-
-```shell
- Please select connector under which you want to manage devices:
-  [0] my-homekit-server [My HomeKit server]
- > 0
-```
-
-You will then be prompted to select device management action.
-
-```shell
- What would you like to do?:
-  [0] Create new connector device
-  [1] Edit existing connector device
-  [2] Delete existing connector device
- > 0
-```
+Or you could choose to manage connector devices from the main menu.
 
 Now you will be asked to provide some device details:
 
@@ -318,6 +276,17 @@ If you want to configure more device services you could repeat whole process:
  Would you like to configure another device service? (yes/no) [no]:
  > 
 ```
+
+You could configure as many devices as you want.
+
+### Connectors, Devices, Services and Characteristics management
+
+With this console command you could manage all your connectors, their devices and services and characteristics. Just use the main menu to navigate to proper action.
+
+## Configuring the Connector with the FastyBird User Interface
+
+You can also configure the [Apple HomeKit](https://en.wikipedia.org/wiki/HomeKit) connector using the [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) user interface. For more information on how to do this,
+please refer to the [FastyBird](https://www.fastybird.com) [IoT](https://en.wikipedia.org/wiki/Internet_of_things) documentation.
 
 # Known Issues and Limitations
 

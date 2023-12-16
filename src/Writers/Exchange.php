@@ -138,6 +138,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 			) {
 				$findDeviceQuery = new DevicesQueries\Configuration\FindDevices();
 				$findDeviceQuery->byId($entity->getDevice());
+				$findDeviceQuery->byType(Entities\HomeKitDevice::TYPE);
 
 				$device = $this->devicesConfigurationRepository->findOneBy($findDeviceQuery);
 
@@ -177,6 +178,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 			} else {
 				$findChannelQuery = new DevicesQueries\Configuration\FindChannels();
 				$findChannelQuery->byId($entity->getChannel());
+				$findChannelQuery->byType(Entities\HomeKitChannel::TYPE);
 
 				$channel = $this->channelsConfigurationRepository->findOneBy($findChannelQuery);
 
@@ -200,6 +202,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 
 				$findDeviceQuery = new DevicesQueries\Configuration\FindDevices();
 				$findDeviceQuery->byId($channel->getDevice());
+				$findDeviceQuery->byType(Entities\HomeKitDevice::TYPE);
 
 				$device = $this->devicesConfigurationRepository->findOneBy($findDeviceQuery);
 

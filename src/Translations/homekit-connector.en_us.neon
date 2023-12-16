@@ -57,135 +57,6 @@ cmd:
             31: "Television"
             32: "Remote Controller"
 
-    initialize:
-        title: "HomeKit connector - initialization"
-        subtitle: "This action will create|update|delete connector configuration"
-
-        actions:
-            create: "Create new connector configuration"
-            update: "Edit existing connector configuration"
-            remove: "Delete existing connector configuration"
-
-        questions:
-            create: "Would you like to create new HomeKit connector configuration?"
-            disable: "Do you want to disable connector?"
-            enable: "Do you want to enable connector?"
-            provide:
-                identifier: "Provide connector identifier"
-                name: "Provide connector name"
-                port: "Provide server port"
-            select:
-                connector: "Please select connector to manage"
-
-        data:
-            name: "Name"
-            devicesCnt: "# Devices"
-
-        messages:
-            identifier:
-                used: "This identifier is already used."
-                missing: "Connector identifier have to provided."
-            create:
-                success: "Connector \"%name%\" was successfully created."
-                error: "Something went wrong, connector could not be created. Error was logged."
-            update:
-                success: "Connector \"%name%\" was successfully updated."
-                error: "Something went wrong, connector could not be updated. Error was logged."
-            remove:
-                success: "Connector \"%name%\" was successfully removed."
-                error: "Something went wrong, connector could not be removed. Error was logged."
-            noConnectors: "No HomeKit connectors registered in system."
-            portUsed: "Provided port is already taken by \"%connector%\" connector"
-
-    devices:
-        title: "HomeKit connector - devices management"
-        subtitle: "This action will create|update|delete connector device"
-
-        actions:
-            create: "Create new connector device"
-            update: "Edit existing connector device"
-            remove: "Delete existing connector device"
-            createService: "Create new device service"
-            updateService: "Edit existing device service"
-            removeService: "Delete existing device service"
-            listServices: "List device services"
-            updateCharacteristic: "Edit existing service characteristic"
-            removeCharacteristic: "Delete existing service characteristic"
-            listCharacteristics: "List service characteristics"
-            nothing: "Nothing"
-
-        questions:
-            create: "Would you like to create new device in connector?"
-            provide:
-                identifier: "Provide device identifier"
-                name: "Provide device name"
-                value: "Provide characteristic value"
-            select:
-                connector: "Please select connector under which you want to manage devices"
-                device: "Please select device to manage"
-                category: "Please select device category"
-                service: "Please select device's service"
-                characteristic: "Please select service's characteristic"
-                value: "Please select characteristic value"
-                propertyType: "What type of property you want to map?"
-                mappedDevice: "Select device for mapping"
-                mappedDeviceProperty: "Select device property for mapping"
-                mappedDeviceChannel: "Select device channel for mapping"
-                mappedChannelProperty: "Select channel property for mapping"
-                requiredCharacteristic: "What type of service characteristic you would like to add?"
-                optionalCharacteristic: "What type of service characteristic you would like to add? (optional)"
-                valueMapping: "Select device value which will be mapped to: %value%"
-            connectCharacteristic: "Connect characteristic with device?"
-            createService: "Would you like to configure new device service?"
-            createAnotherService: "Would you like to configure another device service?"
-            editServices: "Would you like to manage device services?"
-            addCharacteristics: "Would you like to add new characteristics?"
-
-        answers:
-            none: "None"
-            true: "True"
-            false: "False"
-            deviceProperty: "Device property"
-            channelProperty: "Channel property"
-
-        messages:
-            identifier:
-                used: "This identifier is already used."
-                missing: "Device identifier have to provided."
-            create:
-                device:
-                    success: "Device \"%name%\" was successfully created."
-                    error: "Something went wrong, device could not be created. Error was logged."
-                service:
-                    success: "Service \"%name%\" was successfully created."
-                    error: "Something went wrong, service could not be created. Error was logged."
-            update:
-                device:
-                    success: "Device \"%name%\" was successfully updated."
-                    error: "Something went wrong, device could not be updated. Error was logged."
-                service:
-                    success: "Service \"%name%\" was successfully updated."
-                    error: "Something went wrong, service could not be updated. Error was logged."
-                characteristic:
-                    success: "Characteristic \"%name%\" was successfully updated."
-                    error: "Something went wrong, characteristic could not be updated. Error was logged."
-            remove:
-                device:
-                    success: "Device \"%name%\" was successfully removed."
-                    error: "Something went wrong, device could not be removed. Error was logged."
-                service:
-                    success: "Service \"%name%\" was successfully removed."
-                    error: "Something went wrong, service could not be removed. Error was logged."
-                characteristic:
-                    success: "Characteristic \"%name%\" was successfully removed."
-                    error: "Something went wrong, characteristic could not be removed. Error was logged."
-            noDevices: "No devices registered in HomeKit connector."
-            noServices: "This device has not configured any service."
-            noCharacteristics: "This device service has not configured any characteristic."
-            serviceNotFound: "Something went wrong, service could not be loaded"
-            characteristicNotFound: "Something went wrong, characteristic could not be loaded"
-            noHardwareDevices: "No devices registered in system"
-
     execute:
         title: "HomeKit connector - service"
         subtitle: "This action will run connector service"
@@ -199,8 +70,152 @@ cmd:
             connector:
                 notFound: "Connector was not found in system."
                 disabled: "Connector is disabled. Disabled connector could not be executed."
-            noConnectors: "No HomeKit connectors registered in system."
             uriPath: "Setup payload: %path%"
             scanCode: "Scan this code with your HomeKit app on your iOS device:"
             pinCode: "Or enter this code in your HomeKit app on your iOS device: %code%."
             error: "Something went wrong, service could not be processed."
+
+    install:
+        title: "HomeKit connector - installer"
+        subtitle: "This action will create|update|delete connector configuration"
+
+        actions:
+            create:
+                connector: "Create connector"
+                device: "Create device"
+                service: "Create service"
+            update:
+                connector: "Edit connector"
+                device: "Edit device"
+                service: "Edit service"
+                characteristic: "Edit characteristic"
+            remove:
+                connector: "Delete connector"
+                device: "Delete device"
+                service: "Delete service"
+                characteristic: "Delete characteristic"
+            manage:
+                connector: "Manage connector"
+                device: "Manage device"
+                service: "Manage service"
+            list:
+                connectors: "List connectors"
+                devices: "List devices"
+                services: "List services"
+                characteristics: "List characteristics"
+            nothing: "Nothing"
+
+        questions:
+            create:
+                connector: "Would you like to create new connector configuration?"
+                devices: "Would you like to configure connector device(s)?"
+                device: "Would you like to create new device in connector?"
+                services: "Would you like to configure device service(s)?"
+                service: "Would you like to configure new device service?"
+                characteristics: "Would you like to configure service characteristic(s)?"
+            manage:
+                devices: "Would you like to manage connector devices?"
+                services: "Would you like to manage device services?"
+                characteristics: "Would you like to manage service characteristics?"
+            disable:
+                 connector: "Do you want to disable connector?"
+            enable:
+                connector: "Do you want to enable connector?"
+            provide:
+                connector:
+                    identifier: "Provide connector identifier"
+                    name: "Provide connector name"
+                    port: "Provide server port"
+                device:
+                    identifier: "Provide device identifier"
+                    name: "Provide device name"
+                    value: "Provide characteristic value"
+            select:
+                item:
+                    connector: "Please select connector to manage"
+                    device: "Please select device to manage"
+                    service: "Please select service to manage"
+                    characteristic: "Please select characteristic to manage"
+                device:
+                    category: "Please select device category"
+                    service: "Please select device's service"
+                    characteristic: "Please select service's characteristic"
+                    value: "Please select characteristic value"
+                    propertyType: "What type of property you want to map?"
+                    mappedDevice: "Select device for mapping"
+                    mappedDeviceProperty: "Select device property for mapping"
+                    mappedDeviceChannel: "Select device channel for mapping"
+                    mappedChannelProperty: "Select channel property for mapping"
+                    requiredCharacteristic: "What type of service characteristic you would like to add?"
+                    optionalCharacteristic: "What type of service characteristic you would like to add? (optional)"
+                    valueMapping: "Select device value which will be mapped to: %value%"
+            connectCharacteristic: "Connect characteristic with device?"
+            addCharacteristics: "Would you like to add new characteristics?"
+
+        answers:
+            none: "None"
+            true: "True"
+            false: "False"
+            deviceProperty: "Device property"
+            channelProperty: "Channel property"
+
+        data:
+            name: "Name"
+            category: "Category"
+            devicesCnt: "# Devices"
+
+        messages:
+            identifier:
+                connector:
+                    used: "This identifier is already used."
+                    missing: "Connector identifier have to provided."
+                device:
+                    used: "This identifier is already used."
+                    missing: "Device identifier have to provided."
+            create:
+                connector:
+                    success: "Connector \"%name%\" was successfully created."
+                    error: "Something went wrong, connector could not be created. Error was logged."
+                device:
+                    success: "Device \"%name%\" was successfully created."
+                    error: "Something went wrong, device could not be created. Error was logged."
+                service:
+                    success: "Service \"%name%\" was successfully created."
+                    error: "Something went wrong, service could not be created. Error was logged."
+            update:
+                connector:
+                    success: "Connector \"%name%\" was successfully updated."
+                    error: "Something went wrong, connector could not be updated. Error was logged."
+                device:
+                    success: "Device \"%name%\" was successfully updated."
+                    error: "Something went wrong, device could not be updated. Error was logged."
+                service:
+                    success: "Service \"%name%\" was successfully updated."
+                    error: "Something went wrong, service could not be updated. Error was logged."
+                characteristic:
+                    success: "Characteristic \"%name%\" was successfully updated."
+                    error: "Something went wrong, characteristic could not be updated. Error was logged."
+            remove:
+                connector:
+                    confirm: "This action will remove \"%name%\" connector. This action can not be undone."
+                    success: "Connector \"%name%\" was successfully removed."
+                    error: "Something went wrong, connector could not be removed. Error was logged."
+                device:
+                    confirm: "This action will remove \"%name%\" device. This action can not be undone."
+                    success: "Device \"%name%\" was successfully removed."
+                    error: "Something went wrong, device could not be removed. Error was logged."
+                service:
+                    confirm: "This action will remove \"%name%\" service. This action can not be undone."
+                    success: "Service \"%name%\" was successfully removed."
+                    error: "Something went wrong, service could not be removed. Error was logged."
+                characteristic:
+                    confirm: "This action will remove \"%name%\" characteristic. This action can not be undone."
+                    success: "Characteristic \"%name%\" was successfully removed."
+                    error: "Something went wrong, characteristic could not be removed. Error was logged."
+            portUsed: "Provided port is already taken by \"%connector%\" connector"
+            noDevices: "No devices registered in HomeKit connector."
+            noServices: "This device has not configured any service."
+            noCharacteristics: "This device service has not configured any characteristic."
+            serviceNotFound: "Something went wrong, service could not be loaded"
+            characteristicNotFound: "Something went wrong, characteristic could not be loaded"
+            noHardwareDevices: "No devices registered in system"

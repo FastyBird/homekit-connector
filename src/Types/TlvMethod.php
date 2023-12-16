@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Types;
 
 use Consistence;
+use function intval;
 use function strval;
 
 /**
@@ -43,6 +44,11 @@ class TlvMethod extends Consistence\Enum\Enum
 	public const REMOVE_PAIRING = 4;
 
 	public const LIST_PAIRINGS = 5;
+
+	public function getValue(): int
+	{
+		return intval(parent::getValue());
+	}
 
 	public function __toString(): string
 	{

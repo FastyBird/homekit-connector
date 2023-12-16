@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Types;
 
 use Consistence;
+use function intval;
 use function strval;
 
 /**
@@ -89,6 +90,11 @@ class AccessoryCategory extends Consistence\Enum\Enum
 	public const TELEVISION = 31;
 
 	public const TARGET_CONTROLLER = 32; // Remote Controller
+
+	public function getValue(): int
+	{
+		return intval(parent::getValue());
+	}
 
 	/**
 	 * @return array<int>

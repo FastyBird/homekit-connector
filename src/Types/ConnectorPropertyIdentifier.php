@@ -55,6 +55,11 @@ class ConnectorPropertyIdentifier extends Consistence\Enum\Enum
 
 	public const XHM_URI = 'xhm_uri';
 
+	public function getValue(): string
+	{
+		return strval(parent::getValue());
+	}
+
 	public function __toString(): string
 	{
 		return strval(self::getValue());

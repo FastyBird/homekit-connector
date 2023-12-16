@@ -85,6 +85,7 @@ final class StoreDevicePropertyState implements Queue\Consumer
 		$findDeviceQuery = new DevicesQueries\Configuration\FindDevices();
 		$findDeviceQuery->byConnectorId($entity->getConnector());
 		$findDeviceQuery->byId($entity->getDevice());
+		$findDeviceQuery->byType(Entities\HomeKitDevice::TYPE);
 
 		$device = $this->devicesConfigurationRepository->findOneBy($findDeviceQuery);
 
@@ -252,7 +253,7 @@ final class StoreDevicePropertyState implements Queue\Consumer
 							'Mapped variable property could not be updated',
 							[
 								'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-								'type' => 'characteristics-controller',
+								'type' => 'store-device-property-state-message-consumer',
 								'connector' => [
 									'id' => $entity->getConnector()->toString(),
 								],

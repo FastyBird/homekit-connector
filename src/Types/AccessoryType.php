@@ -36,6 +36,11 @@ class AccessoryType extends Consistence\Enum\Enum
 
 	public const LIGHT_HSB = 'light_hsb';
 
+	public function getValue(): string
+	{
+		return strval(parent::getValue());
+	}
+
 	/**
 	 * @return array<int>
 	 */
