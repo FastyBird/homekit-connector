@@ -19,6 +19,7 @@ use Brick\Math;
 use DateTimeInterface;
 use Doctrine\DBAL;
 use Doctrine\Persistence;
+use Exception;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
@@ -1394,6 +1395,7 @@ class Install extends Console\Command\Command
 	 * @param array<string> $characteristics
 	 *
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exception
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
@@ -1431,9 +1433,13 @@ class Install extends Console\Command\Command
 				|| !is_string($characteristicMetadata->offsetGet('Format'))
 				|| !$characteristicMetadata->offsetExists('DataType')
 				|| !is_string($characteristicMetadata->offsetGet('DataType'))
+				|| !$characteristicMetadata->offsetExists('Permissions')
+				|| !$characteristicMetadata->offsetGet('Permissions') instanceof Utils\ArrayHash
 			) {
 				throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
 			}
+
+			$permissions = (array) $characteristicMetadata->offsetGet('Permissions');
 
 			$dataType = MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType'));
 
@@ -1447,7 +1453,12 @@ class Install extends Console\Command\Command
 			$connect = (bool) $io->askQuestion($question);
 
 			if ($connect) {
-				$connectProperty = $this->askProperty($io);
+				$connectProperty = $this->askProperty(
+					$io,
+					null,
+					in_array(Types\CharacteristicPermission::WRITE, $permissions, true),
+					in_array(Types\CharacteristicPermission::READ, $permissions, true),
+				);
 
 				$format = $this->askFormat($io, $characteristic, $connectProperty);
 
@@ -1533,6 +1544,8 @@ class Install extends Console\Command\Command
 			|| !is_string($characteristicMetadata->offsetGet('UUID'))
 			|| !$characteristicMetadata->offsetExists('Format')
 			|| !$characteristicMetadata->offsetExists('DataType')
+			|| !$characteristicMetadata->offsetExists('Permissions')
+			|| !$characteristicMetadata->offsetGet('Permissions') instanceof Utils\ArrayHash
 		) {
 			throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
 		}
@@ -1540,6 +1553,8 @@ class Install extends Console\Command\Command
 		try {
 			// Start transaction connection to the database
 			$this->getOrmConnection()->beginTransaction();
+
+			$permissions = (array) $characteristicMetadata->offsetGet('Permissions');
 
 			$dataType = MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType'));
 
@@ -1556,11 +1571,13 @@ class Install extends Console\Command\Command
 				$connectProperty = $this->askProperty(
 					$io,
 					(
-					$property instanceof DevicesEntities\Channels\Properties\Mapped
-					&& $property->getParent() instanceof DevicesEntities\Channels\Properties\Dynamic
-						? $property->getParent()
-						: null
+						$property instanceof DevicesEntities\Channels\Properties\Mapped
+						&& $property->getParent() instanceof DevicesEntities\Channels\Properties\Dynamic
+							? $property->getParent()
+							: null
 					),
+					in_array(Types\CharacteristicPermission::WRITE, $permissions, true),
+					in_array(Types\CharacteristicPermission::READ, $permissions, true),
 				);
 
 				$format = $this->askFormat($io, $type, $connectProperty);
@@ -2437,10 +2454,13 @@ class Install extends Console\Command\Command
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exception
 	 */
 	private function askProperty(
 		Style\SymfonyStyle $io,
 		DevicesEntities\Channels\Properties\Dynamic|null $connectedProperty = null,
+		bool|null $settable = null,
+		bool|null $queryable = null,
 	): DevicesEntities\Channels\Properties\Dynamic|null
 	{
 		$devices = [];
@@ -2471,6 +2491,41 @@ class Install extends Console\Command\Command
 
 		foreach ($systemDevices as $device) {
 			if ($device instanceof Entities\HomeKitDevice) {
+				continue;
+			}
+
+			$findChannelsQuery = new DevicesQueries\Entities\FindChannels();
+			$findChannelsQuery->forDevice($device);
+
+			$channels = $this->channelsRepository->findAllBy($findChannelsQuery);
+
+			$hasProperty = false;
+
+			foreach ($channels as $channel) {
+				$findChannelPropertiesQuery = new DevicesQueries\Entities\FindChannelDynamicProperties();
+				$findChannelPropertiesQuery->forChannel($channel);
+
+				if ($settable === true) {
+					$findChannelPropertiesQuery->settable(true);
+				}
+
+				if ($queryable === true) {
+					$findChannelPropertiesQuery->queryable(true);
+				}
+
+				if (
+					$this->channelsPropertiesRepository->getResultSet(
+						$findChannelPropertiesQuery,
+						DevicesEntities\Channels\Properties\Dynamic::class,
+					)->count() > 0
+				) {
+					$hasProperty = true;
+
+					break;
+				}
+			}
+
+			if (!$hasProperty) {
 				continue;
 			}
 
@@ -2558,6 +2613,32 @@ class Install extends Console\Command\Command
 		);
 
 		foreach ($deviceChannels as $channel) {
+			$hasProperty = false;
+
+			$findChannelPropertiesQuery = new DevicesQueries\Entities\FindChannelDynamicProperties();
+			$findChannelPropertiesQuery->forChannel($channel);
+
+			if ($settable === true) {
+				$findChannelPropertiesQuery->settable(true);
+			}
+
+			if ($queryable === true) {
+				$findChannelPropertiesQuery->queryable(true);
+			}
+
+			if (
+				$this->channelsPropertiesRepository->getResultSet(
+					$findChannelPropertiesQuery,
+					DevicesEntities\Channels\Properties\Dynamic::class,
+				)->count() > 0
+			) {
+				$hasProperty = true;
+			}
+
+			if (!$hasProperty) {
+				continue;
+			}
+
 			$channels[$channel->getId()->toString()] = $channel->getName() ?? $channel->getIdentifier();
 		}
 
@@ -2626,11 +2707,19 @@ class Install extends Console\Command\Command
 
 		$properties = [];
 
-		$findDevicePropertiesQuery = new DevicesQueries\Entities\FindChannelProperties();
-		$findDevicePropertiesQuery->forChannel($channel);
+		$findChannelPropertiesQuery = new DevicesQueries\Entities\FindChannelProperties();
+		$findChannelPropertiesQuery->forChannel($channel);
+
+		if ($settable === true) {
+			$findChannelPropertiesQuery->settable(true);
+		}
+
+		if ($queryable === true) {
+			$findChannelPropertiesQuery->queryable(true);
+		}
 
 		$channelProperties = $this->channelsPropertiesRepository->findAllBy(
-			$findDevicePropertiesQuery,
+			$findChannelPropertiesQuery,
 			DevicesEntities\Channels\Properties\Dynamic::class,
 		);
 		usort(
