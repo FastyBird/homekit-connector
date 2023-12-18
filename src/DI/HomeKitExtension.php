@@ -15,6 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\DI;
 
+use Contributte\Translation;
 use Doctrine\Persistence;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Clients;
@@ -53,7 +54,7 @@ use const DIRECTORY_SEPARATOR;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class HomeKitExtension extends DI\CompilerExtension
+class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\TranslationProviderInterface
 {
 
 	public const NAME = 'fbHomeKitConnector';
@@ -433,6 +434,16 @@ class HomeKitExtension extends DI\CompilerExtension
 			'return new ' . Models\Entities\Clients\ClientsManager::class
 			. '($this->getService(\'' . $entityFactoryServiceName . '\')->create(\'' . Entities\Client::class . '\'));',
 		);
+	}
+
+	/**
+	 * @return array<string>
+	 */
+	public function getTranslationResources(): array
+	{
+		return [
+			__DIR__ . '/../Translations/',
+		];
 	}
 
 }

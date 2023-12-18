@@ -38,6 +38,9 @@
     "ext-sockets": "*",
     "ext-sodium": "*",
     "brick/math": "^0.10",
+    "contributte/console": "^0.9",
+    "contributte/monolog": "^0.5",
+    "contributte/translation": "^2.0",
     "cweagans/composer-patches": "^1.7",
     "fastybird/bootstrap-library": "dev-main",
     "fastybird/datetime-factory": "^0.6",
@@ -62,7 +65,6 @@
   },
   "require-dev": {
     "brianium/paratest": "^7.3",
-    "contributte/translation": "^2.0",
     "dg/bypass-finals": "^1.4",
     "infection/infection": "^0.27",
     "orisai/coding-standard": "^3.2",
