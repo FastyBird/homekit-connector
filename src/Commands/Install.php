@@ -25,6 +25,7 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Bootstrap\Exceptions as BootstrapExceptions;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
@@ -46,6 +47,7 @@ use Throwable;
 use function array_combine;
 use function array_diff;
 use function array_filter;
+use function array_flip;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -103,6 +105,7 @@ class Install extends Console\Command\Command
 		private readonly DevicesModels\Entities\Channels\ChannelsManager $channelsManager,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesManager $channelsPropertiesManager,
+		private readonly BootstrapHelpers\Database $databaseHelper,
 		private readonly Persistence\ManagerRegistry $managerRegistry,
 		private readonly Localization\Translator $translator,
 		string|null $name = null,
@@ -122,6 +125,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -145,6 +149,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -259,6 +264,8 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
@@ -274,6 +281,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -388,6 +396,8 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
@@ -405,6 +415,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -469,10 +480,13 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -536,6 +550,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -647,12 +662,15 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 
 		$this->createService($io, $device);
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -744,6 +762,8 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
@@ -761,6 +781,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -825,10 +846,13 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -892,6 +916,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -1009,6 +1034,8 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
@@ -1026,6 +1053,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -1183,6 +1211,8 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
@@ -1200,6 +1230,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -1270,10 +1301,13 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -1456,6 +1490,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -1604,10 +1639,13 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\Runtime
@@ -1680,6 +1718,8 @@ class Install extends Console\Command\Command
 			if ($this->getOrmConnection()->isTransactionActive()) {
 				$this->getOrmConnection()->rollBack();
 			}
+
+			$this->databaseHelper->clear();
 		}
 	}
 
@@ -1750,6 +1790,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -1833,6 +1874,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -1919,6 +1961,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -2005,6 +2048,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws BootstrapExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -2444,8 +2488,8 @@ class Install extends Console\Command\Command
 		$default = count($devices) === 1 ? 0 : null;
 
 		if ($connectedDevice !== null) {
-			foreach (array_values($devices) as $index => $value) {
-				if (Utils\Strings::contains($value, $connectedDevice->getIdentifier())) {
+			foreach (array_values(array_flip($devices)) as $index => $value) {
+				if ($value === $connectedDevice->getId()->toString()) {
 					$default = $index;
 
 					break;
@@ -2514,14 +2558,14 @@ class Install extends Console\Command\Command
 		);
 
 		foreach ($deviceChannels as $channel) {
-			$channels[$channel->getIdentifier()] = $channel->getName() ?? $channel->getIdentifier();
+			$channels[$channel->getId()->toString()] = $channel->getName() ?? $channel->getIdentifier();
 		}
 
 		$default = count($channels) === 1 ? 0 : null;
 
 		if ($connectedChannel !== null) {
-			foreach (array_values($channels) as $index => $value) {
-				if (Utils\Strings::contains($value, $connectedChannel->getIdentifier())) {
+			foreach (array_values(array_flip($channels)) as $index => $value) {
+				if ($value === $connectedChannel->getId()->toString()) {
 					$default = $index;
 
 					break;
@@ -2558,7 +2602,7 @@ class Install extends Console\Command\Command
 
 				if ($identifier !== false) {
 					$findChannelQuery = new DevicesQueries\Entities\FindChannels();
-					$findChannelQuery->byIdentifier($identifier);
+					$findChannelQuery->byId(Uuid\Uuid::fromString($identifier));
 					$findChannelQuery->forDevice($device);
 
 					$channel = $this->channelsRepository->findOneBy($findChannelQuery);
@@ -2601,14 +2645,14 @@ class Install extends Console\Command\Command
 				continue;
 			}
 
-			$properties[$property->getIdentifier()] = $property->getName() ?? $property->getIdentifier();
+			$properties[$property->getId()->toString()] = $property->getName() ?? $property->getIdentifier();
 		}
 
 		$default = count($properties) === 1 ? 0 : null;
 
 		if ($connectedProperty !== null) {
-			foreach (array_values($properties) as $index => $value) {
-				if (Utils\Strings::contains($value, $connectedProperty->getIdentifier())) {
+			foreach (array_values(array_flip($properties)) as $index => $value) {
+				if ($value === $connectedProperty->getId()->toString()) {
 					$default = $index;
 
 					break;
@@ -2645,7 +2689,7 @@ class Install extends Console\Command\Command
 
 				if ($identifier !== false) {
 					$findPropertyQuery = new DevicesQueries\Entities\FindChannelProperties();
-					$findPropertyQuery->byIdentifier($identifier);
+					$findPropertyQuery->byId(Uuid\Uuid::fromString($identifier));
 					$findPropertyQuery->forChannel($channel);
 
 					$property = $this->channelsPropertiesRepository->findOneBy(
