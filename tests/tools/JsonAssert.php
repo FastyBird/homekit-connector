@@ -3,6 +3,7 @@
 namespace FastyBird\Connector\HomeKit\Tests\Tools;
 
 use Closure;
+use Nette;
 use Nette\StaticClass;
 use Nette\Utils;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -17,6 +18,7 @@ class JsonAssert
 
 	/**
 	 * @throws ExpectationFailedException
+	 * @throws Nette\IOException
 	 *
 	 * @throws Utils\JsonException
 	 */
@@ -76,7 +78,7 @@ class JsonAssert
 		}
 
 		try {
-			return Utils\Json::decode($input, Utils\Json::FORCE_ARRAY);
+			return (array) Utils\Json::decode($input, Utils\Json::FORCE_ARRAY);
 		} catch (Utils\JsonException $e) {
 			throw new Utils\JsonException(
 				sprintf('%s is invalid: "%s"', $nameForMessage, $e->getMessage()),

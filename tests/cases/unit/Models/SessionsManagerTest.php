@@ -11,7 +11,6 @@ use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Tests\Cases\Unit\DbTestCase;
 use FastyBird\Library\Bootstrap\Exceptions as BootstrapExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
-use FastyBird\Module\Devices\Queries as DevicesQueries;
 use IPub\DoctrineCrud;
 use Nette;
 use Nette\Utils;
@@ -40,10 +39,10 @@ final class SessionsManagerTest extends DbTestCase
 	{
 		$repository = $this->getContainer()->getByType(DevicesModels\Entities\Connectors\ConnectorsRepository::class);
 
-		$findConnectorQuery = new DevicesQueries\Entities\FindConnectors();
+		$findConnectorQuery = new Queries\Entities\FindConnectors();
 		$findConnectorQuery->byId(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
 
-		$connector = $repository->findOneBy($findConnectorQuery);
+		$connector = $repository->findOneBy($findConnectorQuery, Entities\HomeKitConnector::class);
 
 		self::assertIsObject($connector);
 

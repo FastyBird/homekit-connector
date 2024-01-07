@@ -19,7 +19,7 @@ use Doctrine\DBAL;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Queue;
-use FastyBird\Library\Metadata;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
@@ -106,16 +106,16 @@ final class StoreDeviceConnectionState implements Queue\Consumer
 			);
 
 			if (
-				$entity->getState()->equalsValue(Metadata\Types\ConnectionState::STATE_DISCONNECTED)
-				|| $entity->getState()->equalsValue(Metadata\Types\ConnectionState::STATE_ALERT)
-				|| $entity->getState()->equalsValue(Metadata\Types\ConnectionState::STATE_UNKNOWN)
+				$entity->getState()->equalsValue(MetadataTypes\ConnectionState::STATE_DISCONNECTED)
+				|| $entity->getState()->equalsValue(MetadataTypes\ConnectionState::STATE_ALERT)
+				|| $entity->getState()->equalsValue(MetadataTypes\ConnectionState::STATE_UNKNOWN)
 			) {
 				$findDevicePropertiesQuery = new DevicesQueries\Configuration\FindDeviceDynamicProperties();
 				$findDevicePropertiesQuery->forDevice($device);
 
 				foreach ($this->devicesPropertiesConfigurationRepository->findAllBy(
 					$findDevicePropertiesQuery,
-					Metadata\Documents\DevicesModule\DeviceDynamicProperty::class,
+					MetadataDocuments\DevicesModule\DeviceDynamicProperty::class,
 				) as $property) {
 					$this->devicePropertiesStatesManager->setValidState($property, false);
 				}
@@ -132,7 +132,7 @@ final class StoreDeviceConnectionState implements Queue\Consumer
 
 					foreach ($this->channelsPropertiesConfigurationRepository->findAllBy(
 						$findChannelPropertiesQuery,
-						Metadata\Documents\DevicesModule\ChannelDynamicProperty::class,
+						MetadataDocuments\DevicesModule\ChannelDynamicProperty::class,
 					) as $property) {
 						$this->channelPropertiesStatesManager->setValidState($property, false);
 					}

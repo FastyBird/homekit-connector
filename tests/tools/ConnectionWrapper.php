@@ -32,7 +32,7 @@ class ConnectionWrapper extends DBAL\Connection
 	)
 	{
 		$this->dbName = is_string(getenv('TEST_TOKEN'))
-			? 'fb_test_' . getmypid() . md5((string) time()) . getenv('TEST_TOKEN') ?? ''
+			? 'fb_test_' . getmypid() . md5((string) time()) . getenv('TEST_TOKEN')
 			: 'fb_test_' . getmypid() . md5((string) time());
 
 		unset($params['dbname']);
