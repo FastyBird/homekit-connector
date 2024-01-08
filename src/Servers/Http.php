@@ -23,7 +23,6 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Middleware;
 use FastyBird\Connector\HomeKit\Protocol;
-use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
@@ -234,10 +233,10 @@ final class Http implements Server
 			if ($aidProperty === null) {
 				$this->databaseHelper->transaction(
 					function () use ($accessory): void {
-						$findDeviceQuery = new Queries\Entities\FindDevices();
-						$findDeviceQuery->byId($accessory->getDevice()->getId());
-
-						$device = $this->devicesRepository->findOneBy($findDeviceQuery, Entities\HomeKitDevice::class);
+						$device = $this->devicesRepository->find(
+							$accessory->getDevice()->getId(),
+							Entities\HomeKitDevice::class,
+						);
 						assert($device instanceof Entities\HomeKitDevice);
 
 						$this->devicesPropertiesManager->create(Nette\Utils\ArrayHash::from([

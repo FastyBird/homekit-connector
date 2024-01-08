@@ -150,11 +150,8 @@ final class StoreDevicePropertyState implements Queue\Consumer
 		if ($property instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty) {
 			$this->databaseHelper->transaction(
 				function () use ($valueToStore, $property): void {
-					$findPropertyQuery = new DevicesQueries\Entities\FindDeviceVariableProperties();
-					$findPropertyQuery->byId($property->getId());
-
-					$property = $this->devicesPropertiesRepository->findOneBy(
-						$findPropertyQuery,
+					$property = $this->devicesPropertiesRepository->find(
+						$property->getId(),
 						DevicesEntities\Devices\Properties\Variable::class,
 					);
 					assert($property instanceof DevicesEntities\Devices\Properties\Variable);
@@ -233,11 +230,8 @@ final class StoreDevicePropertyState implements Queue\Consumer
 				}
 			} elseif ($parent instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty) {
 				$this->databaseHelper->transaction(function () use ($entity, $parent): void {
-					$findPropertyQuery = new DevicesQueries\Entities\FindDeviceVariableProperties();
-					$findPropertyQuery->byId($parent->getId());
-
-					$property = $this->devicesPropertiesRepository->findOneBy(
-						$findPropertyQuery,
+					$property = $this->devicesPropertiesRepository->find(
+						$parent->getId(),
 						DevicesEntities\Devices\Properties\Variable::class,
 					);
 

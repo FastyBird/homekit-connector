@@ -189,11 +189,8 @@ final class StoreChannelPropertyState implements Queue\Consumer
 		if ($property instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
 			$this->databaseHelper->transaction(
 				function () use ($valueToStore, $property): void {
-					$findPropertyQuery = new DevicesQueries\Entities\FindChannelVariableProperties();
-					$findPropertyQuery->byId($property->getId());
-
-					$property = $this->channelsPropertiesRepository->findOneBy(
-						$findPropertyQuery,
+					$property = $this->channelsPropertiesRepository->find(
+						$property->getId(),
 						DevicesEntities\Channels\Properties\Variable::class,
 					);
 					assert($property instanceof DevicesEntities\Channels\Properties\Variable);
@@ -276,11 +273,8 @@ final class StoreChannelPropertyState implements Queue\Consumer
 				}
 			} elseif ($parent instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty) {
 				$this->databaseHelper->transaction(function () use ($entity, $parent): void {
-					$findPropertyQuery = new DevicesQueries\Entities\FindChannelVariableProperties();
-					$findPropertyQuery->byId($parent->getId());
-
-					$property = $this->channelsPropertiesRepository->findOneBy(
-						$findPropertyQuery,
+					$property = $this->channelsPropertiesRepository->find(
+						$parent->getId(),
 						DevicesEntities\Channels\Properties\Variable::class,
 					);
 

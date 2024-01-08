@@ -1047,10 +1047,10 @@ final class PairingController extends BaseController
 
 		$this->databaseHelper->transaction(
 			function () use ($tlvEntry, $connector): void {
-				$findConnector = new Queries\Entities\FindConnectors();
-				$findConnector->byId($connector->getId());
-
-				$connector = $this->connectorsRepository->findOneBy($findConnector, Entities\HomeKitConnector::class);
+				$connector = $this->connectorsRepository->find(
+					$connector->getId(),
+					Entities\HomeKitConnector::class,
+				);
 				assert($connector instanceof Entities\HomeKitConnector);
 
 				$findClientQuery = new Queries\Entities\FindClients();
@@ -1756,11 +1756,8 @@ final class PairingController extends BaseController
 			try {
 				$this->databaseHelper->transaction(
 					function () use ($connector, $clientUid, $clientPublicKey, $clientPermission): void {
-						$findConnectorQuery = new Queries\Entities\FindConnectors();
-						$findConnectorQuery->byId($connector->getId());
-
-						$connector = $this->connectorsRepository->findOneBy(
-							$findConnectorQuery,
+						$connector = $this->connectorsRepository->find(
+							$connector->getId(),
 							Entities\HomeKitConnector::class,
 						);
 						assert($connector instanceof Entities\HomeKitConnector);
@@ -1904,11 +1901,8 @@ final class PairingController extends BaseController
 			) {
 				$this->databaseHelper->transaction(
 					function () use ($connector, $type, $value): void {
-						$findConnectorQuery = new Queries\Entities\FindConnectors();
-						$findConnectorQuery->byId($connector->getId());
-
-						$connector = $this->connectorsRepository->findOneBy(
-							$findConnectorQuery,
+						$connector = $this->connectorsRepository->find(
+							$connector->getId(),
 							Entities\HomeKitConnector::class,
 						);
 						assert($connector instanceof Entities\HomeKitConnector);
