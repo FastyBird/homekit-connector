@@ -277,6 +277,9 @@ class Install extends Console\Command\Command
 		$createDevices = (bool) $io->askQuestion($question);
 
 		if ($createDevices) {
+			$connector = $this->connectorsRepository->find($connector->getId(), Entities\HomeKitConnector::class);
+			assert($connector instanceof Entities\HomeKitConnector);
+
 			$this->createDevice($io, $connector);
 		}
 	}
@@ -411,6 +414,9 @@ class Install extends Console\Command\Command
 		if (!$manage) {
 			return;
 		}
+
+		$connector = $this->connectorsRepository->find($connector->getId(), Entities\HomeKitConnector::class);
+		assert($connector instanceof Entities\HomeKitConnector);
 
 		$this->askManageConnectorAction($io, $connector);
 	}
@@ -667,6 +673,9 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->clear();
 		}
 
+		$device = $this->devicesRepository->find($device->getId(), Entities\HomeKitDevice::class);
+		assert($device instanceof Entities\HomeKitDevice);
+
 		$this->createService($io, $device);
 	}
 
@@ -777,6 +786,9 @@ class Install extends Console\Command\Command
 		if (!$manage) {
 			return;
 		}
+
+		$device = $this->devicesRepository->find($device->getId(), Entities\HomeKitDevice::class);
+		assert($device instanceof Entities\HomeKitDevice);
 
 		$this->askManageDeviceAction($io, $device);
 	}
@@ -1050,6 +1062,9 @@ class Install extends Console\Command\Command
 			return;
 		}
 
+		$channel = $this->channelsRepository->find($channel->getId(), Entities\HomeKitChannel::class);
+		assert($channel instanceof Entities\HomeKitChannel);
+
 		$this->askManageServiceAction($io, $channel);
 	}
 
@@ -1226,6 +1241,9 @@ class Install extends Console\Command\Command
 		if (!$manage) {
 			return;
 		}
+
+		$channel = $this->channelsRepository->find($channel->getId(), Entities\HomeKitChannel::class);
+		assert($channel instanceof Entities\HomeKitChannel);
 
 		$this->askManageServiceAction($io, $channel);
 	}

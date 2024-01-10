@@ -18,12 +18,13 @@ namespace FastyBird\Connector\HomeKit\Commands;
 use Endroid\QrCode;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
-use FastyBird\Connector\HomeKit\Queries;
+use FastyBird\Connector\HomeKit\Helpers;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Module\Devices\Commands as DevicesCommands;
-use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
+use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Nette\Localization;
 use Ramsey\Uuid;
 use Symfony\Component\Console;
@@ -54,7 +55,8 @@ class Execute extends Console\Command\Command
 	public const NAME = 'fb:homekit-connector:execute';
 
 	public function __construct(
-		private readonly DevicesModels\Entities\Connectors\ConnectorsRepository $connectorsRepository,
+		private readonly Helpers\Connector $connectorHelper,
+		private readonly DevicesModels\Configuration\Connectors\Repository $connectorsConfigurationRepository,
 		private readonly Localization\Translator $translator,
 		string|null $name = null,
 	)
@@ -128,7 +130,8 @@ class Execute extends Console\Command\Command
 		) {
 			$connectorId = $input->getOption('connector');
 
-			$findConnectorQuery = new Queries\Entities\FindConnectors();
+			$findConnectorQuery = new DevicesQueries\Configuration\FindConnectors();
+			$findConnectorQuery->byType(Entities\HomeKitConnector::TYPE);
 
 			if (Uuid\Uuid::isValid($connectorId)) {
 				$findConnectorQuery->byId(Uuid\Uuid::fromString($connectorId));
@@ -136,7 +139,7 @@ class Execute extends Console\Command\Command
 				$findConnectorQuery->byIdentifier($connectorId);
 			}
 
-			$connector = $this->connectorsRepository->findOneBy($findConnectorQuery, Entities\HomeKitConnector::class);
+			$connector = $this->connectorsConfigurationRepository->findOneBy($findConnectorQuery);
 
 			if ($connector === null) {
 				$io->warning(
@@ -148,16 +151,14 @@ class Execute extends Console\Command\Command
 		} else {
 			$connectors = [];
 
-			$findConnectorsQuery = new Queries\Entities\FindConnectors();
+			$findConnectorsQuery = new DevicesQueries\Configuration\FindConnectors();
+			$findConnectorsQuery->byType(Entities\HomeKitConnector::TYPE);
 
-			$systemConnectors = $this->connectorsRepository->findAllBy(
-				$findConnectorsQuery,
-				Entities\HomeKitConnector::class,
-			);
+			$systemConnectors = $this->connectorsConfigurationRepository->findAllBy($findConnectorsQuery);
 			usort(
 				$systemConnectors,
 				// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-				static fn (DevicesEntities\Connectors\Connector $a, DevicesEntities\Connectors\Connector $b): int => $a->getIdentifier() <=> $b->getIdentifier()
+				static fn (MetadataDocuments\DevicesModule\Connector $a, MetadataDocuments\DevicesModule\Connector $b): int => $a->getIdentifier() <=> $b->getIdentifier()
 			);
 
 			foreach ($systemConnectors as $connector) {
@@ -174,13 +175,11 @@ class Execute extends Console\Command\Command
 			if (count($connectors) === 1) {
 				$connectorIdentifier = array_key_first($connectors);
 
-				$findConnectorQuery = new Queries\Entities\FindConnectors();
+				$findConnectorQuery = new DevicesQueries\Configuration\FindConnectors();
 				$findConnectorQuery->byIdentifier($connectorIdentifier);
+				$findConnectorQuery->byType(Entities\HomeKitConnector::TYPE);
 
-				$connector = $this->connectorsRepository->findOneBy(
-					$findConnectorQuery,
-					Entities\HomeKitConnector::class,
-				);
+				$connector = $this->connectorsConfigurationRepository->findOneBy($findConnectorQuery);
 
 				if ($connector === null) {
 					$io->warning(
@@ -212,7 +211,7 @@ class Execute extends Console\Command\Command
 					$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 				);
 				$question->setValidator(
-					function (string|int|null $answer) use ($connectors): Entities\HomeKitConnector {
+					function (string|int|null $answer) use ($connectors): MetadataDocuments\DevicesModule\Connector {
 						if ($answer === null) {
 							throw new Exceptions\Runtime(
 								sprintf(
@@ -231,13 +230,11 @@ class Execute extends Console\Command\Command
 						$identifier = array_search($answer, $connectors, true);
 
 						if ($identifier !== false) {
-							$findConnectorQuery = new Queries\Entities\FindConnectors();
+							$findConnectorQuery = new DevicesQueries\Configuration\FindConnectors();
 							$findConnectorQuery->byIdentifier($identifier);
+							$findConnectorQuery->byType(Entities\HomeKitConnector::TYPE);
 
-							$connector = $this->connectorsRepository->findOneBy(
-								$findConnectorQuery,
-								Entities\HomeKitConnector::class,
-							);
+							$connector = $this->connectorsConfigurationRepository->findOneBy($findConnectorQuery);
 
 							if ($connector !== null) {
 								return $connector;
@@ -254,7 +251,7 @@ class Execute extends Console\Command\Command
 				);
 
 				$connector = $io->askQuestion($question);
-				assert($connector instanceof Entities\HomeKitConnector);
+				assert($connector instanceof MetadataDocuments\DevicesModule\Connector);
 			}
 		}
 
@@ -266,10 +263,10 @@ class Execute extends Console\Command\Command
 
 		$qrCode = QrCode\Builder\Builder::create()
 			->writer(new QrCode\Writer\ConsoleWriter())
-			->data($connector->getXhmUri())
+			->data($this->connectorHelper->getXhmUri($connector))
 			->encoding(new QrCode\Encoding\Encoding('UTF-8'))
 			->errorCorrectionLevel(new QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
-			->labelText($connector->getPinCode())
+			->labelText($this->connectorHelper->getPinCode($connector))
 			->labelAlignment(new QrCode\Label\Alignment\LabelAlignmentCenter())
 			->validateResult(false)
 			->build();
@@ -277,7 +274,7 @@ class Execute extends Console\Command\Command
 		$io->note(
 			$this->translator->translate(
 				'//homekit-connector.cmd.execute.messages.uriPath',
-				['path' => $connector->getXhmUri()],
+				['path' => $this->connectorHelper->getXhmUri($connector)],
 			),
 		);
 
@@ -290,7 +287,7 @@ class Execute extends Console\Command\Command
 		$io->info(
 			$this->translator->translate(
 				'//homekit-connector.cmd.execute.messages.pinCode',
-				['code' => $connector->getPinCode()],
+				['code' => $this->connectorHelper->getPinCode($connector)],
 			),
 		);
 
