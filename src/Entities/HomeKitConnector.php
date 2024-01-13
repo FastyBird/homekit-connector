@@ -35,7 +35,7 @@ use function is_string;
 class HomeKitConnector extends DevicesEntities\Connectors\Connector
 {
 
-	public const TYPE = 'homekit';
+	public const TYPE = 'homekit-connector';
 
 	/**
 	 * @var Common\Collections\Collection<int, Entities\Client>

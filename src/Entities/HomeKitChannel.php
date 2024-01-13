@@ -31,7 +31,7 @@ use function ucwords;
 class HomeKitChannel extends DevicesEntities\Channels\Channel
 {
 
-	public const TYPE = 'homekit';
+	public const TYPE = 'homekit-connector';
 
 	public const SERVICE_IDENTIFIER = '/^(?P<type>[a-z_]+)(?:_(?P<cnt>[0-9]+){1})$/';
 

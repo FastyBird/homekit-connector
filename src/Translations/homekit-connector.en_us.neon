@@ -168,10 +168,10 @@ cmd:
             identifier:
                 connector:
                     used: "This identifier is already used."
-                    missing: "Connector identifier have to provided."
+                    missing: "Connector identifier have to be provided."
                 device:
                     used: "This identifier is already used."
-                    missing: "Device identifier have to provided."
+                    missing: "Device identifier have to be provided."
             create:
                 connector:
                     success: "Connector \"%name%\" was successfully created."

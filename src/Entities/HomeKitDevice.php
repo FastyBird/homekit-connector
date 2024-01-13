@@ -29,7 +29,7 @@ use function is_int;
 class HomeKitDevice extends DevicesEntities\Devices\Device
 {
 
-	public const TYPE = 'homekit';
+	public const TYPE = 'homekit-connector';
 
 	public function getType(): string
 	{
