@@ -98,7 +98,7 @@ final class Protocol
 		$payload |= 0 & 0xF; // reserved bits
 
 		$payload <<= 8;
-		$payload |= intval($category->getValue()) & 0xFF; // category
+		$payload |= $category->value & 0xFF; // category
 
 		$payload <<= 4;
 		$payload |= 2 & 0xF; // flags

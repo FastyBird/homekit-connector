@@ -15,9 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Types;
 
-use Consistence;
-use function strval;
-
 /**
  * HAP accessory type
  *
@@ -26,35 +23,11 @@ use function strval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class AccessoryType extends Consistence\Enum\Enum
+enum AccessoryType: string
 {
 
-	/**
-	 * Define categories
-	 */
-	public const GENERIC = 'generic';
+	case GENERIC = 'generic';
 
-	public const LIGHT_HSB = 'light_hsb';
-
-	public function getValue(): string
-	{
-		return strval(parent::getValue());
-	}
-
-	/**
-	 * @return array<int>
-	 */
-	public static function getValues(): array
-	{
-		/** @var iterable<int> $availableValues */
-		$availableValues = parent::getAvailableValues();
-
-		return (array) $availableValues;
-	}
-
-	public function __toString(): string
-	{
-		return strval(self::getValue());
-	}
+	case LIGHT_HSB = 'light_hsb';
 
 }

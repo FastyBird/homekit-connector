@@ -15,10 +15,12 @@
 
 namespace FastyBird\Connector\HomeKit\Helpers;
 
+use FastyBird\Connector\HomeKit\Documents;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Documents as MetadataDocuments;
+use TypeError;
+use ValueError;
 use function array_key_exists;
 use function preg_match;
 use function str_replace;
@@ -37,10 +39,12 @@ final class Channel
 
 	/**
 	 * @throws Exceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	public function getServiceType(MetadataDocuments\DevicesModule\Channel $channel): Types\ServiceType
+	public function getServiceType(Documents\Channels\Channel $channel): Types\ServiceType
 	{
-		preg_match(Entities\HomeKitChannel::SERVICE_IDENTIFIER, $channel->getIdentifier(), $matches);
+		preg_match(Entities\Channels\Channel::SERVICE_IDENTIFIER, $channel->getIdentifier(), $matches);
 
 		if (!array_key_exists('type', $matches)) {
 			throw new Exceptions\InvalidState('Device channel has invalid identifier');
@@ -48,11 +52,11 @@ final class Channel
 
 		$type = str_replace(' ', '', ucwords(str_replace('_', ' ', $matches['type'])));
 
-		if (!Types\ServiceType::isValidValue($type)) {
+		if (Types\ServiceType::tryFrom($type) === null) {
 			throw new Exceptions\InvalidState('Device channel has invalid identifier');
 		}
 
-		return Types\ServiceType::get($type);
+		return Types\ServiceType::from($type);
 	}
 
 }

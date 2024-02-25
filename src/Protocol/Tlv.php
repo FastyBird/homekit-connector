@@ -18,6 +18,8 @@ namespace FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
 use Nette;
+use TypeError;
+use ValueError;
 use function array_map;
 use function array_merge;
 use function array_pop;
@@ -26,6 +28,7 @@ use function array_values;
 use function chr;
 use function count;
 use function implode;
+use function in_array;
 use function intval;
 use function is_array;
 use function is_numeric;
@@ -55,6 +58,8 @@ final class Tlv
 	 * @param array<int, array<int, (int|array<int>|string)>> $objects
 	 *
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function encode(array $objects): string
 	{
@@ -64,7 +69,7 @@ final class Tlv
 
 		foreach ($objects as $entry) {
 			if ($cnt > 0) {
-				$row = pack('C1', Types\TlvCode::SEPARATOR);
+				$row = pack('C1', Types\TlvCode::SEPARATOR->value);
 				$row .= pack('C1', 0); // Length of separator is 0
 
 				$data[] = $row;
@@ -73,26 +78,26 @@ final class Tlv
 			foreach ($entry as $code => $value) {
 				$row = pack('C1', $code);
 
-				if (!Types\TlvCode::isValidValue($code)) {
+				if (Types\TlvCode::tryFrom($code) === null) {
 					throw new Exceptions\InvalidArgument('Provided TLV code in data is not valid');
 				}
 
-				$tlvCode = Types\TlvCode::get($code);
+				$tlvCode = Types\TlvCode::from($code);
 
 				if (
 					(
-						$tlvCode->equalsValue(Types\TlvCode::METHOD)
-						|| $tlvCode->equalsValue(Types\TlvCode::STATE)
-						|| $tlvCode->equalsValue(Types\TlvCode::ERROR)
-						|| $tlvCode->equalsValue(Types\TlvCode::RETRY_DELAY)
-						|| $tlvCode->equalsValue(Types\TlvCode::PERMISSIONS)
+						$tlvCode === Types\TlvCode::METHOD
+						|| $tlvCode === Types\TlvCode::STATE
+						|| $tlvCode === Types\TlvCode::ERROR
+						|| $tlvCode === Types\TlvCode::RETRY_DELAY
+						|| $tlvCode === Types\TlvCode::PERMISSIONS
 					) && is_numeric($value)
 				) {
 					$row .= pack('C1', 1); // Length of integer, only short (1-byte length) integers is supported
 					$row .= pack('C1', $value);
 
 				} elseif (
-					$tlvCode->equalsValue(Types\TlvCode::IDENTIFIER)
+					$tlvCode === Types\TlvCode::IDENTIFIER
 					&& is_string($value)
 				) {
 					$chars = array_map(static fn (string $char): int => ord($char), str_split($value));
@@ -116,14 +121,14 @@ final class Tlv
 					}
 				} elseif (
 					(
-						$tlvCode->equalsValue(Types\TlvCode::SALT)
-						|| $tlvCode->equalsValue(Types\TlvCode::PUBLIC_KEY)
-						|| $tlvCode->equalsValue(Types\TlvCode::PROOF)
-						|| $tlvCode->equalsValue(Types\TlvCode::ENCRYPTED_DATA)
-						|| $tlvCode->equalsValue(Types\TlvCode::CERTIFICATE)
-						|| $tlvCode->equalsValue(Types\TlvCode::SIGNATURE)
-						|| $tlvCode->equalsValue(Types\TlvCode::FRAGMENT_DATA)
-						|| $tlvCode->equalsValue(Types\TlvCode::FRAGMENT_LAST)
+						$tlvCode === Types\TlvCode::SALT
+						|| $tlvCode === Types\TlvCode::PUBLIC_KEY
+						|| $tlvCode === Types\TlvCode::PROOF
+						|| $tlvCode === Types\TlvCode::ENCRYPTED_DATA
+						|| $tlvCode === Types\TlvCode::CERTIFICATE
+						|| $tlvCode === Types\TlvCode::SIGNATURE
+						|| $tlvCode === Types\TlvCode::FRAGMENT_DATA
+						|| $tlvCode === Types\TlvCode::FRAGMENT_LAST
 					) && is_array($value)
 				) {
 					if (count($value) > 255) {
@@ -160,6 +165,8 @@ final class Tlv
 	 * @return array<int, array<int, (int|array<int>|string|null)>>
 	 *
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function decode(string $data): array
 	{
@@ -181,13 +188,13 @@ final class Tlv
 
 			$tag = (int) array_pop($tag);
 
-			if (!Types\TlvCode::isValidValue($tag)) {
+			if (Types\TlvCode::tryFrom($tag) === null) {
 				throw new Exceptions\InvalidArgument('Provided TLV code in data is not valid');
 			}
 
-			$tlvCode = Types\TlvCode::get($tag);
+			$tlvCode = Types\TlvCode::from($tag);
 
-			if ($tlvCode->equalsValue(Types\TlvCode::SEPARATOR)) {
+			if ($tlvCode === Types\TlvCode::SEPARATOR) {
 				$objects[] = $entry;
 				$entry = [];
 
@@ -209,11 +216,11 @@ final class Tlv
 			$value = null;
 
 			if (
-				$tlvCode->equalsValue(Types\TlvCode::METHOD)
-				|| $tlvCode->equalsValue(Types\TlvCode::STATE)
-				|| $tlvCode->equalsValue(Types\TlvCode::ERROR)
-				|| $tlvCode->equalsValue(Types\TlvCode::RETRY_DELAY)
-				|| $tlvCode->equalsValue(Types\TlvCode::PERMISSIONS)
+				$tlvCode === Types\TlvCode::METHOD
+				|| $tlvCode === Types\TlvCode::STATE
+				|| $tlvCode === Types\TlvCode::ERROR
+				|| $tlvCode === Types\TlvCode::RETRY_DELAY
+				|| $tlvCode === Types\TlvCode::PERMISSIONS
 			) {
 				if ($length !== 1) {
 					throw new Exceptions\InvalidArgument('Only short (1-byte length) integers is supported');
@@ -227,7 +234,7 @@ final class Tlv
 				} else {
 					$value = intval(array_sum($value));
 				}
-			} elseif ($tlvCode->equalsValue(Types\TlvCode::IDENTIFIER)) {
+			} elseif ($tlvCode === Types\TlvCode::IDENTIFIER) {
 				// Str value
 				$value = unpack('C' . $length, substr($data, $position, $length));
 
@@ -247,14 +254,20 @@ final class Tlv
 					}
 				}
 			} elseif (
-				$tlvCode->equalsValue(Types\TlvCode::SALT)
-				|| $tlvCode->equalsValue(Types\TlvCode::PUBLIC_KEY)
-				|| $tlvCode->equalsValue(Types\TlvCode::PROOF)
-				|| $tlvCode->equalsValue(Types\TlvCode::ENCRYPTED_DATA)
-				|| $tlvCode->equalsValue(Types\TlvCode::CERTIFICATE)
-				|| $tlvCode->equalsValue(Types\TlvCode::SIGNATURE)
-				|| $tlvCode->equalsValue(Types\TlvCode::FRAGMENT_DATA)
-				|| $tlvCode->equalsValue(Types\TlvCode::FRAGMENT_LAST)
+				in_array(
+					$tlvCode,
+					[
+						Types\TlvCode::SALT,
+						Types\TlvCode::PUBLIC_KEY,
+						Types\TlvCode::PROOF,
+						Types\TlvCode::ENCRYPTED_DATA,
+						Types\TlvCode::CERTIFICATE,
+						Types\TlvCode::SIGNATURE,
+						Types\TlvCode::FRAGMENT_DATA,
+						Types\TlvCode::FRAGMENT_LAST,
+					],
+					true,
+				)
 			) {
 				// Bytes value
 				$value = unpack('C' . $length, substr($data, $position, $length));
@@ -268,17 +281,15 @@ final class Tlv
 
 			$position += $length;
 
-			if ($previousCode !== null && $previousCode->equals($tlvCode)) {
-				if ($value !== null) {
-					$entry[intval($tlvCode->getValue())] = is_array($entry[$tlvCode->getValue()])
-						? array_merge(
-							$entry[$tlvCode->getValue()],
-							is_array($value) ? $value : [intval($value)],
-						)
-						: $entry[$tlvCode->getValue()] . (is_array($value) ? implode('', $value) : $value);
-				}
+			if ($previousCode !== null && $previousCode === $tlvCode) {
+				$entry[$tlvCode->value] = is_array($entry[$tlvCode->value])
+					? array_merge(
+						$entry[$tlvCode->value],
+						is_array($value) ? $value : [intval($value)],
+					)
+					: $entry[$tlvCode->value] . (is_array($value) ? implode('', $value) : $value);
 			} else {
-				$entry[intval($tlvCode->getValue())] = $value;
+				$entry[$tlvCode->value] = $value;
 			}
 
 			$previousCode = $tlvCode;

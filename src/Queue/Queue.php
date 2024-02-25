@@ -16,7 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Queue;
 
 use FastyBird\Connector\HomeKit;
-use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Queue\Messages\Message;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Nette;
 use SplQueue;
@@ -34,7 +34,7 @@ final class Queue
 
 	use Nette\SmartObject;
 
-	/** @var SplQueue<Entities\Messages\Entity> */
+	/** @var SplQueue<Message> */
 	private SplQueue $queue;
 
 	public function __construct(private readonly HomeKit\Logger $logger)
@@ -42,21 +42,21 @@ final class Queue
 		$this->queue = new SplQueue();
 	}
 
-	public function append(Entities\Messages\Entity $entity): void
+	public function append(Messages\Message $message): void
 	{
-		$this->queue->enqueue($entity);
+		$this->queue->enqueue($message);
 
 		$this->logger->debug(
 			'Appended new message into messages queue',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'queue',
-				'message' => $entity->toArray(),
+				'message' => $message->toArray(),
 			],
 		);
 	}
 
-	public function dequeue(): Entities\Messages\Entity|false
+	public function dequeue(): Messages\Message|false
 	{
 		$this->queue->rewind();
 

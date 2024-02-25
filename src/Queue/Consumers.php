@@ -59,7 +59,7 @@ final class Consumers
 		$this->logger->debug(
 			'Appended new messages consumer',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'consumers',
 			],
 		);
@@ -67,9 +67,9 @@ final class Consumers
 
 	public function consume(): void
 	{
-		$entity = $this->queue->dequeue();
+		$message = $this->queue->dequeue();
 
-		if ($entity === false) {
+		if ($message === false) {
 			return;
 		}
 
@@ -77,9 +77,9 @@ final class Consumers
 
 		if ($this->consumers->count() === 0) {
 			$this->logger->error(
-				'No consumer is registered, messages could not be consumed',
+				'No consumer is registered, message could not be consumed',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'consumers',
 				],
 			);
@@ -88,7 +88,7 @@ final class Consumers
 		}
 
 		foreach ($this->consumers as $consumer) {
-			if ($consumer->consume($entity) === true) {
+			if ($consumer->consume($message) === true) {
 				return;
 			}
 		}
@@ -96,9 +96,9 @@ final class Consumers
 		$this->logger->error(
 			'Message could not be consumed',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'consumers',
-				'message' => $entity->toArray(),
+				'message' => $message->toArray(),
 			],
 		);
 	}

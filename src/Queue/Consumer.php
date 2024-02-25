@@ -15,8 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Queue;
 
-use FastyBird\Connector\HomeKit\Entities;
-
 /**
  * Messages consumer interface
  *
@@ -28,6 +26,6 @@ use FastyBird\Connector\HomeKit\Entities;
 interface Consumer
 {
 
-	public function consume(Entities\Messages\Entity $entity): bool;
+	public function consume(Messages\Message $message): bool;
 
 }

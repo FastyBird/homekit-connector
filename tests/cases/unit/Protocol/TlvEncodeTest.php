@@ -6,6 +6,8 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Types;
 use PHPUnit\Framework\TestCase;
+use TypeError;
+use ValueError;
 use function array_merge;
 use function array_values;
 use function ord;
@@ -16,6 +18,8 @@ final class TlvEncodeTest extends TestCase
 
 	/**
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function testEncode(): void
 	{
@@ -23,8 +27,8 @@ final class TlvEncodeTest extends TestCase
 
 		$data = [
 			[
-				Types\TlvCode::STATE => 3,
-				Types\TlvCode::IDENTIFIER => 'hello',
+				Types\TlvCode::STATE->value => 3,
+				Types\TlvCode::IDENTIFIER->value => 'hello',
 			],
 		];
 
@@ -51,6 +55,8 @@ final class TlvEncodeTest extends TestCase
 
 	/**
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function testEncodeWithMerge(): void
 	{
@@ -64,9 +70,9 @@ final class TlvEncodeTest extends TestCase
 
 		$data = [
 			[
-				Types\TlvCode::STATE => 3,
-				Types\TlvCode::CERTIFICATE => $certificate,
-				Types\TlvCode::IDENTIFIER => 'hello',
+				Types\TlvCode::STATE->value => 3,
+				Types\TlvCode::CERTIFICATE->value => $certificate,
+				Types\TlvCode::IDENTIFIER->value => 'hello',
 			],
 		];
 
@@ -113,6 +119,8 @@ final class TlvEncodeTest extends TestCase
 
 	/**
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function testEncodeSeparated(): void
 	{
@@ -120,12 +128,12 @@ final class TlvEncodeTest extends TestCase
 
 		$data = [
 			[
-				Types\TlvCode::IDENTIFIER => 'hello',
-				Types\TlvCode::PERMISSIONS => 0,
+				Types\TlvCode::IDENTIFIER->value => 'hello',
+				Types\TlvCode::PERMISSIONS->value => 0,
 			],
 			[
-				Types\TlvCode::IDENTIFIER => 'world',
-				Types\TlvCode::PERMISSIONS => 1,
+				Types\TlvCode::IDENTIFIER->value => 'world',
+				Types\TlvCode::PERMISSIONS->value => 1,
 			],
 		];
 

@@ -15,12 +15,18 @@
 
 namespace FastyBird\Connector\HomeKit\Helpers;
 
+use FastyBird\Connector\HomeKit\Documents;
+use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
-use FastyBird\Module\Devices\Queries as DevicesQueries;
+use TypeError;
+use ValueError;
+use z4kn4fein\SemVer;
+use function assert;
 use function is_int;
 use function is_string;
 
@@ -32,63 +38,131 @@ use function is_string;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-final class Device
+final readonly class Device
 {
 
 	public function __construct(
-		private readonly DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
+		private DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
 	)
 	{
 	}
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	public function getAccessoryCategory(MetadataDocuments\DevicesModule\Device $device): Types\AccessoryCategory
+	public function getAccessoryCategory(Documents\Devices\Device $device): Types\AccessoryCategory
 	{
-		$findPropertyQuery = new DevicesQueries\Configuration\FindDeviceVariableProperties();
+		$findPropertyQuery = new Queries\Configuration\FindDeviceVariableProperties();
 		$findPropertyQuery->forDevice($device);
 		$findPropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::CATEGORY);
 
 		$property = $this->devicesPropertiesConfigurationRepository->findOneBy(
 			$findPropertyQuery,
-			MetadataDocuments\DevicesModule\DeviceVariableProperty::class,
+			DevicesDocuments\Devices\Properties\Variable::class,
 		);
 
 		$value = $property?->getValue();
 
-		if (is_int($value) && Types\AccessoryCategory::isValidValue($value)) {
-			return Types\AccessoryCategory::get($value);
+		if (is_int($value) && Types\AccessoryCategory::tryFrom($value) !== null) {
+			return Types\AccessoryCategory::from($value);
 		}
 
-		return Types\AccessoryCategory::get(Types\AccessoryCategory::OTHER);
+		return Types\AccessoryCategory::OTHER;
 	}
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	public function getAccessoryType(MetadataDocuments\DevicesModule\Device $device): Types\AccessoryType
+	public function getAccessoryType(Documents\Devices\Device $device): Types\AccessoryType
 	{
-		$findPropertyQuery = new DevicesQueries\Configuration\FindDeviceVariableProperties();
+		$findPropertyQuery = new Queries\Configuration\FindDeviceVariableProperties();
 		$findPropertyQuery->forDevice($device);
 		$findPropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::TYPE);
 
 		$property = $this->devicesPropertiesConfigurationRepository->findOneBy(
 			$findPropertyQuery,
-			MetadataDocuments\DevicesModule\DeviceVariableProperty::class,
+			DevicesDocuments\Devices\Properties\Variable::class,
 		);
 
 		$value = $property?->getValue();
 
-		if (is_string($value) && Types\AccessoryType::isValidValue($value)) {
-			return Types\AccessoryType::get($value);
+		if (is_string($value) && Types\AccessoryType::tryFrom($value) !== null) {
+			return Types\AccessoryType::from($value);
 		}
 
-		return Types\AccessoryType::get(Types\AccessoryType::GENERIC);
+		return Types\AccessoryType::GENERIC;
+	}
+
+	/**
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
+	 */
+	public function getFirmwareVersion(Documents\Devices\Device $device): SemVer\Version|null
+	{
+		$findPropertyQuery = new Queries\Configuration\FindDeviceVariableProperties();
+		$findPropertyQuery->forDevice($device);
+		$findPropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::VERSION);
+
+		$property = $this->devicesPropertiesConfigurationRepository->findOneBy(
+			$findPropertyQuery,
+			DevicesDocuments\Devices\Properties\Variable::class,
+		);
+
+		if ($property?->getValue() === null) {
+			return null;
+		}
+
+		$value = $property->getValue();
+		assert(is_string($value));
+
+		try {
+			return SemVer\Version::parse($value);
+		} catch (SemVer\SemverException) {
+			return null;
+		}
+	}
+
+	/**
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
+	 */
+	public function getSerialNumber(Documents\Devices\Device $device): string|null
+	{
+		$findPropertyQuery = new Queries\Configuration\FindDeviceVariableProperties();
+		$findPropertyQuery->forDevice($device);
+		$findPropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::SERIAL_NUMBER);
+
+		$property = $this->devicesPropertiesConfigurationRepository->findOneBy(
+			$findPropertyQuery,
+			DevicesDocuments\Devices\Properties\Variable::class,
+		);
+
+		if ($property?->getValue() === null) {
+			return null;
+		}
+
+		$value = $property->getValue();
+		assert(is_string($value));
+
+		return $value;
 	}
 
 }

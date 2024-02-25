@@ -23,7 +23,7 @@
       "Active" : 1,
       "Inactive" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "ActiveIdentifier" : {
     "Format" : "uint32",
@@ -135,7 +135,7 @@
       "CO2LevelsAbnormal" : 1,
       "CO2LevelsNormal" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "CarbonDioxideLevel" : {
     "Format" : "float",
@@ -170,7 +170,7 @@
       "COLevelsAbnormal" : 1,
       "COLevelsNormal" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "CarbonMonoxideLevel" : {
     "Format" : "float",
@@ -220,7 +220,7 @@
       "Disabled" : 0,
       "Enabled" : 1
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "ColorTemperature" : {
     "Format" : "uint32",
@@ -256,7 +256,7 @@
       "ContactDetected" : 0,
       "ContactNotDetected" : 1
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "CoolingThresholdTemperature" : {
     "Format" : "float",
@@ -294,7 +294,7 @@
     ],
     "UUID" : "0000006B-0000-1000-8000-0026BB765291",
     "MaxValue" : 100000,
-    "MinValue" : 0.0001,
+    "MinValue" : 0,
     "Unit" : "lux",
     "DataType": "float"
   },
@@ -525,7 +525,7 @@
       "ChangeFilter" : 1,
       "FilterOK" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "FilterLifeLevel" : {
     "Format" : "float",
@@ -683,7 +683,7 @@
       "Inuse" : 1,
       "Notinuse" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "IsConfigured" : {
     "Format" : "uint8",
@@ -697,7 +697,7 @@
       "Configured" : 1,
       "NotConfigured" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "LeakDetected" : {
     "Format" : "uint8",
@@ -710,7 +710,7 @@
       "LeakDetected" : 1,
       "LeakNotDetected" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "LockControlPoint" : {
     "Format" : "tlv8",
@@ -778,7 +778,7 @@
       "ControlLockDisabled" : 0,
       "ControlLockEnabled" : 1
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "LockTargetState" : {
     "Format" : "uint8",
@@ -792,7 +792,7 @@
       "Secured" : 1,
       "Unsecured" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "Logs" : {
     "Format" : "tlv8",
@@ -889,7 +889,7 @@
       "OccupancyDetected" : 1,
       "OccupancyNotDetected" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "On" : {
     "Format" : "bool",
@@ -1037,7 +1037,7 @@
       "Show" : 0,
       "Hide" : 1
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "ProgramMode" : {
     "Format" : "uint8",
@@ -1155,7 +1155,7 @@
       "Clockwise" : 0,
       "Counter-clockwise" : 1
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "RotationSpeed" : {
     "Format" : "float",
@@ -1315,7 +1315,7 @@
       "NotDiscoverable" : 0,
       "AlwaysDiscoverable" : 1
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "SmokeDetected" : {
     "Format" : "uint8",
@@ -1328,7 +1328,7 @@
       "SmokeDetected" : 1,
       "SmokeNotDetected" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "StatusActive" : {
     "Format" : "bool",
@@ -1350,7 +1350,7 @@
       "GeneralFault" : 1,
       "NoFault" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "StatusJammed" : {
     "Format" : "uint8",
@@ -1363,7 +1363,7 @@
       "Jammed" : 1,
       "NotJammed" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "StatusLowBattery" : {
     "Format" : "uint8",
@@ -1376,7 +1376,7 @@
       "BatteryLevelLow" : 1,
       "BatteryLevelNormal" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "StatusTampered" : {
     "Format" : "uint8",
@@ -1389,7 +1389,7 @@
       "NotTampered" : 0,
       "Tampered" : 1
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "StreamingStatus" : {
     "Format" : "tlv8",
@@ -1448,7 +1448,7 @@
       "SwingDisabled" : 0,
       "SwingEnabled" : 1
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "TargetAirPurifierState" : {
     "Format" : "uint8",
@@ -1491,7 +1491,7 @@
       "Closed" : 1,
       "Open" : 0
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "TargetFanState" : {
     "Format" : "uint8",
@@ -1678,7 +1678,7 @@
       "Shown" : 0,
       "Hidden" : 1
     },
-    "DataType": "enum"
+    "DataType": ["enum", "bool"]
   },
   "TemperatureDisplayUnits" : {
     "Format" : "uint8",

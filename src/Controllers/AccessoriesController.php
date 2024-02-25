@@ -17,20 +17,22 @@ namespace FastyBird\Connector\HomeKit\Controllers;
 
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
-use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
 use IPub\SlimRouter;
 use Nette\Utils;
 use Psr\Http\Message;
 use Ramsey\Uuid;
+use TypeError;
+use ValueError;
 use function boolval;
 use function strval;
 
@@ -67,7 +69,7 @@ final class AccessoriesController extends BaseController
 		$this->logger->debug(
 			'Requested list of all registered accessories',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'accessories-controller',
 				'request' => [
 					'address' => $request->getServerParams()['REMOTE_ADDR'],
@@ -101,6 +103,8 @@ final class AccessoriesController extends BaseController
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function identify(
 		Message\ServerRequestInterface $request,
@@ -110,7 +114,7 @@ final class AccessoriesController extends BaseController
 		$this->logger->debug(
 			'Requested accessories identify routine',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'accessories-controller',
 				'request' => [
 					'address' => $request->getServerParams()['REMOTE_ADDR'],
@@ -127,20 +131,20 @@ final class AccessoriesController extends BaseController
 
 		$connectorId = Uuid\Uuid::fromString($connectorId);
 
-		$findConnectorPropertyQuery = new DevicesQueries\Configuration\FindConnectorVariableProperties();
+		$findConnectorPropertyQuery = new Queries\Configuration\FindConnectorVariableProperties();
 		$findConnectorPropertyQuery->byConnectorId($connectorId);
 		$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PAIRED);
 
 		$pairedProperty = $this->connectorsPropertiesConfigurationRepository->findOneBy(
 			$findConnectorPropertyQuery,
-			MetadataDocuments\DevicesModule\ConnectorVariableProperty::class,
+			DevicesDocuments\Connectors\Properties\Variable::class,
 		);
 
 		if ($pairedProperty !== null && boolval($pairedProperty->getValue()) === true) {
 			$this->logger->error(
 				'Paired connector could not trigger identify routine',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'accessories-controller',
 					'request' => [
 						'address' => $request->getServerParams()['REMOTE_ADDR'],
@@ -151,7 +155,7 @@ final class AccessoriesController extends BaseController
 
 			throw new Exceptions\HapRequestError(
 				$request,
-				Types\ServerStatus::get(Types\ServerStatus::INSUFFICIENT_PRIVILEGES),
+				Types\ServerStatus::INSUFFICIENT_PRIVILEGES,
 				'Connector is already paired with client',
 				StatusCodeInterface::STATUS_BAD_REQUEST,
 			);
@@ -177,7 +181,7 @@ final class AccessoriesController extends BaseController
 		$this->logger->debug(
 			'Requested fetching accessory resource',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'accessories-controller',
 				'request' => [
 					'address' => $request->getServerParams()['REMOTE_ADDR'],

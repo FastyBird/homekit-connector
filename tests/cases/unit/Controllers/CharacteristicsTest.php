@@ -2,20 +2,19 @@
 
 namespace FastyBird\Connector\HomeKit\Tests\Cases\Unit\Controllers;
 
+use Doctrine\DBAL;
 use Error;
-use Exception;
-use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Documents;
+use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Middleware;
-use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Servers;
-use FastyBird\Connector\HomeKit\Tests\Cases\Unit\DbTestCase;
-use FastyBird\Connector\HomeKit\Tests\Tools;
-use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Documents as MetadataDocuments;
+use FastyBird\Connector\HomeKit\Tests;
+use FastyBird\Library\Application\EventLoop\Wrapper;
+use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
-use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Fig\Http\Message\RequestMethodInterface;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
@@ -25,55 +24,61 @@ use Nette\Utils;
 use Ramsey\Uuid;
 use React\Http\Message\ServerRequest;
 use RuntimeException;
-use function assert;
+use z4kn4fein\SemVer;
 use function call_user_func;
 
 /**
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
  */
-final class CharacteristicsTest extends DbTestCase
+final class CharacteristicsTest extends Tests\Cases\Unit\DbTestCase
 {
 
+	private Servers\Http|null $httpServer = null;
+
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
+	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws Exception
-	 * @throws InvalidArgumentException
-	 * @throws MetadataExceptions\FileNotFound
-	 * @throws MetadataExceptions\Logic
+	 * @throws Exceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws MetadataExceptions\MalformedInput
 	 * @throws Nette\DI\MissingServiceException
+	 * @throws SemVer\SemverException
 	 * @throws RuntimeException
 	 * @throws Error
-	 * @throws Utils\JsonException
 	 */
 	public function setUp(): void
 	{
 		parent::setUp();
 
+		$eventLoop = $this->createMock(Wrapper::class);
+
+		$this->mockContainerService(Wrapper::class, $eventLoop);
+
 		$repository = $this->getContainer()->getByType(DevicesModels\Configuration\Connectors\Repository::class);
 
-		$findConnectorQuery = new DevicesQueries\Configuration\FindConnectors();
+		$findConnectorQuery = new Queries\Configuration\FindConnectors();
 		$findConnectorQuery->byId(Uuid\Uuid::fromString('f5a8691b-4917-4866-878f-5217193cf14b'));
 
-		$connector = $repository->findOneBy($findConnectorQuery);
-		assert($connector instanceof MetadataDocuments\DevicesModule\Connector);
-
-		$accessoryFactory = $this->getContainer()->getByType(Entities\Protocol\AccessoryFactory::class);
-
-		$accessory = $accessoryFactory->create(
-			$connector,
-			null,
-			Types\AccessoryCategory::get(Types\AccessoryCategory::BRIDGE),
+		$connector = $repository->findOneBy(
+			$findConnectorQuery,
+			Documents\Connectors\Connector::class,
 		);
+		self::assertInstanceOf(Documents\Connectors\Connector::class, $connector);
 
-		$accessoryDriver = $this->getContainer()->getByType(Protocol\Driver::class);
+		$httpServerFactory = $this->getContainer()->getByType(Servers\HttpFactory::class);
 
-		assert($accessory instanceof Entities\Protocol\Bridge);
+		$this->httpServer = $httpServerFactory->create($connector);
+		$this->httpServer->initialize();
+	}
 
-		$accessoryDriver->addBridge($accessory);
+	protected function tearDown(): void
+	{
+		parent::tearDown();
+
+		$this->httpServer?->disconnect();
 	}
 
 	/**
@@ -111,7 +116,7 @@ final class CharacteristicsTest extends DbTestCase
 
 		self::assertTrue($response instanceof SlimRouterHttp\Response);
 		self::assertSame($statusCode, $response->getStatusCode());
-		Tools\JsonAssert::assertFixtureMatch(
+		Tests\Tools\JsonAssert::assertFixtureMatch(
 			$fixture,
 			(string) $response->getBody(),
 		);

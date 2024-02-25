@@ -1,10 +1,10 @@
 {
-  "AccessoryInformation" : {
-    "OptionalCharacteristics" : [
+  "AccessoryInformation": {
+    "OptionalCharacteristics": [
       "HardwareRevision",
       "AccessoryFlags"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Identify",
       "Manufacturer",
       "Model",
@@ -12,24 +12,24 @@
       "SerialNumber",
       "FirmwareRevision"
     ],
-    "UUID" : "0000003E-0000-1000-8000-0026BB765291"
+    "UUID": "0000003E-0000-1000-8000-0026BB765291"
   },
-  "AirPurifier" : {
-    "OptionalCharacteristics" : [
+  "AirPurifier": {
+    "OptionalCharacteristics": [
       "LockPhysicalControls",
       "Name",
       "SwingMode",
       "RotationSpeed"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Active",
       "CurrentAirPurifierState",
       "TargetAirPurifierState"
     ],
-    "UUID" : "000000BB-0000-1000-8000-0026BB765291"
+    "UUID": "000000BB-0000-1000-8000-0026BB765291"
   },
-  "AirQualitySensor" : {
-    "OptionalCharacteristics" : [
+  "AirQualitySensor": {
+    "OptionalCharacteristics": [
       "StatusActive",
       "StatusFault",
       "StatusTampered",
@@ -44,27 +44,27 @@
       "CarbonMonoxideLevel",
       "CarbonDioxideLevel"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "AirQuality"
     ],
-    "UUID" : "0000008D-0000-1000-8000-0026BB765291"
+    "UUID": "0000008D-0000-1000-8000-0026BB765291"
   },
-  "BatteryService" : {
-    "OptionalCharacteristics" : [
+  "BatteryService": {
+    "OptionalCharacteristics": [
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "BatteryLevel",
       "ChargingState",
       "StatusLowBattery"
     ],
-    "UUID" : "00000096-0000-1000-8000-0026BB765291"
+    "UUID": "00000096-0000-1000-8000-0026BB765291"
   },
-  "CameraRTPStreamManagement" : {
-    "OptionalCharacteristics" : [
+  "CameraRTPStreamManagement": {
+    "OptionalCharacteristics": [
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "SupportedVideoStreamConfiguration",
       "SupportedAudioStreamConfiguration",
       "SupportedRTPConfiguration",
@@ -72,10 +72,10 @@
       "StreamingStatus",
       "SetupEndpoints"
     ],
-    "UUID" : "00000110-0000-1000-8000-0026BB765291"
+    "UUID": "00000110-0000-1000-8000-0026BB765291"
   },
-  "CarbonDioxideSensor" : {
-    "OptionalCharacteristics" : [
+  "CarbonDioxideSensor": {
+    "OptionalCharacteristics": [
       "StatusActive",
       "StatusFault",
       "StatusLowBattery",
@@ -84,13 +84,13 @@
       "CarbonDioxidePeakLevel",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CarbonDioxideDetected"
     ],
-    "UUID" : "00000097-0000-1000-8000-0026BB765291"
+    "UUID": "00000097-0000-1000-8000-0026BB765291"
   },
-  "CarbonMonoxideSensor" : {
-    "OptionalCharacteristics" : [
+  "CarbonMonoxideSensor": {
+    "OptionalCharacteristics": [
       "StatusActive",
       "StatusFault",
       "StatusLowBattery",
@@ -99,61 +99,61 @@
       "CarbonMonoxidePeakLevel",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CarbonMonoxideDetected"
     ],
-    "UUID" : "0000007F-0000-1000-8000-0026BB765291"
+    "UUID": "0000007F-0000-1000-8000-0026BB765291"
   },
-  "ContactSensor" : {
-    "OptionalCharacteristics" : [
+  "ContactSensor": {
+    "OptionalCharacteristics": [
       "StatusActive",
       "StatusFault",
       "StatusTampered",
       "StatusLowBattery",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "ContactSensorState"
     ],
-    "UUID" : "00000080-0000-1000-8000-0026BB765291"
+    "UUID": "00000080-0000-1000-8000-0026BB765291"
   },
-  "Door" : {
-    "OptionalCharacteristics" : [
+  "Door": {
+    "OptionalCharacteristics": [
       "HoldPosition",
       "ObstructionDetected",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CurrentPosition",
       "PositionState",
       "TargetPosition"
     ],
-    "UUID" : "00000081-0000-1000-8000-0026BB765291"
+    "UUID": "00000081-0000-1000-8000-0026BB765291"
   },
-  "Doorbell" : {
-    "OptionalCharacteristics" : [
+  "Doorbell": {
+    "OptionalCharacteristics": [
       "Brightness",
       "Volume",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "ProgrammableSwitchEvent"
     ],
-    "UUID" : "00000121-0000-1000-8000-0026BB765291"
+    "UUID": "00000121-0000-1000-8000-0026BB765291"
   },
-  "Fan" : {
-    "OptionalCharacteristics" : [
+  "Fan": {
+    "OptionalCharacteristics": [
       "RotationDirection",
       "RotationSpeed",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "On"
     ],
-    "UUID" : "00000040-0000-1000-8000-0026BB765291"
+    "UUID": "00000040-0000-1000-8000-0026BB765291"
   },
-  "Fanv2" : {
-    "OptionalCharacteristics" : [
+  "Fanv2": {
+    "OptionalCharacteristics": [
       "CurrentFanState",
       "TargetFanState",
       "LockPhysicalControls",
@@ -162,47 +162,47 @@
       "RotationSpeed",
       "SwingMode"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Active"
     ],
-    "UUID" : "000000B7-0000-1000-8000-0026BB765291"
+    "UUID": "000000B7-0000-1000-8000-0026BB765291"
   },
-  "Faucet" : {
-    "OptionalCharacteristics" : [
+  "Faucet": {
+    "OptionalCharacteristics": [
       "Name",
       "StatusFault"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Active"
     ],
-    "UUID" : "000000D7-0000-1000-8000-0026BB765291"
+    "UUID": "000000D7-0000-1000-8000-0026BB765291"
   },
-  "FilterMaintenance" : {
-    "OptionalCharacteristics" : [
+  "FilterMaintenance": {
+    "OptionalCharacteristics": [
       "FilterLifeLevel",
       "ResetFilterIndication",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "FilterChangeIndication"
     ],
-    "UUID" : "000000BA-0000-1000-8000-0026BB765291"
+    "UUID": "000000BA-0000-1000-8000-0026BB765291"
   },
-  "GarageDoorOpener" : {
-    "OptionalCharacteristics" : [
+  "GarageDoorOpener": {
+    "OptionalCharacteristics": [
       "LockCurrentState",
       "LockTargetState",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CurrentDoorState",
       "TargetDoorState",
       "ObstructionDetected"
     ],
-    "UUID" : "00000041-0000-1000-8000-0026BB765291"
+    "UUID": "00000041-0000-1000-8000-0026BB765291"
   },
-  "HeaterCooler" : {
-    "OptionalCharacteristics" : [
+  "HeaterCooler": {
+    "OptionalCharacteristics": [
       "LockPhysicalControls",
       "Name",
       "SwingMode",
@@ -211,16 +211,16 @@
       "TemperatureDisplayUnits",
       "RotationSpeed"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Active",
       "CurrentHeaterCoolerState",
       "TargetHeaterCoolerState",
       "CurrentTemperature"
     ],
-    "UUID" : "000000BC-0000-1000-8000-0026BB765291"
+    "UUID": "000000BC-0000-1000-8000-0026BB765291"
   },
-  "HumidifierDehumidifier" : {
-    "OptionalCharacteristics" : [
+  "HumidifierDehumidifier": {
+    "OptionalCharacteristics": [
       "LockPhysicalControls",
       "Name",
       "SwingMode",
@@ -229,102 +229,102 @@
       "RelativeHumidityHumidifierThreshold",
       "RotationSpeed"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CurrentRelativeHumidity",
       "CurrentHumidifierDehumidifierState",
       "TargetHumidifierDehumidifierState",
       "Active"
     ],
-    "UUID" : "000000BD-0000-1000-8000-0026BB765291"
+    "UUID": "000000BD-0000-1000-8000-0026BB765291"
   },
-  "HumiditySensor" : {
-    "OptionalCharacteristics" : [
+  "HumiditySensor": {
+    "OptionalCharacteristics": [
       "StatusActive",
       "StatusFault",
       "StatusTampered",
       "StatusLowBattery",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CurrentRelativeHumidity"
     ],
-    "UUID" : "00000082-0000-1000-8000-0026BB765291"
+    "UUID": "00000082-0000-1000-8000-0026BB765291"
   },
-  "InputSource" : {
-    "OptionalCharacteristics" : [
+  "InputSource": {
+    "OptionalCharacteristics": [
       "Identifier",
       "InputDeviceType",
       "TargetVisibilityState",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "ConfiguredName",
       "InputSourceType",
       "IsConfigured",
       "CurrentVisibilityState"
     ],
-    "UUID" : "000000D9-0000-1000-8000-0026BB765291"
+    "UUID": "000000D9-0000-1000-8000-0026BB765291"
   },
-  "IrrigationSystem" : {
-    "OptionalCharacteristics" : [
+  "IrrigationSystem": {
+    "OptionalCharacteristics": [
       "Name",
       "RemainingDuration",
       "StatusFault"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Active",
       "ProgramMode",
       "InUse"
     ],
-    "UUID" : "000000CF-0000-1000-8000-0026BB765291"
+    "UUID": "000000CF-0000-1000-8000-0026BB765291"
   },
-  "LeakSensor" : {
-    "OptionalCharacteristics" : [
+  "LeakSensor": {
+    "OptionalCharacteristics": [
       "StatusActive",
       "StatusFault",
       "StatusTampered",
       "StatusLowBattery",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "LeakDetected"
     ],
-    "UUID" : "00000083-0000-1000-8000-0026BB765291"
+    "UUID": "00000083-0000-1000-8000-0026BB765291"
   },
-  "LightSensor" : {
-    "OptionalCharacteristics" : [
+  "LightSensor": {
+    "OptionalCharacteristics": [
       "Name",
       "StatusActive",
       "StatusFault",
       "StatusTampered",
       "StatusLowBattery"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CurrentAmbientLightLevel"
     ],
-    "UUID" : "00000084-0000-1000-8000-0026BB765291"
+    "UUID": "00000084-0000-1000-8000-0026BB765291"
   },
-  "Lightbulb" : {
-    "OptionalCharacteristics" : [
+  "Lightbulb": {
+    "OptionalCharacteristics": [
       "Brightness",
       "Hue",
       "Name",
       "Saturation",
       "ColorTemperature"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "On"
     ],
-    "VirtualCharacteristics" : [
+    "VirtualCharacteristics": [
       "ColorRed",
       "ColorGreen",
       "ColorBlue",
       "ColorWhite"
     ],
-    "UUID" : "00000043-0000-1000-8000-0026BB765291"
+    "UUID": "00000043-0000-1000-8000-0026BB765291"
   },
-  "LockManagement" : {
-    "OptionalCharacteristics" : [
+  "LockManagement": {
+    "OptionalCharacteristics": [
       "Logs",
       "AudioFeedback",
       "LockManagementAutoSecurityTimeout",
@@ -334,147 +334,147 @@
       "MotionDetected",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "LockControlPoint",
       "Version"
     ],
-    "UUID" : "00000044-0000-1000-8000-0026BB765291"
+    "UUID": "00000044-0000-1000-8000-0026BB765291"
   },
-  "LockMechanism" : {
-    "OptionalCharacteristics" : [
+  "LockMechanism": {
+    "OptionalCharacteristics": [
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "LockCurrentState",
       "LockTargetState"
     ],
-    "UUID" : "00000045-0000-1000-8000-0026BB765291"
+    "UUID": "00000045-0000-1000-8000-0026BB765291"
   },
-  "Microphone" : {
-    "OptionalCharacteristics" : [
+  "Microphone": {
+    "OptionalCharacteristics": [
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Volume",
       "Mute"
     ],
-    "UUID" : "00000112-0000-1000-8000-0026BB765291"
+    "UUID": "00000112-0000-1000-8000-0026BB765291"
   },
-  "MotionSensor" : {
-    "OptionalCharacteristics" : [
+  "MotionSensor": {
+    "OptionalCharacteristics": [
       "StatusActive",
       "StatusFault",
       "StatusTampered",
       "StatusLowBattery",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "MotionDetected"
     ],
-    "UUID" : "00000085-0000-1000-8000-0026BB765291"
+    "UUID": "00000085-0000-1000-8000-0026BB765291"
   },
-  "OccupancySensor" : {
-    "OptionalCharacteristics" : [
+  "OccupancySensor": {
+    "OptionalCharacteristics": [
       "Name",
       "StatusActive",
       "StatusFault",
       "StatusTampered",
       "StatusLowBattery"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "OccupancyDetected"
     ],
-    "UUID" : "00000086-0000-1000-8000-0026BB765291"
+    "UUID": "00000086-0000-1000-8000-0026BB765291"
   },
-  "Outlet" : {
-    "OptionalCharacteristics" : [
+  "Outlet": {
+    "OptionalCharacteristics": [
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "On",
       "OutletInUse"
     ],
-    "UUID" : "00000047-0000-1000-8000-0026BB765291"
+    "UUID": "00000047-0000-1000-8000-0026BB765291"
   },
-  "SecuritySystem" : {
-    "OptionalCharacteristics" : [
+  "SecuritySystem": {
+    "OptionalCharacteristics": [
       "StatusFault",
       "StatusTampered",
       "SecuritySystemAlarmType",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "SecuritySystemCurrentState",
       "SecuritySystemTargetState"
     ],
-    "UUID" : "0000007E-0000-1000-8000-0026BB765291"
+    "UUID": "0000007E-0000-1000-8000-0026BB765291"
   },
-  "ServiceLabel" : {
-    "OptionalCharacteristics" : [
+  "ServiceLabel": {
+    "OptionalCharacteristics": [
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "ServiceLabelNamespace"
     ],
-    "UUID" : "000000CC-0000-1000-8000-0026BB765291"
+    "UUID": "000000CC-0000-1000-8000-0026BB765291"
   },
-  "Slat" : {
-    "OptionalCharacteristics" : [
+  "Slat": {
+    "OptionalCharacteristics": [
       "Name",
       "CurrentTiltAngle",
       "TargetTiltAngle",
       "SwingMode"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "SlatType",
       "CurrentSlatState"
     ],
-    "UUID" : "000000B9-0000-1000-8000-0026BB765291"
+    "UUID": "000000B9-0000-1000-8000-0026BB765291"
   },
-  "SmokeSensor" : {
-    "OptionalCharacteristics" : [
+  "SmokeSensor": {
+    "OptionalCharacteristics": [
       "StatusActive",
       "StatusFault",
       "StatusTampered",
       "StatusLowBattery",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "SmokeDetected"
     ],
-    "UUID" : "00000087-0000-1000-8000-0026BB765291"
+    "UUID": "00000087-0000-1000-8000-0026BB765291"
   },
-  "Speaker" : {
-    "OptionalCharacteristics" : [
+  "Speaker": {
+    "OptionalCharacteristics": [
       "Name",
       "Volume"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Mute"
     ],
-    "UUID" : "00000113-0000-1000-8000-0026BB765291"
+    "UUID": "00000113-0000-1000-8000-0026BB765291"
   },
-  "StatelessProgrammableSwitch" : {
-    "OptionalCharacteristics" : [
+  "StatelessProgrammableSwitch": {
+    "OptionalCharacteristics": [
       "Name",
       "ServiceLabelIndex"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "ProgrammableSwitchEvent"
     ],
-    "UUID" : "00000089-0000-1000-8000-0026BB765291"
+    "UUID": "00000089-0000-1000-8000-0026BB765291"
   },
-  "Switch" : {
-    "OptionalCharacteristics" : [
+  "Switch": {
+    "OptionalCharacteristics": [
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "On"
     ],
-    "UUID" : "00000049-0000-1000-8000-0026BB765291"
+    "UUID": "00000049-0000-1000-8000-0026BB765291"
   },
-  "Television" : {
-    "OptionalCharacteristics" : [
+  "Television": {
+    "OptionalCharacteristics": [
       "Brightness",
       "ClosedCaptions",
       "DisplayOrder",
@@ -484,59 +484,59 @@
       "PowerModeSelection",
       "RemoteKey"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Active",
       "ActiveIdentifier",
       "ConfiguredName",
       "SleepDiscoveryMode"
     ],
-    "UUID" : "000000D8-0000-1000-8000-0026BB765291"
+    "UUID": "000000D8-0000-1000-8000-0026BB765291"
   },
-  "TelevisionSpeaker" : {
-    "OptionalCharacteristics" : [
+  "TelevisionSpeaker": {
+    "OptionalCharacteristics": [
       "Active",
       "Volume",
       "VolumeControlType",
       "VolumeSelector",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Mute"
     ],
-    "UUID" : "00000113-0000-1000-8000-0026BB765291"
+    "UUID": "00000113-0000-1000-8000-0026BB765291"
   },
-  "TemperatureSensor" : {
-    "OptionalCharacteristics" : [
+  "TemperatureSensor": {
+    "OptionalCharacteristics": [
       "StatusActive",
       "StatusFault",
       "StatusLowBattery",
       "StatusTampered",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CurrentTemperature"
     ],
-    "UUID" : "0000008A-0000-1000-8000-0026BB765291"
+    "UUID": "0000008A-0000-1000-8000-0026BB765291"
   },
-  "Thermostat" : {
-    "OptionalCharacteristics" : [
+  "Thermostat": {
+    "OptionalCharacteristics": [
       "CurrentRelativeHumidity",
       "TargetRelativeHumidity",
       "CoolingThresholdTemperature",
       "HeatingThresholdTemperature",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CurrentHeatingCoolingState",
       "TargetHeatingCoolingState",
       "CurrentTemperature",
       "TargetTemperature",
       "TemperatureDisplayUnits"
     ],
-    "UUID" : "0000004A-0000-1000-8000-0026BB765291"
+    "UUID": "0000004A-0000-1000-8000-0026BB765291"
   },
-  "Valve" : {
-    "OptionalCharacteristics" : [
+  "Valve": {
+    "OptionalCharacteristics": [
       "SetDuration",
       "RemainingDuration",
       "IsConfigured",
@@ -544,28 +544,28 @@
       "StatusFault",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "Active",
       "InUse",
       "ValveType"
     ],
-    "UUID" : "000000D0-0000-1000-8000-0026BB765291"
+    "UUID": "000000D0-0000-1000-8000-0026BB765291"
   },
-  "Window" : {
-    "OptionalCharacteristics" : [
+  "Window": {
+    "OptionalCharacteristics": [
       "HoldPosition",
       "ObstructionDetected",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CurrentPosition",
       "TargetPosition",
       "PositionState"
     ],
-    "UUID" : "0000008B-0000-1000-8000-0026BB765291"
+    "UUID": "0000008B-0000-1000-8000-0026BB765291"
   },
-  "WindowCovering" : {
-    "OptionalCharacteristics" : [
+  "WindowCovering": {
+    "OptionalCharacteristics": [
       "HoldPosition",
       "TargetHorizontalTiltAngle",
       "TargetVerticalTiltAngle",
@@ -574,11 +574,11 @@
       "ObstructionDetected",
       "Name"
     ],
-    "RequiredCharacteristics" : [
+    "RequiredCharacteristics": [
       "CurrentPosition",
       "TargetPosition",
       "PositionState"
     ],
-    "UUID" : "0000008C-0000-1000-8000-0026BB765291"
+    "UUID": "0000008C-0000-1000-8000-0026BB765291"
   }
 }

@@ -6,7 +6,7 @@
     <arg name="cache" value="./../var/tools/PHP_CodeSniffer/cache.dat"/>
 
     <!-- Import coding-standard -->
-    <rule ref="./vendor/orisai/coding-standard/src/ruleset-8.1.xml">
+    <rule ref="./vendor/orisai/coding-standard/src/ruleset-8.2.xml">
         <exclude name="SlevomatCodingStandard.Commenting.ForbiddenAnnotations.AnnotationForbidden"/>
 
         <exclude name="SlevomatCodingStandard.Commenting.DocCommentSpacing.IncorrectLinesCountBetweenDifferentAnnotationsTypes"/>
@@ -26,9 +26,4 @@
 
     <!--Exclude folders -->
     <exclude-pattern>/tests/stubs/*</exclude-pattern>
-
-    <!--Exclude rules/files -->
-    <rule ref="SlevomatCodingStandard.Files.LineLength.LineTooLong">
-        <exclude-pattern>src/Controllers/CharacteristicsController\.php</exclude-pattern>
-    </rule>
 </ruleset>

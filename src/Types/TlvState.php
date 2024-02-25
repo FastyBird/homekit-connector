@@ -15,10 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Types;
 
-use Consistence;
-use function intval;
-use function strval;
-
 /**
  * TLV state value types
  *
@@ -27,32 +23,19 @@ use function strval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class TlvState extends Consistence\Enum\Enum
+enum TlvState: int
 {
 
-	/**
-	 * Define states
-	 */
-	public const M1 = 0x01;
+	case M1 = 0x01;
 
-	public const M2 = 0x02;
+	case M2 = 0x02;
 
-	public const M3 = 0x03;
+	case M3 = 0x03;
 
-	public const M4 = 0x04;
+	case M4 = 0x04;
 
-	public const M5 = 0x05;
+	case M5 = 0x05;
 
-	public const M6 = 0x06;
-
-	public function getValue(): int
-	{
-		return intval(parent::getValue());
-	}
-
-	public function __toString(): string
-	{
-		return strval(self::getValue());
-	}
+	case M6 = 0x06;
 
 }

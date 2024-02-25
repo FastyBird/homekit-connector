@@ -15,10 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Types;
 
-use Consistence;
-use function intval;
-use function strval;
-
 /**
  * HAP accessory permissions type
  *
@@ -27,24 +23,11 @@ use function strval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class ClientPermission extends Consistence\Enum\Enum
+enum ClientPermission: int
 {
 
-	/**
-	 * Define permissions identifiers
-	 */
-	public const USER = 0;
+	case USER = 0;
 
-	public const ADMIN = 1;
-
-	public function getValue(): int
-	{
-		return intval(parent::getValue());
-	}
-
-	public function __toString(): string
-	{
-		return strval(self::getValue());
-	}
+	case ADMIN = 1;
 
 }

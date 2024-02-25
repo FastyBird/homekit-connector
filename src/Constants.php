@@ -52,4 +52,6 @@ final class Constants
 
 	public const VERSION_REGEXP = '/^(?:[0-9]*).(?:[0-9]*).(?:[0-9]*)$/';
 
+	public const SERVICE_IDENTIFIER = '/^(?P<type>[a-z_]+)(?:_(?P<cnt>[0-9]+){1})$/';
+
 }

@@ -15,12 +15,13 @@
 
 namespace FastyBird\Connector\HomeKit\Writers;
 
+use DateTimeInterface;
 use Exception;
-use FastyBird\Connector\HomeKit;
-use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Documents;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Types;
 use FastyBird\DateTimeFactory;
@@ -29,13 +30,14 @@ use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Events as DevicesEvents;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
-use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Psr\EventDispatcher as PsrEventDispatcher;
 use React\EventLoop;
+use function array_merge;
 
 /**
  * Exchange based properties writer
@@ -50,30 +52,26 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 
 	public const NAME = 'exchange';
 
-	/**
-	 * @throws ExchangeExceptions\InvalidArgument
-	 */
 	public function __construct(
-		MetadataDocuments\DevicesModule\Connector $connector,
-		Helpers\Entity $entityHelper,
+		Documents\Connectors\Connector $connector,
+		Helpers\MessageBuilder $messageBuilder,
 		Queue\Queue $queue,
+		Protocol\Driver $accessoryDriver,
 		DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
 		DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
 		DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
 		DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
-		Protocol\Driver $accessoryDriver,
-		DevicesUtilities\DevicePropertiesStates $devicePropertiesStatesManager,
-		DevicesUtilities\ChannelPropertiesStates $channelPropertiesStatesManager,
+		DevicesModels\States\Async\DevicePropertiesManager $devicePropertiesStatesManager,
+		DevicesModels\States\Async\ChannelPropertiesManager $channelPropertiesStatesManager,
 		DateTimeFactory\Factory $dateTimeFactory,
 		EventLoop\LoopInterface $eventLoop,
-		private readonly HomeKit\Logger $logger,
 		private readonly ExchangeConsumers\Container $consumer,
 		private readonly PsrEventDispatcher\EventDispatcherInterface|null $dispatcher = null,
 	)
 	{
 		parent::__construct(
 			$connector,
-			$entityHelper,
+			$messageBuilder,
 			$queue,
 			$devicesConfigurationRepository,
 			$devicesPropertiesConfigurationRepository,
@@ -121,147 +119,253 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 	 * @throws Exception
 	 */
 	public function consume(
-		MetadataTypes\ModuleSource|MetadataTypes\PluginSource|MetadataTypes\ConnectorSource|MetadataTypes\AutomatorSource $source,
-		MetadataTypes\RoutingKey $routingKey,
-		MetadataDocuments\Document|null $entity,
+		MetadataTypes\Sources\Source $source,
+		string $routingKey,
+		MetadataDocuments\Document|null $document,
 	): void
 	{
 		if (
-			$entity instanceof MetadataDocuments\DevicesModule\DeviceMappedProperty
-			|| $entity instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty
-			|| $entity instanceof MetadataDocuments\DevicesModule\ChannelMappedProperty
-			|| $entity instanceof MetadataDocuments\DevicesModule\ChannelVariableProperty
+			$document instanceof DevicesDocuments\States\Devices\Properties\Property
+			|| $document instanceof DevicesDocuments\States\Channels\Properties\Property
 		) {
-			if (
-				$entity instanceof MetadataDocuments\DevicesModule\DeviceMappedProperty
-				|| $entity instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty
-			) {
-				$findDeviceQuery = new DevicesQueries\Configuration\FindDevices();
-				$findDeviceQuery->byId($entity->getDevice());
-				$findDeviceQuery->byType(Entities\HomeKitDevice::TYPE);
+			if ($document instanceof DevicesDocuments\States\Devices\Properties\Property) {
+				$findDeviceQuery = new Queries\Configuration\FindDevices();
+				$findDeviceQuery->forConnector($this->connector);
+				$findDeviceQuery->byId($document->getDevice());
 
-				$device = $this->devicesConfigurationRepository->findOneBy($findDeviceQuery);
+				$device = $this->devicesConfigurationRepository->findOneBy(
+					$findDeviceQuery,
+					Documents\Devices\Device::class,
+				);
 
 				if ($device === null) {
-					$this->logger->error(
-						'Device for received device property message could not be loaded',
-						[
-							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-							'type' => 'exchange-writer',
-							'message' => [
-								'source' => $source->getValue(),
-								'routing_key' => $routingKey->getValue(),
-								'entity' => $entity->toArray(),
-							],
-							'property' => $entity->toArray(),
-						],
-					);
-
 					return;
 				}
 
-				if (!$device->getConnector()->equals($this->connector->getId())) {
+				$findPropertyQuery = new Queries\Configuration\FindDeviceProperties();
+				$findPropertyQuery->byId($document->getId());
+				$findPropertyQuery->forDevice($device);
+
+				$property = $this->devicesPropertiesConfigurationRepository->findOneBy($findPropertyQuery);
+
+				if ($property === null) {
+					return;
+				}
+
+				if ($property instanceof DevicesDocuments\Devices\Properties\Mapped) {
+					$this->queue->append(
+						$this->messageBuilder->create(
+							Queue\Messages\WriteDevicePropertyState::class,
+							[
+								'connector' => $device->getConnector(),
+								'device' => $device->getId(),
+								'property' => $document->getId(),
+								'state' => array_merge(
+									$document->getRead()->toArray(),
+									[
+										'id' => $document->getId(),
+										'valid' => $document->isValid(),
+										'pending' => $document->getPending() instanceof DateTimeInterface
+											? $document->getPending()->format(DateTimeInterface::ATOM)
+											: $document->getPending(),
+									],
+								),
+							],
+						),
+					);
+				} elseif ($property instanceof DevicesDocuments\Devices\Properties\Dynamic) {
+					$this->queue->append(
+						$this->messageBuilder->create(
+							Queue\Messages\WriteDevicePropertyState::class,
+							[
+								'connector' => $device->getConnector(),
+								'device' => $device->getId(),
+								'property' => $document->getId(),
+								'state' => array_merge(
+									$document->getGet()->toArray(),
+									[
+										'id' => $document->getId(),
+										'valid' => $document->isValid(),
+										'pending' => $document->getPending() instanceof DateTimeInterface
+											? $document->getPending()->format(DateTimeInterface::ATOM)
+											: $document->getPending(),
+									],
+								),
+							],
+						),
+					);
+				}
+			} else {
+				$findChannelQuery = new Queries\Configuration\FindChannels();
+				$findChannelQuery->byId($document->getChannel());
+
+				$channel = $this->channelsConfigurationRepository->findOneBy(
+					$findChannelQuery,
+					Documents\Channels\Channel::class,
+				);
+
+				if ($channel === null) {
+					return;
+				}
+
+				$findDeviceQuery = new Queries\Configuration\FindDevices();
+				$findDeviceQuery->forConnector($this->connector);
+				$findDeviceQuery->byId($channel->getDevice());
+
+				$device = $this->devicesConfigurationRepository->findOneBy(
+					$findDeviceQuery,
+					Documents\Devices\Device::class,
+				);
+
+				if ($device === null) {
+					return;
+				}
+
+				$findPropertyQuery = new DevicesQueries\Configuration\FindChannelProperties();
+				$findPropertyQuery->byId($document->getId());
+				$findPropertyQuery->forChannel($channel);
+
+				$property = $this->channelsPropertiesConfigurationRepository->findOneBy($findPropertyQuery);
+
+				if ($property === null) {
+					return;
+				}
+
+				if ($property instanceof DevicesDocuments\Channels\Properties\Mapped) {
+					$this->queue->append(
+						$this->messageBuilder->create(
+							Queue\Messages\WriteChannelPropertyState::class,
+							[
+								'connector' => $device->getConnector(),
+								'device' => $device->getId(),
+								'channel' => $channel->getId(),
+								'property' => $document->getId(),
+								'state' => array_merge(
+									$document->getRead()->toArray(),
+									[
+										'id' => $document->getId(),
+										'valid' => $document->isValid(),
+										'pending' => $document->getPending() instanceof DateTimeInterface
+											? $document->getPending()->format(DateTimeInterface::ATOM)
+											: $document->getPending(),
+									],
+								),
+							],
+						),
+					);
+				} elseif ($property instanceof DevicesDocuments\Channels\Properties\Dynamic) {
+					$this->queue->append(
+						$this->messageBuilder->create(
+							Queue\Messages\WriteChannelPropertyState::class,
+							[
+								'connector' => $device->getConnector(),
+								'device' => $device->getId(),
+								'channel' => $channel->getId(),
+								'property' => $document->getId(),
+								'state' => array_merge(
+									$document->getGet()->toArray(),
+									[
+										'id' => $document->getId(),
+										'valid' => $document->isValid(),
+										'pending' => $document->getPending() instanceof DateTimeInterface
+											? $document->getPending()->format(DateTimeInterface::ATOM)
+											: $document->getPending(),
+									],
+								),
+							],
+						),
+					);
+				}
+			}
+		} elseif (
+			$document instanceof DevicesDocuments\Devices\Properties\Variable
+			|| $document instanceof DevicesDocuments\Channels\Properties\Variable
+		) {
+			if ($document instanceof DevicesDocuments\Devices\Properties\Variable) {
+				$findDeviceQuery = new Queries\Configuration\FindDevices();
+				$findDeviceQuery->forConnector($this->connector);
+				$findDeviceQuery->byId($document->getDevice());
+
+				$device = $this->devicesConfigurationRepository->findOneBy(
+					$findDeviceQuery,
+					Documents\Devices\Device::class,
+				);
+
+				if ($device === null) {
 					return;
 				}
 
 				$this->queue->append(
-					$this->entityHelper->create(
-						Entities\Messages\WriteDevicePropertyState::class,
+					$this->messageBuilder->create(
+						Queue\Messages\WriteDevicePropertyState::class,
 						[
 							'connector' => $device->getConnector(),
 							'device' => $device->getId(),
-							'property' => $entity->getId(),
+							'property' => $document->getId(),
 						],
 					),
 				);
 
 			} else {
-				$findChannelQuery = new DevicesQueries\Configuration\FindChannels();
-				$findChannelQuery->byId($entity->getChannel());
-				$findChannelQuery->byType(Entities\HomeKitChannel::TYPE);
+				$findChannelQuery = new Queries\Configuration\FindChannels();
+				$findChannelQuery->byId($document->getChannel());
 
-				$channel = $this->channelsConfigurationRepository->findOneBy($findChannelQuery);
+				$channel = $this->channelsConfigurationRepository->findOneBy(
+					$findChannelQuery,
+					Documents\Channels\Channel::class,
+				);
 
 				if ($channel === null) {
-					$this->logger->error(
-						'Channel for received channel property message could not be loaded',
-						[
-							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-							'type' => 'exchange-writer',
-							'message' => [
-								'source' => $source->getValue(),
-								'routing_key' => $routingKey->getValue(),
-								'entity' => $entity->toArray(),
-							],
-							'property' => $entity->toArray(),
-						],
-					);
-
 					return;
 				}
 
-				$findDeviceQuery = new DevicesQueries\Configuration\FindDevices();
+				$findDeviceQuery = new Queries\Configuration\FindDevices();
+				$findDeviceQuery->forConnector($this->connector);
 				$findDeviceQuery->byId($channel->getDevice());
-				$findDeviceQuery->byType(Entities\HomeKitDevice::TYPE);
 
-				$device = $this->devicesConfigurationRepository->findOneBy($findDeviceQuery);
+				$device = $this->devicesConfigurationRepository->findOneBy(
+					$findDeviceQuery,
+					Documents\Devices\Device::class,
+				);
 
 				if ($device === null) {
-					$this->logger->error(
-						'Device for received channel property message could not be loaded',
-						[
-							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-							'type' => 'exchange-writer',
-							'message' => [
-								'source' => $source->getValue(),
-								'routing_key' => $routingKey->getValue(),
-								'entity' => $entity->toArray(),
-							],
-							'property' => $entity->toArray(),
-						],
-					);
-
-					return;
-				}
-
-				if (!$device->getConnector()->equals($this->connector->getId())) {
 					return;
 				}
 
 				$this->queue->append(
-					$this->entityHelper->create(
-						Entities\Messages\WriteChannelPropertyState::class,
+					$this->messageBuilder->create(
+						Queue\Messages\WriteChannelPropertyState::class,
 						[
 							'connector' => $device->getConnector(),
 							'device' => $device->getId(),
 							'channel' => $channel->getId(),
-							'property' => $entity->getId(),
+							'property' => $document->getId(),
 						],
 					),
 				);
 			}
-		} elseif ($entity instanceof MetadataDocuments\DevicesModule\ConnectorVariableProperty) {
-			if (!$entity->getConnector()->equals($this->connector->getId())) {
+		} elseif ($document instanceof DevicesDocuments\Connectors\Properties\Variable) {
+			if (!$document->getConnector()->equals($this->connector->getId())) {
 				return;
 			}
 
 			if (
-				$entity->getIdentifier() === Types\ConnectorPropertyIdentifier::PAIRED
-				|| $entity->getIdentifier() === Types\ConnectorPropertyIdentifier::CONFIG_VERSION
+				$document->getIdentifier() === Types\ConnectorPropertyIdentifier::PAIRED->value
+				|| $document->getIdentifier() === Types\ConnectorPropertyIdentifier::CONFIG_VERSION->value
 			) {
 				$this->dispatcher?->dispatch(
 					new DevicesEvents\TerminateConnector(
-						MetadataTypes\ConnectorSource::get(MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT),
-						'Connector configuration changed, services have to restarted',
+						MetadataTypes\Sources\Connector::HOMEKIT,
+						'Connector configuration changed, services have to be restarted',
 					),
 				);
 			}
 
-			if ($entity->getIdentifier() === Types\ConnectorPropertyIdentifier::SHARED_KEY) {
+			if ($document->getIdentifier() === Types\ConnectorPropertyIdentifier::SHARED_KEY->value) {
 				$this->dispatcher?->dispatch(
 					new DevicesEvents\TerminateConnector(
-						MetadataTypes\ConnectorSource::get(MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT),
-						'Connector shared key changed, services have to restarted',
+						MetadataTypes\Sources\Connector::HOMEKIT,
+						'Connector shared key changed, services have to be restarted',
 					),
 				);
 			}

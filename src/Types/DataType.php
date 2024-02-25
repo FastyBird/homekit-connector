@@ -15,9 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Types;
 
-use Consistence;
-use function strval;
-
 /**
  * HAP data type
  *
@@ -26,40 +23,27 @@ use function strval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class DataType extends Consistence\Enum\Enum
+enum DataType: string
 {
 
-	/**
-	 * Define data types
-	 */
-	public const BOOLEAN = 'bool';
+	case BOOLEAN = 'bool';
 
-	public const INT = 'int';
+	case INT = 'int';
 
-	public const FLOAT = 'float';
+	case FLOAT = 'float';
 
-	public const STRING = 'string';
+	case STRING = 'string';
 
-	public const UINT8 = 'uint8';
+	case UINT8 = 'uint8';
 
-	public const UINT16 = 'uint16';
+	case UINT16 = 'uint16';
 
-	public const UINT32 = 'uint32';
+	case UINT32 = 'uint32';
 
-	public const UINT64 = 'uint64';
+	case UINT64 = 'uint64';
 
-	public const DATA = 'data';
+	case DATA = 'data';
 
-	public const TLV8 = 'tlv8';
-
-	public function getValue(): string
-	{
-		return strval(parent::getValue());
-	}
-
-	public function __toString(): string
-	{
-		return strval(self::getValue());
-	}
+	case TLV8 = 'tlv8';
 
 }

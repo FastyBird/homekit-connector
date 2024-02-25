@@ -15,7 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Helpers;
 
-use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Protocol;
 use Nette;
 use SplObjectStorage;
 
@@ -34,7 +34,7 @@ final class IidManager
 
 	private int $counter;
 
-	/** @var SplObjectStorage<Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic, int> */
+	/** @var SplObjectStorage<Protocol\Accessories\Accessory|Protocol\Services\Service|Protocol\Characteristics\Characteristic, int> */
 	private SplObjectStorage $storage;
 
 	public function __construct()
@@ -48,7 +48,7 @@ final class IidManager
 	 * Assign an IID to given object. Print warning if already assigned
 	 */
 	public function assign(
-		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object,
+		Protocol\Accessories\Accessory|Protocol\Services\Service|Protocol\Characteristics\Characteristic $object,
 	): void
 	{
 		if ($this->storage->contains($object)) {
@@ -64,7 +64,7 @@ final class IidManager
 	 */
 	public function getObject(
 		int $iid,
-	): Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic|null
+	): Protocol\Accessories\Accessory|Protocol\Services\Service|Protocol\Characteristics\Characteristic|null
 	{
 		$this->storage->rewind();
 
@@ -81,7 +81,7 @@ final class IidManager
 	 * Get the IID assigned to the given object
 	 */
 	public function getIid(
-		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object,
+		Protocol\Accessories\Accessory|Protocol\Services\Service|Protocol\Characteristics\Characteristic $object,
 	): int|null
 	{
 		$this->storage->rewind();
@@ -97,7 +97,7 @@ final class IidManager
 	 * Remove an object from the IID list
 	 */
 	public function removeObject(
-		Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic $object,
+		Protocol\Accessories\Accessory|Protocol\Services\Service|Protocol\Characteristics\Characteristic $object,
 	): int|null
 	{
 		$iid = $this->getIid($object);
@@ -114,7 +114,7 @@ final class IidManager
 	 */
 	public function removeIid(
 		int $iid,
-	): Entities\Protocol\Accessory|Entities\Protocol\Service|Entities\Protocol\Characteristic|null
+	): Protocol\Accessories\Accessory|Protocol\Services\Service|Protocol\Characteristics\Characteristic|null
 	{
 		$object = $this->getObject($iid);
 

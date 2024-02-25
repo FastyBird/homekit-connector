@@ -15,9 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Types;
 
-use Consistence;
-use function strval;
-
 /**
  * HAP accessory permissions type
  *
@@ -26,30 +23,17 @@ use function strval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class CharacteristicUnit extends Consistence\Enum\Enum
+enum CharacteristicUnit: string
 {
 
-	/**
-	 * Define permissions identifiers
-	 */
-	public const CELSIUS = 'celsius';
+	case CELSIUS = 'celsius';
 
-	public const PERCENTAGE = 'percentage';
+	case PERCENTAGE = 'percentage';
 
-	public const ARC_DEGREES = 'arcdegrees';
+	case ARC_DEGREES = 'arcdegrees';
 
-	public const LUX = 'lux';
+	case LUX = 'lux';
 
-	public const SECONDS = 'seconds';
-
-	public function getValue(): string
-	{
-		return strval(parent::getValue());
-	}
-
-	public function __toString(): string
-	{
-		return strval(self::getValue());
-	}
+	case SECONDS = 'seconds';
 
 }

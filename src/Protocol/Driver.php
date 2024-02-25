@@ -15,8 +15,8 @@
 
 namespace FastyBird\Connector\HomeKit\Protocol;
 
-use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Types;
 use Nette;
 use Ramsey\Uuid;
@@ -35,7 +35,7 @@ class Driver
 
 	use Nette\SmartObject;
 
-	/** @var SplObjectStorage<Entities\Protocol\Accessory, null> */
+	/** @var SplObjectStorage<Protocol\Accessories\Accessory, null> */
 	private SplObjectStorage $accessories;
 
 	public function __construct()
@@ -48,11 +48,11 @@ class Driver
 		$this->accessories = new SplObjectStorage();
 	}
 
-	public function getBridge(Uuid\UuidInterface $connectorId): Entities\Protocol\Bridge|null
+	public function getBridge(Uuid\UuidInterface $connectorId): Accessories\Bridge|null
 	{
 		foreach ($this->getAccessories() as $accessory) {
 			if (
-				$accessory instanceof Entities\Protocol\Bridge
+				$accessory instanceof Accessories\Bridge
 				&& $accessory->getConnector()->getId()->equals($connectorId)
 			) {
 				return $accessory;
@@ -66,12 +66,12 @@ class Driver
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 */
-	public function addBridge(Entities\Protocol\Bridge $accessory): void
+	public function addBridge(Accessories\Bridge $accessory): void
 	{
 		$this->accessories->rewind();
 
 		foreach ($this->accessories as $existingAccessory) {
-			if ($existingAccessory->getCategory()->equalsValue(Types\AccessoryCategory::BRIDGE)) {
+			if ($existingAccessory->getCategory() === Types\AccessoryCategory::BRIDGE) {
 				throw new Exceptions\InvalidState('There is already registered bridge');
 			}
 		}
@@ -83,13 +83,13 @@ class Driver
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 */
-	public function addBridgedAccessory(Entities\Protocol\Device $accessory): void
+	public function addBridgedAccessory(Accessories\Generic $accessory): void
 	{
 		$this->accessories->rewind();
 
 		foreach ($this->accessories as $existingAccessory) {
-			if ($existingAccessory->getCategory()->equalsValue(Types\AccessoryCategory::BRIDGE)) {
-				if (!$existingAccessory instanceof Entities\Protocol\Bridge) {
+			if ($existingAccessory->getCategory() === Types\AccessoryCategory::BRIDGE) {
+				if (!$existingAccessory instanceof Accessories\Bridge) {
 					throw new Exceptions\InvalidState(
 						'Registered device in bridge category is not instance of bridge accessory',
 					);
@@ -113,7 +113,7 @@ class Driver
 	/**
 	 * @throws Exceptions\InvalidArgument
 	 */
-	public function addAccessory(Entities\Protocol\Accessory $accessory): void
+	public function addAccessory(Accessories\Accessory $accessory): void
 	{
 		if ($accessory->getAid() === null) {
 			$this->accessories->rewind();
@@ -155,7 +155,7 @@ class Driver
 	}
 
 	/**
-	 * @return array<Entities\Protocol\Accessory>
+	 * @return array<Protocol\Accessories\Accessory>
 	 */
 	public function getAccessories(): array
 	{
@@ -170,7 +170,7 @@ class Driver
 		return $accessories;
 	}
 
-	public function findAccessory(Uuid\UuidInterface $id): Entities\Protocol\Accessory|null
+	public function findAccessory(Uuid\UuidInterface $id): Accessories\Accessory|null
 	{
 		$this->accessories->rewind();
 
@@ -179,7 +179,7 @@ class Driver
 				return $accessory;
 			}
 
-			if ($accessory instanceof Entities\Protocol\Bridge) {
+			if ($accessory instanceof Accessories\Bridge) {
 				foreach ($accessory->getAccessories() as $bridgeAccessory) {
 					if ($bridgeAccessory->getId()->equals($id)) {
 						return $bridgeAccessory;
@@ -200,7 +200,7 @@ class Driver
 
 		foreach ($this->getAccessories() as $accessory) {
 			if (
-				$accessory instanceof Entities\Protocol\Bridge
+				$accessory instanceof Accessories\Bridge
 				&& $accessory->getConnector()->getId()->equals($connectorId)
 			) {
 				$accessories[] = $accessory->toHap();
@@ -208,7 +208,7 @@ class Driver
 				foreach ($accessory->getAccessories() as $bridgeAccessory) {
 					$accessories[] = $bridgeAccessory->toHap();
 				}
-			} elseif ($accessory instanceof Entities\Protocol\Device) {
+			} elseif ($accessory instanceof Accessories\Generic) {
 				$accessories[] = $accessory->toHap();
 			}
 		}

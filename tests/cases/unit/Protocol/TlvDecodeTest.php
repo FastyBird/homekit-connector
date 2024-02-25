@@ -6,6 +6,8 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Types;
 use PHPUnit\Framework\TestCase;
+use TypeError;
+use ValueError;
 use function array_merge;
 use function ord;
 use function pack;
@@ -15,6 +17,8 @@ final class TlvDecodeTest extends TestCase
 
 	/**
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function testDecode(): void
 	{
@@ -39,8 +43,8 @@ final class TlvDecodeTest extends TestCase
 		self::assertCount(1, $result);
 		self::assertSame(
 			[
-				Types\TlvCode::STATE => 3,
-				Types\TlvCode::IDENTIFIER => 'hello',
+				Types\TlvCode::STATE->value => 3,
+				Types\TlvCode::IDENTIFIER->value => 'hello',
 			],
 			$result[0],
 		);
@@ -48,6 +52,8 @@ final class TlvDecodeTest extends TestCase
 
 	/**
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function testDecodeWithMerge(): void
 	{
@@ -105,9 +111,9 @@ final class TlvDecodeTest extends TestCase
 		self::assertCount(1, $result);
 		self::assertSame(
 			[
-				Types\TlvCode::STATE => 3,
-				Types\TlvCode::CERTIFICATE => $certificate,
-				Types\TlvCode::IDENTIFIER => 'hello',
+				Types\TlvCode::STATE->value => 3,
+				Types\TlvCode::CERTIFICATE->value => $certificate,
+				Types\TlvCode::IDENTIFIER->value => 'hello',
 			],
 			$result[0],
 		);
@@ -115,6 +121,8 @@ final class TlvDecodeTest extends TestCase
 
 	/**
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function testDecodeSeparated(): void
 	{
@@ -151,15 +159,15 @@ final class TlvDecodeTest extends TestCase
 		self::assertCount(2, $result);
 		self::assertSame(
 			[
-				Types\TlvCode::IDENTIFIER => 'hello',
-				Types\TlvCode::PERMISSIONS => 0,
+				Types\TlvCode::IDENTIFIER->value => 'hello',
+				Types\TlvCode::PERMISSIONS->value => 0,
 			],
 			$result[0],
 		);
 		self::assertSame(
 			[
-				Types\TlvCode::IDENTIFIER => 'world',
-				Types\TlvCode::PERMISSIONS => 1,
+				Types\TlvCode::IDENTIFIER->value => 'world',
+				Types\TlvCode::PERMISSIONS->value => 1,
 			],
 			$result[1],
 		);
@@ -167,6 +175,8 @@ final class TlvDecodeTest extends TestCase
 
 	/**
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function testDecodeInvalidStateValue(): void
 	{
@@ -185,6 +195,8 @@ final class TlvDecodeTest extends TestCase
 
 	/**
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function testDecodeInvalidContentSize(): void
 	{
@@ -206,6 +218,8 @@ final class TlvDecodeTest extends TestCase
 
 	/**
 	 * @throws Exceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function testDecodeInvalidContentValue(): void
 	{

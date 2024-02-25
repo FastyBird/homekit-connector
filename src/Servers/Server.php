@@ -27,6 +27,11 @@ interface Server
 {
 
 	/**
+	 * Initialize server
+	 */
+	public function initialize(): void;
+
+	/**
 	 * Create server
 	 */
 	public function connect(): void;

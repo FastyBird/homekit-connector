@@ -15,9 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Types;
 
-use Consistence;
-use function strval;
-
 /**
  * HAP accessory permissions type
  *
@@ -26,34 +23,21 @@ use function strval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class CharacteristicPermission extends Consistence\Enum\Enum
+enum CharacteristicPermission: string
 {
 
-	/**
-	 * Define permissions identifiers
-	 */
-	public const HIDDEN = 'hd';
+	case HIDDEN = 'hd';
 
-	public const NOTIFY = 'ev';
+	case NOTIFY = 'ev';
 
-	public const READ = 'pr';
+	case READ = 'pr';
 
-	public const WRITE = 'pw';
+	case WRITE = 'pw';
 
-	public const WRITE_RESPONSE = 'wr';
+	case WRITE_RESPONSE = 'wr';
 
-	public const TIMED_WRITE = 'tw';
+	case TIMED_WRITE = 'tw';
 
-	public const ADDITIONAL_AUTHORIZATION = 'aa';
-
-	public function getValue(): string
-	{
-		return strval(parent::getValue());
-	}
-
-	public function __toString(): string
-	{
-		return strval(self::getValue());
-	}
+	case ADDITIONAL_AUTHORIZATION = 'aa';
 
 }

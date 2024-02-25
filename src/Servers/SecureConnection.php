@@ -17,13 +17,14 @@ namespace FastyBird\Connector\HomeKit\Servers;
 
 use Evenement;
 use FastyBird\Connector\HomeKit;
-use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
-use FastyBird\Library\Metadata\Documents as MetadataDocuments;
+use FastyBird\Connector\HomeKit\Documents;
+use FastyBird\Library\Application\Helpers as ApplicationHelpers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Nette;
 use React\Socket;
 use React\Stream;
 use SodiumException;
+use function array_chunk;
 use function array_merge;
 use function array_pop;
 use function array_splice;
@@ -60,6 +61,8 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 
 	private const INFO_CONTROL_READ = 'Control-Read-Encryption-Key';
 
+	private const ENCRYPTED_CHUNK_MAX_SIZE = 1_024;
+
 	private int $securedRequestCnt = 0;
 
 	private int $securedResponsesCnt = 0;
@@ -71,7 +74,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	private string|null $decryptionKey = null;
 
 	public function __construct(
-		private readonly MetadataDocuments\DevicesModule\Connector $connector,
+		private readonly Documents\Connectors\Connector $connector,
 		string|null $sharedKey,
 		private readonly Socket\ConnectionInterface $connection,
 		private readonly HomeKit\Logger $logger,
@@ -109,6 +112,9 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				self::INFO_CONTROL_WRITE,
 				self::SALT_CONTROL,
 			);
+		} else {
+			$this->encryptionKey = null;
+			$this->decryptionKey = null;
 		}
 	}
 
@@ -136,9 +142,17 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 	{
 		if (is_string($data) && $this->securedRequest) {
 			$data = $this->encodeData($data);
-		}
 
-		return $this->connection->write($data);
+			foreach ($data as $chunk) {
+				if (!$this->connection->write($chunk)) {
+					return false;
+				}
+			}
+
+			return true;
+		} else {
+			return $this->connection->write($data);
+		}
 	}
 
 	public function pause(): void
@@ -217,9 +231,9 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 			$this->logger->error(
 				'Data decryption failed',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'secure-connection',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
@@ -230,55 +244,59 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 		return $receivedData;
 	}
 
-	private function encodeData(string $data): string
+	/**
+	 * @return array<string>
+	 */
+	private function encodeData(string $data): array
 	{
 		if ($this->encryptionKey === null) {
-			return $data;
+			return [$data];
 		}
 
 		$binaryData = unpack('C*', $data);
 
 		if (!is_array($binaryData) || count($binaryData) <= self::AUTH_TAG_LENGTH) {
-			return $data;
+			return [$data];
 		}
 
-		$dataLength = unpack('C*', pack('v', count($binaryData)));
+		$chunkedBinaryData = array_chunk($binaryData, self::ENCRYPTED_CHUNK_MAX_SIZE);
 
-		if ($dataLength === false) {
-			return $data;
-		}
+		$fragments = [];
 
-		$nonce = array_merge(
-			[0, 0, 0, 0],
-			array_values((array) unpack('C*', pack('v', $this->securedResponsesCnt))) + [0, 0, 0, 0, 0, 0, 0, 0],
-		);
+		foreach ($chunkedBinaryData as $chunk) {
+			$dataLength = pack('v', count($chunk));
 
-		try {
-			$encryptedData = sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
-				pack('C*', ...$binaryData),
-				pack('C*', ...$dataLength),
-				pack('C*', ...$nonce),
-				$this->encryptionKey,
-			);
-
+			$nonce = pack('C*', 0, 0, 0, 0) . pack('P', $this->securedResponsesCnt);
 			$this->securedResponsesCnt++;
 
-			return pack('C*', ...$dataLength) . $encryptedData;
-		} catch (SodiumException $ex) {
-			$this->logger->error(
-				'Data encryption failed',
-				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'secure-connection',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
-					'connector' => [
-						'id' => $this->connector->getId()->toString(),
+			try {
+				$encryptedData = sodium_crypto_aead_chacha20poly1305_ietf_encrypt(
+					pack('C*', ...$chunk),
+					$dataLength,
+					$nonce,
+					$this->encryptionKey,
+				);
+
+				$fragments[] = $dataLength . $encryptedData;
+
+			} catch (SodiumException $ex) {
+				$this->logger->error(
+					'Data encryption failed',
+					[
+						'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+						'type' => 'secure-connection',
+						'exception' => ApplicationHelpers\Logger::buildException($ex),
+						'connector' => [
+							'id' => $this->connector->getId()->toString(),
+						],
 					],
-				],
-			);
+				);
+
+				return [$data];
+			}
 		}
 
-		return $data;
+		return $fragments;
 	}
 
 }

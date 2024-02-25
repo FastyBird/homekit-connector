@@ -15,9 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Types;
 
-use Consistence;
-use FastyBird\Library\Metadata\Types as MetadataTypes;
-use function strval;
+use FastyBird\Module\Devices\Types as DevicesTypes;
 
 /**
  * Connector property identifier types
@@ -27,42 +25,29 @@ use function strval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class ConnectorPropertyIdentifier extends Consistence\Enum\Enum
+enum ConnectorPropertyIdentifier: string
 {
 
-	/**
-	 * Define connector properties identifiers
-	 */
-	public const PORT = MetadataTypes\ConnectorPropertyIdentifier::IDENTIFIER_PORT;
+	case PORT = DevicesTypes\ConnectorPropertyIdentifier::PORT->value;
 
-	public const PIN_CODE = 'pin_code';
+	case PIN_CODE = 'pin_code';
 
-	public const MAC_ADDRESS = 'mac_address';
+	case MAC_ADDRESS = 'mac_address';
 
-	public const SETUP_ID = 'setup_id';
+	case SETUP_ID = 'setup_id';
 
-	public const CONFIG_VERSION = 'configuration_version';
+	case CONFIG_VERSION = 'configuration_version';
 
-	public const PAIRED = 'paired';
+	case PAIRED = 'paired';
 
-	public const SERVER_SECRET = 'server_secret';
+	case SERVER_SECRET = 'server_secret';
 
-	public const CLIENT_PUBLIC_KEY = 'client_public_key';
+	case CLIENT_PUBLIC_KEY = 'client_public_key';
 
-	public const SHARED_KEY = 'shared_key';
+	case SHARED_KEY = 'shared_key';
 
-	public const HASHING_KEY = 'hashing_key';
+	case HASHING_KEY = 'hashing_key';
 
-	public const XHM_URI = 'xhm_uri';
-
-	public function getValue(): string
-	{
-		return strval(parent::getValue());
-	}
-
-	public function __toString(): string
-	{
-		return strval(self::getValue());
-	}
+	case XHM_URI = 'xhm_uri';
 
 }

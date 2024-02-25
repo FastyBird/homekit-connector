@@ -25,7 +25,7 @@ use Ramsey\Uuid;
 /**
  * Find clients entities query
  *
- * @template T of Entities\Client
+ * @template T of Entities\Clients\Client
  * @extends  DoctrineOrmQuery\QueryObject<T>
  *
  * @package        FastyBird:HomeKitConnector!

@@ -20,7 +20,7 @@ use FastyBird\Connector\HomeKit\Events;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
+use FastyBird\Library\Application\Helpers as ApplicationHelpers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
@@ -72,9 +72,9 @@ final class Router
 			$this->logger->warning(
 				'Request ended with error',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'router-middleware',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 					'request' => [
 						'method' => $request->getMethod(),
 						'path' => $request->getUri()->getPath(),
@@ -86,15 +86,15 @@ final class Router
 
 			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
-				Types\Representation::STATUS => $ex->getError()->getValue(),
+				Types\Representation::STATUS->value => $ex->getError()->value,
 			])));
 		} catch (SlimRouterExceptions\HttpException $ex) {
 			$this->logger->warning(
 				'Received invalid HTTP request',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'router-middleware',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 					'request' => [
 						'method' => $request->getMethod(),
 						'path' => $request->getUri()->getPath(),
@@ -106,15 +106,15 @@ final class Router
 
 			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
-				Types\Representation::STATUS => Types\ServerStatus::SERVICE_COMMUNICATION_FAILURE,
+				Types\Representation::STATUS->value => Types\ServerStatus::SERVICE_COMMUNICATION_FAILURE->value,
 			])));
 		} catch (Throwable $ex) {
 			$this->logger->error(
 				'An unhandled error occurred during handling server HTTP request',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'router-middleware',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -122,7 +122,7 @@ final class Router
 
 			$response = $response->withHeader('Content-Type', Servers\Http::JSON_CONTENT_TYPE);
 			$response = $response->withBody(SlimRouter\Http\Stream::fromBodyString(Utils\Json::encode([
-				Types\Representation::STATUS => Types\ServerStatus::SERVICE_COMMUNICATION_FAILURE,
+				Types\Representation::STATUS->value => Types\ServerStatus::SERVICE_COMMUNICATION_FAILURE->value,
 			])));
 		}
 

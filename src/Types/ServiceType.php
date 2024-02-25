@@ -15,9 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Types;
 
-use Consistence;
-use function strval;
-
 /**
  * HAP accessory service type types
  *
@@ -26,106 +23,95 @@ use function strval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class ServiceType extends Consistence\Enum\Enum
+enum ServiceType: string
 {
 
-	/**
-	 * Define statuses
-	 */
-	public const ACCESSORY_INFORMATION = 'AccessoryInformation';
+	case ACCESSORY_INFORMATION = 'AccessoryInformation';
 
-	public const AIR_PURIFIER = 'AirPurifier';
+	case AIR_PURIFIER = 'AirPurifier';
 
-	public const AIR_QUALITY_SENSOR = 'AirQualitySensor';
+	case AIR_QUALITY_SENSOR = 'AirQualitySensor';
 
-	public const BATTERY_SERVICE = 'BatteryService';
+	case BATTERY = 'BatteryService';
 
-	public const CAMERA_RTP_STREAM_MANAGEMENT = 'CameraRTPStreamManagement';
+	case CAMERA_RTP_STREAM_MANAGEMENT = 'CameraRTPStreamManagement';
 
-	public const CARBON_DIOXIDE_SENSOR = 'CarbonDioxideSensor';
+	case CARBON_DIOXIDE_SENSOR = 'CarbonDioxideSensor';
 
-	public const CARBON_MONOXIDE_SENSOR = 'CarbonMonoxideSensor';
+	case CARBON_MONOXIDE_SENSOR = 'CarbonMonoxideSensor';
 
-	public const CONTACT_SENSOR = 'ContactSensor';
+	case CONTACT_SENSOR = 'ContactSensor';
 
-	public const DOOR = 'Door';
+	case DOOR = 'Door';
 
-	public const DOORBELL = 'Doorbell';
+	case DOORBELL = 'Doorbell';
 
-	public const FAN = 'Fan';
+	case FAN = 'Fan';
 
-	public const FAN_V2 = 'Fanv2';
+	case FAN_V2 = 'Fanv2';
 
-	public const FAUCET = 'Faucet';
+	case FAUCET = 'Faucet';
 
-	public const FILTER_MAINTENANCE = 'FilterMaintenance';
+	case FILTER_MAINTENANCE = 'FilterMaintenance';
 
-	public const GARAGE_DOOR_OPENER = 'GarageDoorOpener';
+	case GARAGE_DOOR_OPENER = 'GarageDoorOpener';
 
-	public const HEATER_COOLER = 'HeaterCooler';
+	case HEATER_COOLER = 'HeaterCooler';
 
-	public const HUMIDIFIER_DEHUMIDIFIER = 'HumidifierDehumidifier';
+	case HUMIDIFIER_DEHUMIDIFIER = 'HumidifierDehumidifier';
 
-	public const HUMIDITY_SENSOR = 'HumiditySensor';
+	case HUMIDITY_SENSOR = 'HumiditySensor';
 
-	public const INPUT_SOURCE = 'InputSource';
+	case INPUT_SOURCE = 'InputSource';
 
-	public const IRRIGATION_SYSTEM = 'IrrigationSystem';
+	case IRRIGATION_SYSTEM = 'IrrigationSystem';
 
-	public const LEAK_SENSOR = 'LeakSensor';
+	case LEAK_SENSOR = 'LeakSensor';
 
-	public const LIGHT_SENSOR = 'LightSensor';
+	case LIGHT_SENSOR = 'LightSensor';
 
-	public const LIGHTBULB = 'Lightbulb';
+	case LIGHT_BULB = 'Lightbulb';
 
-	public const LOCK_MANAGEMENT = 'LockManagement';
+	case LOCK_MANAGEMENT = 'LockManagement';
 
-	public const LOCK_MECHANISM = 'LockMechanism';
+	case LOCK_MECHANISM = 'LockMechanism';
 
-	public const MICROPHONE = 'Microphone';
+	case MICROPHONE = 'Microphone';
 
-	public const MOTION_SENSOR = 'MotionSensor';
+	case MOTION_SENSOR = 'MotionSensor';
 
-	public const OCCUPANCY_SENSOR = 'OccupancySensor';
+	case OCCUPANCY_SENSOR = 'OccupancySensor';
 
-	public const OUTLET = 'Outlet';
+	case OUTLET = 'Outlet';
 
-	public const SECURITY_SYSTEM = 'SecuritySystem';
+	case SECURITY_SYSTEM = 'SecuritySystem';
 
-	public const SERVICE_LABEL = 'ServiceLabel';
+	case SERVICE_LABEL = 'ServiceLabel';
 
-	public const SLAT = 'Slat';
+	case SLAT = 'Slat';
 
-	public const SMOKE_SENSOR = 'SmokeSensor';
+	case SMOKE_SENSOR = 'SmokeSensor';
 
-	public const SPEAKER = 'Speaker';
+	case SPEAKER = 'Speaker';
 
-	public const STATELESS_PROGRAMMABLE_SWITCH = 'StatelessProgrammableSwitch';
+	case STATELESS_PROGRAMMABLE_SWITCH = 'StatelessProgrammableSwitch';
 
-	public const SWITCH = 'Switch';
+	case SWITCH = 'Switch';
 
-	public const TELEVISION = 'Television';
+	case TELEVISION = 'Television';
 
-	public const TELEVISION_SPEAKER = 'TelevisionSpeaker';
+	case TELEVISION_SPEAKER = 'TelevisionSpeaker';
 
-	public const TEMPERATURE_SENSOR = 'TemperatureSensor';
+	case TEMPERATURE_SENSOR = 'TemperatureSensor';
 
-	public const THERMOSTAT = 'Thermostat';
+	case THERMOSTAT = 'Thermostat';
 
-	public const VALVE = 'Valve';
+	case VALVE = 'Valve';
 
-	public const WINDOW = 'Window';
+	case WINDOW = 'Window';
 
-	public const WINDOW_COVERING = 'WindowCovering';
+	case WINDOW_COVERING = 'WindowCovering';
 
-	public function getValue(): string
-	{
-		return strval(parent::getValue());
-	}
-
-	public function __toString(): string
-	{
-		return strval(self::getValue());
-	}
+	case PROTOCOL_INFORMATION = 'HAPProtocolInformation';
 
 }

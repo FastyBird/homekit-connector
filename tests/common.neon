@@ -15,16 +15,13 @@ php:
 
 extensions:
     contributteTranslation              : Contributte\Translation\DI\TranslationExtension
-    nettrineAnnotations                 : Nettrine\Annotations\DI\AnnotationsExtension
     nettrineCache                       : Nettrine\Cache\DI\CacheExtension
     nettrineDbal                        : Nettrine\DBAL\DI\DbalExtension
     nettrineOrm                         : Nettrine\ORM\DI\OrmExtension
-    nettrineOrmAnnotations              : Nettrine\ORM\DI\OrmAnnotationsExtension
+    nettrineOrmAttributes               : Nettrine\ORM\DI\OrmAttributesExtension
     nettrineOrmConsole                  : Nettrine\ORM\DI\OrmConsoleExtension
     nettrineOrmCache                    : Nettrine\ORM\DI\OrmCacheExtension
-    ipubDoctrineConsistence             : IPub\DoctrineConsistence\DI\DoctrineConsistenceExtension
     ipubDoctrineCrud                    : IPub\DoctrineCrud\DI\DoctrineCrudExtension
-    ipubDoctrineDynamicDiscriminatorMap : IPub\DoctrineDynamicDiscriminatorMap\DI\DoctrineDynamicDiscriminatorMapExtension
     ipubDoctrineTimestampable           : IPub\DoctrineTimestampable\DI\DoctrineTimestampableExtension
     ipubPhone                           : IPub\Phone\DI\PhoneExtension
     fbDateTimeFactory                   : FastyBird\DateTimeFactory\DI\DateTimeFactoryExtension
@@ -75,23 +72,19 @@ nettrineDbal:
         typesMapping:
             uuid_binary: binary
 
-nettrineAnnotations:
-    debug: %debugMode%
-    ignore:
-        - writable
-        - required
-        - module
-        - author
-        - subpackage
-        - package
-        - phpcsSuppress
+    debug:
+        panel: false
 
 nettrineOrm:
     configuration:
         proxyDir: %tempDir%/cache/doctrine.proxies
 
-nettrineOrmAnnotations:
+nettrineOrmAttributes:
     mapping: []
+
+fbMetadataLibrary:
+    documents:
+        mapping: []
 
 fbSimpleAuth:
     token:

@@ -18,7 +18,6 @@ namespace FastyBird\Connector\HomeKit\Commands;
 use Brick\Math;
 use DateTimeInterface;
 use Doctrine\DBAL;
-use Doctrine\Persistence;
 use Exception;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
@@ -26,12 +25,12 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Bootstrap\Exceptions as BootstrapExceptions;
-use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
+use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Library\Application\Helpers as ApplicationHelpers;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Library\Metadata\Formats as MetadataFormats;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
-use FastyBird\Library\Metadata\ValueObjects as MetadataValueObjects;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
@@ -45,6 +44,8 @@ use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output;
 use Symfony\Component\Console\Style;
 use Throwable;
+use TypeError;
+use ValueError;
 use function array_combine;
 use function array_diff;
 use function array_filter;
@@ -106,8 +107,7 @@ class Install extends Console\Command\Command
 		private readonly DevicesModels\Entities\Channels\ChannelsManager $channelsManager,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesManager $channelsPropertiesManager,
-		private readonly BootstrapHelpers\Database $databaseHelper,
-		private readonly Persistence\ManagerRegistry $managerRegistry,
+		private readonly ApplicationHelpers\Database $databaseHelper,
 		private readonly Localization\Translator $translator,
 		string|null $name = null,
 	)
@@ -126,7 +126,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -135,6 +135,8 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	protected function execute(Input\InputInterface $input, Output\OutputInterface $output): int
 	{
@@ -150,7 +152,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -159,6 +161,8 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function createConnector(Style\SymfonyStyle $io): void
 	{
@@ -173,7 +177,7 @@ class Install extends Console\Command\Command
 
 				if ($this->connectorsRepository->findOneBy(
 					$findConnectorQuery,
-					Entities\HomeKitConnector::class,
+					Entities\Connectors\Connector::class,
 				) !== null) {
 					throw new Exceptions\Runtime(
 						$this->translator->translate(
@@ -199,7 +203,7 @@ class Install extends Console\Command\Command
 
 				if ($this->connectorsRepository->findOneBy(
 					$findConnectorQuery,
-					Entities\HomeKitConnector::class,
+					Entities\Connectors\Connector::class,
 				) === null) {
 					break;
 				}
@@ -220,25 +224,24 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			$connector = $this->connectorsManager->create(Utils\ArrayHash::from([
-				'entity' => Entities\HomeKitConnector::class,
+				'entity' => Entities\Connectors\Connector::class,
 				'identifier' => $identifier,
 				'name' => $name === '' ? null : $name,
 			]));
-			assert($connector instanceof Entities\HomeKitConnector);
+			assert($connector instanceof Entities\Connectors\Connector);
 
 			$this->connectorsPropertiesManager->create(Utils\ArrayHash::from([
 				'entity' => DevicesEntities\Connectors\Properties\Variable::class,
 				'identifier' => Types\ConnectorPropertyIdentifier::PORT,
-				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
+				'dataType' => MetadataTypes\DataType::UCHAR,
 				'value' => $port,
 				'connector' => $connector,
 			]));
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -251,9 +254,9 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -261,11 +264,6 @@ class Install extends Console\Command\Command
 
 			return;
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 
@@ -277,15 +275,15 @@ class Install extends Console\Command\Command
 		$createDevices = (bool) $io->askQuestion($question);
 
 		if ($createDevices) {
-			$connector = $this->connectorsRepository->find($connector->getId(), Entities\HomeKitConnector::class);
-			assert($connector instanceof Entities\HomeKitConnector);
+			$connector = $this->connectorsRepository->find($connector->getId(), Entities\Connectors\Connector::class);
+			assert($connector instanceof Entities\Connectors\Connector);
 
 			$this->createDevice($io, $connector);
 		}
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -294,6 +292,8 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function editConnector(Style\SymfonyStyle $io): void
 	{
@@ -342,7 +342,7 @@ class Install extends Console\Command\Command
 
 		$port = $this->askConnectorPort($io, $connector);
 
-		$findConnectorPropertyQuery = new DevicesQueries\Entities\FindConnectorProperties();
+		$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
 		$findConnectorPropertyQuery->forConnector($connector);
 		$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PORT);
 
@@ -350,19 +350,19 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			$connector = $this->connectorsManager->update($connector, Utils\ArrayHash::from([
 				'name' => $name === '' ? null : $name,
 				'enabled' => $enabled,
 			]));
-			assert($connector instanceof Entities\HomeKitConnector);
+			assert($connector instanceof Entities\Connectors\Connector);
 
 			if ($portProperty === null) {
 				$this->connectorsPropertiesManager->create(Utils\ArrayHash::from([
 					'entity' => DevicesEntities\Connectors\Properties\Variable::class,
 					'identifier' => Types\ConnectorPropertyIdentifier::PORT,
-					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
+					'dataType' => MetadataTypes\DataType::UCHAR,
 					'value' => $port,
 					'connector' => $connector,
 				]));
@@ -372,8 +372,7 @@ class Install extends Console\Command\Command
 				]));
 			}
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -386,9 +385,9 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -396,11 +395,6 @@ class Install extends Console\Command\Command
 
 			return;
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 
@@ -415,17 +409,15 @@ class Install extends Console\Command\Command
 			return;
 		}
 
-		$connector = $this->connectorsRepository->find($connector->getId(), Entities\HomeKitConnector::class);
-		assert($connector instanceof Entities\HomeKitConnector);
+		$connector = $this->connectorsRepository->find($connector->getId(), Entities\Connectors\Connector::class);
+		assert($connector instanceof Entities\Connectors\Connector);
 
 		$this->askManageConnectorAction($io, $connector);
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
-	 * @throws DBAL\Exception
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 */
 	private function deleteConnector(Style\SymfonyStyle $io): void
 	{
@@ -457,12 +449,11 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			$this->connectorsManager->delete($connector);
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -475,25 +466,20 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
 			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.remove.connector.error'));
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -502,6 +488,8 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function manageConnector(Style\SymfonyStyle $io): void
 	{
@@ -523,10 +511,13 @@ class Install extends Console\Command\Command
 	{
 		$findConnectorsQuery = new Queries\Entities\FindConnectors();
 
-		$connectors = $this->connectorsRepository->findAllBy($findConnectorsQuery, Entities\HomeKitConnector::class);
+		$connectors = $this->connectorsRepository->findAllBy(
+			$findConnectorsQuery,
+			Entities\Connectors\Connector::class,
+		);
 		usort(
 			$connectors,
-			static fn (Entities\HomeKitConnector $a, Entities\HomeKitConnector $b): int => (
+			static fn (Entities\Connectors\Connector $a, Entities\Connectors\Connector $b): int => (
 				($a->getName() ?? $a->getIdentifier()) <=> ($b->getName() ?? $b->getIdentifier())
 			),
 		);
@@ -542,7 +533,7 @@ class Install extends Console\Command\Command
 			$findDevicesQuery = new Queries\Entities\FindDevices();
 			$findDevicesQuery->forConnector($connector);
 
-			$devices = $this->devicesRepository->findAllBy($findDevicesQuery, Entities\HomeKitDevice::class);
+			$devices = $this->devicesRepository->findAllBy($findDevicesQuery, Entities\Devices\Device::class);
 
 			$table->addRow([
 				$index + 1,
@@ -557,7 +548,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -566,8 +557,10 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	private function createDevice(Style\SymfonyStyle $io, Entities\HomeKitConnector $connector): void
+	private function createDevice(Style\SymfonyStyle $io, Entities\Connectors\Connector $connector): void
 	{
 		$question = new Console\Question\Question(
 			$this->translator->translate('//homekit-connector.cmd.install.questions.provide.device.identifier'),
@@ -579,7 +572,7 @@ class Install extends Console\Command\Command
 				$findDeviceQuery->byIdentifier($answer);
 
 				if (
-					$this->devicesRepository->findOneBy($findDeviceQuery, Entities\HomeKitDevice::class) !== null
+					$this->devicesRepository->findOneBy($findDeviceQuery, Entities\Devices\Device::class) !== null
 				) {
 					throw new Exceptions\Runtime(
 						$this->translator->translate('//homekit-connector.cmd.install.messages.identifier.device.used'),
@@ -602,7 +595,7 @@ class Install extends Console\Command\Command
 				$findDeviceQuery->byIdentifier($identifier);
 
 				if (
-					$this->devicesRepository->findOneBy($findDeviceQuery, Entities\HomeKitDevice::class) === null
+					$this->devicesRepository->findOneBy($findDeviceQuery, Entities\Devices\Device::class) === null
 				) {
 					break;
 				}
@@ -623,26 +616,25 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			$device = $this->devicesManager->create(Utils\ArrayHash::from([
-				'entity' => Entities\HomeKitDevice::class,
+				'entity' => Entities\Devices\Device::class,
 				'connector' => $connector,
 				'identifier' => $identifier,
 				'name' => $name,
 			]));
-			assert($device instanceof Entities\HomeKitDevice);
+			assert($device instanceof Entities\Devices\Device);
 
 			$this->devicesPropertiesManager->create(Utils\ArrayHash::from([
 				'entity' => DevicesEntities\Devices\Properties\Variable::class,
-				'identifier' => Types\DevicePropertyIdentifier::CATEGORY,
-				'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
-				'value' => $category->getValue(),
+				'identifier' => Types\DevicePropertyIdentifier::CATEGORY->value,
+				'dataType' => MetadataTypes\DataType::UCHAR,
+				'value' => $category->value,
 				'device' => $device,
 			]));
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -655,9 +647,9 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -665,22 +657,17 @@ class Install extends Console\Command\Command
 
 			return;
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 
-		$device = $this->devicesRepository->find($device->getId(), Entities\HomeKitDevice::class);
-		assert($device instanceof Entities\HomeKitDevice);
+		$device = $this->devicesRepository->find($device->getId(), Entities\Devices\Device::class);
+		assert($device instanceof Entities\Devices\Device);
 
 		$this->createService($io, $device);
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -689,8 +676,10 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	private function editDevice(Style\SymfonyStyle $io, Entities\HomeKitConnector $connector): void
+	private function editDevice(Style\SymfonyStyle $io, Entities\Connectors\Connector $connector): void
 	{
 		$device = $this->askWhichDevice($io, $connector);
 
@@ -713,7 +702,7 @@ class Install extends Console\Command\Command
 
 		$name = $this->askDeviceName($io, $device);
 
-		$findDevicePropertyQuery = new DevicesQueries\Entities\FindDeviceProperties();
+		$findDevicePropertyQuery = new Queries\Entities\FindDeviceProperties();
 		$findDevicePropertyQuery->forDevice($device);
 		$findDevicePropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::CATEGORY);
 
@@ -723,29 +712,28 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			$device = $this->devicesManager->update($device, Utils\ArrayHash::from([
 				'name' => $name,
 			]));
-			assert($device instanceof Entities\HomeKitDevice);
+			assert($device instanceof Entities\Devices\Device);
 
 			if ($categoryProperty === null) {
 				$this->devicesPropertiesManager->create(Utils\ArrayHash::from([
 					'entity' => DevicesEntities\Devices\Properties\Variable::class,
-					'identifier' => Types\DevicePropertyIdentifier::CATEGORY,
-					'dataType' => MetadataTypes\DataType::get(MetadataTypes\DataType::DATA_TYPE_UCHAR),
-					'value' => $category->getValue(),
+					'identifier' => Types\DevicePropertyIdentifier::CATEGORY->value,
+					'dataType' => MetadataTypes\DataType::UCHAR,
+					'value' => $category->value,
 					'device' => $device,
 				]));
 			} elseif ($categoryProperty instanceof DevicesEntities\Devices\Properties\Variable) {
 				$this->devicesPropertiesManager->update($categoryProperty, Utils\ArrayHash::from([
-					'value' => $category->getValue(),
+					'value' => $category->value,
 				]));
 			}
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -758,9 +746,9 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -768,11 +756,6 @@ class Install extends Console\Command\Command
 
 			return;
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 
@@ -787,19 +770,17 @@ class Install extends Console\Command\Command
 			return;
 		}
 
-		$device = $this->devicesRepository->find($device->getId(), Entities\HomeKitDevice::class);
-		assert($device instanceof Entities\HomeKitDevice);
+		$device = $this->devicesRepository->find($device->getId(), Entities\Devices\Device::class);
+		assert($device instanceof Entities\Devices\Device);
 
 		$this->askManageDeviceAction($io, $device);
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
-	 * @throws DBAL\Exception
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 */
-	private function deleteDevice(Style\SymfonyStyle $io, Entities\HomeKitConnector $connector): void
+	private function deleteDevice(Style\SymfonyStyle $io, Entities\Connectors\Connector $connector): void
 	{
 		$device = $this->askWhichDevice($io, $connector);
 
@@ -829,12 +810,11 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			$this->devicesManager->delete($device);
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -847,25 +827,20 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
 			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.remove.device.error'));
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -874,8 +849,10 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	private function manageDevice(Style\SymfonyStyle $io, Entities\HomeKitConnector $connector): void
+	private function manageDevice(Style\SymfonyStyle $io, Entities\Connectors\Connector $connector): void
 	{
 		$device = $this->askWhichDevice($io, $connector);
 
@@ -892,16 +869,18 @@ class Install extends Console\Command\Command
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	private function listDevices(Style\SymfonyStyle $io, Entities\HomeKitConnector $connector): void
+	private function listDevices(Style\SymfonyStyle $io, Entities\Connectors\Connector $connector): void
 	{
 		$findDevicesQuery = new Queries\Entities\FindDevices();
 		$findDevicesQuery->forConnector($connector);
 
-		$devices = $this->devicesRepository->findAllBy($findDevicesQuery, Entities\HomeKitDevice::class);
+		$devices = $this->devicesRepository->findAllBy($findDevicesQuery, Entities\Devices\Device::class);
 		usort(
 			$devices,
-			static fn (Entities\HomeKitDevice $a, Entities\HomeKitDevice $b): int => (
+			static fn (Entities\Devices\Device $a, Entities\Devices\Device $b): int => (
 				($a->getName() ?? $a->getIdentifier()) <=> ($b->getName() ?? $b->getIdentifier())
 			),
 		);
@@ -918,7 +897,7 @@ class Install extends Console\Command\Command
 				$index + 1,
 				$device->getName() ?? $device->getIdentifier(),
 				$this->translator->translate(
-					'//homekit-connector.cmd.base.category.' . $device->getAccessoryCategory()->getValue(),
+					'//homekit-connector.cmd.base.category.' . $device->getAccessoryCategory()->value,
 				),
 			]);
 		}
@@ -929,7 +908,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -938,8 +917,10 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	private function createService(Style\SymfonyStyle $io, Entities\HomeKitDevice $device): void
+	private function createService(Style\SymfonyStyle $io, Entities\Devices\Device $device): void
 	{
 		$type = $this->askServiceType($io, $device);
 
@@ -954,7 +935,7 @@ class Install extends Console\Command\Command
 			$findChannelQuery->forDevice($device);
 			$findChannelQuery->byIdentifier($identifier);
 
-			$channel = $this->channelsRepository->findOneBy($findChannelQuery, Entities\HomeKitChannel::class);
+			$channel = $this->channelsRepository->findOneBy($findChannelQuery, Entities\Channels\Channel::class);
 
 			if ($channel === null) {
 				break;
@@ -1001,14 +982,14 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			$channel = $this->channelsManager->create(Utils\ArrayHash::from([
-				'entity' => Entities\HomeKitChannel::class,
+				'entity' => Entities\Channels\Channel::class,
 				'identifier' => $identifier,
 				'device' => $device,
 			]));
-			assert($channel instanceof Entities\HomeKitChannel);
+			assert($channel instanceof Entities\Channels\Channel);
 
 			$this->createCharacteristics($io, $channel, $requiredCharacteristics, true);
 
@@ -1019,8 +1000,7 @@ class Install extends Console\Command\Command
 				false,
 			);
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -1033,9 +1013,9 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1043,11 +1023,6 @@ class Install extends Console\Command\Command
 
 			return;
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 
@@ -1062,14 +1037,14 @@ class Install extends Console\Command\Command
 			return;
 		}
 
-		$channel = $this->channelsRepository->find($channel->getId(), Entities\HomeKitChannel::class);
-		assert($channel instanceof Entities\HomeKitChannel);
+		$channel = $this->channelsRepository->find($channel->getId(), Entities\Channels\Channel::class);
+		assert($channel instanceof Entities\Channels\Channel);
 
 		$this->askManageServiceAction($io, $channel);
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -1078,8 +1053,10 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	private function editService(Style\SymfonyStyle $io, Entities\HomeKitDevice $device): void
+	private function editService(Style\SymfonyStyle $io, Entities\Devices\Device $device): void
 	{
 		$channels = $this->getServicesList($device);
 
@@ -1110,14 +1087,14 @@ class Install extends Console\Command\Command
 
 		$metadata = $this->loader->loadServices();
 
-		if (!$metadata->offsetExists($type->getValue())) {
+		if (!$metadata->offsetExists($type->value)) {
 			throw new Exceptions\InvalidArgument(sprintf(
 				'Definition for service: %s was not found',
-				$type->getValue(),
+				$type->value,
 			));
 		}
 
-		$serviceMetadata = $metadata->offsetGet($type->getValue());
+		$serviceMetadata = $metadata->offsetGet($type->value);
 
 		if (
 			!$serviceMetadata instanceof Utils\ArrayHash
@@ -1180,7 +1157,7 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			if (count($missingRequired) > 0) {
 				$this->createCharacteristics($io, $channel, $missingRequired, true);
@@ -1199,8 +1176,7 @@ class Install extends Console\Command\Command
 				}
 			}
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -1213,9 +1189,9 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1223,11 +1199,6 @@ class Install extends Console\Command\Command
 
 			return;
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 
@@ -1242,19 +1213,17 @@ class Install extends Console\Command\Command
 			return;
 		}
 
-		$channel = $this->channelsRepository->find($channel->getId(), Entities\HomeKitChannel::class);
-		assert($channel instanceof Entities\HomeKitChannel);
+		$channel = $this->channelsRepository->find($channel->getId(), Entities\Channels\Channel::class);
+		assert($channel instanceof Entities\Channels\Channel);
 
 		$this->askManageServiceAction($io, $channel);
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
-	 * @throws DBAL\Exception
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 */
-	private function deleteService(Style\SymfonyStyle $io, Entities\HomeKitDevice $device): void
+	private function deleteService(Style\SymfonyStyle $io, Entities\Devices\Device $device): void
 	{
 		$channels = $this->getServicesList($device);
 
@@ -1290,12 +1259,11 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			$this->channelsManager->delete($channel);
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -1308,25 +1276,20 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
 			$io->success($this->translator->translate('//homekit-connector.cmd.install.messages.remove.service.error'));
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -1335,8 +1298,10 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	private function manageService(Style\SymfonyStyle $io, Entities\HomeKitDevice $device): void
+	private function manageService(Style\SymfonyStyle $io, Entities\Devices\Device $device): void
 	{
 		$channels = $this->getServicesList($device);
 
@@ -1360,13 +1325,15 @@ class Install extends Console\Command\Command
 	/**
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	private function listServices(Style\SymfonyStyle $io, Entities\HomeKitDevice $device): void
+	private function listServices(Style\SymfonyStyle $io, Entities\Devices\Device $device): void
 	{
 		$findChannelsQuery = new Queries\Entities\FindChannels();
 		$findChannelsQuery->forDevice($device);
 
-		$deviceChannels = $this->channelsRepository->findAllBy($findChannelsQuery, Entities\HomeKitChannel::class);
+		$deviceChannels = $this->channelsRepository->findAllBy($findChannelsQuery, Entities\Channels\Channel::class);
 		usort(
 			$deviceChannels,
 			static fn (DevicesEntities\Channels\Channel $a, DevicesEntities\Channels\Channel $b): int => (
@@ -1389,7 +1356,7 @@ class Install extends Console\Command\Command
 			$table->addRow([
 				$index + 1,
 				$channel->getName() ?? $channel->getIdentifier(),
-				$channel->getServiceType()->getValue(),
+				$channel->getServiceType()->value,
 				implode(
 					', ',
 					array_map(
@@ -1418,10 +1385,12 @@ class Install extends Console\Command\Command
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function createCharacteristics(
 		Style\SymfonyStyle $io,
-		Entities\HomeKitChannel $channel,
+		Entities\Channels\Channel $channel,
 		array $characteristics,
 		bool $required,
 	): void
@@ -1450,7 +1419,10 @@ class Install extends Console\Command\Command
 				|| !$characteristicMetadata->offsetExists('Format')
 				|| !is_string($characteristicMetadata->offsetGet('Format'))
 				|| !$characteristicMetadata->offsetExists('DataType')
-				|| !is_string($characteristicMetadata->offsetGet('DataType'))
+				|| (
+					!is_string($characteristicMetadata->offsetGet('DataType'))
+					&& !$characteristicMetadata->offsetGet('DataType') instanceof Utils\ArrayHash
+				)
 				|| !$characteristicMetadata->offsetExists('Permissions')
 				|| !$characteristicMetadata->offsetGet('Permissions') instanceof Utils\ArrayHash
 			) {
@@ -1459,7 +1431,20 @@ class Install extends Console\Command\Command
 
 			$permissions = (array) $characteristicMetadata->offsetGet('Permissions');
 
-			$dataType = MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType'));
+			if ($characteristicMetadata->offsetGet('DataType') instanceof Utils\ArrayHash) {
+				$dataTypes = array_map(
+					static fn (string $type): MetadataTypes\DataType => MetadataTypes\DataType::from($type),
+					(array) $characteristicMetadata->offsetGet('DataType'),
+				);
+
+				if ($dataTypes === []) {
+					throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
+				}
+
+				$dataType = $dataTypes[0];
+			} else {
+				$dataType = MetadataTypes\DataType::from($characteristicMetadata->offsetGet('DataType'));
+			}
 
 			$format = $this->askFormat($io, $characteristic);
 
@@ -1474,11 +1459,58 @@ class Install extends Console\Command\Command
 				$connectProperty = $this->askProperty(
 					$io,
 					null,
-					in_array(Types\CharacteristicPermission::WRITE, $permissions, true),
-					in_array(Types\CharacteristicPermission::READ, $permissions, true),
+					in_array(Types\CharacteristicPermission::WRITE->value, $permissions, true),
 				);
 
 				$format = $this->askFormat($io, $characteristic, $connectProperty);
+
+				if (
+					$connectProperty !== null
+					&& in_array($connectProperty->getDataType(), $dataTypes ?? [], true)
+				) {
+					$dataType = $connectProperty->getDataType();
+					$format = $connectProperty->getFormat();
+				}
+
+				if (
+					(
+						$dataType === MetadataTypes\DataType::BOOLEAN
+						|| in_array(
+							MetadataTypes\DataType::BOOLEAN,
+							$dataTypes ?? [],
+							true,
+						)
+					)
+					&& $connectProperty !== null
+					&& $connectProperty->getDataType() === MetadataTypes\DataType::SWITCH
+				) {
+					$dataType = MetadataTypes\DataType::SWITCH;
+
+					$format = [
+						[
+							MetadataTypes\Payloads\Switcher::ON->value,
+							[
+								MetadataTypes\DataTypeShort::BOOLEAN->value,
+								'true',
+							],
+							[
+								MetadataTypes\DataTypeShort::BOOLEAN->value,
+								'true',
+							],
+						],
+						[
+							MetadataTypes\Payloads\Switcher::OFF->value,
+							[
+								MetadataTypes\DataTypeShort::BOOLEAN->value,
+								'false',
+							],
+							[
+								MetadataTypes\DataTypeShort::BOOLEAN->value,
+								'false',
+							],
+						],
+					];
+				}
 
 				$this->channelsPropertiesManager->create(Utils\ArrayHash::from([
 					'entity' => DevicesEntities\Channels\Properties\Mapped::class,
@@ -1487,6 +1519,8 @@ class Install extends Console\Command\Command
 					'channel' => $channel,
 					'dataType' => $dataType,
 					'format' => $format,
+					'settable' => $connectProperty?->isSettable(),
+					'queryable' => $connectProperty?->isQueryable(),
 				]));
 			} else {
 				$value = $this->provideCharacteristicValue($io, $characteristic);
@@ -1519,15 +1553,13 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
-	 * @throws DBAL\Exception
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 * @throws Nette\IOException
 	 */
-	private function editCharacteristic(Style\SymfonyStyle $io, Entities\HomeKitChannel $channel): void
+	private function editCharacteristic(Style\SymfonyStyle $io, Entities\Channels\Channel $channel): void
 	{
 		$properties = $this->getCharacteristicsList($channel);
 
@@ -1561,7 +1593,10 @@ class Install extends Console\Command\Command
 			|| !$characteristicMetadata->offsetExists('UUID')
 			|| !is_string($characteristicMetadata->offsetGet('UUID'))
 			|| !$characteristicMetadata->offsetExists('Format')
-			|| !$characteristicMetadata->offsetExists('DataType')
+			|| (
+				!is_string($characteristicMetadata->offsetGet('DataType'))
+				&& !$characteristicMetadata->offsetGet('DataType') instanceof Utils\ArrayHash
+			)
 			|| !$characteristicMetadata->offsetExists('Permissions')
 			|| !$characteristicMetadata->offsetGet('Permissions') instanceof Utils\ArrayHash
 		) {
@@ -1570,11 +1605,24 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			$permissions = (array) $characteristicMetadata->offsetGet('Permissions');
 
-			$dataType = MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType'));
+			if ($characteristicMetadata->offsetGet('DataType') instanceof Utils\ArrayHash) {
+				$dataTypes = array_map(
+					static fn (string $type): MetadataTypes\DataType => MetadataTypes\DataType::from($type),
+					(array) $characteristicMetadata->offsetGet('DataType'),
+				);
+
+				if ($dataTypes === []) {
+					throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
+				}
+
+				$dataType = $dataTypes[0];
+			} else {
+				$dataType = MetadataTypes\DataType::from($characteristicMetadata->offsetGet('DataType'));
+			}
 
 			$format = $this->askFormat($io, $type);
 
@@ -1594,11 +1642,58 @@ class Install extends Console\Command\Command
 							? $property->getParent()
 							: null
 					),
-					in_array(Types\CharacteristicPermission::WRITE, $permissions, true),
-					in_array(Types\CharacteristicPermission::READ, $permissions, true),
+					in_array(Types\CharacteristicPermission::WRITE->value, $permissions, true),
 				);
 
 				$format = $this->askFormat($io, $type, $connectProperty);
+
+				if (
+					$connectProperty !== null
+					&& in_array($connectProperty->getDataType(), $dataTypes ?? [], true)
+				) {
+					$dataType = $connectProperty->getDataType();
+					$format = $connectProperty->getFormat();
+				}
+
+				if (
+					(
+						$dataType === MetadataTypes\DataType::BOOLEAN
+						|| in_array(
+							MetadataTypes\DataType::BOOLEAN,
+							$dataTypes ?? [],
+							true,
+						)
+					)
+					&& $connectProperty !== null
+					&& $connectProperty->getDataType() === MetadataTypes\DataType::SWITCH
+				) {
+					$dataType = MetadataTypes\DataType::SWITCH;
+
+					$format = [
+						[
+							MetadataTypes\Payloads\Switcher::ON->value,
+							[
+								MetadataTypes\DataTypeShort::BOOLEAN->value,
+								'true',
+							],
+							[
+								MetadataTypes\DataTypeShort::BOOLEAN->value,
+								'true',
+							],
+						],
+						[
+							MetadataTypes\Payloads\Switcher::OFF->value,
+							[
+								MetadataTypes\DataTypeShort::BOOLEAN->value,
+								'false',
+							],
+							[
+								MetadataTypes\DataTypeShort::BOOLEAN->value,
+								'false',
+							],
+						],
+					];
+				}
 
 				if (
 					$property instanceof DevicesEntities\Channels\Properties\Mapped
@@ -1618,6 +1713,8 @@ class Install extends Console\Command\Command
 						'channel' => $channel,
 						'dataType' => $dataType,
 						'format' => $format,
+						'settable' => $connectProperty?->isSettable(),
+						'queryable' => $connectProperty?->isQueryable(),
 					]));
 				}
 			} else {
@@ -1646,8 +1743,7 @@ class Install extends Console\Command\Command
 				}
 			}
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -1660,9 +1756,9 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1670,22 +1766,15 @@ class Install extends Console\Command\Command
 				$this->translator->translate('//homekit-connector.cmd.install.messages.update.characteristic.error'),
 			);
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
-	 * @throws DBAL\Exception
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws Exceptions\Runtime
 	 */
-	private function deleteCharacteristic(Style\SymfonyStyle $io, Entities\HomeKitChannel $channel): void
+	private function deleteCharacteristic(Style\SymfonyStyle $io, Entities\Channels\Channel $channel): void
 	{
 		$properties = $this->getCharacteristicsList($channel);
 
@@ -1721,12 +1810,11 @@ class Install extends Console\Command\Command
 
 		try {
 			// Start transaction connection to the database
-			$this->getOrmConnection()->beginTransaction();
+			$this->databaseHelper->beginTransaction();
 
 			$this->channelsPropertiesManager->delete($property);
 
-			// Commit all changes into database
-			$this->getOrmConnection()->commit();
+			$this->databaseHelper->commitTransaction();
 
 			$io->success(
 				$this->translator->translate(
@@ -1739,9 +1827,9 @@ class Install extends Console\Command\Command
 			$this->logger->error(
 				'An unhandled error occurred',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
-					'exception' => BootstrapHelpers\Logger::buildException($ex),
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
+					'exception' => ApplicationHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1749,11 +1837,6 @@ class Install extends Console\Command\Command
 				$this->translator->translate('//homekit-connector.cmd.install.messages.remove.characteristic.error'),
 			);
 		} finally {
-			// Revert all changes when error occur
-			if ($this->getOrmConnection()->isTransactionActive()) {
-				$this->getOrmConnection()->rollBack();
-			}
-
 			$this->databaseHelper->clear();
 		}
 	}
@@ -1764,8 +1847,10 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	private function listCharacteristics(Style\SymfonyStyle $io, Entities\HomeKitChannel $channel): void
+	private function listCharacteristics(Style\SymfonyStyle $io, Entities\Channels\Channel $channel): void
 	{
 		$findPropertiesQuery = new DevicesQueries\Entities\FindChannelProperties();
 		$findPropertiesQuery->forChannel($channel);
@@ -1794,14 +1879,14 @@ class Install extends Console\Command\Command
 			$value = $property instanceof DevicesEntities\Channels\Properties\Variable ? $property->getValue() : 'N/A';
 
 			if (
-				$property->getDataType()->equalsValue(MetadataTypes\DataType::DATA_TYPE_ENUM)
+				$property->getDataType() === MetadataTypes\DataType::ENUM
 				&& $metadata->offsetExists($type)
 				&& $metadata->offsetGet($type) instanceof Utils\ArrayHash
 				&& $metadata->offsetGet($type)->offsetExists('ValidValues')
 				&& $metadata->offsetGet($type)->offsetGet('ValidValues') instanceof Utils\ArrayHash
 			) {
 				$enumValue = array_search(
-					intval(MetadataUtilities\ValueHelper::flattenValue($value)),
+					intval(MetadataUtilities\Value::flattenValue($value)),
 					(array) $metadata->offsetGet($type)->offsetGet('ValidValues'),
 					true,
 				);
@@ -1825,7 +1910,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -1834,6 +1919,8 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function askInstallAction(Style\SymfonyStyle $io): void
 	{
@@ -1909,7 +1996,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -1918,12 +2005,17 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function askManageConnectorAction(
 		Style\SymfonyStyle $io,
-		Entities\HomeKitConnector $connector,
+		Entities\Connectors\Connector $connector,
 	): void
 	{
+		$connector = $this->connectorsRepository->find($connector->getId(), Entities\Connectors\Connector::class);
+		assert($connector instanceof Entities\Connectors\Connector);
+
 		$question = new Console\Question\ChoiceQuestion(
 			$this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
 			[
@@ -1996,7 +2088,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -2005,12 +2097,17 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function askManageDeviceAction(
 		Style\SymfonyStyle $io,
-		Entities\HomeKitDevice $device,
+		Entities\Devices\Device $device,
 	): void
 	{
+		$device = $this->devicesRepository->find($device->getId(), Entities\Devices\Device::class);
+		assert($device instanceof Entities\Devices\Device);
+
 		$question = new Console\Question\ChoiceQuestion(
 			$this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
 			[
@@ -2083,7 +2180,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws BootstrapExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
@@ -2092,12 +2189,17 @@ class Install extends Console\Command\Command
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function askManageServiceAction(
 		Style\SymfonyStyle $io,
-		Entities\HomeKitChannel $channel,
+		Entities\Channels\Channel $channel,
 	): void
 	{
+		$channel = $this->channelsRepository->find($channel->getId(), Entities\Channels\Channel::class);
+		assert($channel instanceof Entities\Channels\Channel);
+
 		$question = new Console\Question\ChoiceQuestion(
 			$this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
 			[
@@ -2149,7 +2251,7 @@ class Install extends Console\Command\Command
 
 	private function askConnectorName(
 		Style\SymfonyStyle $io,
-		Entities\HomeKitConnector|null $connector = null,
+		Entities\Connectors\Connector|null $connector = null,
 	): string|null
 	{
 		$question = new Console\Question\Question(
@@ -2165,8 +2267,10 @@ class Install extends Console\Command\Command
 	/**
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	private function askConnectorPort(Style\SymfonyStyle $io, Entities\HomeKitConnector|null $connector = null): int
+	private function askConnectorPort(Style\SymfonyStyle $io, Entities\Connectors\Connector|null $connector = null): int
 	{
 		$question = new Console\Question\Question(
 			$this->translator->translate('//homekit-connector.cmd.install.questions.provide.connector.port'),
@@ -2182,7 +2286,7 @@ class Install extends Console\Command\Command
 				);
 			}
 
-			$findConnectorPropertiesQuery = new DevicesQueries\Entities\FindConnectorProperties();
+			$findConnectorPropertiesQuery = new Queries\Entities\FindConnectorProperties();
 			$findConnectorPropertiesQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PORT);
 
 			$properties = $this->connectorsPropertiesRepository->findAllBy(
@@ -2192,7 +2296,7 @@ class Install extends Console\Command\Command
 
 			foreach ($properties as $property) {
 				if (
-					$property->getConnector() instanceof Entities\HomeKitConnector
+					$property->getConnector() instanceof Entities\Connectors\Connector
 					&& $property->getValue() === intval($answer)
 					&& (
 						$connector === null || !$property->getConnector()->getId()->equals($connector->getId())
@@ -2213,7 +2317,7 @@ class Install extends Console\Command\Command
 		return intval($io->askQuestion($question));
 	}
 
-	private function askDeviceName(Style\SymfonyStyle $io, Entities\HomeKitDevice|null $device = null): string|null
+	private function askDeviceName(Style\SymfonyStyle $io, Entities\Devices\Device|null $device = null): string|null
 	{
 		$question = new Console\Question\Question(
 			$this->translator->translate('//homekit-connector.cmd.install.questions.provide.device.name'),
@@ -2228,38 +2332,43 @@ class Install extends Console\Command\Command
 	/**
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function askDeviceCategory(
 		Style\SymfonyStyle $io,
-		Entities\HomeKitDevice|null $device = null,
+		Entities\Devices\Device|null $device = null,
 	): Types\AccessoryCategory
 	{
 		$categories = array_combine(
-			array_values(Types\AccessoryCategory::getValues()),
+			array_map(
+				static fn (Types\AccessoryCategory $category): int => $category->value,
+				Types\AccessoryCategory::cases(),
+			),
 			array_map(
 				fn (Types\AccessoryCategory $category): string => $this->translator->translate(
-					'//homekit-connector.cmd.base.category.' . $category->getValue(),
+					'//homekit-connector.cmd.base.category.' . $category->value,
 				),
-				(array) Types\AccessoryCategory::getAvailableEnums(),
+				Types\AccessoryCategory::cases(),
 			),
 		);
 		$categories = array_filter(
 			$categories,
 			fn (string $category): bool => $category !== $this->translator->translate(
-				'//homekit-connector.cmd.base.category.' . Types\AccessoryCategory::BRIDGE,
+				'//homekit-connector.cmd.base.category.' . Types\AccessoryCategory::BRIDGE->value,
 			)
 		);
 		asort($categories);
 
 		$default = $device !== null ? array_search(
 			$this->translator->translate(
-				'//homekit-connector.cmd.base.category.' . $device->getAccessoryCategory()->getValue(),
+				'//homekit-connector.cmd.base.category.' . $device->getAccessoryCategory()->value,
 			),
 			array_values($categories),
 			true,
 		) : array_search(
 			$this->translator->translate(
-				'//homekit-connector.cmd.base.category.' . Types\AccessoryCategory::OTHER,
+				'//homekit-connector.cmd.base.category.' . Types\AccessoryCategory::OTHER->value,
 			),
 			array_values($categories),
 			true,
@@ -2289,8 +2398,8 @@ class Install extends Console\Command\Command
 
 			$category = array_search($answer, $categories, true);
 
-			if ($category !== false && Types\AccessoryCategory::isValidValue($category)) {
-				return Types\AccessoryCategory::get(intval($category));
+			if ($category !== false) {
+				return Types\AccessoryCategory::from(intval($category));
 			}
 
 			throw new Exceptions\Runtime(
@@ -2305,19 +2414,21 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws DevicesExceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function askServiceType(
 		Style\SymfonyStyle $io,
-		Entities\HomeKitDevice $device,
+		Entities\Devices\Device $device,
 	): string
 	{
-		$findPropertyQuery = new DevicesQueries\Entities\FindDeviceProperties();
+		$findPropertyQuery = new Queries\Entities\FindDeviceProperties();
 		$findPropertyQuery->forDevice($device);
 		$findPropertyQuery->byIdentifier(Types\DevicePropertyIdentifier::CATEGORY);
 
@@ -2330,22 +2441,22 @@ class Install extends Console\Command\Command
 			throw new Exceptions\InvalidState('Device category is not configured');
 		}
 
-		if ($category->getValue() === Types\AccessoryCategory::OTHER) {
+		if ($category->getValue() === Types\AccessoryCategory::OTHER->value) {
 			$metadata = $this->loader->loadServices();
 
 			$services = array_values(array_keys((array) $metadata));
 		} else {
 			$metadata = $this->loader->loadAccessories();
 
-			if (!$metadata->offsetExists(strval(MetadataUtilities\ValueHelper::flattenValue($category->getValue())))) {
+			if (!$metadata->offsetExists(MetadataUtilities\Value::toString($category->getValue(), true))) {
 				throw new Exceptions\InvalidArgument(sprintf(
 					'Definition for accessory category: %s was not found',
-					strval(MetadataUtilities\ValueHelper::flattenValue($category->getValue())),
+					MetadataUtilities\Value::toString($category->getValue()),
 				));
 			}
 
 			$accessoryMetadata = $metadata->offsetGet(
-				strval(MetadataUtilities\ValueHelper::flattenValue($category->getValue())),
+				MetadataUtilities\Value::toString($category->getValue(), true),
 			);
 
 			if (
@@ -2408,10 +2519,10 @@ class Install extends Console\Command\Command
 	{
 		$metadata = $this->loader->loadServices();
 
-		if (!$metadata->offsetExists($service->getValue())) {
+		if (!$metadata->offsetExists($service->value)) {
 			throw new Exceptions\InvalidArgument(sprintf(
 				'Definition for service: %s was not found',
-				$service->getValue(),
+				$service->value,
 			));
 		}
 
@@ -2478,7 +2589,6 @@ class Install extends Console\Command\Command
 		Style\SymfonyStyle $io,
 		DevicesEntities\Channels\Properties\Dynamic|null $connectedProperty = null,
 		bool|null $settable = null,
-		bool|null $queryable = null,
 	): DevicesEntities\Channels\Properties\Dynamic|null
 	{
 		$devices = [];
@@ -2508,7 +2618,7 @@ class Install extends Console\Command\Command
 		);
 
 		foreach ($systemDevices as $device) {
-			if ($device instanceof Entities\HomeKitDevice) {
+			if ($device instanceof Entities\Devices\Device) {
 				continue;
 			}
 
@@ -2527,10 +2637,6 @@ class Install extends Console\Command\Command
 					$findChannelPropertiesQuery->settable(true);
 				}
 
-				if ($queryable === true) {
-					$findChannelPropertiesQuery->queryable(true);
-				}
-
 				if (
 					$this->channelsPropertiesRepository->getResultSet(
 						$findChannelPropertiesQuery,
@@ -2547,7 +2653,6 @@ class Install extends Console\Command\Command
 				continue;
 			}
 
-			// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 			$devices[$device->getId()->toString()] = '[' . ($device->getConnector()->getName() ?? $device->getConnector()->getIdentifier()) . '] '
 				. ($device->getName() ?? $device->getIdentifier());
 		}
@@ -2637,10 +2742,6 @@ class Install extends Console\Command\Command
 				$findChannelPropertiesQuery->settable(true);
 			}
 
-			if ($queryable === true) {
-				$findChannelPropertiesQuery->queryable(true);
-			}
-
 			if (
 				$this->channelsPropertiesRepository->getResultSet(
 					$findChannelPropertiesQuery,
@@ -2723,10 +2824,6 @@ class Install extends Console\Command\Command
 
 		if ($settable === true) {
 			$findChannelPropertiesQuery->settable(true);
-		}
-
-		if ($queryable === true) {
-			$findChannelPropertiesQuery->queryable(true);
 		}
 
 		$channelProperties = $this->channelsPropertiesRepository->findAllBy(
@@ -2818,12 +2915,14 @@ class Install extends Console\Command\Command
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function askFormat(
 		Style\SymfonyStyle $io,
 		string $characteristic,
 		DevicesEntities\Channels\Properties\Dynamic|null $connectProperty = null,
-	): MetadataValueObjects\NumberRangeFormat|MetadataValueObjects\StringEnumFormat|MetadataValueObjects\CombinedEnumFormat|null
+	): MetadataFormats\NumberRange|MetadataFormats\StringEnum|MetadataFormats\CombinedEnum|null
 	{
 		$metadata = $this->loader->loadCharacteristics();
 
@@ -2841,12 +2940,26 @@ class Install extends Console\Command\Command
 			|| !$characteristicMetadata->offsetExists('Format')
 			|| !is_string($characteristicMetadata->offsetGet('Format'))
 			|| !$characteristicMetadata->offsetExists('DataType')
-			|| !is_string($characteristicMetadata->offsetGet('DataType'))
+			|| (
+				!is_string($characteristicMetadata->offsetGet('DataType'))
+				&& !$characteristicMetadata->offsetGet('DataType') instanceof Utils\ArrayHash
+			)
 		) {
 			throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
 		}
 
-		$dataType = MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType'));
+		if ($characteristicMetadata->offsetGet('DataType') instanceof Utils\ArrayHash) {
+			$dataTypes = array_map(
+				static fn (string $type): MetadataTypes\DataType => MetadataTypes\DataType::from($type),
+				(array) $characteristicMetadata->offsetGet('DataType'),
+			);
+
+			if ($dataTypes === []) {
+				throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
+			}
+		} else {
+			$dataTypes = [MetadataTypes\DataType::from($characteristicMetadata->offsetGet('DataType'))];
+		}
 
 		$format = null;
 
@@ -2854,44 +2967,44 @@ class Install extends Console\Command\Command
 			$characteristicMetadata->offsetExists('MinValue')
 			|| $characteristicMetadata->offsetExists('MaxValue')
 		) {
-			$format = new MetadataValueObjects\NumberRangeFormat([
-				$characteristicMetadata->offsetExists('MinValue') ? floatval(
-					$characteristicMetadata->offsetGet('MinValue'),
-				) : null,
-				$characteristicMetadata->offsetExists('MaxValue') ? floatval(
-					$characteristicMetadata->offsetGet('MaxValue'),
-				) : null,
+			$format = new MetadataFormats\NumberRange([
+				$characteristicMetadata->offsetExists('MinValue')
+					? floatval($characteristicMetadata->offsetGet('MinValue'))
+					: null,
+				$characteristicMetadata->offsetExists('MaxValue')
+					? floatval($characteristicMetadata->offsetGet('MaxValue'))
+					: null,
 			]);
 		}
 
 		if (
 			(
-				$dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_ENUM)
-				|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_SWITCH)
-				|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_BUTTON)
+				in_array(MetadataTypes\DataType::ENUM, $dataTypes, true)
+				|| in_array(MetadataTypes\DataType::SWITCH, $dataTypes, true)
+				|| in_array(MetadataTypes\DataType::BUTTON, $dataTypes, true)
 			)
 			&& $characteristicMetadata->offsetExists('ValidValues')
 			&& $characteristicMetadata->offsetGet('ValidValues') instanceof Utils\ArrayHash
 		) {
-			$format = new MetadataValueObjects\StringEnumFormat(
+			$format = new MetadataFormats\StringEnum(
 				array_values((array) $characteristicMetadata->offsetGet('ValidValues')),
 			);
 
 			if (
 				$connectProperty !== null
 				&& (
-					$connectProperty->getDataType()->equalsValue(MetadataTypes\DataType::DATA_TYPE_ENUM)
-					|| $connectProperty->getDataType()->equalsValue(MetadataTypes\DataType::DATA_TYPE_SWITCH)
-					|| $connectProperty->getDataType()->equalsValue(MetadataTypes\DataType::DATA_TYPE_BUTTON)
+					$connectProperty->getDataType() === MetadataTypes\DataType::ENUM
+					|| $connectProperty->getDataType() === MetadataTypes\DataType::SWITCH
+					|| $connectProperty->getDataType() === MetadataTypes\DataType::BUTTON
 				) && (
-					$connectProperty->getFormat() instanceof MetadataValueObjects\StringEnumFormat
-					|| $connectProperty->getFormat() instanceof MetadataValueObjects\CombinedEnumFormat
+					$connectProperty->getFormat() instanceof MetadataFormats\StringEnum
+					|| $connectProperty->getFormat() instanceof MetadataFormats\CombinedEnum
 				)
 			) {
 				$mappedFormat = [];
 
 				foreach ($characteristicMetadata->offsetGet('ValidValues') as $name => $item) {
-					$options = $connectProperty->getFormat() instanceof MetadataValueObjects\StringEnumFormat
+					$options = $connectProperty->getFormat() instanceof MetadataFormats\StringEnum
 						? $connectProperty->getFormat()->toArray()
 						: array_map(
 							static function (array $items): array|null {
@@ -2901,7 +3014,7 @@ class Install extends Console\Command\Command
 
 								return [
 									$items[0]->getDataType(),
-									strval($items[0]->getValue()),
+									MetadataUtilities\Value::toString($items[0]->getValue()),
 								];
 							},
 							$connectProperty->getFormat()->getItems(),
@@ -2966,24 +3079,24 @@ class Install extends Console\Command\Command
 					$valueDataType = is_array($value) ? strval($value[0]) : null;
 					$value = is_array($value) ? $value[1] : $value;
 
-					if (MetadataTypes\SwitchPayload::isValidValue($value)) {
-						$valueDataType = MetadataTypes\DataTypeShort::DATA_TYPE_SWITCH;
+					if (MetadataTypes\Payloads\Switcher::tryFrom($value) !== null) {
+						$valueDataType = MetadataTypes\DataTypeShort::SWITCH->value;
 
-					} elseif (MetadataTypes\ButtonPayload::isValidValue($value)) {
-						$valueDataType = MetadataTypes\DataTypeShort::DATA_TYPE_BUTTON;
+					} elseif (MetadataTypes\Payloads\Button::tryFrom($value) !== null) {
+						$valueDataType = MetadataTypes\DataTypeShort::BUTTON->value;
 
-					} elseif (MetadataTypes\CoverPayload::isValidValue($value)) {
-						$valueDataType = MetadataTypes\DataTypeShort::DATA_TYPE_COVER;
+					} elseif (MetadataTypes\Payloads\Cover::tryFrom($value) !== null) {
+						$valueDataType = MetadataTypes\DataTypeShort::COVER->value;
 					}
 
 					$mappedFormat[] = [
 						[$valueDataType, strval($value)],
-						[MetadataTypes\DataTypeShort::DATA_TYPE_UCHAR, strval($item)],
-						[MetadataTypes\DataTypeShort::DATA_TYPE_UCHAR, strval($item)],
+						[MetadataTypes\DataTypeShort::UCHAR->value, strval($item)],
+						[MetadataTypes\DataTypeShort::UCHAR->value, strval($item)],
 					];
 				}
 
-				$format = new MetadataValueObjects\CombinedEnumFormat($mappedFormat);
+				$format = new MetadataFormats\CombinedEnum($mappedFormat);
 			}
 		}
 
@@ -2993,12 +3106,15 @@ class Install extends Console\Command\Command
 	/**
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
+	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws Nette\IOException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function provideCharacteristicValue(
 		Style\SymfonyStyle $io,
 		string $characteristic,
-		bool|float|int|string|DateTimeInterface|MetadataTypes\ButtonPayload|MetadataTypes\SwitchPayload|MetadataTypes\CoverPayload|null $value = null,
+		bool|float|int|string|DateTimeInterface|MetadataTypes\Payloads\Payload|null $value = null,
 	): string|int|bool|float
 	{
 		$metadata = $this->loader->loadCharacteristics();
@@ -3015,12 +3131,26 @@ class Install extends Console\Command\Command
 		if (
 			!$characteristicMetadata instanceof Utils\ArrayHash
 			|| !$characteristicMetadata->offsetExists('DataType')
-			|| !MetadataTypes\DataType::isValidValue($characteristicMetadata->offsetGet('DataType'))
+			|| (
+				!is_string($characteristicMetadata->offsetGet('DataType'))
+				&& !$characteristicMetadata->offsetGet('DataType') instanceof Utils\ArrayHash
+			)
 		) {
 			throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
 		}
 
-		$dataType = MetadataTypes\DataType::get($characteristicMetadata->offsetGet('DataType'));
+		if ($characteristicMetadata->offsetGet('DataType') instanceof Utils\ArrayHash) {
+			$dataTypes = array_map(
+				static fn (string $type): MetadataTypes\DataType => MetadataTypes\DataType::from($type),
+				(array) $characteristicMetadata->offsetGet('DataType'),
+			);
+
+			if ($dataTypes === []) {
+				throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
+			}
+		} else {
+			$dataTypes = [MetadataTypes\DataType::from($characteristicMetadata->offsetGet('DataType'))];
+		}
 
 		if (
 			$characteristicMetadata->offsetExists('ValidValues')
@@ -3035,7 +3165,7 @@ class Install extends Console\Command\Command
 				$this->translator->translate('//homekit-connector.cmd.install.questions.select.device.value'),
 				$options,
 				$value !== null ? array_key_exists(
-					strval(MetadataUtilities\ValueHelper::flattenValue($value)),
+					MetadataUtilities\Value::toString($value, true),
 					$options,
 				) : null,
 			);
@@ -3076,7 +3206,10 @@ class Install extends Console\Command\Command
 			return $value;
 		}
 
-		if ($dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_BOOLEAN)) {
+		if (
+			count($dataTypes) === 1
+			&& in_array(MetadataTypes\DataType::BOOLEAN, $dataTypes, true)
+		) {
 			$question = new Console\Question\ChoiceQuestion(
 				$this->translator->translate('//homekit-connector.cmd.install.questions.select.device.value'),
 				[
@@ -3125,10 +3258,10 @@ class Install extends Console\Command\Command
 
 		$question = new Console\Question\Question(
 			$this->translator->translate('//homekit-connector.cmd.install.questions.provide.value'),
-			is_object($value) ? strval($value) : $value,
+			is_object($value) ? MetadataUtilities\Value::toString($value) : $value,
 		);
 		$question->setValidator(
-			function (string|int|null $answer) use ($dataType, $minValue, $maxValue, $step): string|int|float {
+			function (string|int|null $answer) use ($dataTypes, $minValue, $maxValue, $step): string|int|float {
 				if ($answer === null) {
 					throw new Exceptions\Runtime(
 						sprintf(
@@ -3138,11 +3271,17 @@ class Install extends Console\Command\Command
 					);
 				}
 
-				if ($dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_STRING)) {
+				if (
+					count($dataTypes) === 1
+					&& in_array(MetadataTypes\DataType::STRING, $dataTypes, true)
+				) {
 					return strval($answer);
 				}
 
-				if ($dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_FLOAT)) {
+				if (
+					count($dataTypes) === 1
+					&& in_array(MetadataTypes\DataType::FLOAT, $dataTypes, true)
+				) {
 					if ($minValue !== null && floatval($answer) < $minValue) {
 						throw new Exceptions\Runtime(
 							sprintf(
@@ -3179,12 +3318,15 @@ class Install extends Console\Command\Command
 				}
 
 				if (
-					$dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_CHAR)
-					|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_UCHAR)
-					|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_SHORT)
-					|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_USHORT)
-					|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_INT)
-					|| $dataType->equalsValue(MetadataTypes\DataType::DATA_TYPE_UINT)
+					count($dataTypes) === 1
+					&& (
+						in_array(MetadataTypes\DataType::CHAR, $dataTypes, true)
+						|| in_array(MetadataTypes\DataType::UCHAR, $dataTypes, true)
+						|| in_array(MetadataTypes\DataType::SHORT, $dataTypes, true)
+						|| in_array(MetadataTypes\DataType::USHORT, $dataTypes, true)
+						|| in_array(MetadataTypes\DataType::INT, $dataTypes, true)
+						|| in_array(MetadataTypes\DataType::UINT, $dataTypes, true)
+					)
 				) {
 					if ($minValue !== null && intval($answer) < $minValue) {
 						throw new Exceptions\Runtime(
@@ -3234,7 +3376,7 @@ class Install extends Console\Command\Command
 	/**
 	 * @throws DevicesExceptions\InvalidState
 	 */
-	private function askWhichConnector(Style\SymfonyStyle $io): Entities\HomeKitConnector|null
+	private function askWhichConnector(Style\SymfonyStyle $io): Entities\Connectors\Connector|null
 	{
 		$connectors = [];
 
@@ -3242,11 +3384,11 @@ class Install extends Console\Command\Command
 
 		$systemConnectors = $this->connectorsRepository->findAllBy(
 			$findConnectorsQuery,
-			Entities\HomeKitConnector::class,
+			Entities\Connectors\Connector::class,
 		);
 		usort(
 			$systemConnectors,
-			static fn (Entities\HomeKitConnector $a, Entities\HomeKitConnector $b): int => (
+			static fn (Entities\Connectors\Connector $a, Entities\Connectors\Connector $b): int => (
 				($a->getName() ?? $a->getIdentifier()) <=> ($b->getName() ?? $b->getIdentifier())
 			),
 		);
@@ -3268,7 +3410,7 @@ class Install extends Console\Command\Command
 		$question->setErrorMessage(
 			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
-		$question->setValidator(function (string|int|null $answer) use ($connectors): Entities\HomeKitConnector {
+		$question->setValidator(function (string|int|null $answer) use ($connectors): Entities\Connectors\Connector {
 			if ($answer === null) {
 				throw new Exceptions\Runtime(
 					sprintf(
@@ -3290,7 +3432,7 @@ class Install extends Console\Command\Command
 
 				$connector = $this->connectorsRepository->findOneBy(
 					$findConnectorQuery,
-					Entities\HomeKitConnector::class,
+					Entities\Connectors\Connector::class,
 				);
 
 				if ($connector !== null) {
@@ -3307,7 +3449,7 @@ class Install extends Console\Command\Command
 		});
 
 		$connector = $io->askQuestion($question);
-		assert($connector instanceof Entities\HomeKitConnector);
+		assert($connector instanceof Entities\Connectors\Connector);
 
 		return $connector;
 	}
@@ -3317,8 +3459,8 @@ class Install extends Console\Command\Command
 	 */
 	private function askWhichDevice(
 		Style\SymfonyStyle $io,
-		Entities\HomeKitConnector $connector,
-	): Entities\HomeKitDevice|null
+		Entities\Connectors\Connector $connector,
+	): Entities\Devices\Device|null
 	{
 		$devices = [];
 
@@ -3327,11 +3469,11 @@ class Install extends Console\Command\Command
 
 		$connectorDevices = $this->devicesRepository->findAllBy(
 			$findDevicesQuery,
-			Entities\HomeKitDevice::class,
+			Entities\Devices\Device::class,
 		);
 		usort(
 			$connectorDevices,
-			static fn (Entities\HomeKitDevice $a, Entities\HomeKitDevice $b): int => (
+			static fn (Entities\Devices\Device $a, Entities\Devices\Device $b): int => (
 				($a->getName() ?? $a->getIdentifier()) <=> ($b->getName() ?? $b->getIdentifier())
 			),
 		);
@@ -3354,7 +3496,7 @@ class Install extends Console\Command\Command
 			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 		$question->setValidator(
-			function (string|int|null $answer) use ($connector, $devices): Entities\HomeKitDevice {
+			function (string|int|null $answer) use ($connector, $devices): Entities\Devices\Device {
 				if ($answer === null) {
 					throw new Exceptions\Runtime(
 						sprintf(
@@ -3377,7 +3519,7 @@ class Install extends Console\Command\Command
 
 					$device = $this->devicesRepository->findOneBy(
 						$findDeviceQuery,
-						Entities\HomeKitDevice::class,
+						Entities\Devices\Device::class,
 					);
 
 					if ($device !== null) {
@@ -3395,7 +3537,7 @@ class Install extends Console\Command\Command
 		);
 
 		$device = $io->askQuestion($question);
-		assert($device instanceof Entities\HomeKitDevice);
+		assert($device instanceof Entities\Devices\Device);
 
 		return $device;
 	}
@@ -3403,13 +3545,13 @@ class Install extends Console\Command\Command
 	/**
 	 * @param array<string, string> $channels
 	 *
-	 * @throws DevicesExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 */
 	private function askWhichService(
 		Style\SymfonyStyle $io,
-		Entities\HomeKitDevice $device,
+		Entities\Devices\Device $device,
 		array $channels,
-	): Entities\HomeKitChannel|null
+	): Entities\Channels\Channel|null
 	{
 		$question = new Console\Question\ChoiceQuestion(
 			$this->translator->translate('//homekit-connector.cmd.install.questions.select.item.service'),
@@ -3428,8 +3570,8 @@ class Install extends Console\Command\Command
 			$this->logger->alert(
 				'Could not read service identifier from console answer',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
 				],
 			);
 
@@ -3440,7 +3582,7 @@ class Install extends Console\Command\Command
 		$findChannelQuery->forDevice($device);
 		$findChannelQuery->byIdentifier($serviceIdentifier);
 
-		$channel = $this->channelsRepository->findOneBy($findChannelQuery, Entities\HomeKitChannel::class);
+		$channel = $this->channelsRepository->findOneBy($findChannelQuery, Entities\Channels\Channel::class);
 
 		if ($channel === null) {
 			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.serviceNotFound'));
@@ -3448,8 +3590,8 @@ class Install extends Console\Command\Command
 			$this->logger->alert(
 				'Channel was not found',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
 				],
 			);
 
@@ -3462,11 +3604,11 @@ class Install extends Console\Command\Command
 	/**
 	 * @param array<string, string> $properties
 	 *
-	 * @throws DevicesExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 */
 	private function askWhichCharacteristic(
 		Style\SymfonyStyle $io,
-		Entities\HomeKitChannel $channel,
+		Entities\Channels\Channel $channel,
 		array $properties,
 	): DevicesEntities\Channels\Properties\Variable|DevicesEntities\Channels\Properties\Mapped|null
 	{
@@ -3486,8 +3628,8 @@ class Install extends Console\Command\Command
 			$this->logger->alert(
 				'Could not read characteristic identifier from console answer',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
 				],
 			);
 
@@ -3506,8 +3648,8 @@ class Install extends Console\Command\Command
 			$this->logger->alert(
 				'Property was not found',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-					'type' => 'devices-cmd',
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+					'type' => 'install-cmd',
 				],
 			);
 
@@ -3526,14 +3668,14 @@ class Install extends Console\Command\Command
 	 *
 	 * @throws DevicesExceptions\InvalidState
 	 */
-	private function getServicesList(Entities\HomeKitDevice $device): array
+	private function getServicesList(Entities\Devices\Device $device): array
 	{
 		$channels = [];
 
 		$findChannelsQuery = new Queries\Entities\FindChannels();
 		$findChannelsQuery->forDevice($device);
 
-		$deviceChannels = $this->channelsRepository->findAllBy($findChannelsQuery, Entities\HomeKitChannel::class);
+		$deviceChannels = $this->channelsRepository->findAllBy($findChannelsQuery, Entities\Channels\Channel::class);
 		usort(
 			$deviceChannels,
 			static fn (DevicesEntities\Channels\Channel $a, DevicesEntities\Channels\Channel $b): int => (
@@ -3553,7 +3695,7 @@ class Install extends Console\Command\Command
 	 *
 	 * @throws DevicesExceptions\InvalidState
 	 */
-	private function getCharacteristicsList(Entities\HomeKitChannel $channel): array
+	private function getCharacteristicsList(Entities\Channels\Channel $channel): array
 	{
 		$properties = [];
 
@@ -3573,20 +3715,6 @@ class Install extends Console\Command\Command
 		}
 
 		return $properties;
-	}
-
-	/**
-	 * @throws Exceptions\Runtime
-	 */
-	private function getOrmConnection(): DBAL\Connection
-	{
-		$connection = $this->managerRegistry->getConnection();
-
-		if ($connection instanceof DBAL\Connection) {
-			return $connection;
-		}
-
-		throw new Exceptions\Runtime('Database connection could not be established');
 	}
 
 }

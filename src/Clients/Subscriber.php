@@ -28,6 +28,7 @@ use function array_diff;
 use function array_key_exists;
 use function in_array;
 use function parse_url;
+use function React\Async\async;
 use function sprintf;
 use function strlen;
 use function strval;
@@ -70,7 +71,7 @@ final class Subscriber
 			$this->logger->warning(
 				'Connected client is without defined IP address and could not be registered to subscriber',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'subscriber',
 				],
 			);
@@ -81,7 +82,7 @@ final class Subscriber
 		$this->logger->debug(
 			'Registering client to subscriber',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'subscriber',
 				'connection' => [
 					'address' => $connection->getRemoteAddress(),
@@ -99,7 +100,7 @@ final class Subscriber
 		$this->logger->debug(
 			'Unregistering client from subscriber',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'subscriber',
 				'connection' => [
 					'address' => $connection->getRemoteAddress(),
@@ -123,7 +124,7 @@ final class Subscriber
 		$this->logger->debug(
 			'Subscribing to characteristic',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'subscriber',
 				'subscription' => [
 					'aid' => $aid,
@@ -145,7 +146,7 @@ final class Subscriber
 		$this->logger->debug(
 			'Unsubscribing from characteristic',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'subscriber',
 				'subscription' => [
 					'aid' => $aid,
@@ -182,16 +183,16 @@ final class Subscriber
 
 		if ($immediate) {
 			$this->eventLoop->futureTick(
-				function () use ($aid, $iid, $value, $senderAddress): void {
+				async(function () use ($aid, $iid, $value, $senderAddress): void {
 					$this->sendToClients($aid, $iid, $value, $senderAddress);
-				},
+				}),
 			);
 		} else {
 			$this->eventLoop->addTimer(
 				self::PUBLISH_EVENT_DELAY,
-				function () use ($aid, $iid, $value, $senderAddress): void {
+				async(function () use ($aid, $iid, $value, $senderAddress): void {
 					$this->sendToClients($aid, $iid, $value, $senderAddress);
-				},
+				}),
 			);
 		}
 	}
@@ -213,7 +214,7 @@ final class Subscriber
 			$this->logger->error(
 				'Event message could not be created',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'subscriber',
 					'data' => [
 						'aid' => $aid,
@@ -247,11 +248,11 @@ final class Subscriber
 
 		try {
 			$content = Utils\Json::encode([
-				Types\Representation::CHARS => [
+				Types\Representation::CHARS->value => [
 					[
-						Types\Representation::AID => $aid,
-						Types\Representation::IID => $iid,
-						Types\Representation::VALUE => $value,
+						Types\Representation::AID->value => $aid,
+						Types\Representation::IID->value => $iid,
+						Types\Representation::VALUE->value => $value,
 					],
 				],
 			]);

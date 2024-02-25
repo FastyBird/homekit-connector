@@ -36,7 +36,7 @@ and is licensed under [Apache2](http://www.apache.org/licenses/LICENSE-2.0).
 
 ## Requirements
 
-HomeKit connector is tested against PHP 8.1 and require installed [GNU Multiple Precision](https://www.php.net/manual/en/book.gmp.php),
+HomeKit connector is tested against PHP 8.2 and require installed [GNU Multiple Precision](https://www.php.net/manual/en/book.gmp.php),
 [Process Control](https://www.php.net/manual/en/book.pcntl.php), [Sockets](https://www.php.net/manual/en/book.sockets.php) and
 [Sodium](https://www.php.net/manual/en/book.sodium.php) PHP extensions.
 

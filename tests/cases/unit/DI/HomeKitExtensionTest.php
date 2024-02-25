@@ -7,7 +7,6 @@ use FastyBird\Connector\HomeKit\Clients;
 use FastyBird\Connector\HomeKit\Commands;
 use FastyBird\Connector\HomeKit\Connector;
 use FastyBird\Connector\HomeKit\Controllers;
-use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Hydrators;
 use FastyBird\Connector\HomeKit\Middleware;
@@ -17,15 +16,16 @@ use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Schemas;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Subscribers;
-use FastyBird\Connector\HomeKit\Tests\Cases\Unit\BaseTestCase;
-use FastyBird\Library\Bootstrap\Exceptions as BootstrapExceptions;
+use FastyBird\Connector\HomeKit\Tests;
+use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
 use Nette;
+use function in_array;
 
-final class HomeKitExtensionTest extends BaseTestCase
+final class HomeKitExtensionTest extends Tests\Cases\Unit\BaseTestCase
 {
 
 	/**
-	 * @throws BootstrapExceptions\InvalidArgument
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws Error
 	 */
@@ -50,15 +50,39 @@ final class HomeKitExtensionTest extends BaseTestCase
 		self::assertNotNull($container->getByType(Subscribers\Controls::class, false));
 		self::assertNotNull($container->getByType(Subscribers\System::class, false));
 
-		self::assertNotNull($container->getByType(Schemas\HomeKitConnector::class, false));
-		self::assertNotNull($container->getByType(Schemas\HomeKitDevice::class, false));
-		self::assertNotNull($container->getByType(Schemas\HomeKitChannel::class, false));
+		self::assertNotNull($container->getByType(Schemas\Connectors\Connector::class, false));
+		self::assertNotNull($container->getByType(Schemas\Devices\Device::class, false));
+		foreach ($container->findByType(Schemas\Channels\Channel::class) as $serviceName) {
+			$service = $container->getByName($serviceName);
 
-		self::assertNotNull($container->getByType(Hydrators\HomeKitConnector::class, false));
-		self::assertNotNull($container->getByType(Hydrators\HomeKitDevice::class, false));
-		self::assertNotNull($container->getByType(Hydrators\HomeKitChannel::class, false));
+			self::assertTrue(in_array(
+				$service::class,
+				[
+					Schemas\Channels\Generic::class,
+					Schemas\Channels\Battery::class,
+					Schemas\Channels\LightBulb::class,
+				],
+				true,
+			));
+		}
 
-		self::assertNotNull($container->getByType(Helpers\Entity::class, false));
+		self::assertNotNull($container->getByType(Hydrators\Connectors\Connector::class, false));
+		self::assertNotNull($container->getByType(Hydrators\Devices\Device::class, false));
+		foreach ($container->findByType(Hydrators\Channels\Channel::class) as $serviceName) {
+			$service = $container->getByName($serviceName);
+
+			self::assertTrue(in_array(
+				$service::class,
+				[
+					Hydrators\Channels\Generic::class,
+					Hydrators\Channels\Battery::class,
+					Hydrators\Channels\LightBulb::class,
+				],
+				true,
+			));
+		}
+
+		self::assertNotNull($container->getByType(Helpers\MessageBuilder::class, false));
 		self::assertNotNull($container->getByType(Helpers\Loader::class, false));
 		self::assertNotNull($container->getByType(Helpers\Connector::class, false));
 		self::assertNotNull($container->getByType(Helpers\Device::class, false));
@@ -70,9 +94,20 @@ final class HomeKitExtensionTest extends BaseTestCase
 		self::assertNotNull($container->getByType(Controllers\CharacteristicsController::class, false));
 		self::assertNotNull($container->getByType(Controllers\PairingController::class, false));
 
-		self::assertNotNull($container->getByType(Entities\Protocol\AccessoryFactory::class, false));
-		self::assertNotNull($container->getByType(Entities\Protocol\ServiceFactory::class, false));
-		self::assertNotNull($container->getByType(Entities\Protocol\CharacteristicsFactory::class, false));
+		self::assertNotNull($container->getByType(Protocol\Accessories\BridgeFactory::class, false));
+		self::assertNotNull($container->getByType(Protocol\Accessories\GenericFactory::class, false));
+		self::assertNotNull($container->getByType(Protocol\Services\GenericFactory::class, false));
+		self::assertNotNull($container->getByType(Protocol\Services\LightBulbFactory::class, false));
+		self::assertNotNull($container->getByType(Protocol\Services\BatteryFactory::class, false));
+		self::assertNotNull(
+			$container->getByType(Protocol\Characteristics\DynamicPropertyFactory::class, false),
+		);
+		self::assertNotNull(
+			$container->getByType(Protocol\Characteristics\MappedPropertyFactory::class, false),
+		);
+		self::assertNotNull(
+			$container->getByType(Protocol\Characteristics\VariablePropertyFactory::class, false),
+		);
 
 		self::assertNotNull($container->getByType(Protocol\Tlv::class, false));
 		self::assertNotNull($container->getByType(Protocol\Driver::class, false));

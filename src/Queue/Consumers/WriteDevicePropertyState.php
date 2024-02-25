@@ -17,20 +17,20 @@ namespace FastyBird\Connector\HomeKit\Queue\Consumers;
 
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Clients;
-use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Documents;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
+use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Queue;
-use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
-use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
-use FastyBird\Module\Devices\Queries as DevicesQueries;
-use FastyBird\Module\Devices\Utilities as DevicesUtilities;
 use Nette;
 use RuntimeException;
+use TypeError;
+use ValueError;
 use function intval;
 
 /**
@@ -53,77 +53,81 @@ final class WriteDevicePropertyState implements Queue\Consumer
 		private readonly DevicesModels\Configuration\Connectors\Repository $connectorsConfigurationRepository,
 		private readonly DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
 		private readonly DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
-		private readonly DevicesUtilities\DevicePropertiesStates $devicePropertiesStatesManager,
 	)
 	{
 	}
 
 	/**
-	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws RuntimeException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	public function consume(Entities\Messages\Entity $entity): bool
+	public function consume(Queue\Messages\Message $message): bool
 	{
-		if (!$entity instanceof Entities\Messages\WriteDevicePropertyState) {
+		if (!$message instanceof Queue\Messages\WriteDevicePropertyState) {
 			return false;
 		}
 
-		$findConnectorQuery = new DevicesQueries\Configuration\FindConnectors();
-		$findConnectorQuery->byId($entity->getConnector());
-		$findConnectorQuery->byType(Entities\HomeKitConnector::TYPE);
+		$findConnectorQuery = new Queries\Configuration\FindConnectors();
+		$findConnectorQuery->byId($message->getConnector());
 
-		$connector = $this->connectorsConfigurationRepository->findOneBy($findConnectorQuery);
+		$connector = $this->connectorsConfigurationRepository->findOneBy(
+			$findConnectorQuery,
+			Documents\Connectors\Connector::class,
+		);
 
 		if ($connector === null) {
 			$this->logger->error(
 				'Connector could not be loaded',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'write-device-property-state-message-consumer',
 					'connector' => [
-						'id' => $entity->getConnector()->toString(),
+						'id' => $message->getConnector()->toString(),
 					],
 					'device' => [
-						'id' => $entity->getDevice()->toString(),
+						'id' => $message->getDevice()->toString(),
 					],
 					'property' => [
-						'id' => $entity->getProperty()->toString(),
+						'id' => $message->getProperty()->toString(),
 					],
-					'data' => $entity->toArray(),
+					'data' => $message->toArray(),
 				],
 			);
 
 			return true;
 		}
 
-		$findDeviceQuery = new DevicesQueries\Configuration\FindDevices();
+		$findDeviceQuery = new Queries\Configuration\FindDevices();
 		$findDeviceQuery->forConnector($connector);
-		$findDeviceQuery->byId($entity->getDevice());
-		$findDeviceQuery->byType(Entities\HomeKitDevice::TYPE);
+		$findDeviceQuery->byId($message->getDevice());
 
-		$device = $this->devicesConfigurationRepository->findOneBy($findDeviceQuery);
+		$device = $this->devicesConfigurationRepository->findOneBy(
+			$findDeviceQuery,
+			Documents\Devices\Device::class,
+		);
 
 		if ($device === null) {
 			$this->logger->error(
 				'Device could not be loaded',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'write-device-property-state-message-consumer',
 					'connector' => [
-						'id' => $entity->getConnector()->toString(),
+						'id' => $connector->getId()->toString(),
 					],
 					'device' => [
-						'id' => $entity->getDevice()->toString(),
+						'id' => $message->getDevice()->toString(),
 					],
 					'property' => [
-						'id' => $entity->getProperty()->toString(),
+						'id' => $message->getProperty()->toString(),
 					],
-					'data' => $entity->toArray(),
+					'data' => $message->toArray(),
 				],
 			);
 
@@ -132,53 +136,46 @@ final class WriteDevicePropertyState implements Queue\Consumer
 
 		$accessory = $this->accessoryDriver->findAccessory($device->getId());
 
-		if (!$accessory instanceof Entities\Protocol\Device) {
+		if (!$accessory instanceof Protocol\Accessories\Generic) {
 			$this->logger->warning(
 				'Accessory for received device property message was not found in accessory driver',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'write-device-property-state-message-consumer',
 					'connector' => [
-						'id' => $entity->getConnector()->toString(),
+						'id' => $connector->getId()->toString(),
 					],
 					'device' => [
-						'id' => $entity->getDevice()->toString(),
+						'id' => $device->getId()->toString(),
 					],
 					'property' => [
-						'id' => $entity->getProperty()->toString(),
+						'id' => $message->getProperty()->toString(),
 					],
-					'data' => $entity->toArray(),
+					'data' => $message->toArray(),
 				],
 			);
 
 			return true;
 		}
 
-		$findDevicePropertyQuery = new DevicesQueries\Configuration\FindDeviceProperties();
-		$findDevicePropertyQuery->forDevice($device);
-		$findDevicePropertyQuery->byId($entity->getProperty());
+		$property = $this->devicesPropertiesConfigurationRepository->find($message->getProperty());
 
-		$property = $this->devicesPropertiesConfigurationRepository->findOneBy($findDevicePropertyQuery);
-
-		if (
-			!$property instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty
-			&& !$property instanceof MetadataDocuments\DevicesModule\DeviceMappedProperty
-		) {
+		if ($property === null) {
 			$this->logger->error(
 				'Device property could not be loaded',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'write-device-property-state-message-consumer',
 					'connector' => [
-						'id' => $entity->getConnector()->toString(),
+						'id' => $connector->getId()->toString(),
 					],
 					'device' => [
-						'id' => $entity->getDevice()->toString(),
+						'id' => $device->getId()->toString(),
 					],
 					'property' => [
-						'id' => $entity->getProperty()->toString(),
+						'id' => $message->getProperty()->toString(),
 					],
-					'data' => $entity->toArray(),
+					'data' => $message->toArray(),
 				],
 			);
 
@@ -191,38 +188,35 @@ final class WriteDevicePropertyState implements Queue\Consumer
 					$characteristic->getProperty() !== null
 					&& $characteristic->getProperty()->getId()->equals($property->getId())
 				) {
-					if ($property instanceof MetadataDocuments\DevicesModule\DeviceMappedProperty) {
-						$findPropertyQuery = new DevicesQueries\Configuration\FindDeviceProperties();
-						$findPropertyQuery->byId($property->getParent());
+					if ($property instanceof DevicesDocuments\Devices\Properties\Mapped) {
+						$parent = $this->devicesPropertiesConfigurationRepository->find($property->getParent());
 
-						$parent = $this->devicesPropertiesConfigurationRepository->findOneBy($findPropertyQuery);
-
-						if ($parent instanceof MetadataDocuments\DevicesModule\DeviceDynamicProperty) {
-							try {
-								$state = $this->devicePropertiesStatesManager->readValue($property);
-
-								if ($state === null) {
-									return true;
+						if ($parent instanceof DevicesDocuments\Devices\Properties\Dynamic) {
+							if ($message->getState() !== null) {
+								if ($message->getState()->getExpectedValue() !== null) {
+									$characteristic->setActualValue($message->getState()->getExpectedValue());
+									$characteristic->setValid($message->getState()->isValid());
+								} elseif (
+									$message->getState()->getActualValue() !== null
+									&& $message->getState()->isValid()
+								) {
+									$characteristic->setActualValue($message->getState()->getActualValue());
+									$characteristic->setValid($message->getState()->isValid());
 								}
-
-								$characteristic->setActualValue(
-									$state->getExpectedValue() ?? $state->getActualValue(),
-								);
-							} catch (Exceptions\InvalidState $ex) {
+							} else {
 								$this->logger->warning(
-									'State value could not be converted from mapped parent',
+									'State entity is missing in event entity',
 									[
-										'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
-										'type' => 'exchange-writer',
-										'exception' => BootstrapHelpers\Logger::buildException($ex),
+										'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+										'type' => 'write-device-property-state-message-consumer',
 										'connector' => [
-											'id' => $entity->getConnector()->toString(),
+											'id' => $connector->getId()->toString(),
 										],
 										'device' => [
-											'id' => $entity->getDevice()->toString(),
+											'id' => $device->getId()->toString(),
 										],
 										'property' => [
-											'id' => $entity->getProperty()->toString(),
+											'id' => $property->getId()->toString(),
 										],
 										'hap' => $accessory->toHap(),
 									],
@@ -230,11 +224,40 @@ final class WriteDevicePropertyState implements Queue\Consumer
 
 								return true;
 							}
-						} elseif ($parent instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty) {
+						} elseif ($parent instanceof DevicesDocuments\Devices\Properties\Variable) {
 							$characteristic->setActualValue($parent->getValue());
+							$characteristic->setValid(true);
 						}
-					} elseif ($property instanceof MetadataDocuments\DevicesModule\DeviceVariableProperty) {
+					} elseif ($property instanceof DevicesDocuments\Devices\Properties\Dynamic) {
+						if ($message->getState() !== null) {
+							if ($message->getState()->getExpectedValue() !== null) {
+								$characteristic->setActualValue($message->getState()->getExpectedValue());
+								$characteristic->setValid(true);
+							}
+						} else {
+							$this->logger->warning(
+								'State entity is missing in event entity',
+								[
+									'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+									'type' => 'write-device-property-state-message-consumer',
+									'connector' => [
+										'id' => $connector->getId()->toString(),
+									],
+									'device' => [
+										'id' => $device->getId()->toString(),
+									],
+									'property' => [
+										'id' => $property->getId()->toString(),
+									],
+									'hap' => $accessory->toHap(),
+								],
+							);
+
+							continue;
+						}
+					} elseif ($property instanceof DevicesDocuments\Devices\Properties\Variable) {
 						$characteristic->setActualValue($property->getValue());
+						$characteristic->setValid(true);
 					}
 
 					if (!$characteristic->isVirtual()) {
@@ -279,18 +302,18 @@ final class WriteDevicePropertyState implements Queue\Consumer
 		$this->logger->debug(
 			'Consumed write device state message',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'write-device-property-state-message-consumer',
 				'connector' => [
-					'id' => $entity->getConnector()->toString(),
+					'id' => $connector->getId()->toString(),
 				],
 				'device' => [
-					'id' => $entity->getDevice()->toString(),
+					'id' => $device->getId()->toString(),
 				],
 				'property' => [
-					'id' => $entity->getProperty()->toString(),
+					'id' => $property->getId()->toString(),
 				],
-				'data' => $entity->toArray(),
+				'data' => $message->toArray(),
 			],
 		);
 

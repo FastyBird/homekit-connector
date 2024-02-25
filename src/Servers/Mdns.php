@@ -16,23 +16,25 @@
 namespace FastyBird\Connector\HomeKit\Servers;
 
 use FastyBird\Connector\HomeKit;
+use FastyBird\Connector\HomeKit\Documents;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
-use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Bootstrap\Helpers as BootstrapHelpers;
-use FastyBird\Library\Metadata\Documents as MetadataDocuments;
+use FastyBird\Connector\HomeKit\Subscribers;
+use FastyBird\Library\Application\Helpers as ApplicationHelpers;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Module\Devices\Constants as DevicesConstants;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
+use FastyBird\Module\Devices\Events as DevicesEvents;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
-use FastyBird\Module\Devices\Models as DevicesModels;
 use Nette;
 use Nette\Utils;
+use Psr\EventDispatcher as PsrEventDispatcher;
 use React\Datagram;
 use React\Dns;
 use React\EventLoop;
 use Throwable;
+use TypeError;
+use ValueError;
 use function array_filter;
 use function array_map;
 use function array_merge;
@@ -90,11 +92,12 @@ final class Mdns implements Server
 	private Datagram\SocketInterface|null $socket = null;
 
 	public function __construct(
-		private readonly MetadataDocuments\DevicesModule\Connector $connector,
+		private readonly Documents\Connectors\Connector $connector,
 		private readonly Helpers\Connector $connectorHelper,
+		private readonly Subscribers\Entities $entitiesSubscriber,
 		private readonly EventLoop\LoopInterface $eventLoop,
 		private readonly HomeKit\Logger $logger,
-		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $connectorsPropertiesManager,
+		private readonly PsrEventDispatcher\EventDispatcherInterface|null $dispatcher = null,
 	)
 	{
 		$this->parser = new Dns\Protocol\Parser();
@@ -103,24 +106,34 @@ final class Mdns implements Server
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	public function connect(): void
+	public function initialize(): void
 	{
 		$this->createZone();
+	}
 
+	public function connect(): void
+	{
 		$this->logger->debug(
 			'Creating mDNS server',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'mdns-server',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
 				],
 			],
 		);
+
+		$this->entitiesSubscriber->onRefresh[] = function (DevicesEntities\Connectors\Properties\Variable $property): void {
+			$this->refresh($property);
+		};
 
 		$factory = new Datagram\Factory($this->eventLoop);
 
@@ -158,27 +171,27 @@ final class Mdns implements Server
 					$this->logger->error(
 						'An error occurred during server handling',
 						[
-							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+							'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 							'type' => 'mdns-server',
-							'exception' => BootstrapHelpers\Logger::buildException($ex),
+							'exception' => ApplicationHelpers\Logger::buildException($ex),
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
 							],
 						],
 					);
 
-					throw new DevicesExceptions\Terminate(
+					$this->dispatcher?->dispatch(new DevicesEvents\TerminateConnector(
+						MetadataTypes\Sources\Connector::HOMEKIT,
 						'Discovery broadcast server was terminated',
-						$ex->getCode(),
 						$ex,
-					);
+					));
 				});
 
 				$this->socket->on('close', function (): void {
 					$this->logger->info(
 						'Server was closed',
 						[
-							'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+							'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 							'type' => 'mdns-server',
 							'connector' => [
 								'id' => $this->connector->getId()->toString(),
@@ -202,30 +215,15 @@ final class Mdns implements Server
 				$this->logger->error(
 					'Could not create mDNS discovery server',
 					[
-						'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+						'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 						'type' => 'mdns-server',
-						'exception' => BootstrapHelpers\Logger::buildException($ex),
+						'exception' => ApplicationHelpers\Logger::buildException($ex),
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],
 					],
 				);
 			});
-
-		$this->connectorsPropertiesManager->on(
-			DevicesConstants::EVENT_ENTITY_CREATED,
-			[$this, 'refresh'],
-		);
-
-		$this->connectorsPropertiesManager->on(
-			DevicesConstants::EVENT_ENTITY_UPDATED,
-			[$this, 'refresh'],
-		);
-
-		$this->connectorsPropertiesManager->on(
-			DevicesConstants::EVENT_ENTITY_DELETED,
-			[$this, 'refresh'],
-		);
 	}
 
 	public function disconnect(): void
@@ -233,27 +231,12 @@ final class Mdns implements Server
 		$this->logger->debug(
 			'Closing mDNS server',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'mdns-server',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
 				],
 			],
-		);
-
-		$this->connectorsPropertiesManager->removeListener(
-			DevicesConstants::EVENT_ENTITY_CREATED,
-			[$this, 'refresh'],
-		);
-
-		$this->connectorsPropertiesManager->removeListener(
-			DevicesConstants::EVENT_ENTITY_UPDATED,
-			[$this, 'refresh'],
-		);
-
-		$this->connectorsPropertiesManager->removeListener(
-			DevicesConstants::EVENT_ENTITY_DELETED,
-			[$this, 'refresh'],
 		);
 
 		$this->socket?->close();
@@ -263,28 +246,22 @@ final class Mdns implements Server
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
-	public function refresh(
-		DevicesEntities\Connectors\Properties\Property $property,
+	private function refresh(
+		DevicesEntities\Connectors\Properties\Variable $property,
 	): void
 	{
-		if (
-			(
-				$property instanceof DevicesEntities\Connectors\Properties\Variable
-				&& $property->getConnector()->getId()->equals($this->connector->getId())
-			)
-			&& (
-				$property->getIdentifier() === Types\ConnectorPropertyIdentifier::PAIRED
-				|| $property->getIdentifier() === Types\ConnectorPropertyIdentifier::CONFIG_VERSION
-			)
-		) {
+		if ($property->getConnector()->getId()->equals($this->connector->getId())) {
 			$this->logger->debug(
 				'Connector configuration changed. Refreshing mDNS broadcast',
 				[
-					'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'mdns-server',
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
@@ -302,7 +279,7 @@ final class Mdns implements Server
 		$this->logger->debug(
 			'Broadcasting connector DNS zone',
 			[
-				'source' => MetadataTypes\ConnectorSource::SOURCE_CONNECTOR_HOMEKIT,
+				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'mdns-server',
 				'connector' => [
 					'id' => $this->connector->getId()->toString(),
@@ -334,9 +311,12 @@ final class Mdns implements Server
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	private function createZone(): void
 	{
@@ -431,7 +411,7 @@ final class Mdns implements Server
 				'c#=' . $this->connectorHelper->getVersion($this->connector),
 				's#=1', // Accessory state
 				'ff=0',
-				'ci=' . HomeKit\Types\AccessoryCategory::BRIDGE,
+				'ci=' . HomeKit\Types\AccessoryCategory::BRIDGE->value,
 				// 'sf == 1' means "discoverable by HomeKit iOS clients"
 				'sf=' . ($this->connectorHelper->isPaired($this->connector) ? 0 : 1),
 				'sh=' . $setupHash,

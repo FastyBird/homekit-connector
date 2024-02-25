@@ -15,10 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Types;
 
-use Consistence;
-use function intval;
-use function strval;
-
 /**
  * TLV method value types
  *
@@ -27,32 +23,19 @@ use function strval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class TlvMethod extends Consistence\Enum\Enum
+enum TlvMethod: int
 {
 
-	/**
-	 * Define methods
-	 */
-	public const RESERVED = 0;
+	case RESERVED = 0;
 
-	public const PAIR_SETUP = 1;
+	case PAIR_SETUP = 1;
 
-	public const PAIR_VERIFY = 2;
+	case PAIR_VERIFY = 2;
 
-	public const ADD_PAIRING = 3;
+	case ADD_PAIRING = 3;
 
-	public const REMOVE_PAIRING = 4;
+	case REMOVE_PAIRING = 4;
 
-	public const LIST_PAIRINGS = 5;
-
-	public function getValue(): int
-	{
-		return intval(parent::getValue());
-	}
-
-	public function __toString(): string
-	{
-		return strval(self::getValue());
-	}
+	case LIST_PAIRINGS = 5;
 
 }

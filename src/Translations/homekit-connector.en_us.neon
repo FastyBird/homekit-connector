@@ -13,6 +13,12 @@
 # @date           14.02.23
 #
 
+base:
+    messages:
+        invalidRelation:
+            heading: "Invalid relation"
+            message: "Provided relation is not valid"
+
 cmd:
     base:
         questions:
@@ -129,7 +135,7 @@ cmd:
                 device:
                     identifier: "Provide device identifier"
                     name: "Provide device name"
-                    value: "Provide characteristic value"
+                value: "Provide characteristic value"
             select:
                 item:
                     connector: "Please select connector to manage"

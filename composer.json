@@ -32,7 +32,7 @@
     "source": "https://github.com/FastyBird/homekit-connector"
   },
   "require": {
-    "php": ">=8.1.0",
+    "php": ">=8.2.0",
     "ext-gmp": "*",
     "ext-pcntl": "*",
     "ext-sockets": "*",
@@ -42,7 +42,8 @@
     "contributte/monolog": "^0.5",
     "contributte/translation": "^2.0",
     "cweagans/composer-patches": "^1.7",
-    "fastybird/bootstrap-library": "dev-main",
+    "evenement/evenement": "^3.0",
+    "fastybird/application-library": "dev-main",
     "fastybird/datetime-factory": "^0.6",
     "fastybird/devices-module": "dev-main",
     "fastybird/exchange-library": "dev-main",
@@ -51,6 +52,7 @@
     "ipub/slim-router": "^0.2",
     "leigh/curve25519": "^0.1",
     "nette/di": "^3.0",
+    "orisai/nette-object-mapper": "^0.1",
     "psr/event-dispatcher": "^1.0",
     "psr/log": "^3.0",
     "endroid/qr-code": "4.5",
@@ -61,7 +63,8 @@
     "react/promise": "^3",
     "symplify/vendor-patches": "^11.2",
     "simplito/elliptic-php": "^1.0",
-    "symfony/event-dispatcher": "^5.4"
+    "symfony/event-dispatcher": "^5.4",
+    "z4kn4fein/php-semver": "^2.0"
   },
   "require-dev": {
     "brianium/paratest": "^7.3",
@@ -118,12 +121,6 @@
       }
     }
   },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/mathsolver/mathsolver.git"
-    }
-  ],
   "minimum-stability": "dev",
   "prefer-stable": true
 }

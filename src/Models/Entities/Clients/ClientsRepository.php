@@ -18,10 +18,11 @@ namespace FastyBird\Connector\HomeKit\Models\Entities\Clients;
 use Doctrine\ORM;
 use Doctrine\Persistence;
 use FastyBird\Connector\HomeKit\Entities;
+use FastyBird\Connector\HomeKit\Entities\Clients\Client;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Queries;
-use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
-use FastyBird\Module\Devices\Utilities as DevicesUtilities;
+use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Library\Application\Helpers as ApplicationHelpers;
 use IPub\DoctrineOrmQuery;
 use Nette;
 use function is_array;
@@ -39,36 +40,36 @@ final class ClientsRepository
 
 	use Nette\SmartObject;
 
-	/** @var ORM\EntityRepository<Entities\Client>|null */
+	/** @var ORM\EntityRepository<Client>|null */
 	private ORM\EntityRepository|null $repository = null;
 
 	public function __construct(
-		private readonly DevicesUtilities\Database $database,
+		private readonly ApplicationHelpers\Database $database,
 		private readonly Persistence\ManagerRegistry $managerRegistry,
 	)
 	{
 	}
 
 	/**
-	 * @param Queries\Entities\FindClients<Entities\Client> $queryObject
+	 * @param Queries\Entities\FindClients<Client> $queryObject
 	 *
-	 * @throws DevicesExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 */
 	public function findOneBy(
 		Queries\Entities\FindClients $queryObject,
-	): Entities\Client|null
+	): Entities\Clients\Client|null
 	{
 		return $this->database->query(
-			fn (): Entities\Client|null => $queryObject->fetchOne($this->getRepository()),
+			fn (): Entities\Clients\Client|null => $queryObject->fetchOne($this->getRepository()),
 		);
 	}
 
 	/**
-	 * @param Queries\Entities\FindClients<Entities\Client> $queryObject
+	 * @param Queries\Entities\FindClients<Client> $queryObject
 	 *
-	 * @return DoctrineOrmQuery\ResultSet<Entities\Client>
+	 * @return DoctrineOrmQuery\ResultSet<Client>
 	 *
-	 * @throws DevicesExceptions\InvalidState
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 */
 	public function getResultSet(
@@ -87,12 +88,12 @@ final class ClientsRepository
 	}
 
 	/**
-	 * @return ORM\EntityRepository<Entities\Client>
+	 * @return ORM\EntityRepository<Client>
 	 */
 	private function getRepository(): ORM\EntityRepository
 	{
 		if ($this->repository === null) {
-			$this->repository = $this->managerRegistry->getRepository(Entities\Client::class);
+			$this->repository = $this->managerRegistry->getRepository(Entities\Clients\Client::class);
 		}
 
 		return $this->repository;

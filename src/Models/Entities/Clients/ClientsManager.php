@@ -17,8 +17,8 @@ namespace FastyBird\Connector\HomeKit\Models\Entities\Clients;
 
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Models;
-use IPub\DoctrineCrud;
-use IPub\DoctrineCrud\Crud;
+use IPub\DoctrineCrud\Crud as DoctrineCrudCrud;
+use IPub\DoctrineCrud\Exceptions as DoctrineCrudExceptions;
 use Nette;
 use Nette\Utils;
 use function assert;
@@ -36,47 +36,59 @@ class ClientsManager
 
 	use Nette\SmartObject;
 
+	/** @var DoctrineCrudCrud\IEntityCrud<Entities\Clients\Client>|null */
+	private DoctrineCrudCrud\IEntityCrud|null $entityCrud = null;
+
 	/**
-	 * @param Crud\IEntityCrud<Entities\Client> $entityCrud
+	 * @param DoctrineCrudCrud\IEntityCrudFactory<Entities\Clients\Client> $entityCrudFactory
 	 */
-	public function __construct(private readonly Crud\IEntityCrud $entityCrud)
+	public function __construct(
+		private readonly DoctrineCrudCrud\IEntityCrudFactory $entityCrudFactory,
+	)
 	{
 	}
 
-	public function create(Utils\ArrayHash $values): Entities\Client
+	public function create(Utils\ArrayHash $values): Entities\Clients\Client
 	{
-		// Get entity creator
-		$creator = $this->entityCrud->getEntityCreator();
-
-		$entity = $creator->create($values);
-		assert($entity instanceof Entities\Client);
+		$entity = $this->getEntityCrud()->getEntityCreator()->create($values);
+		assert($entity instanceof Entities\Clients\Client);
 
 		return $entity;
 	}
 
 	/**
-	 * @throws DoctrineCrud\Exceptions\InvalidArgumentException
+	 * @throws DoctrineCrudExceptions\InvalidArgumentException
 	 */
 	public function update(
-		Entities\Client $entity,
+		Entities\Clients\Client $entity,
 		Utils\ArrayHash $values,
-	): Entities\Client
+	): Entities\Clients\Client
 	{
-		$entity = $this->entityCrud->getEntityUpdater()
-			->update($values, $entity);
-		assert($entity instanceof Entities\Client);
+		$entity = $this->getEntityCrud()->getEntityUpdater()->update($values, $entity);
+		assert($entity instanceof Entities\Clients\Client);
 
 		return $entity;
 	}
 
 	/**
-	 * @throws DoctrineCrud\Exceptions\InvalidArgumentException
+	 * @throws DoctrineCrudExceptions\InvalidArgumentException
 	 */
-	public function delete(Entities\Client $entity): bool
+	public function delete(Entities\Clients\Client $entity): bool
 	{
 		// Delete entity from database
-		return $this->entityCrud->getEntityDeleter()
-			->delete($entity);
+		return $this->getEntityCrud()->getEntityDeleter()->delete($entity);
+	}
+
+	/**
+	 * @return DoctrineCrudCrud\IEntityCrud<Entities\Clients\Client>
+	 */
+	public function getEntityCrud(): DoctrineCrudCrud\IEntityCrud
+	{
+		if ($this->entityCrud === null) {
+			$this->entityCrud = $this->entityCrudFactory->create(Entities\Clients\Client::class);
+		}
+
+		return $this->entityCrud;
 	}
 
 }

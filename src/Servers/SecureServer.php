@@ -16,7 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Servers;
 
 use Evenement\EventEmitter;
-use FastyBird\Library\Metadata\Documents as MetadataDocuments;
+use FastyBird\Connector\HomeKit\Documents;
 use Nette;
 use React\Socket;
 use SplObjectStorage;
@@ -39,7 +39,7 @@ final class SecureServer extends EventEmitter implements Socket\ServerInterface
 	private SplObjectStorage $activeConnections;
 
 	public function __construct(
-		private readonly MetadataDocuments\DevicesModule\Connector $connector,
+		private readonly Documents\Connectors\Connector $connector,
 		private readonly Socket\ServerInterface $server,
 		private readonly SecureConnectionFactory $secureConnectionFactory,
 		private string|null $sharedKey = null,

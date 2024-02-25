@@ -15,9 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Types;
 
-use Consistence;
-use function strval;
-
 /**
  * HAP Representation type
  *
@@ -26,66 +23,53 @@ use function strval;
  *
  * @author         Adam Kadlec <adam.kadlec@fastybird.com>
  */
-class Representation extends Consistence\Enum\Enum
+enum Representation: string
 {
 
-	/**
-	 * Define permissions identifiers
-	 */
-	public const ACCS = 'accessories';
+	case ACCS = 'accessories';
 
-	public const AID = 'aid';
+	case AID = 'aid';
 
-	public const CHARS = 'characteristics';
+	case CHARS = 'characteristics';
 
-	public const DESC = 'description';
+	case DESC = 'description';
 
-	public const FORMAT = 'format';
+	case FORMAT = 'format';
 
-	public const IID = 'iid';
+	case IID = 'iid';
 
-	public const MAX_LEN = 'maxLen';
+	case MAX_LEN = 'maxLen';
 
-	public const PERM = 'perms';
+	case PERM = 'perms';
 
-	public const PID = 'pid';
+	case PID = 'pid';
 
-	public const PRIMARY = 'primary';
+	case PRIMARY = 'primary';
 
-	public const HIDDEN = 'hidden';
+	case HIDDEN = 'hidden';
 
-	public const SERVICES = 'services';
+	case SERVICES = 'services';
 
-	public const LINKED = 'linked';
+	case LINKED = 'linked';
 
-	public const STATUS = 'status';
+	case STATUS = 'status';
 
-	public const TTL = 'ttl';
+	case TTL = 'ttl';
 
-	public const TYPE = 'type';
+	case TYPE = 'type';
 
-	public const VALUE = 'value';
+	case VALUE = 'value';
 
-	public const VALID_VALUES = 'valid-values';
+	case VALID_VALUES = 'valid-values';
 
-	public const MAX_VALUE = 'maxValue';
+	case MAX_VALUE = 'maxValue';
 
-	public const MIN_STEP = 'minStep';
+	case MIN_STEP = 'minStep';
 
-	public const MIN_VALUE = 'minValue';
+	case MIN_VALUE = 'minValue';
 
-	public const UNIT = 'unit';
+	case UNIT = 'unit';
 
-	public const META = 'meta';
-
-	public function getValue(): string
-	{
-		return strval(parent::getValue());
-	}
-
-	public function __toString(): string
-	{
-		return strval(self::getValue());
-	}
+	case META = 'meta';
 
 }

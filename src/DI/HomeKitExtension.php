@@ -34,16 +34,16 @@ use FastyBird\Connector\HomeKit\Schemas;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Subscribers;
 use FastyBird\Connector\HomeKit\Writers;
-use FastyBird\Library\Bootstrap\Boot as BootstrapBoot;
+use FastyBird\Library\Application\Boot as ApplicationBoot;
 use FastyBird\Library\Exchange\DI as ExchangeDI;
+use FastyBird\Library\Metadata;
+use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Module\Devices\DI as DevicesDI;
-use IPub\DoctrineCrud;
 use Nette\DI;
-use Nette\PhpGenerator;
-use Nette\Schema;
-use stdClass;
+use Nettrine\ORM as NettrineORM;
+use function array_keys;
+use function array_pop;
 use function assert;
-use function ucfirst;
 use const DIRECTORY_SEPARATOR;
 
 /**
@@ -60,35 +60,21 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 	public const NAME = 'fbHomeKitConnector';
 
 	public static function register(
-		BootstrapBoot\Configurator $config,
+		ApplicationBoot\Configurator $config,
 		string $extensionName = self::NAME,
 	): void
 	{
 		$config->onCompile[] = static function (
-			BootstrapBoot\Configurator $config,
+			ApplicationBoot\Configurator $config,
 			DI\Compiler $compiler,
 		) use ($extensionName): void {
 			$compiler->addExtension($extensionName, new self());
 		};
 	}
 
-	public function getConfigSchema(): Schema\Schema
-	{
-		return Schema\Expect::structure([
-			'writer' => Schema\Expect::anyOf(
-				Writers\Event::NAME,
-				Writers\Exchange::NAME,
-			)->default(
-				Writers\Exchange::NAME,
-			),
-		]);
-	}
-
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
-		$configuration = $this->getConfig();
-		assert($configuration instanceof stdClass);
 
 		$logger = $builder->addDefinition($this->prefix('logger'), new DI\Definitions\ServiceDefinition())
 			->setType(HomeKit\Logger::class)
@@ -98,24 +84,16 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 		 * WRITERS
 		 */
 
-		if ($configuration->writer === Writers\Event::NAME) {
-			$builder->addFactoryDefinition($this->prefix('writers.event'))
-				->setImplement(Writers\EventFactory::class)
-				->getResultDefinition()
-				->setType(Writers\Event::class)
-				->setArguments([
-					'logger' => $logger,
-				]);
-		} elseif ($configuration->writer === Writers\Exchange::NAME) {
-			$builder->addFactoryDefinition($this->prefix('writers.exchange'))
-				->setImplement(Writers\ExchangeFactory::class)
-				->getResultDefinition()
-				->setType(Writers\Exchange::class)
-				->addTag(ExchangeDI\ExchangeExtension::CONSUMER_STATE, false)
-				->setArguments([
-					'logger' => $logger,
-				]);
-		}
+		$builder->addFactoryDefinition($this->prefix('writers.event'))
+			->setImplement(Writers\EventFactory::class)
+			->getResultDefinition()
+			->setType(Writers\Event::class);
+
+		$builder->addFactoryDefinition($this->prefix('writers.exchange'))
+			->setImplement(Writers\ExchangeFactory::class)
+			->getResultDefinition()
+			->setType(Writers\Exchange::class)
+			->addTag(ExchangeDI\ExchangeExtension::CONSUMER_STATE, false);
 
 		/**
 		 * SERVERS
@@ -169,7 +147,6 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 		)
 			->setType(Queue\Consumers\StoreDevicePropertyState::class)
 			->setArguments([
-				'useExchange' => $configuration->writer === Writers\Exchange::NAME,
 				'logger' => $logger,
 			]);
 
@@ -179,7 +156,6 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 		)
 			->setType(Queue\Consumers\StoreChannelPropertyState::class)
 			->setArguments([
-				'useExchange' => $configuration->writer === Writers\Exchange::NAME,
 				'logger' => $logger,
 			]);
 
@@ -220,6 +196,12 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 				'logger' => $logger,
 			]);
 
+		$builder->addDefinition(
+			$this->prefix('queue.messageBuilder'),
+			new DI\Definitions\ServiceDefinition(),
+		)
+			->setType(Helpers\MessageBuilder::class);
+
 		/**
 		 * SUBSCRIBERS
 		 */
@@ -233,38 +215,50 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 		$builder->addDefinition($this->prefix('subscribers.system'), new DI\Definitions\ServiceDefinition())
 			->setType(Subscribers\System::class);
 
+		$builder->addDefinition($this->prefix('subscribers.entities'), new DI\Definitions\ServiceDefinition())
+			->setType(Subscribers\Entities::class);
+
 		/**
 		 * JSON-API SCHEMAS
 		 */
 
 		$builder->addDefinition($this->prefix('schemas.connector.homekit'), new DI\Definitions\ServiceDefinition())
-			->setType(Schemas\HomeKitConnector::class);
+			->setType(Schemas\Connectors\Connector::class);
 
 		$builder->addDefinition($this->prefix('schemas.device.homekit'), new DI\Definitions\ServiceDefinition())
-			->setType(Schemas\HomeKitDevice::class);
+			->setType(Schemas\Devices\Device::class);
 
 		$builder->addDefinition($this->prefix('schemas.channel.homekit'), new DI\Definitions\ServiceDefinition())
-			->setType(Schemas\HomeKitChannel::class);
+			->setType(Schemas\Channels\Generic::class);
+
+		$builder->addDefinition($this->prefix('schemas.channel.lightBulb'), new DI\Definitions\ServiceDefinition())
+			->setType(Schemas\Channels\LightBulb::class);
+
+		$builder->addDefinition($this->prefix('schemas.channel.battery'), new DI\Definitions\ServiceDefinition())
+			->setType(Schemas\Channels\Battery::class);
 
 		/**
 		 * JSON-API HYDRATORS
 		 */
 
 		$builder->addDefinition($this->prefix('hydrators.connector.homekit'), new DI\Definitions\ServiceDefinition())
-			->setType(Hydrators\HomeKitConnector::class);
+			->setType(Hydrators\Connectors\Connector::class);
 
 		$builder->addDefinition($this->prefix('hydrators.device.homekit'), new DI\Definitions\ServiceDefinition())
-			->setType(Hydrators\HomeKitDevice::class);
+			->setType(Hydrators\Devices\Device::class);
 
 		$builder->addDefinition($this->prefix('hydrators.channel.homekit'), new DI\Definitions\ServiceDefinition())
-			->setType(Hydrators\HomeKitChannel::class);
+			->setType(Hydrators\Channels\Generic::class);
+
+		$builder->addDefinition($this->prefix('hydrators.channel.lightBulb'), new DI\Definitions\ServiceDefinition())
+			->setType(Hydrators\Channels\LightBulb::class);
+
+		$builder->addDefinition($this->prefix('hydrators.channel.battery'), new DI\Definitions\ServiceDefinition())
+			->setType(Hydrators\Channels\Battery::class);
 
 		/**
 		 * HELPERS
 		 */
-
-		$builder->addDefinition($this->prefix('helpers.entity'), new DI\Definitions\ServiceDefinition())
-			->setType(Helpers\Entity::class);
 
 		$builder->addDefinition($this->prefix('helpers.loader'), new DI\Definitions\ServiceDefinition())
 			->setType(Helpers\Loader::class);
@@ -316,21 +310,38 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 			->addTag('nette.inject');
 
 		/**
-		 * ENTITIES
-		 */
-
-		$builder->addDefinition($this->prefix('entities.accessory.factory'))
-			->setType(Entities\Protocol\AccessoryFactory::class);
-
-		$builder->addDefinition($this->prefix('entities.service.factory'))
-			->setType(Entities\Protocol\ServiceFactory::class);
-
-		$builder->addDefinition($this->prefix('entities.characteristic.factory'))
-			->setType(Entities\Protocol\CharacteristicsFactory::class);
-
-		/**
 		 * HOMEKIT
 		 */
+
+		// ACCESSORIES
+		$builder->addDefinition($this->prefix('protocol.accessory.factory.bridge'))
+			->setType(Protocol\Accessories\BridgeFactory::class);
+
+		$builder->addDefinition($this->prefix('protocol.accessory.factory.generic'))
+			->setType(Protocol\Accessories\GenericFactory::class);
+
+		// SERVICES
+		$builder->addDefinition($this->prefix('protocol.service.factory.generic'))
+			->setType(Protocol\Services\GenericFactory::class);
+
+		$builder->addDefinition($this->prefix('protocol.service.factory.lightBulb'))
+			->setType(Protocol\Services\LightBulbFactory::class);
+
+		$builder->addDefinition($this->prefix('protocol.service.factory.battery'))
+			->setType(Protocol\Services\BatteryFactory::class);
+
+		// CHARACTERISTICS
+		$builder->addDefinition($this->prefix('protocol.characteristic.factory.generic'))
+			->setType(Protocol\Characteristics\GenericFactory::class);
+
+		$builder->addDefinition($this->prefix('protocol.characteristic.factory.dynamicProperty'))
+			->setType(Protocol\Characteristics\DynamicPropertyFactory::class);
+
+		$builder->addDefinition($this->prefix('protocol.characteristic.factory.mappedProperty'))
+			->setType(Protocol\Characteristics\MappedPropertyFactory::class);
+
+		$builder->addDefinition($this->prefix('protocol.characteristic.factory.variableProperty'))
+			->setType(Protocol\Characteristics\VariablePropertyFactory::class);
 
 		$builder->addDefinition($this->prefix('protocol.tlv'), new DI\Definitions\ServiceDefinition())
 			->setType(Protocol\Tlv::class);
@@ -352,8 +363,7 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 			->setType(Models\Entities\Clients\ClientsRepository::class);
 
 		$builder->addDefinition($this->prefix('models.clientsManager'), new DI\Definitions\ServiceDefinition())
-			->setType(Models\Entities\Clients\ClientsManager::class)
-			->setArgument('entityCrud', '__placeholder__');
+			->setType(Models\Entities\Clients\ClientsManager::class);
 
 		/**
 		 * COMMANDS
@@ -376,11 +386,12 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 			->setImplement(Connector\ConnectorFactory::class)
 			->addTag(
 				DevicesDI\DevicesExtension::CONNECTOR_TYPE_TAG,
-				Entities\HomeKitConnector::TYPE,
+				Entities\Connectors\Connector::TYPE,
 			)
 			->getResultDefinition()
 			->setType(Connector\Connector::class)
 			->setArguments([
+				'writersFactories' => $builder->findByType(Writers\WriterFactory::class),
 				'serversFactories' => $builder->findByType(Servers\ServerFactory::class),
 				'logger' => $logger,
 			]);
@@ -396,44 +407,94 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 		$builder = $this->getContainerBuilder();
 
 		/**
-		 * Doctrine entities
+		 * DOCTRINE ENTITIES
 		 */
 
-		$ormAnnotationDriverService = $builder->getDefinition('nettrineOrmAnnotations.annotationDriver');
+		$services = $builder->findByTag(NettrineORM\DI\OrmAttributesExtension::DRIVER_TAG);
 
-		if ($ormAnnotationDriverService instanceof DI\Definitions\ServiceDefinition) {
-			$ormAnnotationDriverService->addSetup(
-				'addPaths',
-				[[__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Entities']],
+		if ($services !== []) {
+			$services = array_keys($services);
+			$ormAttributeDriverServiceName = array_pop($services);
+
+			$ormAttributeDriverService = $builder->getDefinition($ormAttributeDriverServiceName);
+
+			if ($ormAttributeDriverService instanceof DI\Definitions\ServiceDefinition) {
+				$ormAttributeDriverService->addSetup(
+					'addPaths',
+					[[__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Entities']],
+				);
+
+				$ormAttributeDriverChainService = $builder->getDefinitionByType(
+					Persistence\Mapping\Driver\MappingDriverChain::class,
+				);
+
+				if ($ormAttributeDriverChainService instanceof DI\Definitions\ServiceDefinition) {
+					$ormAttributeDriverChainService->addSetup('addDriver', [
+						$ormAttributeDriverService,
+						'FastyBird\Connector\HomeKit\Entities',
+					]);
+				}
+			}
+		}
+
+		/**
+		 * APPLICATION DOCUMENTS
+		 */
+
+		$services = $builder->findByTag(Metadata\DI\MetadataExtension::DRIVER_TAG);
+
+		if ($services !== []) {
+			$services = array_keys($services);
+			$documentAttributeDriverServiceName = array_pop($services);
+
+			$documentAttributeDriverService = $builder->getDefinition($documentAttributeDriverServiceName);
+
+			if ($documentAttributeDriverService instanceof DI\Definitions\ServiceDefinition) {
+				$documentAttributeDriverService->addSetup(
+					'addPaths',
+					[[__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Documents']],
+				);
+
+				$documentAttributeDriverChainService = $builder->getDefinitionByType(
+					MetadataDocuments\Mapping\Driver\MappingDriverChain::class,
+				);
+
+				if ($documentAttributeDriverChainService instanceof DI\Definitions\ServiceDefinition) {
+					$documentAttributeDriverChainService->addSetup('addDriver', [
+						$documentAttributeDriverService,
+						'FastyBird\Connector\HomeKit\Documents',
+					]);
+				}
+			}
+		}
+
+		/**
+		 * HOMEKIT
+		 */
+
+		$httpServerServiceFactoryName = $builder->getByType(Servers\HttpFactory::class);
+
+		if ($httpServerServiceFactoryName !== null) {
+			$httpServerServiceFactory = $builder->getDefinition($httpServerServiceFactoryName);
+			assert($httpServerServiceFactory instanceof DI\Definitions\FactoryDefinition);
+
+			$accessoriesFactories = $builder->findByType(
+				Protocol\Accessories\AccessoryFactory::class,
+			);
+			$servicesFactories = $builder->findByType(
+				Protocol\Services\ServiceFactory::class,
+			);
+			$characteristicsFactories = $builder->findByType(
+				Protocol\Characteristics\CharacteristicFactory::class,
+			);
+
+			$httpServerServiceFactory->getResultDefinition()->setArgument('accessoryFactories', $accessoriesFactories);
+			$httpServerServiceFactory->getResultDefinition()->setArgument('serviceFactories', $servicesFactories);
+			$httpServerServiceFactory->getResultDefinition()->setArgument(
+				'characteristicsFactories',
+				$characteristicsFactories,
 			);
 		}
-
-		$ormAnnotationDriverChainService = $builder->getDefinitionByType(
-			Persistence\Mapping\Driver\MappingDriverChain::class,
-		);
-
-		if ($ormAnnotationDriverChainService instanceof DI\Definitions\ServiceDefinition) {
-			$ormAnnotationDriverChainService->addSetup('addDriver', [
-				$ormAnnotationDriverService,
-				'FastyBird\Connector\HomeKit\Entities',
-			]);
-		}
-	}
-
-	/**
-	 * @throws DI\MissingServiceException
-	 */
-	public function afterCompile(PhpGenerator\ClassType $class): void
-	{
-		$builder = $this->getContainerBuilder();
-
-		$entityFactoryServiceName = $builder->getByType(DoctrineCrud\Crud\IEntityCrudFactory::class, true);
-
-		$devicesManagerService = $class->getMethod('createService' . ucfirst($this->name) . '__models__clientsManager');
-		$devicesManagerService->setBody(
-			'return new ' . Models\Entities\Clients\ClientsManager::class
-			. '($this->getService(\'' . $entityFactoryServiceName . '\')->create(\'' . Entities\Client::class . '\'));',
-		);
 	}
 
 	/**
