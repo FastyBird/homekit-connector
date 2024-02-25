@@ -48,6 +48,7 @@
     "fastybird/devices-module": "dev-main",
     "fastybird/exchange-library": "dev-main",
     "fastybird/metadata-library": "dev-main",
+    "fastybird/tools-library": "dev-main",
     "hashids/hashids": "^4.1",
     "ipub/slim-router": "^0.2",
     "leigh/curve25519": "^0.1",
