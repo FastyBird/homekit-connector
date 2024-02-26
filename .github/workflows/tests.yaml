@@ -1,0 +1,66 @@
+name: "PHP Tester"
+
+on:
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+  push:
+    branches:
+      - "main"
+    tags:
+      - v*
+  schedule:
+    - cron: "0 8 * * 1" # At 08:00 on Monday
+
+env:
+  COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.ORGANIZATION_ACCESS_TOKEN }}"}}'
+
+jobs:
+  tests:
+    name: "PHP Tests"
+
+    uses: "fastybird/.github/.github/workflows/phpunit.yaml@main"
+    secrets: inherit
+    with:
+      php: "${{ matrix.php-version }}"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: [ "8.2" ]
+        operating-system: [ "ubuntu-latest" ]
+
+  code-coverage:
+    name: "PHP Tests With Code Coverage"
+    needs: [ "tests" ]
+
+    if: "github.event_name == 'push'"
+
+    uses: "fastybird/.github/.github/workflows/phpunit.yaml@main"
+    secrets: inherit
+    with:
+      php: "${{ matrix.php-version }}"
+      coverage: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: [ "8.2" ]
+        operating-system: [ "ubuntu-latest" ]
+
+  mutations:
+    name: "PHP Tests For Mutants"
+    needs: [ "tests" ]
+
+    if: "github.event_name == 'push'"
+
+    uses: "fastybird/.github/.github/workflows/mutations.yaml@main"
+    secrets: inherit
+    with:
+      php: "${{ matrix.php-version }}"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: [ "8.2" ]
+        operating-system: [ "ubuntu-latest" ]
