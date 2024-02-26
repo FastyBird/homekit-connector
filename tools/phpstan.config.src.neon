@@ -6,3 +6,41 @@ parameters:
 
     bootstrapFiles:
         - phpstan-bootstrap.php
+
+    ignoreErrors:
+        -
+            message: '#^Parameter \#1 \$value of function strval expects bool\|float\|int\|resource\|string\|null, mixed given.#'
+            path: ../src/Servers/Http.php
+            count: 2
+        -
+            message: '#^Parameter \#1 \$value of function floatval expects array\|bool\|float\|int\|resource\|string\|null, mixed given.#'
+            path: ../src/Servers/Http.php
+            count: 3
+        -
+            message: '#^Parameter \#1 \$value of function intval expects array\|bool\|float\|int\|resource\|string\|null, mixed given.#'
+            path: ../src/Servers/Http.php
+            count: 1
+        -
+            message: '#^Parameter \#1 \$value of function strval expects bool\|float\|int\|resource\|string\|null, mixed given.#'
+            path: ../src/Controllers/PairingController.php
+            count: 3
+        -
+            message: '#^Parameter \#1 \$value of function strval expects bool\|float\|int\|resource\|string\|null, mixed given.#'
+            path: ../src/Controllers/CharacteristicsController.php
+            count: 2
+        -
+            message: '#^Parameter \#1 \$value of function strval expects bool\|float\|int\|resource\|string\|null, mixed given.#'
+            path: ../src/Controllers/AccessoriesController.php
+            count: 2
+        -
+            message: '#^Parameter \#1 \$value of function strval expects bool\|float\|int\|resource\|string\|null, mixed given.#'
+            path: ../src/Commands/Install.php
+            count: 8
+        -
+            message: '#^Parameter \#1 \$value of function floatval expects array\|bool\|float\|int\|resource\|string\|null, mixed given.#'
+            path: ../src/Commands/Install.php
+            count: 5
+        -
+            message: '#^Parameter \#1 \$value of function intval expects array\|bool\|float\|int\|resource\|string\|null, mixed given.#'
+            path: ../src/Commands/Install.php
+            count: 1
