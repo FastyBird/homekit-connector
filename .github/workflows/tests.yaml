@@ -36,11 +36,10 @@ jobs:
 
     if: "github.event_name == 'push'"
 
-    uses: "fastybird/.github/.github/workflows/phpunit.yaml@main"
+    uses: "fastybird/.github/.github/workflows/coverage.yaml@main"
     secrets: inherit
     with:
       php: "${{ matrix.php-version }}"
-      coverage: true
 
     strategy:
       fail-fast: false
