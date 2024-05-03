@@ -220,7 +220,7 @@ class Service
 				static fn (Protocol\Characteristics\Characteristic $characteristic): array => $characteristic->toHap(),
 				array_values(array_filter(
 					$this->getCharacteristics(),
-					static fn (Protocol\Characteristics\Characteristic $characteristic): bool => !$characteristic->isVirtual()
+					static fn (Protocol\Characteristics\Characteristic $characteristic): bool => !$characteristic->isVirtual(),
 				)),
 			),
 			Types\Representation::PRIMARY->value => $this->primary,

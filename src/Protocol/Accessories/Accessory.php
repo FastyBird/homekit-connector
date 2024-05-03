@@ -152,7 +152,7 @@ abstract class Accessory
 				static fn (Protocol\Services\Service $service): array => $service->toHap(),
 				array_values(array_filter(
 					$this->getServices(),
-					static fn (Protocol\Services\Service $service): bool => !$service->isVirtual()
+					static fn (Protocol\Services\Service $service): bool => !$service->isVirtual(),
 				)),
 			),
 		];
