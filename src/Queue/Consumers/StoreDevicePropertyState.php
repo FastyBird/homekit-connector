@@ -32,6 +32,8 @@ use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\States as DevicesStates;
 use Nette;
 use Nette\Utils;
+use TypeError;
+use ValueError;
 use function assert;
 use function React\Async\await;
 
@@ -70,6 +72,8 @@ final class StoreDevicePropertyState implements Queue\Consumer
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function consume(Queue\Messages\Message $message): bool
 	{

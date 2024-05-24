@@ -59,7 +59,10 @@ final class AccessoriesController extends BaseController
 	 *
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
+	 * @throws MetadataExceptions\InvalidState
 	 * @throws Utils\JsonException
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function index(
 		Message\ServerRequestInterface $request,

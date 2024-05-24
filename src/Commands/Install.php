@@ -1379,11 +1379,13 @@ class Install extends Console\Command\Command
 	/**
 	 * @param array<string> $characteristics
 	 *
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exception
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
 	 * @throws TypeError
 	 * @throws ValueError
@@ -2582,6 +2584,7 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exception
 	 */
@@ -2914,6 +2917,7 @@ class Install extends Console\Command\Command
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
 	 * @throws TypeError
 	 * @throws ValueError

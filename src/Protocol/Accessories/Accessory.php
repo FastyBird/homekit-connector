@@ -18,9 +18,12 @@ namespace FastyBird\Connector\HomeKit\Protocol\Accessories;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use Nette;
 use Ramsey\Uuid;
 use SplObjectStorage;
+use TypeError;
+use ValueError;
 use function array_filter;
 use function array_map;
 use function array_values;
@@ -143,6 +146,11 @@ abstract class Accessory
 	 * Used for json serialization
 	 *
 	 * @return array<string, (int|array<array<string, (string|int|bool|array<array<string, (bool|float|int|array<int>|string|array<string>|null)>>|null)>>|null)>
+	 *
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function toHap(): array
 	{

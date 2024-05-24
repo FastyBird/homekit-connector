@@ -33,6 +33,8 @@ use FastyBird\Module\Devices\Queries as DevicesQueries;
 use FastyBird\Module\Devices\States as DevicesStates;
 use Nette;
 use Nette\Utils;
+use TypeError;
+use ValueError;
 use function assert;
 use function React\Async\await;
 
@@ -72,6 +74,8 @@ final class StoreChannelPropertyState implements Queue\Consumer
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function consume(Queue\Messages\Message $message): bool
 	{

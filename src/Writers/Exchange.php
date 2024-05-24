@@ -16,7 +16,6 @@
 namespace FastyBird\Connector\HomeKit\Writers;
 
 use DateTimeInterface;
-use Exception;
 use FastyBird\Connector\HomeKit\Documents;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
@@ -30,6 +29,7 @@ use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Metadata\Documents as MetadataDocuments;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
+use FastyBird\Library\Tools\Exceptions as ToolsExceptions;
 use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Events as DevicesEvents;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
@@ -37,6 +37,8 @@ use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
 use Psr\EventDispatcher as PsrEventDispatcher;
 use React\EventLoop;
+use TypeError;
+use ValueError;
 use function array_merge;
 
 /**
@@ -88,8 +90,16 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 	}
 
 	/**
+	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws ExchangeExceptions\InvalidArgument
+	 * @throws Exceptions\Runtime
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws MetadataExceptions\MalformedInput
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function connect(): void
 	{
@@ -109,14 +119,8 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 	}
 
 	/**
-	 * @throws DevicesExceptions\InvalidArgument
-	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
-	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\Logic
-	 * @throws MetadataExceptions\MalformedInput
-	 * @throws Exception
+	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\Runtime
 	 */
 	public function consume(
 		MetadataTypes\Sources\Source $source,

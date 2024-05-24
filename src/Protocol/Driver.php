@@ -18,9 +18,12 @@ namespace FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use Nette;
 use Ramsey\Uuid;
 use SplObjectStorage;
+use TypeError;
+use ValueError;
 
 /**
  * HAP accessory driver service
@@ -193,6 +196,11 @@ class Driver
 
 	/**
 	 * @return array<string, array<array<string, (int|array<array<string, (string|int|bool|array<array<string, (bool|float|int|array<int>|string|array<string>|null)>>|null)>>|null)>>>
+	 *
+	 * @throws MetadataExceptions\InvalidArgument
+	 * @throws MetadataExceptions\InvalidState
+	 * @throws TypeError
+	 * @throws ValueError
 	 */
 	public function toHap(Uuid\UuidInterface $connectorId): array
 	{
