@@ -78,7 +78,7 @@ class JsonAssert
 		}
 
 		try {
-			return (array) Utils\Json::decode($input, Utils\Json::FORCE_ARRAY);
+			return (array) Utils\Json::decode($input, forceArrays: true);
 		} catch (Utils\JsonException $e) {
 			throw new Utils\JsonException(
 				sprintf('%s is invalid: "%s"', $nameForMessage, $e->getMessage()),

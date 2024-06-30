@@ -142,9 +142,9 @@ class Install extends Console\Command\Command
 	{
 		$io = new Style\SymfonyStyle($input, $output);
 
-		$io->title($this->translator->translate('//homekit-connector.cmd.install.title'));
+		$io->title((string) $this->translator->translate('//homekit-connector.cmd.install.title'));
 
-		$io->note($this->translator->translate('//homekit-connector.cmd.install.subtitle'));
+		$io->note((string) $this->translator->translate('//homekit-connector.cmd.install.subtitle'));
 
 		$this->askInstallAction($io);
 
@@ -167,7 +167,9 @@ class Install extends Console\Command\Command
 	private function createConnector(Style\SymfonyStyle $io): void
 	{
 		$question = new Console\Question\Question(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.provide.connector.identifier'),
+			(string) $this->translator->translate(
+				'//homekit-connector.cmd.install.questions.provide.connector.identifier',
+			),
 		);
 
 		$question->setValidator(function ($answer) {
@@ -180,7 +182,7 @@ class Install extends Console\Command\Command
 					Entities\Connectors\Connector::class,
 				) !== null) {
 					throw new Exceptions\Runtime(
-						$this->translator->translate(
+						(string) $this->translator->translate(
 							'//homekit-connector.cmd.install.messages.identifier.connector.used',
 						),
 					);
@@ -212,7 +214,9 @@ class Install extends Console\Command\Command
 
 		if ($identifier === '') {
 			$io->error(
-				$this->translator->translate('//homekit-connector.cmd.install.messages.identifier.connector.missing'),
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.messages.identifier.connector.missing',
+				),
 			);
 
 			return;
@@ -244,7 +248,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.create.connector.success',
 					['name' => $connector->getName() ?? $connector->getIdentifier()],
 				),
@@ -260,7 +264,11 @@ class Install extends Console\Command\Command
 				],
 			);
 
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.create.connector.error'));
+			$io->error(
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.messages.create.connector.error',
+				),
+			);
 
 			return;
 		} finally {
@@ -268,7 +276,7 @@ class Install extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.create.devices'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.create.devices'),
 			true,
 		);
 
@@ -300,10 +308,10 @@ class Install extends Console\Command\Command
 		$connector = $this->askWhichConnector($io);
 
 		if ($connector === null) {
-			$io->warning($this->translator->translate('//homekit-connector.cmd.base.messages.noConnectors'));
+			$io->warning((string) $this->translator->translate('//homekit-connector.cmd.base.messages.noConnectors'));
 
 			$question = new Console\Question\ConfirmationQuestion(
-				$this->translator->translate('//homekit-connector.cmd.install.questions.create.connector'),
+				(string) $this->translator->translate('//homekit-connector.cmd.install.questions.create.connector'),
 				false,
 			);
 
@@ -322,7 +330,7 @@ class Install extends Console\Command\Command
 
 		if ($connector->isEnabled()) {
 			$question = new Console\Question\ConfirmationQuestion(
-				$this->translator->translate('//homekit-connector.cmd.install.questions.disable.connector'),
+				(string) $this->translator->translate('//homekit-connector.cmd.install.questions.disable.connector'),
 				false,
 			);
 
@@ -331,7 +339,7 @@ class Install extends Console\Command\Command
 			}
 		} else {
 			$question = new Console\Question\ConfirmationQuestion(
-				$this->translator->translate('//homekit-connector.cmd.install.questions.enable.connector'),
+				(string) $this->translator->translate('//homekit-connector.cmd.install.questions.enable.connector'),
 				false,
 			);
 
@@ -375,7 +383,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.update.connector.success',
 					['name' => $connector->getName() ?? $connector->getIdentifier()],
 				),
@@ -391,7 +399,11 @@ class Install extends Console\Command\Command
 				],
 			);
 
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.update.connector.error'));
+			$io->error(
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.messages.update.connector.error',
+				),
+			);
 
 			return;
 		} finally {
@@ -399,7 +411,7 @@ class Install extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.manage.devices'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.manage.devices'),
 			false,
 		);
 
@@ -424,20 +436,20 @@ class Install extends Console\Command\Command
 		$connector = $this->askWhichConnector($io);
 
 		if ($connector === null) {
-			$io->info($this->translator->translate('//homekit-connector.cmd.base.messages.noConnectors'));
+			$io->info((string) $this->translator->translate('//homekit-connector.cmd.base.messages.noConnectors'));
 
 			return;
 		}
 
 		$io->warning(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.install.messages.remove.connector.confirm',
 				['name' => $connector->getName() ?? $connector->getIdentifier()],
 			),
 		);
 
 		$question = new Console\Question\ConfirmationQuestion(
-			$this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
 			false,
 		);
 
@@ -456,7 +468,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.remove.connector.success',
 					['name' => $connector->getName() ?? $connector->getIdentifier()],
 				),
@@ -472,7 +484,11 @@ class Install extends Console\Command\Command
 				],
 			);
 
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.remove.connector.error'));
+			$io->error(
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.messages.remove.connector.error',
+				),
+			);
 		} finally {
 			$this->databaseHelper->clear();
 		}
@@ -496,7 +512,7 @@ class Install extends Console\Command\Command
 		$connector = $this->askWhichConnector($io);
 
 		if ($connector === null) {
-			$io->info($this->translator->translate('//homekit-connector.cmd.base.messages.noConnectors'));
+			$io->info((string) $this->translator->translate('//homekit-connector.cmd.base.messages.noConnectors'));
 
 			return;
 		}
@@ -525,8 +541,8 @@ class Install extends Console\Command\Command
 		$table = new Console\Helper\Table($io);
 		$table->setHeaders([
 			'#',
-			$this->translator->translate('//homekit-connector.cmd.install.data.name'),
-			$this->translator->translate('//homekit-connector.cmd.install.data.devicesCnt'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.data.name'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.data.devicesCnt'),
 		]);
 
 		foreach ($connectors as $index => $connector) {
@@ -563,7 +579,9 @@ class Install extends Console\Command\Command
 	private function createDevice(Style\SymfonyStyle $io, Entities\Connectors\Connector $connector): void
 	{
 		$question = new Console\Question\Question(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.provide.device.identifier'),
+			(string) $this->translator->translate(
+				'//homekit-connector.cmd.install.questions.provide.device.identifier',
+			),
 		);
 
 		$question->setValidator(function (string|null $answer) {
@@ -575,7 +593,9 @@ class Install extends Console\Command\Command
 					$this->devicesRepository->findOneBy($findDeviceQuery, Entities\Devices\Device::class) !== null
 				) {
 					throw new Exceptions\Runtime(
-						$this->translator->translate('//homekit-connector.cmd.install.messages.identifier.device.used'),
+						(string) $this->translator->translate(
+							'//homekit-connector.cmd.install.messages.identifier.device.used',
+						),
 					);
 				}
 			}
@@ -604,7 +624,9 @@ class Install extends Console\Command\Command
 
 		if ($identifier === '') {
 			$io->error(
-				$this->translator->translate('//homekit-connector.cmd.install.messages.identifier.device.missing'),
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.messages.identifier.device.missing',
+				),
 			);
 
 			return;
@@ -637,7 +659,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.create.device.success',
 					['name' => $device->getName() ?? $device->getIdentifier()],
 				),
@@ -653,7 +675,9 @@ class Install extends Console\Command\Command
 				],
 			);
 
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.create.device.error'));
+			$io->error(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.create.device.error'),
+			);
 
 			return;
 		} finally {
@@ -684,10 +708,10 @@ class Install extends Console\Command\Command
 		$device = $this->askWhichDevice($io, $connector);
 
 		if ($device === null) {
-			$io->warning($this->translator->translate('//homekit-connector.cmd.install.messages.noDevices'));
+			$io->warning((string) $this->translator->translate('//homekit-connector.cmd.install.messages.noDevices'));
 
 			$question = new Console\Question\ConfirmationQuestion(
-				$this->translator->translate('//homekit-connector.cmd.install.questions.create.device'),
+				(string) $this->translator->translate('//homekit-connector.cmd.install.questions.create.device'),
 				false,
 			);
 
@@ -736,7 +760,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.update.device.success',
 					['name' => $device->getName() ?? $device->getIdentifier()],
 				),
@@ -752,7 +776,9 @@ class Install extends Console\Command\Command
 				],
 			);
 
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.update.device.error'));
+			$io->error(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.update.device.error'),
+			);
 
 			return;
 		} finally {
@@ -760,7 +786,7 @@ class Install extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.manage.services'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.manage.services'),
 			false,
 		);
 
@@ -785,20 +811,20 @@ class Install extends Console\Command\Command
 		$device = $this->askWhichDevice($io, $connector);
 
 		if ($device === null) {
-			$io->info($this->translator->translate('//homekit-connector.cmd.install.messages.noDevices'));
+			$io->info((string) $this->translator->translate('//homekit-connector.cmd.install.messages.noDevices'));
 
 			return;
 		}
 
 		$io->warning(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.install.messages.remove.device.confirm',
 				['name' => $device->getName() ?? $device->getIdentifier()],
 			),
 		);
 
 		$question = new Console\Question\ConfirmationQuestion(
-			$this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
 			false,
 		);
 
@@ -817,7 +843,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.remove.device.success',
 					['name' => $device->getName() ?? $device->getIdentifier()],
 				),
@@ -833,7 +859,9 @@ class Install extends Console\Command\Command
 				],
 			);
 
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.remove.device.error'));
+			$io->error(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.remove.device.error'),
+			);
 		} finally {
 			$this->databaseHelper->clear();
 		}
@@ -857,7 +885,7 @@ class Install extends Console\Command\Command
 		$device = $this->askWhichDevice($io, $connector);
 
 		if ($device === null) {
-			$io->info($this->translator->translate('//homekit-connector.cmd.install.messages.noDevices'));
+			$io->info((string) $this->translator->translate('//homekit-connector.cmd.install.messages.noDevices'));
 
 			return;
 		}
@@ -888,15 +916,15 @@ class Install extends Console\Command\Command
 		$table = new Console\Helper\Table($io);
 		$table->setHeaders([
 			'#',
-			$this->translator->translate('//homekit-connector.cmd.install.data.name'),
-			$this->translator->translate('//homekit-connector.cmd.install.data.category'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.data.name'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.data.category'),
 		]);
 
 		foreach ($devices as $index => $device) {
 			$table->addRow([
 				$index + 1,
 				$device->getName() ?? $device->getIdentifier(),
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.base.category.' . $device->getAccessoryCategory()->value,
 				),
 			]);
@@ -1003,7 +1031,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.create.service.success',
 					['name' => $channel->getName() ?? $channel->getIdentifier()],
 				),
@@ -1019,7 +1047,9 @@ class Install extends Console\Command\Command
 				],
 			);
 
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.create.service.error'));
+			$io->error(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.create.service.error'),
+			);
 
 			return;
 		} finally {
@@ -1027,7 +1057,7 @@ class Install extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.manage.characteristics'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.manage.characteristics'),
 			false,
 		);
 
@@ -1061,10 +1091,10 @@ class Install extends Console\Command\Command
 		$channels = $this->getServicesList($device);
 
 		if (count($channels) === 0) {
-			$io->warning($this->translator->translate('//homekit-connector.cmd.install.messages.noServices'));
+			$io->warning((string) $this->translator->translate('//homekit-connector.cmd.install.messages.noServices'));
 
 			$question = new Console\Question\ConfirmationQuestion(
-				$this->translator->translate('//homekit-connector.cmd.install.questions.create.service'),
+				(string) $this->translator->translate('//homekit-connector.cmd.install.questions.create.service'),
 				false,
 			);
 
@@ -1165,7 +1195,9 @@ class Install extends Console\Command\Command
 
 			if (count($missingOptional) > 0) {
 				$question = new Console\Question\ConfirmationQuestion(
-					$this->translator->translate('//homekit-connector.cmd.install.questions.addCharacteristics'),
+					(string) $this->translator->translate(
+						'//homekit-connector.cmd.install.questions.addCharacteristics',
+					),
 					false,
 				);
 
@@ -1179,7 +1211,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.update.service.success',
 					['name' => $channel->getName() ?? $channel->getIdentifier()],
 				),
@@ -1195,7 +1227,9 @@ class Install extends Console\Command\Command
 				],
 			);
 
-			$io->success($this->translator->translate('//homekit-connector.cmd.install.messages.update.service.error'));
+			$io->success(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.update.service.error'),
+			);
 
 			return;
 		} finally {
@@ -1203,7 +1237,7 @@ class Install extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ConfirmationQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.manage.characteristics'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.manage.characteristics'),
 			false,
 		);
 
@@ -1228,7 +1262,7 @@ class Install extends Console\Command\Command
 		$channels = $this->getServicesList($device);
 
 		if (count($channels) === 0) {
-			$io->warning($this->translator->translate('//homekit-connector.cmd.install.messages.noServices'));
+			$io->warning((string) $this->translator->translate('//homekit-connector.cmd.install.messages.noServices'));
 
 			return;
 		}
@@ -1240,14 +1274,14 @@ class Install extends Console\Command\Command
 		}
 
 		$io->warning(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.install.messages.remove.service.confirm',
 				['name' => $channel->getName() ?? $channel->getIdentifier()],
 			),
 		);
 
 		$question = new Console\Question\ConfirmationQuestion(
-			$this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
 			false,
 		);
 
@@ -1266,7 +1300,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.remove.service.success',
 					['name' => $channel->getName() ?? $channel->getIdentifier()],
 				),
@@ -1282,7 +1316,9 @@ class Install extends Console\Command\Command
 				],
 			);
 
-			$io->success($this->translator->translate('//homekit-connector.cmd.install.messages.remove.service.error'));
+			$io->success(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.remove.service.error'),
+			);
 		} finally {
 			$this->databaseHelper->clear();
 		}
@@ -1306,7 +1342,7 @@ class Install extends Console\Command\Command
 		$channels = $this->getServicesList($device);
 
 		if (count($channels) === 0) {
-			$io->warning($this->translator->translate('//homekit-connector.cmd.install.messages.noServices'));
+			$io->warning((string) $this->translator->translate('//homekit-connector.cmd.install.messages.noServices'));
 
 			return;
 		}
@@ -1314,7 +1350,7 @@ class Install extends Console\Command\Command
 		$channel = $this->askWhichService($io, $device, $channels);
 
 		if ($channel === null) {
-			$io->info($this->translator->translate('//homekit-connector.cmd.install.messages.noServices'));
+			$io->info((string) $this->translator->translate('//homekit-connector.cmd.install.messages.noServices'));
 
 			return;
 		}
@@ -1451,7 +1487,9 @@ class Install extends Console\Command\Command
 			$format = $this->askFormat($io, $characteristic);
 
 			$question = new Console\Question\ConfirmationQuestion(
-				$this->translator->translate('//homekit-connector.cmd.install.questions.connectCharacteristic'),
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.questions.connectCharacteristic',
+				),
 				true,
 			);
 
@@ -1541,7 +1579,7 @@ class Install extends Console\Command\Command
 
 			if (!$required && count(array_diff($characteristics, $createdCharacteristics)) > 0) {
 				$question = new Console\Question\ConfirmationQuestion(
-					$this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
+					(string) $this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
 					false,
 				);
 
@@ -1566,7 +1604,9 @@ class Install extends Console\Command\Command
 		$properties = $this->getCharacteristicsList($channel);
 
 		if (count($properties) === 0) {
-			$io->warning($this->translator->translate('//homekit-connector.cmd.install.messages.noCharacteristics'));
+			$io->warning(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.noCharacteristics'),
+			);
 
 			return;
 		}
@@ -1629,7 +1669,9 @@ class Install extends Console\Command\Command
 			$format = $this->askFormat($io, $type);
 
 			$question = new Console\Question\ConfirmationQuestion(
-				$this->translator->translate('//homekit-connector.cmd.install.questions.connectCharacteristic'),
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.questions.connectCharacteristic',
+				),
 				$property instanceof DevicesEntities\Channels\Properties\Mapped,
 			);
 
@@ -1748,7 +1790,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.update.characteristic.success',
 					['name' => $property->getName() ?? $property->getIdentifier()],
 				),
@@ -1765,7 +1807,9 @@ class Install extends Console\Command\Command
 			);
 
 			$io->success(
-				$this->translator->translate('//homekit-connector.cmd.install.messages.update.characteristic.error'),
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.messages.update.characteristic.error',
+				),
 			);
 		} finally {
 			$this->databaseHelper->clear();
@@ -1781,7 +1825,9 @@ class Install extends Console\Command\Command
 		$properties = $this->getCharacteristicsList($channel);
 
 		if (count($properties) === 0) {
-			$io->warning($this->translator->translate('//homekit-connector.cmd.install.messages.noCharacteristics'));
+			$io->warning(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.noCharacteristics'),
+			);
 
 			return;
 		}
@@ -1793,14 +1839,14 @@ class Install extends Console\Command\Command
 		}
 
 		$io->warning(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.install.messages.remove.characteristic.confirm',
 				['name' => $property->getName() ?? $property->getIdentifier()],
 			),
 		);
 
 		$question = new Console\Question\ConfirmationQuestion(
-			$this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
 			false,
 		);
 
@@ -1819,7 +1865,7 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->commitTransaction();
 
 			$io->success(
-				$this->translator->translate(
+				(string) $this->translator->translate(
 					'//homekit-connector.cmd.install.messages.remove.characteristic.success',
 					['name' => $property->getName() ?? $property->getIdentifier()],
 				),
@@ -1836,7 +1882,9 @@ class Install extends Console\Command\Command
 			);
 
 			$io->success(
-				$this->translator->translate('//homekit-connector.cmd.install.messages.remove.characteristic.error'),
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.messages.remove.characteristic.error',
+				),
 			);
 		} finally {
 			$this->databaseHelper->clear();
@@ -1927,26 +1975,26 @@ class Install extends Console\Command\Command
 	private function askInstallAction(Style\SymfonyStyle $io): void
 	{
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
 			[
-				0 => $this->translator->translate('//homekit-connector.cmd.install.actions.create.connector'),
-				1 => $this->translator->translate('//homekit-connector.cmd.install.actions.update.connector'),
-				2 => $this->translator->translate('//homekit-connector.cmd.install.actions.remove.connector'),
-				3 => $this->translator->translate('//homekit-connector.cmd.install.actions.manage.connector'),
-				4 => $this->translator->translate('//homekit-connector.cmd.install.actions.list.connectors'),
-				5 => $this->translator->translate('//homekit-connector.cmd.install.actions.nothing'),
+				0 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.create.connector'),
+				1 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.update.connector'),
+				2 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.remove.connector'),
+				3 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.manage.connector'),
+				4 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.list.connectors'),
+				5 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.nothing'),
 			],
 			5,
 		);
 
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 
 		$whatToDo = $io->askQuestion($question);
 
 		if (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.create.connector',
 			)
 			|| $whatToDo === '0'
@@ -1956,7 +2004,7 @@ class Install extends Console\Command\Command
 			$this->askInstallAction($io);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.update.connector',
 			)
 			|| $whatToDo === '1'
@@ -1966,7 +2014,7 @@ class Install extends Console\Command\Command
 			$this->askInstallAction($io);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.remove.connector',
 			)
 			|| $whatToDo === '2'
@@ -1976,7 +2024,7 @@ class Install extends Console\Command\Command
 			$this->askInstallAction($io);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.manage.connector',
 			)
 			|| $whatToDo === '3'
@@ -1986,7 +2034,7 @@ class Install extends Console\Command\Command
 			$this->askInstallAction($io);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.list.connectors',
 			)
 			|| $whatToDo === '4'
@@ -2019,26 +2067,26 @@ class Install extends Console\Command\Command
 		assert($connector instanceof Entities\Connectors\Connector);
 
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
 			[
-				0 => $this->translator->translate('//homekit-connector.cmd.install.actions.create.device'),
-				1 => $this->translator->translate('//homekit-connector.cmd.install.actions.update.device'),
-				2 => $this->translator->translate('//homekit-connector.cmd.install.actions.remove.device'),
-				3 => $this->translator->translate('//homekit-connector.cmd.install.actions.manage.device'),
-				4 => $this->translator->translate('//homekit-connector.cmd.install.actions.list.devices'),
-				5 => $this->translator->translate('//homekit-connector.cmd.install.actions.nothing'),
+				0 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.create.device'),
+				1 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.update.device'),
+				2 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.remove.device'),
+				3 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.manage.device'),
+				4 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.list.devices'),
+				5 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.nothing'),
 			],
 			5,
 		);
 
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 
 		$whatToDo = $io->askQuestion($question);
 
 		if (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.create.device',
 			)
 			|| $whatToDo === '0'
@@ -2048,7 +2096,7 @@ class Install extends Console\Command\Command
 			$this->askManageConnectorAction($io, $connector);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.update.device',
 			)
 			|| $whatToDo === '1'
@@ -2058,7 +2106,7 @@ class Install extends Console\Command\Command
 			$this->askManageConnectorAction($io, $connector);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.remove.device',
 			)
 			|| $whatToDo === '2'
@@ -2068,7 +2116,7 @@ class Install extends Console\Command\Command
 			$this->askManageConnectorAction($io, $connector);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.manage.device',
 			)
 			|| $whatToDo === '3'
@@ -2078,7 +2126,7 @@ class Install extends Console\Command\Command
 			$this->askManageConnectorAction($io, $connector);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.list.devices',
 			)
 			|| $whatToDo === '4'
@@ -2111,26 +2159,26 @@ class Install extends Console\Command\Command
 		assert($device instanceof Entities\Devices\Device);
 
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
 			[
-				0 => $this->translator->translate('//homekit-connector.cmd.install.actions.create.service'),
-				1 => $this->translator->translate('//homekit-connector.cmd.install.actions.update.service'),
-				2 => $this->translator->translate('//homekit-connector.cmd.install.actions.remove.service'),
-				3 => $this->translator->translate('//homekit-connector.cmd.install.actions.manage.service'),
-				4 => $this->translator->translate('//homekit-connector.cmd.install.actions.list.services'),
-				5 => $this->translator->translate('//homekit-connector.cmd.install.actions.nothing'),
+				0 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.create.service'),
+				1 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.update.service'),
+				2 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.remove.service'),
+				3 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.manage.service'),
+				4 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.list.services'),
+				5 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.nothing'),
 			],
 			5,
 		);
 
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 
 		$whatToDo = $io->askQuestion($question);
 
 		if (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.create.service',
 			)
 			|| $whatToDo === '0'
@@ -2140,7 +2188,7 @@ class Install extends Console\Command\Command
 			$this->askManageDeviceAction($io, $device);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.update.service',
 			)
 			|| $whatToDo === '1'
@@ -2150,7 +2198,7 @@ class Install extends Console\Command\Command
 			$this->askManageDeviceAction($io, $device);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.remove.service',
 			)
 			|| $whatToDo === '2'
@@ -2160,7 +2208,7 @@ class Install extends Console\Command\Command
 			$this->askManageDeviceAction($io, $device);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.manage.service',
 			)
 			|| $whatToDo === '3'
@@ -2170,7 +2218,7 @@ class Install extends Console\Command\Command
 			$this->askManageDeviceAction($io, $device);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.list.services',
 			)
 			|| $whatToDo === '4'
@@ -2203,24 +2251,30 @@ class Install extends Console\Command\Command
 		assert($channel instanceof Entities\Channels\Channel);
 
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.questions.whatToDo'),
 			[
-				0 => $this->translator->translate('//homekit-connector.cmd.install.actions.update.characteristic'),
-				1 => $this->translator->translate('//homekit-connector.cmd.install.actions.remove.characteristic'),
-				2 => $this->translator->translate('//homekit-connector.cmd.install.actions.list.characteristics'),
-				3 => $this->translator->translate('//homekit-connector.cmd.install.actions.nothing'),
+				0 => (string) $this->translator->translate(
+					'//homekit-connector.cmd.install.actions.update.characteristic',
+				),
+				1 => (string) $this->translator->translate(
+					'//homekit-connector.cmd.install.actions.remove.characteristic',
+				),
+				2 => (string) $this->translator->translate(
+					'//homekit-connector.cmd.install.actions.list.characteristics',
+				),
+				3 => (string) $this->translator->translate('//homekit-connector.cmd.install.actions.nothing'),
 			],
 			3,
 		);
 
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 
 		$whatToDo = $io->askQuestion($question);
 
 		if (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.update.characteristic',
 			)
 			|| $whatToDo === '0'
@@ -2230,7 +2284,7 @@ class Install extends Console\Command\Command
 			$this->askManageServiceAction($io, $channel);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.remove.characteristic',
 			)
 			|| $whatToDo === '1'
@@ -2240,7 +2294,7 @@ class Install extends Console\Command\Command
 			$this->askManageServiceAction($io, $channel);
 
 		} elseif (
-			$whatToDo === $this->translator->translate(
+			$whatToDo === (string) $this->translator->translate(
 				'//homekit-connector.cmd.install.actions.list.characteristics',
 			)
 			|| $whatToDo === '2'
@@ -2257,7 +2311,7 @@ class Install extends Console\Command\Command
 	): string|null
 	{
 		$question = new Console\Question\Question(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.provide.connector.name'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.provide.connector.name'),
 			$connector?->getName(),
 		);
 
@@ -2275,14 +2329,14 @@ class Install extends Console\Command\Command
 	private function askConnectorPort(Style\SymfonyStyle $io, Entities\Connectors\Connector|null $connector = null): int
 	{
 		$question = new Console\Question\Question(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.provide.connector.port'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.provide.connector.port'),
 			$connector?->getPort() ?? HomeKit\Constants::DEFAULT_PORT,
 		);
 		$question->setValidator(function (string|null $answer) use ($connector): string {
 			if ($answer === '' || $answer === null) {
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -2305,7 +2359,7 @@ class Install extends Console\Command\Command
 					)
 				) {
 					throw new Exceptions\Runtime(
-						$this->translator->translate(
+						(string) $this->translator->translate(
 							'//homekit-connector.cmd.install.messages.portUsed',
 							['connector' => $property->getConnector()->getIdentifier()],
 						),
@@ -2322,7 +2376,7 @@ class Install extends Console\Command\Command
 	private function askDeviceName(Style\SymfonyStyle $io, Entities\Devices\Device|null $device = null): string|null
 	{
 		$question = new Console\Question\Question(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.provide.device.name'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.provide.device.name'),
 			$device?->getName(),
 		);
 
@@ -2348,7 +2402,7 @@ class Install extends Console\Command\Command
 				Types\AccessoryCategory::cases(),
 			),
 			array_map(
-				fn (Types\AccessoryCategory $category): string => $this->translator->translate(
+				fn (Types\AccessoryCategory $category): string => (string) $this->translator->translate(
 					'//homekit-connector.cmd.base.category.' . $category->value,
 				),
 				Types\AccessoryCategory::cases(),
@@ -2356,20 +2410,20 @@ class Install extends Console\Command\Command
 		);
 		$categories = array_filter(
 			$categories,
-			fn (string $category): bool => $category !== $this->translator->translate(
+			fn (string $category): bool => $category !== (string) $this->translator->translate(
 				'//homekit-connector.cmd.base.category.' . Types\AccessoryCategory::BRIDGE->value,
 			),
 		);
 		asort($categories);
 
 		$default = $device !== null ? array_search(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.base.category.' . $device->getAccessoryCategory()->value,
 			),
 			array_values($categories),
 			true,
 		) : array_search(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.base.category.' . Types\AccessoryCategory::OTHER->value,
 			),
 			array_values($categories),
@@ -2377,18 +2431,18 @@ class Install extends Console\Command\Command
 		);
 
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.select.device.category'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.select.device.category'),
 			array_values($categories),
 			$default,
 		);
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 		$question->setValidator(function (string|int|null $answer) use ($categories): Types\AccessoryCategory {
 			if ($answer === null) {
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -2405,7 +2459,10 @@ class Install extends Console\Command\Command
 			}
 
 			throw new Exceptions\Runtime(
-				sprintf($this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'), $answer),
+				sprintf(
+					(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+					$answer,
+				),
 			);
 		});
 
@@ -2481,13 +2538,13 @@ class Install extends Console\Command\Command
 		);
 
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 		$question->setValidator(function (string|null $answer) use ($services): string {
 			if ($answer === null) {
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -2531,17 +2588,17 @@ class Install extends Console\Command\Command
 		$characteristics = array_values(array_diff($characteristics, $ignore));
 
 		if (!$required) {
-			$characteristics[] = $this->translator->translate('//homekit-connector.cmd.install.answers.none');
+			$characteristics[] = (string) $this->translator->translate('//homekit-connector.cmd.install.answers.none');
 		}
 
 		$question = $required ? new Console\Question\ChoiceQuestion(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.install.questions.select.device.requiredCharacteristic',
 			),
 			$characteristics,
 			0,
 		) : new Console\Question\ChoiceQuestion(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.install.questions.select.device.optionalCharacteristic',
 			),
 			$characteristics,
@@ -2549,13 +2606,13 @@ class Install extends Console\Command\Command
 		);
 
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 		$question->setValidator(function (string|null $answer) use ($required, $characteristics): string|null {
 			if ($answer === null) {
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -2568,7 +2625,7 @@ class Install extends Console\Command\Command
 			if (
 				!$required
 				&& (
-					$answer === $this->translator->translate('//homekit-connector.cmd.install.answers.none')
+					$answer === (string) $this->translator->translate('//homekit-connector.cmd.install.answers.none')
 					|| $answer === strval(count($characteristics) - 1)
 				)
 			) {
@@ -2661,7 +2718,9 @@ class Install extends Console\Command\Command
 		}
 
 		if (count($devices) === 0) {
-			$io->warning($this->translator->translate('//homekit-connector.cmd.install.messages.noHardwareDevices'));
+			$io->warning(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.noHardwareDevices'),
+			);
 
 			return null;
 		}
@@ -2679,18 +2738,20 @@ class Install extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.select.device.mappedDevice'),
+			(string) $this->translator->translate(
+				'//homekit-connector.cmd.install.questions.select.device.mappedDevice',
+			),
 			array_values($devices),
 			$default,
 		);
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 		$question->setValidator(function (string|null $answer) use ($devices): DevicesEntities\Devices\Device {
 			if ($answer === null) {
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -2712,7 +2773,7 @@ class Install extends Console\Command\Command
 
 			throw new Exceptions\Runtime(
 				sprintf(
-					$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+					(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 					$answer,
 				),
 			);
@@ -2774,21 +2835,23 @@ class Install extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.install.questions.select.device.mappedDeviceChannel',
 			),
 			array_values($channels),
 			$default,
 		);
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 		$question->setValidator(
 			function (string|null $answer) use ($channels): DevicesEntities\Channels\Channel {
 				if ($answer === null) {
 					throw new Exceptions\Runtime(
 						sprintf(
-							$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+							(string) $this->translator->translate(
+								'//homekit-connector.cmd.base.messages.answerNotValid',
+							),
 							$answer,
 						),
 					);
@@ -2810,7 +2873,7 @@ class Install extends Console\Command\Command
 
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -2861,21 +2924,23 @@ class Install extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.install.questions.select.device.mappedChannelProperty',
 			),
 			array_values($properties),
 			$default,
 		);
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 		$question->setValidator(
 			function (string|null $answer) use ($properties): DevicesEntities\Channels\Properties\Dynamic {
 				if ($answer === null) {
 					throw new Exceptions\Runtime(
 						sprintf(
-							$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+							(string) $this->translator->translate(
+								'//homekit-connector.cmd.base.messages.answerNotValid',
+							),
 							$answer,
 						),
 					);
@@ -2900,7 +2965,7 @@ class Install extends Console\Command\Command
 
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -3025,7 +3090,7 @@ class Install extends Console\Command\Command
 						);
 
 					$question = new Console\Question\ChoiceQuestion(
-						$this->translator->translate(
+						(string) $this->translator->translate(
 							'//homekit-connector.cmd.install.questions.select.device.valueMapping',
 							['value' => $name],
 						),
@@ -3035,13 +3100,13 @@ class Install extends Console\Command\Command
 						),
 					);
 					$question->setErrorMessage(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 					);
 					$question->setValidator(function (string|null $answer) use ($options): string|array {
 						if ($answer === null) {
 							throw new Exceptions\Runtime(
 								sprintf(
-									$this->translator->translate(
+									(string) $this->translator->translate(
 										'//homekit-connector.cmd.base.messages.answerNotValid',
 									),
 									$answer,
@@ -3071,7 +3136,9 @@ class Install extends Console\Command\Command
 
 						throw new Exceptions\Runtime(
 							sprintf(
-								$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+								(string) $this->translator->translate(
+									'//homekit-connector.cmd.base.messages.answerNotValid',
+								),
 								strval($answer),
 							),
 						);
@@ -3166,7 +3233,7 @@ class Install extends Console\Command\Command
 			);
 
 			$question = new Console\Question\ChoiceQuestion(
-				$this->translator->translate('//homekit-connector.cmd.install.questions.select.device.value'),
+				(string) $this->translator->translate('//homekit-connector.cmd.install.questions.select.device.value'),
 				$options,
 				$value !== null ? array_key_exists(
 					MetadataUtilities\Value::toString($value, true),
@@ -3174,13 +3241,15 @@ class Install extends Console\Command\Command
 				) : null,
 			);
 			$question->setErrorMessage(
-				$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+				(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 			);
 			$question->setValidator(function (string|int|null $answer) use ($options): string|int {
 				if ($answer === null) {
 					throw new Exceptions\Runtime(
 						sprintf(
-							$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+							(string) $this->translator->translate(
+								'//homekit-connector.cmd.base.messages.answerNotValid',
+							),
 							$answer,
 						),
 					);
@@ -3198,7 +3267,7 @@ class Install extends Console\Command\Command
 
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -3215,21 +3284,23 @@ class Install extends Console\Command\Command
 			&& in_array(MetadataTypes\DataType::BOOLEAN, $dataTypes, true)
 		) {
 			$question = new Console\Question\ChoiceQuestion(
-				$this->translator->translate('//homekit-connector.cmd.install.questions.select.device.value'),
+				(string) $this->translator->translate('//homekit-connector.cmd.install.questions.select.device.value'),
 				[
-					$this->translator->translate('//homekit-connector.cmd.install.answers.false'),
-					$this->translator->translate('//homekit-connector.cmd.install.answers.true'),
+					(string) $this->translator->translate('//homekit-connector.cmd.install.answers.false'),
+					(string) $this->translator->translate('//homekit-connector.cmd.install.answers.true'),
 				],
 				is_bool($value) ? ($value ? 0 : 1) : null,
 			);
 			$question->setErrorMessage(
-				$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+				(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 			);
 			$question->setValidator(function (string|int|null $answer): bool {
 				if ($answer === null) {
 					throw new Exceptions\Runtime(
 						sprintf(
-							$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+							(string) $this->translator->translate(
+								'//homekit-connector.cmd.base.messages.answerNotValid',
+							),
 							$answer,
 						),
 					);
@@ -3261,7 +3332,7 @@ class Install extends Console\Command\Command
 			: null;
 
 		$question = new Console\Question\Question(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.provide.value'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.provide.value'),
 			is_object($value) ? MetadataUtilities\Value::toString($value) : $value,
 		);
 		$question->setValidator(
@@ -3269,7 +3340,9 @@ class Install extends Console\Command\Command
 				if ($answer === null) {
 					throw new Exceptions\Runtime(
 						sprintf(
-							$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+							(string) $this->translator->translate(
+								'//homekit-connector.cmd.base.messages.answerNotValid',
+							),
 							$answer,
 						),
 					);
@@ -3289,7 +3362,9 @@ class Install extends Console\Command\Command
 					if ($minValue !== null && floatval($answer) < $minValue) {
 						throw new Exceptions\Runtime(
 							sprintf(
-								$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+								(string) $this->translator->translate(
+									'//homekit-connector.cmd.base.messages.answerNotValid',
+								),
 								$answer,
 							),
 						);
@@ -3298,7 +3373,9 @@ class Install extends Console\Command\Command
 					if ($maxValue !== null && floatval($answer) > $maxValue) {
 						throw new Exceptions\Runtime(
 							sprintf(
-								$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+								(string) $this->translator->translate(
+									'//homekit-connector.cmd.base.messages.answerNotValid',
+								),
 								$answer,
 							),
 						);
@@ -3312,7 +3389,9 @@ class Install extends Console\Command\Command
 					) {
 						throw new Exceptions\Runtime(
 							sprintf(
-								$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+								(string) $this->translator->translate(
+									'//homekit-connector.cmd.base.messages.answerNotValid',
+								),
 								$answer,
 							),
 						);
@@ -3335,7 +3414,9 @@ class Install extends Console\Command\Command
 					if ($minValue !== null && intval($answer) < $minValue) {
 						throw new Exceptions\Runtime(
 							sprintf(
-								$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+								(string) $this->translator->translate(
+									'//homekit-connector.cmd.base.messages.answerNotValid',
+								),
 								$answer,
 							),
 						);
@@ -3344,7 +3425,9 @@ class Install extends Console\Command\Command
 					if ($maxValue !== null && intval($answer) > $maxValue) {
 						throw new Exceptions\Runtime(
 							sprintf(
-								$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+								(string) $this->translator->translate(
+									'//homekit-connector.cmd.base.messages.answerNotValid',
+								),
 								$answer,
 							),
 						);
@@ -3353,7 +3436,9 @@ class Install extends Console\Command\Command
 					if ($step !== null && intval($answer) % $step !== 0) {
 						throw new Exceptions\Runtime(
 							sprintf(
-								$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+								(string) $this->translator->translate(
+									'//homekit-connector.cmd.base.messages.answerNotValid',
+								),
 								$answer,
 							),
 						);
@@ -3364,7 +3449,7 @@ class Install extends Console\Command\Command
 
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -3406,19 +3491,19 @@ class Install extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.select.item.connector'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.select.item.connector'),
 			array_values($connectors),
 			count($connectors) === 1 ? 0 : null,
 		);
 
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 		$question->setValidator(function (string|int|null $answer) use ($connectors): Entities\Connectors\Connector {
 			if ($answer === null) {
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -3446,7 +3531,7 @@ class Install extends Console\Command\Command
 
 			throw new Exceptions\Runtime(
 				sprintf(
-					$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+					(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 					$answer,
 				),
 			);
@@ -3491,20 +3576,22 @@ class Install extends Console\Command\Command
 		}
 
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.select.item.device'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.select.item.device'),
 			array_values($devices),
 			count($devices) === 1 ? 0 : null,
 		);
 
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 		$question->setValidator(
 			function (string|int|null $answer) use ($connector, $devices): Entities\Devices\Device {
 				if ($answer === null) {
 					throw new Exceptions\Runtime(
 						sprintf(
-							$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+							(string) $this->translator->translate(
+								'//homekit-connector.cmd.base.messages.answerNotValid',
+							),
 							$answer,
 						),
 					);
@@ -3533,7 +3620,7 @@ class Install extends Console\Command\Command
 
 				throw new Exceptions\Runtime(
 					sprintf(
-						$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+						(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 						$answer,
 					),
 				);
@@ -3558,18 +3645,20 @@ class Install extends Console\Command\Command
 	): Entities\Channels\Channel|null
 	{
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.select.item.service'),
+			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.select.item.service'),
 			array_values($channels),
 			count($channels) === 1 ? 0 : null,
 		);
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 
 		$serviceIdentifier = array_search($io->askQuestion($question), $channels, true);
 
 		if ($serviceIdentifier === false) {
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.serviceNotFound'));
+			$io->error(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.serviceNotFound'),
+			);
 
 			$this->logger->alert(
 				'Could not read service identifier from console answer',
@@ -3589,7 +3678,9 @@ class Install extends Console\Command\Command
 		$channel = $this->channelsRepository->findOneBy($findChannelQuery, Entities\Channels\Channel::class);
 
 		if ($channel === null) {
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.serviceNotFound'));
+			$io->error(
+				(string) $this->translator->translate('//homekit-connector.cmd.install.messages.serviceNotFound'),
+			);
 
 			$this->logger->alert(
 				'Channel was not found',
@@ -3617,17 +3708,23 @@ class Install extends Console\Command\Command
 	): DevicesEntities\Channels\Properties\Variable|DevicesEntities\Channels\Properties\Mapped|null
 	{
 		$question = new Console\Question\ChoiceQuestion(
-			$this->translator->translate('//homekit-connector.cmd.install.questions.select.item.characteristic'),
+			(string) $this->translator->translate(
+				'//homekit-connector.cmd.install.questions.select.item.characteristic',
+			),
 			array_values($properties),
 		);
 		$question->setErrorMessage(
-			$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+			(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 		);
 
 		$characteristicIdentifier = array_search($io->askQuestion($question), $properties, true);
 
 		if ($characteristicIdentifier === false) {
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.characteristicNotFound'));
+			$io->error(
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.messages.characteristicNotFound',
+				),
+			);
 
 			$this->logger->alert(
 				'Could not read characteristic identifier from console answer',
@@ -3647,7 +3744,11 @@ class Install extends Console\Command\Command
 		$property = $this->channelsPropertiesRepository->findOneBy($findPropertyQuery);
 
 		if ($property === null) {
-			$io->error($this->translator->translate('//homekit-connector.cmd.install.messages.characteristicNotFound'));
+			$io->error(
+				(string) $this->translator->translate(
+					'//homekit-connector.cmd.install.messages.characteristicNotFound',
+				),
+			);
 
 			$this->logger->alert(
 				'Property was not found',

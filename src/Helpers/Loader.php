@@ -50,7 +50,7 @@ final class Loader
 
 			try {
 				$this->accessories = Utils\ArrayHash::from(
-					(array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY),
+					(array) Utils\Json::decode($metadata, forceArrays: true),
 				);
 			} catch (Utils\JsonException) {
 				throw new Exceptions\InvalidState('Accessories metadata could not be loaded');
@@ -71,7 +71,7 @@ final class Loader
 			$metadata = Utils\FileSystem::read($metadata);
 
 			try {
-				$this->services = Utils\ArrayHash::from((array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY));
+				$this->services = Utils\ArrayHash::from((array) Utils\Json::decode($metadata, forceArrays: true));
 			} catch (Utils\JsonException) {
 				throw new Exceptions\InvalidState('Services metadata could not be loaded');
 			}
@@ -92,7 +92,7 @@ final class Loader
 
 			try {
 				$this->characteristics = Utils\ArrayHash::from(
-					(array) Utils\Json::decode($metadata, Utils\Json::FORCE_ARRAY),
+					(array) Utils\Json::decode($metadata, forceArrays: true),
 				);
 			} catch (Utils\JsonException) {
 				throw new Exceptions\InvalidState('Characteristics metadata could not be loaded');

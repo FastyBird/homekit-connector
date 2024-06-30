@@ -231,7 +231,7 @@ final class CharacteristicsController extends BaseController
 		$body = $request->getBody()->getContents();
 
 		try {
-			$body = Utils\Json::decode($body, Utils\Json::FORCE_ARRAY);
+			$body = Utils\Json::decode($body, forceArrays: true);
 		} catch (Utils\JsonException $ex) {
 			throw new Exceptions\HapRequestError(
 				$request,
@@ -372,7 +372,7 @@ final class CharacteristicsController extends BaseController
 		$body = $request->getBody()->getContents();
 
 		try {
-			$body = Utils\Json::decode($body, Utils\Json::FORCE_ARRAY);
+			$body = Utils\Json::decode($body, forceArrays: true);
 		} catch (Utils\JsonException $ex) {
 			throw new Exceptions\HapRequestError(
 				$request,

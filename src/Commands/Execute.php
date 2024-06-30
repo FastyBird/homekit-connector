@@ -110,13 +110,13 @@ class Execute extends Console\Command\Command
 
 		$io = new Style\SymfonyStyle($input, $output);
 
-		$io->title($this->translator->translate('//homekit-connector.cmd.execute.title'));
+		$io->title((string) $this->translator->translate('//homekit-connector.cmd.execute.title'));
 
-		$io->note($this->translator->translate('//homekit-connector.cmd.execute.subtitle'));
+		$io->note((string) $this->translator->translate('//homekit-connector.cmd.execute.subtitle'));
 
 		if ($input->getOption('no-interaction') === false) {
 			$question = new Console\Question\ConfirmationQuestion(
-				$this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
+				(string) $this->translator->translate('//homekit-connector.cmd.base.questions.continue'),
 				false,
 			);
 
@@ -149,7 +149,9 @@ class Execute extends Console\Command\Command
 
 			if ($connector === null) {
 				$io->warning(
-					$this->translator->translate('//homekit-connector.cmd.execute.messages.connector.notFound'),
+					(string) $this->translator->translate(
+						'//homekit-connector.cmd.execute.messages.connector.notFound',
+					),
 				);
 
 				return Console\Command\Command::FAILURE;
@@ -174,7 +176,9 @@ class Execute extends Console\Command\Command
 			}
 
 			if (count($connectors) === 0) {
-				$io->warning($this->translator->translate('//homekit-connector.cmd.base.messages.noConnectors'));
+				$io->warning(
+					(string) $this->translator->translate('//homekit-connector.cmd.base.messages.noConnectors'),
+				);
 
 				return Console\Command\Command::SUCCESS;
 			}
@@ -192,7 +196,9 @@ class Execute extends Console\Command\Command
 
 				if ($connector === null) {
 					$io->warning(
-						$this->translator->translate('//homekit-connector.cmd.execute.messages.connector.notFound'),
+						(string) $this->translator->translate(
+							'//homekit-connector.cmd.execute.messages.connector.notFound',
+						),
 					);
 
 					return Console\Command\Command::FAILURE;
@@ -200,7 +206,7 @@ class Execute extends Console\Command\Command
 
 				if ($input->getOption('no-interaction') === false) {
 					$question = new Console\Question\ConfirmationQuestion(
-						$this->translator->translate(
+						(string) $this->translator->translate(
 							'//homekit-connector.cmd.execute.questions.execute',
 							['connector' => $connector->getName() ?? $connector->getIdentifier()],
 						),
@@ -213,18 +219,18 @@ class Execute extends Console\Command\Command
 				}
 			} else {
 				$question = new Console\Question\ChoiceQuestion(
-					$this->translator->translate('//homekit-connector.cmd.execute.questions.select.connector'),
+					(string) $this->translator->translate('//homekit-connector.cmd.execute.questions.select.connector'),
 					array_values($connectors),
 				);
 				$question->setErrorMessage(
-					$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+					(string) $this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
 				);
 				$question->setValidator(
 					function (string|int|null $answer) use ($connectors): Documents\Connectors\Connector {
 						if ($answer === null) {
 							throw new Exceptions\Runtime(
 								sprintf(
-									$this->translator->translate(
+									(string) $this->translator->translate(
 										'//homekit-connector.cmd.base.messages.answerNotValid',
 									),
 									$answer,
@@ -254,7 +260,9 @@ class Execute extends Console\Command\Command
 
 						throw new Exceptions\Runtime(
 							sprintf(
-								$this->translator->translate('//homekit-connector.cmd.base.messages.answerNotValid'),
+								(string) $this->translator->translate(
+									'//homekit-connector.cmd.base.messages.answerNotValid',
+								),
 								$answer,
 							),
 						);
@@ -267,7 +275,9 @@ class Execute extends Console\Command\Command
 		}
 
 		if (!$connector->isEnabled()) {
-			$io->warning($this->translator->translate('//homekit-connector.cmd.execute.messages.connector.disabled'));
+			$io->warning(
+				(string) $this->translator->translate('//homekit-connector.cmd.execute.messages.connector.disabled'),
+			);
 
 			return Console\Command\Command::SUCCESS;
 		}
@@ -283,20 +293,20 @@ class Execute extends Console\Command\Command
 			->build();
 
 		$io->note(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.execute.messages.uriPath',
 				['path' => $this->connectorHelper->getXhmUri($connector)],
 			),
 		);
 
-		$io->info($this->translator->translate('//homekit-connector.cmd.execute.messages.scanCode'));
+		$io->info((string) $this->translator->translate('//homekit-connector.cmd.execute.messages.scanCode'));
 
 		$io->writeln($qrCode->getString());
 
 		$serviceCmd = $symfonyApp->find(DevicesCommands\Connector::NAME);
 
 		$io->info(
-			$this->translator->translate(
+			(string) $this->translator->translate(
 				'//homekit-connector.cmd.execute.messages.pinCode',
 				['code' => $this->connectorHelper->getPinCode($connector)],
 			),
@@ -309,7 +319,7 @@ class Execute extends Console\Command\Command
 		]), $output);
 
 		if ($result !== Console\Command\Command::SUCCESS) {
-			$io->error($this->translator->translate('//homekit-connector.cmd.execute.messages.error'));
+			$io->error((string) $this->translator->translate('//homekit-connector.cmd.execute.messages.error'));
 
 			return Console\Command\Command::FAILURE;
 		}

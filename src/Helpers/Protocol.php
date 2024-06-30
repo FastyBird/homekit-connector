@@ -36,6 +36,8 @@ use function socket_close;
 use function socket_connect;
 use function socket_create;
 use function socket_getsockname;
+use function str_contains;
+use function str_ends_with;
 use function str_repeat;
 use function str_replace;
 use function strlen;
@@ -62,7 +64,7 @@ final class Protocol
 	{
 		$longType = Utils\Strings::upper($uuid->toString());
 
-		if (!Utils\Strings::endsWith($longType, HomeKit\Constants::BASE_UUID)) {
+		if (!str_ends_with($longType, HomeKit\Constants::BASE_UUID)) {
 			return $longType;
 		}
 
@@ -76,7 +78,7 @@ final class Protocol
 	 */
 	public static function hapTypeToUuid(string $type): Uuid\UuidInterface
 	{
-		if (Utils\Strings::contains($type, '-')) {
+		if (str_contains($type, '-')) {
 			return Uuid\Uuid::fromString($type);
 		}
 
