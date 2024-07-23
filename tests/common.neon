@@ -92,10 +92,10 @@ fbSimpleAuth:
         signature: 'g3xHbkELpMD9LRqW4WmJkHL7kz2bdNYAQJyEuFVzR3k='
     enable:
         middleware: true
-        doctrine:
-            mapping: true
         nette:
             application: true
+    casbin:
+        policy: %appDir%/policy.csv
     services:
         identity: true
 
