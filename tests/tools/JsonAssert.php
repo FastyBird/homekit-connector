@@ -128,7 +128,7 @@ class JsonAssert
 
 		} else {
 			// Sort by values for indexed arrays
-			usort($array, function ($a, $b): int {
+			usort($array, static function ($a, $b): int {
 				if (is_array($a) && is_array($b)) {
 					return strcmp(Utils\Json::encode($a), Utils\Json::encode($b));
 				}
@@ -148,12 +148,12 @@ class JsonAssert
 
 	/**
 	 * @param array<mixed> $array
-	 *
-	 * @return bool
 	 */
 	private static function isAssoc(array $array): bool
 	{
-		if ($array === []) return false;
+		if ($array === []) {
+			return false;
+		}
 
 		return array_keys($array) !== range(0, count($array) - 1);
 	}
