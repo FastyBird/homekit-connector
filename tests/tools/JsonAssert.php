@@ -50,6 +50,9 @@ class JsonAssert
 		$decodedExpectedJson = self::jsonDecode($expectedJson, 'Expected-json');
 		$decodedInput = self::jsonDecode($actualJson, 'Actual-json');
 
+		self::recursiveSort($decodedExpectedJson);
+		self::recursiveSort($decodedInput);
+
 		try {
 			TestCase::assertEquals($decodedExpectedJson, $decodedInput);
 
@@ -93,7 +96,58 @@ class JsonAssert
 	 */
 	private static function makeJsonPretty(string $jsonString): string
 	{
-		return Utils\Json::encode(Utils\Json::decode($jsonString), Utils\Json::PRETTY);
+		return Utils\Json::encode(Utils\Json::decode($jsonString), pretty: true);
+	}
+
+	/**
+	 * @throws Utils\JsonException
+	 */
+	private static function recursiveSort(mixed &$array): void
+	{
+		if (!is_array($array)) {
+			return;
+		}
+
+		foreach ($array as &$value) {
+			if (is_array($value)) {
+				self::recursiveSort($value);
+			}
+		}
+
+		// Sort by keys for associative arrays
+		if (self::isAssoc($array)) {
+			ksort($array);
+
+		} else {
+			// Sort by values for indexed arrays
+			usort($array, function ($a, $b): int {
+				if (is_array($a) && is_array($b)) {
+					return strcmp(Utils\Json::encode($a), Utils\Json::encode($b));
+				}
+
+				if (is_array($a)) {
+					return strcmp(Utils\Json::encode($a), strval($b));
+				}
+
+				if (is_array($b)) {
+					return strcmp(strval($a), Utils\Json::encode($b));
+				}
+
+				return strcmp(strval($a), strval($b));
+			});
+		}
+	}
+
+	/**
+	 * @param array<mixed> $array
+	 *
+	 * @return bool
+	 */
+	private static function isAssoc(array $array): bool
+	{
+		if ($array === []) return false;
+
+		return array_keys($array) !== range(0, count($array) - 1);
 	}
 
 }
