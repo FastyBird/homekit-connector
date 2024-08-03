@@ -9,7 +9,15 @@ use Nette\Utils;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use SebastianBergmann\Comparator\ComparisonFailure;
+use function array_keys;
+use function count;
+use function is_array;
+use function ksort;
+use function range;
 use function sprintf;
+use function strcmp;
+use function strval;
+use function usort;
 
 class JsonAssert
 {
