@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Subscribers;
 
 use Doctrine\Common;
+use Doctrine\DBAL;
 use Doctrine\ORM;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
@@ -26,7 +27,7 @@ use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Models as DevicesModels;
-use IPub\DoctrineCrud;
+use IPub\DoctrineCrud\Exceptions as DoctrineCrudExceptions;
 use Nette;
 use Nette\Utils;
 use Ramsey\Uuid;
@@ -106,7 +107,9 @@ final class System implements Common\EventSubscriber
 
 	/**
 	 * @throws ApplicationExceptions\InvalidState
-	 * @throws DoctrineCrud\Exceptions\InvalidArgumentException
+	 * @throws DBAL\Exception\UniqueConstraintViolationException
+	 * @throws DoctrineCrudExceptions\InvalidArgument
+	 * @throws DoctrineCrudExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState

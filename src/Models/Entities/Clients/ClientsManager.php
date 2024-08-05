@@ -15,6 +15,7 @@
 
 namespace FastyBird\Connector\HomeKit\Models\Entities\Clients;
 
+use Doctrine\DBAL;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Models;
 use IPub\DoctrineCrud\Crud as DoctrineCrudCrud;
@@ -48,6 +49,12 @@ class ClientsManager
 	{
 	}
 
+	/**
+	 * @throws DBAL\Exception\UniqueConstraintViolationException
+	 * @throws DoctrineCrudExceptions\EntityCreation
+	 * @throws DoctrineCrudExceptions\InvalidArgument
+	 * @throws DoctrineCrudExceptions\InvalidState
+	 */
 	public function create(Utils\ArrayHash $values): Entities\Clients\Client
 	{
 		$entity = $this->getEntityCrud()->getEntityCreator()->create($values);
@@ -57,7 +64,9 @@ class ClientsManager
 	}
 
 	/**
-	 * @throws DoctrineCrudExceptions\InvalidArgumentException
+	 * @throws DBAL\Exception\UniqueConstraintViolationException
+	 * @throws DoctrineCrudExceptions\InvalidArgument
+	 * @throws DoctrineCrudExceptions\InvalidState
 	 */
 	public function update(
 		Entities\Clients\Client $entity,
@@ -71,7 +80,8 @@ class ClientsManager
 	}
 
 	/**
-	 * @throws DoctrineCrudExceptions\InvalidArgumentException
+	 * @throws DoctrineCrudExceptions\InvalidArgument
+	 * @throws DoctrineCrudExceptions\InvalidState
 	 */
 	public function delete(Entities\Clients\Client $entity): bool
 	{

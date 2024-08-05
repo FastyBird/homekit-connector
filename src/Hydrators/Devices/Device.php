@@ -15,7 +15,6 @@
 
 namespace FastyBird\Connector\HomeKit\Hydrators\Devices;
 
-use Doctrine\Common;
 use Doctrine\Persistence;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Schemas;
@@ -29,6 +28,7 @@ use IPub\JsonAPIDocument;
 use Nette\Localization;
 use Ramsey\Uuid;
 use function is_string;
+use function strval;
 
 /**
  * HomeKit device entity hydrator
@@ -48,10 +48,9 @@ class Device extends DevicesHydrators\Devices\Device
 		Persistence\ManagerRegistry $managerRegistry,
 		Localization\Translator $translator,
 		Helpers\CrudReader|null $crudReader = null,
-		Common\Cache\Cache|null $cache = null,
 	)
 	{
-		parent::__construct($managerRegistry, $translator, $crudReader, $cache);
+		parent::__construct($managerRegistry, $translator, $crudReader);
 	}
 
 	/**
@@ -91,8 +90,8 @@ class Device extends DevicesHydrators\Devices\Device
 
 		throw new JsonApiExceptions\JsonApiError(
 			StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY,
-			$this->translator->translate('//homekit-connector.base.messages.invalidRelation.heading'),
-			$this->translator->translate('//homekit-connector.base.messages.invalidRelation.message'),
+			strval($this->translator->translate('//homekit-connector.base.messages.invalidRelation.heading')),
+			strval($this->translator->translate('//homekit-connector.base.messages.invalidRelation.message')),
 			[
 				'pointer' => '/data/relationships/' . Schemas\Devices\Device::RELATIONSHIPS_CONNECTOR . '/data/id',
 			],
