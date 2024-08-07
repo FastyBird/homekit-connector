@@ -319,7 +319,10 @@ final class Http implements Server
 								MetadataTypes\Sources\Connector::HOMEKIT,
 							);
 
-							if ($state instanceof DevicesDocuments\States\Channels\Properties\Property) {
+							if (
+								$state instanceof DevicesDocuments\States\Channels\Properties\Property
+								&& $state->isValid()
+							) {
 								$characteristic->setActualValue(
 									$state->getGet()->getExpectedValue() ?? $state->getGet()->getActualValue(),
 								);
@@ -362,7 +365,10 @@ final class Http implements Server
 									MetadataTypes\Sources\Connector::HOMEKIT,
 								);
 
-								if ($state instanceof DevicesDocuments\States\Channels\Properties\Property) {
+								if (
+									$state instanceof DevicesDocuments\States\Channels\Properties\Property
+									&& $state->isValid()
+								) {
 									$characteristic->setActualValue(
 										$state->getRead()->getExpectedValue() ?? $state->getRead()->getActualValue(),
 									);

@@ -249,9 +249,12 @@ abstract class Periodic
 
 					// Requesting property state failed
 					continue;
-				} elseif ($state instanceof DevicesDocuments\States\Devices\Properties\Property) {
+				} elseif (
+					$state instanceof DevicesDocuments\States\Devices\Properties\Property
+					&& $state->isValid()
+				) {
 					// Property state is set
-					$characteristicValue = $state->getRead()->getExpectedValue() ?? ($state->isValid() ? $state->getRead()->getActualValue() : null);
+					$characteristicValue = $state->getRead()->getExpectedValue() ?? $state->getRead()->getActualValue();
 				}
 			} elseif ($property instanceof DevicesDocuments\Channels\Properties\Mapped) {
 				$state = await($this->channelPropertiesStatesManager->read(
@@ -267,9 +270,12 @@ abstract class Periodic
 
 					// Requesting property state failed
 					continue;
-				} elseif ($state instanceof DevicesDocuments\States\Channels\Properties\Property) {
+				} elseif (
+					$state instanceof DevicesDocuments\States\Channels\Properties\Property
+					&& $state->isValid()
+				) {
 					// Property state is set
-					$characteristicValue = $state->getRead()->getExpectedValue() ?? ($state->isValid() ? $state->getRead()->getActualValue() : null);
+					$characteristicValue = $state->getRead()->getExpectedValue() ?? $state->getRead()->getActualValue();
 				}
 			} elseif ($property instanceof DevicesDocuments\Devices\Properties\Dynamic) {
 				$state = await($this->devicePropertiesStatesManager->read(
@@ -285,9 +291,12 @@ abstract class Periodic
 
 					// Requesting property state failed
 					continue;
-				} elseif ($state instanceof DevicesDocuments\States\Devices\Properties\Property) {
+				} elseif (
+					$state instanceof DevicesDocuments\States\Devices\Properties\Property
+					&& $state->isValid()
+				) {
 					// Property state is set
-					$characteristicValue = $state->getGet()->getExpectedValue() ?? ($state->isValid() ? $state->getGet()->getActualValue() : null);
+					$characteristicValue = $state->getGet()->getExpectedValue() ?? $state->getGet()->getActualValue();
 				}
 			} elseif ($property instanceof DevicesDocuments\Channels\Properties\Dynamic) {
 				$state = await($this->channelPropertiesStatesManager->read(
@@ -303,9 +312,12 @@ abstract class Periodic
 
 					// Requesting property state failed
 					continue;
-				} elseif ($state instanceof DevicesDocuments\States\Channels\Properties\Property) {
+				} elseif (
+					$state instanceof DevicesDocuments\States\Channels\Properties\Property
+					&& $state->isValid()
+				) {
 					// Property state is set
-					$characteristicValue = $state->getGet()->getExpectedValue() ?? ($state->isValid() ? $state->getGet()->getActualValue() : null);
+					$characteristicValue = $state->getGet()->getExpectedValue() ?? $state->getGet()->getActualValue();
 				}
 			} elseif ($property instanceof DevicesDocuments\Devices\Properties\Variable) {
 				$findDevicePropertyQuery = new Queries\Configuration\FindDeviceVariableProperties();
