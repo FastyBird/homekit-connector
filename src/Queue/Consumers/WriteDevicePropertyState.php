@@ -196,10 +196,7 @@ final class WriteDevicePropertyState implements Queue\Consumer
 								if ($message->getState()->getExpectedValue() !== null) {
 									$characteristic->setActualValue($message->getState()->getExpectedValue());
 									$characteristic->setValid($message->getState()->isValid());
-								} elseif (
-									$message->getState()->getActualValue() !== null
-									&& $message->getState()->isValid()
-								) {
+								} elseif ($message->getState()->getActualValue() !== null) {
 									$characteristic->setActualValue($message->getState()->getActualValue());
 									$characteristic->setValid($message->getState()->isValid());
 								}
@@ -232,7 +229,7 @@ final class WriteDevicePropertyState implements Queue\Consumer
 						if ($message->getState() !== null) {
 							if ($message->getState()->getExpectedValue() !== null) {
 								$characteristic->setActualValue($message->getState()->getExpectedValue());
-								$characteristic->setValid(true);
+								$characteristic->setValid($message->getState()->isValid());
 							}
 						} else {
 							$this->logger->warning(

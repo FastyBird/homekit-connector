@@ -112,7 +112,7 @@ class Client implements DoctrineCrud\Entities\IEntity,
 			return strval(stream_get_contents($this->publicKey));
 		}
 
-		return $this->publicKey;
+		return strval($this->publicKey);
 	}
 
 	public function setPublicKey(string $publicKey): void

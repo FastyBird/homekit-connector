@@ -223,9 +223,9 @@ final class Transformer
 				if ($property->getFormat() instanceof MetadataFormats\StringEnum) {
 					$filtered = array_values(array_filter(
 						$property->getFormat()->getItems(),
-						static fn (string $item): bool => Utils\Strings::lower(
+						static fn (string $item): bool => ($value !== null ? Utils\Strings::lower(
 							MetadataUtilities\Value::toString($value, true),
-						) === $item,
+						) : null) === $item,
 					));
 
 					if (count($filtered) === 1) {
@@ -235,8 +235,11 @@ final class Transformer
 					$filtered = array_values(array_filter(
 						$property->getFormat()->getItems(),
 						static fn (array $item): bool => $item[0] !== null
-							&& Utils\Strings::lower(MetadataUtilities\Value::toString($item[0]->getValue(), true))
-								=== Utils\Strings::lower(MetadataUtilities\Value::toString($value, true)),
+							&& Utils\Strings::lower(
+								MetadataUtilities\Value::toString($item[0]->getValue(), true),
+							) === ($value !== null ? Utils\Strings::lower(
+								MetadataUtilities\Value::toString($value, true),
+							) : null),
 					));
 
 					if (
