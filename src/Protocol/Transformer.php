@@ -326,12 +326,18 @@ final class Transformer
 				$transformedValue = $transformedValue ? 1 : 0;
 			}
 
-			if (!is_numeric($transformedValue) || strval($transformedValue) !== strval((int) $transformedValue)) {
+			if ($transformedValue === null) {
+				$transformedValue = 0;
+			} elseif (!is_numeric($transformedValue) || strval($transformedValue) !== strval((int) $transformedValue)) {
 				$transformedValue = preg_replace(
 					'~\s~',
 					'',
 					MetadataUtilities\Value::toString($transformedValue, true),
 				);
+
+				if (!is_numeric($transformedValue)) {
+					$transformedValue = 0;
+				}
 			}
 
 			$transformedValue = (int) $transformedValue;
