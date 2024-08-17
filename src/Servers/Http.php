@@ -65,6 +65,7 @@ use function floatval;
 use function hex2bin;
 use function intval;
 use function is_array;
+use function is_bool;
 use function is_string;
 use function preg_match;
 use function sprintf;
@@ -319,7 +320,39 @@ final class Http implements Server
 								MetadataTypes\Sources\Connector::HOMEKIT,
 							);
 
-							if ($state instanceof DevicesDocuments\States\Channels\Properties\Property) {
+							if (
+								($state === null || is_bool($state) || $state->getGet()->getActualValue() === null)
+								&& $property->getDefault() !== null
+							) {
+								$this->queue->append(
+									$this->messageBuilder->create(
+										Queue\Messages\StoreChannelPropertyState::class,
+										[
+											'connector' => $accessory->getDevice()->getConnector(),
+											'device' => $accessory->getDevice()->getId(),
+											'channel' => $property->getChannel(),
+											'property' => $property->getId(),
+											'value' => $property->getDefault(),
+										],
+									),
+								);
+
+								$characteristic->setActualValue($property->getDefault());
+								$characteristic->setValid(true);
+							} elseif ($state instanceof DevicesDocuments\States\Channels\Properties\Property) {
+								$this->queue->append(
+									$this->messageBuilder->create(
+										Queue\Messages\StoreChannelPropertyState::class,
+										[
+											'connector' => $accessory->getDevice()->getConnector(),
+											'device' => $accessory->getDevice()->getId(),
+											'channel' => $property->getChannel(),
+											'property' => $property->getId(),
+											'value' => $state->getGet()->getExpectedValue() ?? $state->getGet()->getActualValue(),
+										],
+									),
+								);
+
 								$characteristic->setActualValue(
 									$state->getGet()->getExpectedValue() ?? $state->getGet()->getActualValue(),
 								);

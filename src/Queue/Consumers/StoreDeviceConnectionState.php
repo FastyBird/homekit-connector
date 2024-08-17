@@ -51,11 +51,9 @@ final class StoreDeviceConnectionState implements Queue\Consumer
 	public function __construct(
 		private readonly HomeKit\Logger $logger,
 		private readonly DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
-		private readonly DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
 		private readonly DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
 		private readonly DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
 		private readonly DevicesUtilities\DeviceConnection $deviceConnectionManager,
-		private readonly DevicesModels\States\Async\DevicePropertiesManager $devicePropertiesStatesManager,
 		private readonly DevicesModels\States\Async\ChannelPropertiesManager $channelPropertiesStatesManager,
 	)
 	{
@@ -124,22 +122,6 @@ final class StoreDeviceConnectionState implements Queue\Consumer
 				|| $message->getState() === DevicesTypes\ConnectionState::ALERT
 				|| $message->getState() === DevicesTypes\ConnectionState::UNKNOWN
 			) {
-				$findDevicePropertiesQuery = new DevicesQueries\Configuration\FindDeviceDynamicProperties();
-				$findDevicePropertiesQuery->forDevice($device);
-
-				$properties = $this->devicesPropertiesConfigurationRepository->findAllBy(
-					$findDevicePropertiesQuery,
-					DevicesDocuments\Devices\Properties\Dynamic::class,
-				);
-
-				foreach ($properties as $property) {
-					await($this->devicePropertiesStatesManager->setValidState(
-						$property,
-						false,
-						MetadataTypes\Sources\Connector::HOMEKIT,
-					));
-				}
-
 				$findChannelsQuery = new Queries\Configuration\FindChannels();
 				$findChannelsQuery->forDevice($device);
 
