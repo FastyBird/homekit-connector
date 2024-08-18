@@ -48,6 +48,7 @@ interface CharacteristicFactory
 		float|null $minValue = null,
 		float|null $maxValue = null,
 		float|null $minStep = null,
+		float|int|bool|string|null $default = null,
 		Types\CharacteristicUnit|null $unit = null,
 	): Characteristic;
 

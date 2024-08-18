@@ -91,6 +91,7 @@ class Characteristic
 		private readonly float|null $minValue = null,
 		private readonly float|null $maxValue = null,
 		private readonly float|null $minStep = null,
+		private readonly float|int|bool|string|null $default = null,
 		private readonly Types\CharacteristicUnit|null $unit = null,
 	)
 	{
@@ -148,6 +149,11 @@ class Characteristic
 	public function getMaxLength(): int|null
 	{
 		return $this->maxLength;
+	}
+
+	public function getDefault(): float|bool|int|string|null
+	{
+		return $this->default;
 	}
 
 	public function getService(): Protocol\Services\Service
@@ -294,7 +300,7 @@ class Characteristic
 				$this->minValue,
 				$this->maxValue,
 				$this->minStep,
-				$this->getValue(),
+				$this->isValid() ? $this->getValue() : $this->getDefault(),
 			);
 		}
 
@@ -343,7 +349,7 @@ class Characteristic
 		return sprintf(
 			'<characteristic name=%s value=%s properties=%s>',
 			$this->name,
-			MetadataUtilities\Value::flattenValue($this->getValue()),
+			MetadataUtilities\Value::flattenValue($this->isValid() ? $this->getValue() : $this->getDefault()),
 			Nette\Utils\Json::encode($properties),
 		);
 	}

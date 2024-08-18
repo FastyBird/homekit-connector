@@ -66,6 +66,7 @@ use function hex2bin;
 use function intval;
 use function is_array;
 use function is_bool;
+use function is_numeric;
 use function is_string;
 use function preg_match;
 use function sprintf;
@@ -973,49 +974,49 @@ final class Http implements Server
 			));
 		}
 
-		$characteristicsMetadata = $metadata->offsetGet($name);
+		$characteristicMetadata = $metadata->offsetGet($name);
 
 		if (
-			!$characteristicsMetadata instanceof Utils\ArrayHash
-			|| !$characteristicsMetadata->offsetExists('UUID')
-			|| !is_string($characteristicsMetadata->offsetGet('UUID'))
-			|| !$characteristicsMetadata->offsetExists('Format')
-			|| !is_string($characteristicsMetadata->offsetGet('Format'))
-			|| Types\DataType::tryFrom($characteristicsMetadata->offsetGet('Format')) === null
-			|| !$characteristicsMetadata->offsetExists('Permissions')
-			|| !$characteristicsMetadata->offsetGet('Permissions') instanceof Utils\ArrayHash
+			!$characteristicMetadata instanceof Utils\ArrayHash
+			|| !$characteristicMetadata->offsetExists('UUID')
+			|| !is_string($characteristicMetadata->offsetGet('UUID'))
+			|| !$characteristicMetadata->offsetExists('Format')
+			|| !is_string($characteristicMetadata->offsetGet('Format'))
+			|| Types\DataType::tryFrom($characteristicMetadata->offsetGet('Format')) === null
+			|| !$characteristicMetadata->offsetExists('Permissions')
+			|| !$characteristicMetadata->offsetGet('Permissions') instanceof Utils\ArrayHash
 		) {
 			throw new Exceptions\InvalidState('Characteristic definition is missing required attributes');
 		}
 
 		if (
 			$unit === null
-			&& $characteristicsMetadata->offsetExists('Unit')
-			&& Types\CharacteristicUnit::tryFrom(strval($characteristicsMetadata->offsetGet('Unit'))) !== null
+			&& $characteristicMetadata->offsetExists('Unit')
+			&& Types\CharacteristicUnit::tryFrom(strval($characteristicMetadata->offsetGet('Unit'))) !== null
 		) {
-			$unit = Types\CharacteristicUnit::from(strval($characteristicsMetadata->offsetGet('Unit')));
+			$unit = Types\CharacteristicUnit::from(strval($characteristicMetadata->offsetGet('Unit')));
 		}
 
-		if ($minValue === null && $characteristicsMetadata->offsetExists('MinValue')) {
-			$minValue = floatval($characteristicsMetadata->offsetGet('MinValue'));
+		if ($minValue === null && $characteristicMetadata->offsetExists('MinValue')) {
+			$minValue = floatval($characteristicMetadata->offsetGet('MinValue'));
 		}
 
-		if ($maxValue === null && $characteristicsMetadata->offsetExists('MaxValue')) {
-			$maxValue = floatval($characteristicsMetadata->offsetGet('MaxValue'));
+		if ($maxValue === null && $characteristicMetadata->offsetExists('MaxValue')) {
+			$maxValue = floatval($characteristicMetadata->offsetGet('MaxValue'));
 		}
 
-		if ($minStep === null && $characteristicsMetadata->offsetExists('MinStep')) {
-			$minStep = floatval($characteristicsMetadata->offsetGet('MinStep'));
+		if ($minStep === null && $characteristicMetadata->offsetExists('MinStep')) {
+			$minStep = floatval($characteristicMetadata->offsetGet('MinStep'));
 		}
 
-		if ($maxLength === null && $characteristicsMetadata->offsetExists('MaximumLength')) {
-			$maxLength = intval($characteristicsMetadata->offsetGet('MaximumLength'));
+		if ($maxLength === null && $characteristicMetadata->offsetExists('MaximumLength')) {
+			$maxLength = intval($characteristicMetadata->offsetGet('MaximumLength'));
 		}
 
-		if ($characteristicsMetadata->offsetExists('ValidValues')) {
-			$defaultValidValues = is_array($characteristicsMetadata->offsetGet('ValidValues'))
+		if ($characteristicMetadata->offsetExists('ValidValues')) {
+			$defaultValidValues = is_array($characteristicMetadata->offsetGet('ValidValues'))
 				? array_values(
-					$characteristicsMetadata->offsetGet('ValidValues'),
+					$characteristicMetadata->offsetGet('ValidValues'),
 				)
 				: null;
 
@@ -1060,6 +1061,13 @@ final class Http implements Server
 			$minStep = $property->getStep() ?? $minStep;
 		}
 
+		$default = null;
+
+		if ($characteristicMetadata->offsetExists('Default')) {
+			$default = $characteristicMetadata->offsetGet('Default');
+			assert(is_string($default) || is_numeric($default) || is_bool($default));
+		}
+
 		foreach ($this->characteristicsFactories as $characteristicFactory) {
 			if (
 				(
@@ -1074,14 +1082,14 @@ final class Http implements Server
 				)
 			) {
 				return $characteristicFactory->create(
-					Helpers\Protocol::hapTypeToUuid(strval($characteristicsMetadata->offsetGet('UUID'))),
+					Helpers\Protocol::hapTypeToUuid(strval($characteristicMetadata->offsetGet('UUID'))),
 					$name,
-					Types\DataType::from($characteristicsMetadata->offsetGet('Format')),
+					Types\DataType::from($characteristicMetadata->offsetGet('Format')),
 					array_map(
 						static fn (string $permission): Types\CharacteristicPermission => Types\CharacteristicPermission::from(
 							$permission,
 						),
-						(array) $characteristicsMetadata->offsetGet('Permissions'),
+						(array) $characteristicMetadata->offsetGet('Permissions'),
 					),
 					$service,
 					$property,
@@ -1090,6 +1098,7 @@ final class Http implements Server
 					$minValue,
 					$maxValue,
 					$minStep,
+					MetadataUtilities\Value::flattenValue($property?->getDefault() ?? $default),
 					$unit,
 				);
 			}

@@ -44,6 +44,7 @@ class Generic extends Characteristic
 		float|null $minValue = null,
 		float|null $maxValue = null,
 		float|null $minStep = null,
+		float|int|bool|string|null $default = null,
 		Types\CharacteristicUnit|null $unit = null,
 	)
 	{
@@ -61,6 +62,7 @@ class Generic extends Characteristic
 			$minValue,
 			$maxValue,
 			$minStep,
+			$default,
 			$unit,
 		);
 	}

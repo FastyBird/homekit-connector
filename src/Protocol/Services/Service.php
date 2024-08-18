@@ -246,7 +246,9 @@ class Service
 		$this->characteristics->rewind();
 
 		foreach ($this->characteristics as $characteristic) {
-			$characteristics[$characteristic->getName()] = $characteristic->getValue();
+			$characteristics[$characteristic->getName()] = $characteristic->isValid()
+				? $characteristic->getValue()
+				: $characteristic->getDefault();
 		}
 
 		return sprintf(

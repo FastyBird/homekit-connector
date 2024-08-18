@@ -1469,6 +1469,12 @@ class Install extends Console\Command\Command
 
 			$permissions = (array) $characteristicMetadata->offsetGet('Permissions');
 
+			$default = null;
+
+			if ($characteristicMetadata->offsetExists('Default')) {
+				$default = $characteristicMetadata->offsetGet('Default');
+			}
+
 			if ($characteristicMetadata->offsetGet('DataType') instanceof Utils\ArrayHash) {
 				$dataTypes = array_map(
 					static fn (string $type): MetadataTypes\DataType => MetadataTypes\DataType::from($type),
@@ -1561,6 +1567,7 @@ class Install extends Console\Command\Command
 					'format' => $format,
 					'settable' => $connectProperty?->isSettable(),
 					'queryable' => $connectProperty?->isQueryable(),
+					'default' => $default,
 				]));
 			} else {
 				$value = $this->provideCharacteristicValue($io, $characteristic);
@@ -1572,6 +1579,7 @@ class Install extends Console\Command\Command
 					'dataType' => $dataType,
 					'format' => $format,
 					'value' => $value,
+					'default' => $default,
 				]));
 			}
 
@@ -1691,6 +1699,12 @@ class Install extends Console\Command\Command
 
 				$format = $this->askFormat($io, $type, $connectProperty);
 
+				$default = null;
+
+				if ($characteristicMetadata->offsetExists('Default')) {
+					$default = $characteristicMetadata->offsetGet('Default');
+				}
+
 				if (
 					$connectProperty !== null
 					&& in_array($connectProperty->getDataType(), $dataTypes ?? [], true)
@@ -1759,6 +1773,7 @@ class Install extends Console\Command\Command
 						'format' => $format,
 						'settable' => $connectProperty?->isSettable(),
 						'queryable' => $connectProperty?->isQueryable(),
+						'default' => $default,
 					]));
 				}
 			} else {

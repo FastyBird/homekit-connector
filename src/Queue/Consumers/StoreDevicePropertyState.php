@@ -166,6 +166,11 @@ final class StoreDevicePropertyState implements Queue\Consumer
 				]),
 				MetadataTypes\Sources\Connector::HOMEKIT,
 			));
+			await($this->devicePropertiesStatesManager->setValidState(
+				$property,
+				true,
+				MetadataTypes\Sources\Connector::HOMEKIT,
+			));
 		} elseif ($property instanceof DevicesDocuments\Devices\Properties\Mapped) {
 			$findDevicePropertyQuery = new Queries\Configuration\FindDeviceProperties();
 			$findDevicePropertyQuery->byId($property->getParent());

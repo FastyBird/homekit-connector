@@ -269,7 +269,7 @@ final class WriteDevicePropertyState implements Queue\Consumer
 								$characteristic->getMinValue(),
 								$characteristic->getMaxValue(),
 								$characteristic->getMinStep(),
-								$characteristic->getValue(),
+								$characteristic->isValid() ? $characteristic->getValue() : $characteristic->getDefault(),
 							),
 							$characteristic->immediateNotify(),
 						);
@@ -286,7 +286,7 @@ final class WriteDevicePropertyState implements Queue\Consumer
 									$serviceCharacteristic->getMinValue(),
 									$serviceCharacteristic->getMaxValue(),
 									$serviceCharacteristic->getMinStep(),
-									$serviceCharacteristic->getValue(),
+									$serviceCharacteristic->isValid() ? $serviceCharacteristic->getValue() : $serviceCharacteristic->getDefault(),
 								),
 								$serviceCharacteristic->immediateNotify(),
 							);

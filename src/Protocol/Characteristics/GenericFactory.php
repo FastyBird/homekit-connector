@@ -50,6 +50,7 @@ class GenericFactory implements CharacteristicFactory
 		float|null $minValue = null,
 		float|null $maxValue = null,
 		float|null $minStep = null,
+		float|int|bool|string|null $default = null,
 		Types\CharacteristicUnit|null $unit = null,
 	): Generic
 	{
@@ -65,6 +66,7 @@ class GenericFactory implements CharacteristicFactory
 			$minValue,
 			$maxValue,
 			$minStep,
+			$default,
 			$unit,
 		);
 	}

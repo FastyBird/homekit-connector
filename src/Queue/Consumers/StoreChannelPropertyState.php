@@ -208,6 +208,11 @@ final class StoreChannelPropertyState implements Queue\Consumer
 				]),
 				MetadataTypes\Sources\Connector::HOMEKIT,
 			));
+			await($this->channelPropertiesStatesManager->setValidState(
+				$property,
+				true,
+				MetadataTypes\Sources\Connector::HOMEKIT,
+			));
 		} elseif ($property instanceof DevicesDocuments\Channels\Properties\Mapped) {
 			$findChannelPropertyQuery = new DevicesQueries\Configuration\FindChannelProperties();
 			$findChannelPropertyQuery->byId($property->getParent());
