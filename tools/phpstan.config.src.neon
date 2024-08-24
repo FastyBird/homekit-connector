@@ -44,3 +44,11 @@ parameters:
             message: '#^Parameter \#1 \$value of function intval expects array\|bool\|float\|int\|resource\|string\|null, mixed given.#'
             path: ../src/Commands/Install.php
             count: 1
+        -
+            message: '#^Method FastyBird\\Connector\\HomeKit\\Entities\\Channels\\Channel::getSource\(\) never returns FastyBird\\Library\\Metadata\\Types\\Sources\\Bridge so it can be removed from the return type.#'
+            path: ../src/Entities/Channels/Channel.php
+            count: 1
+        -
+            message: '#^Method FastyBird\\Connector\\HomeKit\\Entities\\Devices\\Device::getSource\(\) never returns FastyBird\\Library\\Metadata\\Types\\Sources\\Bridge so it can be removed from the return type.#'
+            path: ../src/Entities/Devices/Device.php
+            count: 1

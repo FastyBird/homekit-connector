@@ -1948,5 +1948,47 @@
     "MinValue" : 0,
     "DataType": "uchar",
     "Default": 0
+  },
+  "Consumption": {
+    "Format" : "float",
+    "Permissions" : [
+      "pr",
+      "ev"
+    ],
+    "UUID" : "E863F10D-079E-48FF-8F27-9C2605A29F52",
+    "MaxValue" : 65535,
+    "MinStep" : 0.1,
+    "MinValue" : 0,
+    "Unit" : "W",
+    "DataType": "float",
+    "Default": 0
+  },
+  "ElectricCurrent": {
+    "Format" : "float",
+    "Permissions" : [
+      "pr",
+      "ev"
+    ],
+    "UUID" : "E863F126-079E-48FF-8F27-9C2605A29F52",
+    "MaxValue" : 65535,
+    "MinStep" : 0.1,
+    "MinValue" : 0,
+    "Unit" : "A",
+    "DataType": "float",
+    "Default": 0
+  },
+  "Voltage": {
+    "Format" : "float",
+    "Permissions" : [
+      "pr",
+      "ev"
+    ],
+    "UUID" : "E863F10A-079E-48FF-8F27-9C2605A29F52",
+    "MaxValue" : 65535,
+    "MinStep" : 0.1,
+    "MinValue" : 0,
+    "Unit" : "V",
+    "DataType": "float",
+    "Default": 0
   }
 }

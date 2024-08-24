@@ -31,7 +31,6 @@ use function preg_match;
 use function str_replace;
 use function ucwords;
 
-#[ORM\Entity]
 #[ORM\MappedSuperclass]
 abstract class Channel extends DevicesEntities\Channels\Channel
 {
@@ -48,7 +47,7 @@ abstract class Channel extends DevicesEntities\Channels\Channel
 		parent::__construct($device, $identifier, $name, $id);
 	}
 
-	public function getSource(): MetadataTypes\Sources\Connector
+	public function getSource(): MetadataTypes\Sources\Connector|MetadataTypes\Sources\Bridge
 	{
 		return MetadataTypes\Sources\Connector::HOMEKIT;
 	}

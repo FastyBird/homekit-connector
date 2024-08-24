@@ -51,7 +51,7 @@ class Device extends DevicesEntities\Devices\Device
 		return self::TYPE;
 	}
 
-	public function getSource(): MetadataTypes\Sources\Connector
+	public function getSource(): MetadataTypes\Sources\Connector|MetadataTypes\Sources\Bridge
 	{
 		return MetadataTypes\Sources\Connector::HOMEKIT;
 	}
