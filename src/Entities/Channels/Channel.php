@@ -28,6 +28,7 @@ use ValueError;
 use function array_key_exists;
 use function assert;
 use function preg_match;
+use function sprintf;
 use function str_replace;
 use function ucwords;
 
@@ -69,7 +70,9 @@ abstract class Channel extends DevicesEntities\Channels\Channel
 		preg_match(HomeKit\Constants::SERVICE_IDENTIFIER, $this->getIdentifier(), $matches);
 
 		if (!array_key_exists('type', $matches)) {
-			throw new Exceptions\InvalidState('Device channel has invalid identifier');
+			throw new Exceptions\InvalidState(
+				sprintf('Device channel has invalid identifier: %s', $this->getIdentifier()),
+			);
 		}
 
 		$type = str_replace(' ', '', ucwords(str_replace('_', ' ', $matches['type'])));
