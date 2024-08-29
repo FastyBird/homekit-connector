@@ -65,7 +65,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 		DevicesModels\Configuration\Channels\Properties\Repository $channelsPropertiesConfigurationRepository,
 		DevicesModels\States\Async\DevicePropertiesManager $devicePropertiesStatesManager,
 		DevicesModels\States\Async\ChannelPropertiesManager $channelPropertiesStatesManager,
-		DateTimeFactory\Factory $dateTimeFactory,
+		DateTimeFactory\Clock $clock,
 		EventLoop\LoopInterface $eventLoop,
 		private readonly ExchangeConsumers\Container $consumer,
 		private readonly PsrEventDispatcher\EventDispatcherInterface|null $dispatcher = null,
@@ -82,7 +82,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 			$accessoryDriver,
 			$devicePropertiesStatesManager,
 			$channelPropertiesStatesManager,
-			$dateTimeFactory,
+			$clock,
 			$eventLoop,
 		);
 

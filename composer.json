@@ -52,7 +52,7 @@
     "ipub/slim-router": "^0.2",
     "leigh/curve25519": "^0.1",
     "nette/di": "^3.0",
-    "orisai/nette-object-mapper": "^0.1",
+    "orisai/object-mapper": "^0.2",
     "psr/event-dispatcher": "^1.0",
     "psr/log": "^3.0",
     "endroid/qr-code": "4.5",
