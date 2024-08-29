@@ -11,6 +11,7 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\DateTimeFactory;
 use FastyBird\Library\Application\Boot as ApplicationBoot;
 use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Library\Application\Utilities as ApplicationUtilities;
 use IPub\DoctrineCrud;
 use Nette;
 use Nettrine\ORM as NettrineORM;
@@ -69,6 +70,19 @@ abstract class DbTestCase extends TestCase
 		$this->mockContainerService(
 			DateTimeFactory\Factory::class,
 			$dateTimeFactory,
+		);
+
+		$dateTimeProvider = $this->createMock(ApplicationUtilities\DateTimeProvider::class);
+		$dateTimeProvider
+			->method('getDate')
+			->willReturn($dateTimeFactory->getNow());
+		$dateTimeProvider
+			->method('getTimestamp')
+			->willReturn($dateTimeFactory->getNow()->getTimestamp());
+
+		$this->mockContainerService(
+			ApplicationUtilities\DateTimeProvider::class,
+			$dateTimeProvider,
 		);
 	}
 
