@@ -259,7 +259,7 @@ final class PairingController extends BaseController
 				&& array_key_exists(Types\TlvCode::METHOD->value, $tlvEntry)
 				&& $tlvEntry[Types\TlvCode::METHOD->value] === Types\TlvMethod::RESERVED->value
 			) {
-				$result = $this->srpStart($connector);
+				$result = $this->srpStart($connector, $request);
 
 				$this->expectedState = Types\TlvState::M3;
 
@@ -274,6 +274,7 @@ final class PairingController extends BaseController
 					$connector,
 					$tlvEntry[Types\TlvCode::PUBLIC_KEY->value],
 					$tlvEntry[Types\TlvCode::PROOF->value],
+					$request,
 				);
 
 				$this->expectedState = Types\TlvState::M5;
@@ -286,6 +287,7 @@ final class PairingController extends BaseController
 				$result = $this->exchange(
 					$connector,
 					$tlvEntry[Types\TlvCode::ENCRYPTED_DATA->value],
+					$request,
 				);
 
 				$this->expectedState = Types\TlvState::M1;
@@ -382,14 +384,14 @@ final class PairingController extends BaseController
 				&& array_key_exists(Types\TlvCode::PUBLIC_KEY->value, $tlvEntry)
 				&& is_array($tlvEntry[Types\TlvCode::PUBLIC_KEY->value])
 			) {
-				$result = $this->verifyStart($connector, $tlvEntry[Types\TlvCode::PUBLIC_KEY->value]);
+				$result = $this->verifyStart($connector, $tlvEntry[Types\TlvCode::PUBLIC_KEY->value], $request);
 
 			} elseif (
 				$requestedState === Types\TlvState::M3->value
 				&& array_key_exists(Types\TlvCode::ENCRYPTED_DATA->value, $tlvEntry)
 				&& is_array($tlvEntry[Types\TlvCode::ENCRYPTED_DATA->value])
 			) {
-				$result = $this->verifyFinish($connector, $tlvEntry[Types\TlvCode::ENCRYPTED_DATA->value]);
+				$result = $this->verifyFinish($connector, $tlvEntry[Types\TlvCode::ENCRYPTED_DATA->value], $request);
 
 			} else {
 				throw new Exceptions\InvalidState('Unknown data received');
@@ -475,7 +477,7 @@ final class PairingController extends BaseController
 				$method === Types\TlvMethod::LIST_PAIRINGS->value
 				&& $requestedState === Types\TlvState::M1->value
 			) {
-				$result = $this->listPairings($connector);
+				$result = $this->listPairings($connector, $request);
 
 			} elseif (
 				$method === Types\TlvMethod::ADD_PAIRING->value
@@ -492,6 +494,7 @@ final class PairingController extends BaseController
 					$tlvEntry[Types\TlvCode::IDENTIFIER->value],
 					$tlvEntry[Types\TlvCode::PUBLIC_KEY->value],
 					$tlvEntry[Types\TlvCode::PERMISSIONS->value],
+					$request,
 				);
 			} elseif (
 				$method === Types\TlvMethod::REMOVE_PAIRING->value
@@ -502,6 +505,7 @@ final class PairingController extends BaseController
 				$result = $this->removePairing(
 					$connector,
 					$tlvEntry[Types\TlvCode::IDENTIFIER->value],
+					$request,
 				);
 			} else {
 				throw new Exceptions\InvalidState('Unknown data received');
@@ -529,7 +533,10 @@ final class PairingController extends BaseController
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
-	private function srpStart(Documents\Connectors\Connector $connector): array
+	private function srpStart(
+		Documents\Connectors\Connector $connector,
+		Message\ServerRequestInterface $request,
+	): array
 	{
 		if ($this->connectorHelper->isPaired($connector)) {
 			$this->logger->error(
@@ -537,6 +544,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -561,6 +571,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -585,6 +598,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -609,6 +625,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -639,6 +658,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -665,6 +687,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -688,6 +713,9 @@ final class PairingController extends BaseController
 			[
 				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'pairing-controller',
+				'request' => [
+					'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+				],
 				'connector' => [
 					'id' => $connector->getId()->toString(),
 				],
@@ -720,6 +748,7 @@ final class PairingController extends BaseController
 		Documents\Connectors\Connector $connector,
 		array $clientPublicKey,
 		array $clientProof,
+		Message\ServerRequestInterface $request,
 	): array
 	{
 		if ($this->srp === null || $this->expectedState !== Types\TlvState::M3) {
@@ -728,6 +757,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -756,6 +788,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -780,6 +815,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -806,6 +844,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -829,6 +870,9 @@ final class PairingController extends BaseController
 			[
 				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'pairing-controller',
+				'request' => [
+					'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+				],
 				'connector' => [
 					'id' => $connector->getId()->toString(),
 				],
@@ -863,7 +907,11 @@ final class PairingController extends BaseController
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
-	public function exchange(Documents\Connectors\Connector $connector, array $encryptedData): array
+	public function exchange(
+		Documents\Connectors\Connector $connector,
+		array $encryptedData,
+		Message\ServerRequestInterface $request,
+	): array
 	{
 		if ($this->srp === null || $this->expectedState !== Types\TlvState::M5) {
 			$this->logger->error(
@@ -871,6 +919,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -911,6 +962,9 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
 					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -946,6 +1000,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -970,6 +1027,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1003,6 +1063,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1045,6 +1108,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1109,6 +1175,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1159,6 +1228,9 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
 					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1183,6 +1255,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1208,6 +1283,9 @@ final class PairingController extends BaseController
 			[
 				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'pairing-controller',
+				'request' => [
+					'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+				],
 				'connector' => [
 					'id' => $connector->getId()->toString(),
 				],
@@ -1251,6 +1329,7 @@ final class PairingController extends BaseController
 	private function verifyStart(
 		Documents\Connectors\Connector $connector,
 		array $clientPublicKey,
+		Message\ServerRequestInterface $request,
 	): array
 	{
 		$serverSecret = $this->connectorHelper->getServerSecret($connector);
@@ -1261,6 +1340,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1323,6 +1405,9 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
 					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1347,6 +1432,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1373,6 +1461,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1414,6 +1505,9 @@ final class PairingController extends BaseController
 			[
 				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'pairing-controller',
+				'request' => [
+					'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+				],
 				'connector' => [
 					'id' => $connector->getId()->toString(),
 				],
@@ -1449,6 +1543,7 @@ final class PairingController extends BaseController
 	private function verifyFinish(
 		Documents\Connectors\Connector $connector,
 		array $encryptedData,
+		Message\ServerRequestInterface $request,
 	): array
 	{
 		try {
@@ -1465,6 +1560,9 @@ final class PairingController extends BaseController
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
 					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1500,6 +1598,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1524,6 +1625,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1555,6 +1659,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1585,6 +1692,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1614,6 +1724,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1651,6 +1764,9 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
+					'request' => [
+						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+					],
 					'connector' => [
 						'id' => $connector->getId()->toString(),
 					],
@@ -1674,6 +1790,9 @@ final class PairingController extends BaseController
 			[
 				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'pairing-controller',
+				'request' => [
+					'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+				],
 				'connector' => [
 					'id' => $connector->getId()->toString(),
 				],
@@ -1694,13 +1813,19 @@ final class PairingController extends BaseController
 	/**
 	 * @return array<int, array<int, (int|array<int>|string)>>
 	 */
-	private function listPairings(Documents\Connectors\Connector $connector): array
+	private function listPairings(
+		Documents\Connectors\Connector $connector,
+		Message\ServerRequestInterface $request,
+	): array
 	{
 		$this->logger->debug(
 			'Requested list pairings',
 			[
 				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'pairing-controller',
+				'request' => [
+					'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+				],
 				'connector' => [
 					'id' => $connector->getId()->toString(),
 				],
@@ -1750,6 +1875,7 @@ final class PairingController extends BaseController
 		string $clientUid,
 		array $clientPublicKey,
 		int $clientPermission,
+		Message\ServerRequestInterface $request,
 	): array
 	{
 		$this->logger->debug(
@@ -1757,6 +1883,9 @@ final class PairingController extends BaseController
 			[
 				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'pairing-controller',
+				'request' => [
+					'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+				],
 				'connector' => [
 					'id' => $connector->getId()->toString(),
 				],
@@ -1785,6 +1914,9 @@ final class PairingController extends BaseController
 					[
 						'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 						'type' => 'pairing-controller',
+						'request' => [
+							'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+						],
 						'connector' => [
 							'id' => $connector->getId()->toString(),
 						],
@@ -1860,6 +1992,7 @@ final class PairingController extends BaseController
 	private function removePairing(
 		Documents\Connectors\Connector $connector,
 		string $clientUid,
+		Message\ServerRequestInterface $request,
 	): array
 	{
 		$this->logger->debug(
@@ -1867,6 +2000,9 @@ final class PairingController extends BaseController
 			[
 				'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 				'type' => 'pairing-controller',
+				'request' => [
+					'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
+				],
 				'connector' => [
 					'id' => $connector->getId()->toString(),
 				],
@@ -1910,6 +2046,12 @@ final class PairingController extends BaseController
 					$this->setConfiguration(
 						$connector,
 						Types\ConnectorPropertyIdentifier::HASHING_KEY,
+					);
+
+					$this->setConfiguration(
+						$connector,
+						Types\ConnectorPropertyIdentifier::CONFIG_VERSION,
+						1,
 					);
 				}
 			});

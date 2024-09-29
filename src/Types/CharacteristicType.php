@@ -128,6 +128,8 @@ enum CharacteristicType: string
 
 	case IMAGE_ROTATION = 'ImageRotation';
 
+	case INPUT_SOURCE = 'InputSource';
+
 	case INPUT_SOURCE_TYPE = 'InputSourceType';
 
 	case INPUT_DEVICE_TYPE = 'InputDeviceType';
@@ -317,5 +319,41 @@ enum CharacteristicType: string
 	case COLOR_BLUE = 'ColorBlue';
 
 	case COLOR_WHITE = 'ColorWhite';
+
+	case REMOTE_KEY_REWIND = 'RemoteKeyRewind';
+
+	case REMOTE_KEY_FAST_FORWARD = 'RemoteKeyFastForward';
+
+	case REMOTE_KEY_NEXT_TRACK = 'RemoteKeyNextTrack';
+
+	case REMOTE_KEY_PREVIOUS_TRACK = 'RemoteKeyPreviousTrack';
+
+	case REMOTE_KEY_ARROW_UP = 'RemoteKeyArrowUp';
+
+	case REMOTE_KEY_ARROW_DOWN = 'RemoteKeyArrowDown';
+
+	case REMOTE_KEY_ARROW_LEFT = 'RemoteKeyArrowLeft';
+
+	case REMOTE_KEY_ARROW_RIGHT = 'RemoteKeyArrowRight';
+
+	case REMOTE_KEY_SELECT = 'RemoteKeySelect';
+
+	case REMOTE_KEY_BACK = 'RemoteKeyBack';
+
+	case REMOTE_KEY_EXIT = 'RemoteKeyExit';
+
+	case REMOTE_KEY_PLAY_PAUSE = 'RemoteKeyPlayPause';
+
+	case REMOTE_KEY_INFORMATION = 'RemoteKeyInformation';
+
+	case REMOTE_KEY_VOLUME_UP = 'RemoteKeyVolumeUp';
+
+	case REMOTE_KEY_VOLUME_DOWN = 'RemoteKeyVolumeDown';
+
+	case CONSUMPTION = 'Consumption';
+
+	case ELECTRIC_CURRENT = 'ElectricCurrent';
+
+	case VOLTAGE = 'Voltage';
 
 }

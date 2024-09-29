@@ -239,7 +239,7 @@ class Install extends Console\Command\Command
 
 			$this->connectorsPropertiesManager->create(Utils\ArrayHash::from([
 				'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-				'identifier' => Types\ConnectorPropertyIdentifier::PORT,
+				'identifier' => Types\ConnectorPropertyIdentifier::PORT->value,
 				'dataType' => MetadataTypes\DataType::UCHAR,
 				'value' => $port,
 				'connector' => $connector,
@@ -369,7 +369,7 @@ class Install extends Console\Command\Command
 			if ($portProperty === null) {
 				$this->connectorsPropertiesManager->create(Utils\ArrayHash::from([
 					'entity' => DevicesEntities\Connectors\Properties\Variable::class,
-					'identifier' => Types\ConnectorPropertyIdentifier::PORT,
+					'identifier' => Types\ConnectorPropertyIdentifier::PORT->value,
 					'dataType' => MetadataTypes\DataType::UCHAR,
 					'value' => $port,
 					'connector' => $connector,
@@ -1013,11 +1013,11 @@ class Install extends Console\Command\Command
 			$this->databaseHelper->beginTransaction();
 
 			$channel = $this->channelsManager->create(Utils\ArrayHash::from([
-				'entity' => Entities\Channels\Channel::class,
+				'entity' => Entities\Channels\Generic::class,
 				'identifier' => $identifier,
 				'device' => $device,
 			]));
-			assert($channel instanceof Entities\Channels\Channel);
+			assert($channel instanceof Entities\Channels\Generic);
 
 			$this->createCharacteristics($io, $channel, $requiredCharacteristics, true);
 

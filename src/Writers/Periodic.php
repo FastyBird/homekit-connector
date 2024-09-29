@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Writers;
 
 use DateTimeInterface;
+use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Documents;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
@@ -23,6 +24,7 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\DateTimeFactory;
+use FastyBird\Library\Application\Helpers as ApplicationHelpers;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Library\Tools\Exceptions as ToolsExceptions;
@@ -31,6 +33,7 @@ use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use FastyBird\Module\Devices\Queries as DevicesQueries;
 use React\EventLoop;
+use Throwable;
 use TypeError;
 use ValueError;
 use function array_key_exists;
@@ -76,6 +79,7 @@ abstract class Periodic
 		protected readonly Documents\Connectors\Connector $connector,
 		protected readonly Helpers\MessageBuilder $messageBuilder,
 		protected readonly Queue\Queue $queue,
+		protected readonly HomeKit\Logger $logger,
 		protected readonly DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
 		protected readonly DevicesModels\Configuration\Devices\Properties\Repository $devicesPropertiesConfigurationRepository,
 		protected readonly DevicesModels\Configuration\Channels\Repository $channelsConfigurationRepository,
@@ -351,138 +355,152 @@ abstract class Periodic
 			foreach ($accessory->getServices() as $service) {
 				if ($service->getChannel() !== null) {
 					foreach ($service->getCharacteristics() as $characteristic) {
-						if (
-							$characteristic->getProperty() !== null
-							&& $characteristic->getProperty()->getId()->equals($property->getId())
-						) {
-							if ($characteristic->getValue() === $characteristicValue) {
+						try {
+							if (
+								$characteristic->getProperty() !== null
+								&& $characteristic->getProperty()->getId()->equals($property->getId())
+							) {
+								if ($characteristic->getValue() === $characteristicValue) {
+									return true;
+								}
+
+								if ($property instanceof DevicesDocuments\Devices\Properties\Variable) {
+									$this->queue->append(
+										$this->messageBuilder->create(
+											Queue\Messages\WriteDevicePropertyState::class,
+											[
+												'connector' => $device->getConnector(),
+												'device' => $device->getId(),
+												'property' => $property->getId(),
+											],
+										),
+									);
+								} elseif (
+									$property instanceof DevicesDocuments\Devices\Properties\Dynamic
+									&& $state !== null
+								) {
+									$this->queue->append(
+										$this->messageBuilder->create(
+											Queue\Messages\WriteDevicePropertyState::class,
+											[
+												'connector' => $device->getConnector(),
+												'device' => $device->getId(),
+												'property' => $property->getId(),
+												'state' => array_merge(
+													$state->getGet()->toArray(),
+													[
+														'id' => $state->getId(),
+														'valid' => $state->isValid(),
+														'pending' => $state->getPending() instanceof DateTimeInterface
+															? $state->getPending()->format(DateTimeInterface::ATOM)
+															: $state->getPending(),
+													],
+												),
+											],
+										),
+									);
+								} elseif (
+									$property instanceof DevicesDocuments\Devices\Properties\Mapped
+									&& $state !== null
+								) {
+									$this->queue->append(
+										$this->messageBuilder->create(
+											Queue\Messages\WriteDevicePropertyState::class,
+											[
+												'connector' => $device->getConnector(),
+												'device' => $device->getId(),
+												'property' => $property->getId(),
+												'state' => array_merge(
+													$state->getRead()->toArray(),
+													[
+														'id' => $state->getId(),
+														'valid' => $state->isValid(),
+														'pending' => $state->getPending() instanceof DateTimeInterface
+															? $state->getPending()->format(DateTimeInterface::ATOM)
+															: $state->getPending(),
+													],
+												),
+											],
+										),
+									);
+								} elseif ($property instanceof DevicesDocuments\Channels\Properties\Variable) {
+									$this->queue->append(
+										$this->messageBuilder->create(
+											Queue\Messages\WriteChannelPropertyState::class,
+											[
+												'connector' => $device->getConnector(),
+												'device' => $device->getId(),
+												'channel' => $property->getChannel(),
+												'property' => $property->getId(),
+											],
+										),
+									);
+								} elseif (
+									$property instanceof DevicesDocuments\Channels\Properties\Dynamic
+									&& $state !== null
+								) {
+									$this->queue->append(
+										$this->messageBuilder->create(
+											Queue\Messages\WriteChannelPropertyState::class,
+											[
+												'connector' => $device->getConnector(),
+												'device' => $device->getId(),
+												'channel' => $property->getChannel(),
+												'property' => $property->getId(),
+												'state' => array_merge(
+													$state->getGet()->toArray(),
+													[
+														'id' => $state->getId(),
+														'valid' => $state->isValid(),
+														'pending' => $state->getPending() instanceof DateTimeInterface
+															? $state->getPending()->format(DateTimeInterface::ATOM)
+															: $state->getPending(),
+													],
+												),
+											],
+										),
+									);
+								} elseif (
+									$property instanceof DevicesDocuments\Channels\Properties\Mapped
+									&& $state !== null
+								) {
+									$this->queue->append(
+										$this->messageBuilder->create(
+											Queue\Messages\WriteChannelPropertyState::class,
+											[
+												'connector' => $device->getConnector(),
+												'device' => $device->getId(),
+												'channel' => $property->getChannel(),
+												'property' => $property->getId(),
+												'state' => array_merge(
+													$state->getRead()->toArray(),
+													[
+														'id' => $state->getId(),
+														'valid' => $state->isValid(),
+														'pending' => $state->getPending() instanceof DateTimeInterface
+															? $state->getPending()->format(DateTimeInterface::ATOM)
+															: $state->getPending(),
+													],
+												),
+											],
+										),
+									);
+								}
+
 								return true;
 							}
+						} catch (Throwable $ex) {
+							// Log caught exception
+							$this->logger->error(
+								'Characteristic value could not be prepared for writing',
+								[
+									'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+									'type' => 'periodic-writer',
+									'exception' => ApplicationHelpers\Logger::buildException($ex),
+								],
+							);
 
-							if ($property instanceof DevicesDocuments\Devices\Properties\Variable) {
-								$this->queue->append(
-									$this->messageBuilder->create(
-										Queue\Messages\WriteDevicePropertyState::class,
-										[
-											'connector' => $device->getConnector(),
-											'device' => $device->getId(),
-											'property' => $property->getId(),
-										],
-									),
-								);
-							} elseif (
-								$property instanceof DevicesDocuments\Devices\Properties\Dynamic
-								&& $state !== null
-							) {
-								$this->queue->append(
-									$this->messageBuilder->create(
-										Queue\Messages\WriteDevicePropertyState::class,
-										[
-											'connector' => $device->getConnector(),
-											'device' => $device->getId(),
-											'property' => $property->getId(),
-											'state' => array_merge(
-												$state->getGet()->toArray(),
-												[
-													'id' => $state->getId(),
-													'valid' => $state->isValid(),
-													'pending' => $state->getPending() instanceof DateTimeInterface
-														? $state->getPending()->format(DateTimeInterface::ATOM)
-														: $state->getPending(),
-												],
-											),
-										],
-									),
-								);
-							} elseif (
-								$property instanceof DevicesDocuments\Devices\Properties\Mapped
-								&& $state !== null
-							) {
-								$this->queue->append(
-									$this->messageBuilder->create(
-										Queue\Messages\WriteDevicePropertyState::class,
-										[
-											'connector' => $device->getConnector(),
-											'device' => $device->getId(),
-											'property' => $property->getId(),
-											'state' => array_merge(
-												$state->getRead()->toArray(),
-												[
-													'id' => $state->getId(),
-													'valid' => $state->isValid(),
-													'pending' => $state->getPending() instanceof DateTimeInterface
-														? $state->getPending()->format(DateTimeInterface::ATOM)
-														: $state->getPending(),
-												],
-											),
-										],
-									),
-								);
-							} elseif ($property instanceof DevicesDocuments\Channels\Properties\Variable) {
-								$this->queue->append(
-									$this->messageBuilder->create(
-										Queue\Messages\WriteChannelPropertyState::class,
-										[
-											'connector' => $device->getConnector(),
-											'device' => $device->getId(),
-											'channel' => $property->getChannel(),
-											'property' => $property->getId(),
-										],
-									),
-								);
-							} elseif (
-								$property instanceof DevicesDocuments\Channels\Properties\Dynamic
-								&& $state !== null
-							) {
-								$this->queue->append(
-									$this->messageBuilder->create(
-										Queue\Messages\WriteChannelPropertyState::class,
-										[
-											'connector' => $device->getConnector(),
-											'device' => $device->getId(),
-											'channel' => $property->getChannel(),
-											'property' => $property->getId(),
-											'state' => array_merge(
-												$state->getGet()->toArray(),
-												[
-													'id' => $state->getId(),
-													'valid' => $state->isValid(),
-													'pending' => $state->getPending() instanceof DateTimeInterface
-														? $state->getPending()->format(DateTimeInterface::ATOM)
-														: $state->getPending(),
-												],
-											),
-										],
-									),
-								);
-							} elseif (
-								$property instanceof DevicesDocuments\Channels\Properties\Mapped
-								&& $state !== null
-							) {
-								$this->queue->append(
-									$this->messageBuilder->create(
-										Queue\Messages\WriteChannelPropertyState::class,
-										[
-											'connector' => $device->getConnector(),
-											'device' => $device->getId(),
-											'channel' => $property->getChannel(),
-											'property' => $property->getId(),
-											'state' => array_merge(
-												$state->getRead()->toArray(),
-												[
-													'id' => $state->getId(),
-													'valid' => $state->isValid(),
-													'pending' => $state->getPending() instanceof DateTimeInterface
-														? $state->getPending()->format(DateTimeInterface::ATOM)
-														: $state->getPending(),
-												],
-											),
-										],
-									),
-								);
-							}
-
-							return true;
+							return false;
 						}
 					}
 				}

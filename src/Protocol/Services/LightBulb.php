@@ -33,33 +33,48 @@ use function is_int;
 final class LightBulb extends Generic
 {
 
-	public function recalculateValues(
-		Protocol\Characteristics\Characteristic $characteristic,
-		bool $fromDevice,
+	public function recalculateCharacteristics(
+		Protocol\Characteristics\Characteristic|null $characteristic = null,
 	): void
 	{
-		$updatePropertyType = $fromDevice ? DevicesTypes\PropertyType::DYNAMIC : DevicesTypes\PropertyType::MAPPED;
+		if ($characteristic !== null) {
+			if (
+				$characteristic->getName() === Types\CharacteristicType::COLOR_RED->value
+				|| $characteristic->getName() === Types\CharacteristicType::COLOR_GREEN->value
+				|| $characteristic->getName() === Types\CharacteristicType::COLOR_BLUE->value
+				|| $characteristic->getName() === Types\CharacteristicType::COLOR_WHITE->value
+			) {
+				$this->calculateRgbToHsb();
+
+			} elseif (
+				$characteristic->getName() === Types\CharacteristicType::HUE->value
+				|| $characteristic->getName() === Types\CharacteristicType::SATURATION->value
+				|| $characteristic->getName() === Types\CharacteristicType::BRIGHTNESS->value
+			) {
+				$this->calculateHsbToRgb();
+			}
+
+			return;
+		}
 
 		if (
-			$characteristic->getName() === Types\CharacteristicType::COLOR_RED->value
-			|| $characteristic->getName() === Types\CharacteristicType::COLOR_GREEN->value
-			|| $characteristic->getName() === Types\CharacteristicType::COLOR_BLUE->value
-			|| $characteristic->getName() === Types\CharacteristicType::COLOR_WHITE->value
+			$this->hasCharacteristic(Types\CharacteristicType::COLOR_RED)
+			&& $this->hasCharacteristic(Types\CharacteristicType::COLOR_GREEN)
+			&& $this->hasCharacteristic(Types\CharacteristicType::COLOR_BLUE)
 		) {
-			$this->calculateRgbToHsb($updatePropertyType);
+			$this->calculateRgbToHsb();
+		}
 
-		} elseif (
-			$characteristic->getName() === Types\CharacteristicType::HUE->value
-			|| $characteristic->getName() === Types\CharacteristicType::SATURATION->value
-			|| $characteristic->getName() === Types\CharacteristicType::BRIGHTNESS->value
+		if (
+			$this->hasCharacteristic(Types\CharacteristicType::HUE)
+			&& $this->hasCharacteristic(Types\CharacteristicType::SATURATION)
+			&& $this->hasCharacteristic(Types\CharacteristicType::BRIGHTNESS)
 		) {
-			$this->calculateHsbToRgb($updatePropertyType);
+			$this->calculateHsbToRgb();
 		}
 	}
 
-	private function calculateRgbToHsb(
-		DevicesTypes\PropertyType $updatePropertyType,
-	): void
+	private function calculateRgbToHsb(): void
 	{
 		$redCharacteristic = $this->findCharacteristic(Types\CharacteristicType::COLOR_RED);
 		$greenCharacteristic = $this->findCharacteristic(Types\CharacteristicType::COLOR_GREEN);
@@ -88,43 +103,54 @@ final class LightBulb extends Generic
 		$hue = $this->findCharacteristic(Types\CharacteristicType::HUE);
 
 		if (
-			$hue !== null
+			$hue?->getProperty() !== null
 			&& (
-				$hue->getProperty() === null
-				|| $hue->getProperty()::getType() === $updatePropertyType->value
+				$hue->getProperty()::getType() === DevicesTypes\PropertyType::DYNAMIC->value
+				|| $hue->getProperty()::getType() === DevicesTypes\PropertyType::VARIABLE->value
 			)
 		) {
-			$hue->setValue($hsb->getHue());
+			$hue->setActualValue($hsb->getHue());
+			$hue->setExpectedValue(null);
+		} elseif (
+			$hue?->getProperty() !== null
+			&& $hue->getProperty()::getType() === DevicesTypes\PropertyType::MAPPED->value
+		) {
+			$hue->setExpectedValue($hsb->getHue());
 		}
 
 		$saturation = $this->findCharacteristic(Types\CharacteristicType::SATURATION);
 
 		if (
-			$saturation !== null
+			$saturation?->getProperty() !== null
 			&& (
-				$saturation->getProperty() === null
-				|| $saturation->getProperty()::getType() === $updatePropertyType->value
+				$saturation->getProperty()::getType() === DevicesTypes\PropertyType::DYNAMIC->value
+				|| $saturation->getProperty()::getType() === DevicesTypes\PropertyType::VARIABLE->value
 			)
 		) {
-			$saturation->setValue($hsb->getSaturation());
+			$saturation->setActualValue($hsb->getSaturation());
+			$saturation->setExpectedValue(null);
+		} elseif (
+			$saturation?->getProperty() !== null
+			&& $saturation->getProperty()::getType() === DevicesTypes\PropertyType::MAPPED->value
+		) {
+			$saturation->setExpectedValue($hsb->getSaturation());
 		}
 
 		$brightness = $this->findCharacteristic(Types\CharacteristicType::BRIGHTNESS);
 
 		if (
-			$brightness !== null
+			$brightness?->getProperty() !== null
 			&& (
-				$brightness->getProperty() === null
-				|| $brightness->getProperty()::getType() === $updatePropertyType->value
+				$brightness->getProperty()::getType() === DevicesTypes\PropertyType::DYNAMIC->value
+				|| $brightness->getProperty()::getType() === DevicesTypes\PropertyType::VARIABLE->value
 			)
 		) {
-			$brightness->setValue($hsb->getBrightness());
+			$brightness->setActualValue($hsb->getBrightness());
+			$brightness->setExpectedValue(null);
 		}
 	}
 
-	private function calculateHsbToRgb(
-		DevicesTypes\PropertyType $updatePropertyType,
-	): void
+	private function calculateHsbToRgb(): void
 	{
 		$hueCharacteristic = $this->findCharacteristic(Types\CharacteristicType::HUE);
 		$saturationCharacteristic = $this->findCharacteristic(Types\CharacteristicType::SATURATION);
@@ -157,63 +183,84 @@ final class LightBulb extends Generic
 				$brightness,
 			);
 
-			$rgb = $hsb->toRgb();
+			$rgb = $this->hasCharacteristic(Types\CharacteristicType::COLOR_WHITE)
+				? $hsb->toRgbw($brightnessCharacteristic->getValue())
+				: $hsb->toRgb();
 
 		} else {
 			$rgb = new ToolsTransformers\RgbTransformer(0, 0, 0);
 		}
 
-		if ($this->hasCharacteristic(Types\CharacteristicType::COLOR_WHITE)) {
-			$rgb = $rgb->toHsi()->toRgbw();
-		}
-
 		$red = $this->findCharacteristic(Types\CharacteristicType::COLOR_RED);
 
 		if (
-			$red !== null
+			$red?->getProperty() !== null
 			&& (
-				$red->getProperty() === null
-				|| $red->getProperty()::getType() === $updatePropertyType->value
+				$red->getProperty()::getType() === DevicesTypes\PropertyType::DYNAMIC->value
+				|| $red->getProperty()::getType() === DevicesTypes\PropertyType::VARIABLE->value
 			)
 		) {
-			$red->setValue($rgb->getRed());
+			$red->setActualValue($rgb->getRed());
+			$red->setExpectedValue(null);
+		} elseif (
+			$red?->getProperty() !== null
+			&& $red->getProperty()::getType() === DevicesTypes\PropertyType::MAPPED->value
+		) {
+			$red->setExpectedValue($rgb->getRed());
 		}
 
 		$green = $this->findCharacteristic(Types\CharacteristicType::COLOR_GREEN);
 
 		if (
-			$green !== null
+			$green?->getProperty() !== null
 			&& (
-				$green->getProperty() === null
-				|| $green->getProperty()::getType() === $updatePropertyType->value
+				$green->getProperty()::getType() === DevicesTypes\PropertyType::DYNAMIC->value
+				|| $green->getProperty()::getType() === DevicesTypes\PropertyType::VARIABLE->value
 			)
 		) {
-			$green->setValue($rgb->getGreen());
+			$green->setActualValue($rgb->getGreen());
+			$green->setExpectedValue(null);
+		} elseif (
+			$green?->getProperty() !== null
+			&& $green->getProperty()::getType() === DevicesTypes\PropertyType::MAPPED->value
+		) {
+			$green->setExpectedValue($rgb->getGreen());
 		}
 
 		$blue = $this->findCharacteristic(Types\CharacteristicType::COLOR_BLUE);
 
 		if (
-			$blue !== null
+			$blue?->getProperty() !== null
 			&& (
-				$blue->getProperty() === null
-				|| $blue->getProperty()::getType() === $updatePropertyType->value
+				$blue->getProperty()::getType() === DevicesTypes\PropertyType::DYNAMIC->value
+				|| $blue->getProperty()::getType() === DevicesTypes\PropertyType::VARIABLE->value
 			)
 		) {
-			$blue->setValue($rgb->getBlue());
+			$blue->setActualValue($rgb->getBlue());
+			$blue->setExpectedValue(null);
+		} elseif (
+			$blue?->getProperty() !== null
+			&& $blue->getProperty()::getType() === DevicesTypes\PropertyType::MAPPED->value
+		) {
+			$blue->setExpectedValue($rgb->getBlue());
 		}
 
 		$white = $this->findCharacteristic(Types\CharacteristicType::COLOR_WHITE);
 
 		if (
-			$white !== null
+			$white?->getProperty() !== null
 			&& (
-				$white->getProperty() === null
-				|| $white->getProperty()::getType() === $updatePropertyType->value
+				$white->getProperty()::getType() === DevicesTypes\PropertyType::DYNAMIC->value
+				|| $white->getProperty()::getType() === DevicesTypes\PropertyType::VARIABLE->value
 			)
-			&& $rgb->getWhite() !== null
 		) {
-			$white->setValue($rgb->getWhite());
+			$white->setActualValue($rgb->getWhite());
+			$white->setExpectedValue(null);
+		} elseif (
+			$white?->getProperty() !== null
+			&& $white->getProperty()::getType() === DevicesTypes\PropertyType::MAPPED->value
+		) {
+			$white->setExpectedValue($rgb->getWhite());
 		}
 	}
 

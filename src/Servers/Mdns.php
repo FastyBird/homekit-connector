@@ -115,6 +115,10 @@ final class Mdns implements Server
 	 */
 	public function initialize(): void
 	{
+		$this->entitiesSubscriber->onRefresh[] = function (DevicesEntities\Connectors\Properties\Variable $property): void {
+			$this->refresh($property);
+		};
+
 		$this->createZone();
 	}
 
@@ -130,10 +134,6 @@ final class Mdns implements Server
 				],
 			],
 		);
-
-		$this->entitiesSubscriber->onRefresh[] = function (DevicesEntities\Connectors\Properties\Variable $property): void {
-			$this->refresh($property);
-		};
 
 		$factory = new Datagram\Factory($this->eventLoop);
 

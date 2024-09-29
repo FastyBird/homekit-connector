@@ -203,16 +203,18 @@ class Service
 	/**
 	 * @interal
 	 */
-	public function recalculateValues(Protocol\Characteristics\Characteristic $characteristic, bool $fromDevice): void
+	public function recalculateCharacteristics(
+		Protocol\Characteristics\Characteristic|null $characteristic = null,
+	): void
 	{
-		$this->accessory->recalculateValues($this, $characteristic, $fromDevice);
+		// Nothing to do here
 	}
 
 	/**
 	 * Create a HAP representation of this Service
 	 * Used for json serialization
 	 *
-	 * @return array<string, (string|int|bool|array<array<string, (bool|float|int|array<int>|string|array<string>|null)>>|null)>
+	 * @return array<string, array<array<string, array<int|string>|bool|float|int|string|null>|int|null>|bool|int|string|null>
 	 *
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState

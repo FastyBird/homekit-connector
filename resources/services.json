@@ -490,6 +490,21 @@
       "ConfiguredName",
       "SleepDiscoveryMode"
     ],
+    "VirtualCharacteristics": [
+      "RemoteKeyRewind",
+      "RemoteKeyFastForward",
+      "RemoteKeyNextTrack",
+      "RemoteKeyPreviousTrack",
+      "RemoteKeyArrowUp",
+      "RemoteKeyArrowDown",
+      "RemoteKeyArrowLeft",
+      "RemoteKeyArrowRight",
+      "RemoteKeySelect",
+      "RemoteKeyBack",
+      "RemoteKeyExit",
+      "RemoteKeyPlayPause",
+      "RemoteKeyInformation"
+    ],
     "UUID": "000000D8-0000-1000-8000-0026BB765291"
   },
   "TelevisionSpeaker": {
@@ -502,6 +517,10 @@
     ],
     "RequiredCharacteristics": [
       "Mute"
+    ],
+    "VirtualCharacteristics": [
+      "RemoteKeyVolumeUp",
+      "RemoteKeyVolumeDown"
     ],
     "UUID": "00000113-0000-1000-8000-0026BB765291"
   },

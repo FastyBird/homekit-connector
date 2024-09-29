@@ -7,6 +7,7 @@ use Error;
 use FastyBird\Connector\HomeKit\Documents;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Middleware;
+use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Tests;
@@ -71,6 +72,10 @@ final class CharacteristicsTest extends Tests\Cases\Unit\DbTestCase
 			Documents\Connectors\Connector::class,
 		);
 		self::assertInstanceOf(Documents\Connectors\Connector::class, $connector);
+
+		$accessoryLoader = $this->getContainer()->getByType(Protocol\Loader::class);
+
+		$accessoryLoader->load($connector);
 
 		$httpServerFactory = $this->getContainer()->getByType(Servers\HttpFactory::class);
 

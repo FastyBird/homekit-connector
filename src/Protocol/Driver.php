@@ -75,7 +75,13 @@ class Driver
 
 		foreach ($this->accessories as $existingAccessory) {
 			if ($existingAccessory->getCategory() === Types\AccessoryCategory::BRIDGE) {
-				throw new Exceptions\InvalidState('There is already registered bridge');
+				if (!$existingAccessory->getId()->equals($accessory->getId())) {
+					throw new Exceptions\InvalidState('There is already registered bridge');
+				}
+			}
+
+			if ($existingAccessory->getId()->equals($accessory->getId())) {
+				$this->accessories->detach($existingAccessory);
 			}
 		}
 
@@ -195,7 +201,7 @@ class Driver
 	}
 
 	/**
-	 * @return array<string, array<array<string, (int|array<array<string, (string|int|bool|array<array<string, (bool|float|int|array<int>|string|array<string>|null)>>|null)>>|null)>>>
+	 * @return array<string, array<int<0, max>, array<string, array<int, array<string, array<array<string, array<int|string>|bool|float|int|string|null>|int|null>|bool|int|string|null>>|int|null>>>
 	 *
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState

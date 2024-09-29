@@ -94,6 +94,7 @@ final class HomeKitExtensionTest extends Tests\Cases\Unit\BaseTestCase
 		self::assertNotNull($container->getByType(Controllers\AccessoriesController::class, false));
 		self::assertNotNull($container->getByType(Controllers\CharacteristicsController::class, false));
 		self::assertNotNull($container->getByType(Controllers\PairingController::class, false));
+		self::assertNotNull($container->getByType(Controllers\DiagnosticsController::class, false));
 
 		self::assertNotNull($container->getByType(Protocol\Accessories\BridgeFactory::class, false));
 		self::assertNotNull($container->getByType(Protocol\Accessories\GenericFactory::class, false));
@@ -111,6 +112,7 @@ final class HomeKitExtensionTest extends Tests\Cases\Unit\BaseTestCase
 		);
 
 		self::assertNotNull($container->getByType(Protocol\Tlv::class, false));
+		self::assertNotNull($container->getByType(Protocol\Loader::class, false));
 		self::assertNotNull($container->getByType(Protocol\Driver::class, false));
 		self::assertNotNull($container->getByType(Clients\Subscriber::class, false));
 

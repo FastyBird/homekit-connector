@@ -574,7 +574,10 @@ final class CharacteristicsController extends BaseController
 
 		if ($valueToWrite !== null) {
 			if ($characteristic->getProperty() === null) {
-				$this->logger->warning(
+				$characteristic->setActualValue($valueToWrite);
+				$characteristic->setExpectedValue(null);
+
+				$this->logger->info(
 					'Accessory characteristic is not connected to any property',
 					[
 						'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
@@ -586,15 +589,17 @@ final class CharacteristicsController extends BaseController
 					],
 				);
 			} else {
+				$property = $characteristic->getProperty();
+
 				$value = Protocol\Transformer::fromClient(
-					$characteristic->getProperty(),
+					$property,
 					$characteristic->getDataType(),
 					$valueToWrite,
 				);
 
-				if (!$characteristic->isAlwaysNull()) {
-					$characteristic->setExpectedValue($value);
-				}
+				$characteristic->setExpectedValue($value);
+
+				$characteristic->getService()->recalculateCharacteristics($characteristic);
 
 				$this->logger->info(
 					'Apple client requested to set expected value to characteristic',
@@ -616,56 +621,27 @@ final class CharacteristicsController extends BaseController
 							'id' => $characteristic->getService()->getChannel()?->getId()->toString(),
 						],
 						'property' => [
-							'id' => $characteristic->getProperty()?->getId()->toString(),
+							'id' => $property->getId()->toString(),
 						],
 					],
 				);
 
-				foreach ($characteristic->getService()->getCharacteristics() as $row) {
-					if (
-						(
-							$row->getProperty() instanceof DevicesDocuments\Channels\Properties\Dynamic
-							&& $row->getProperty()->isSettable()
-						) || (
-							$row->getProperty() instanceof DevicesDocuments\Channels\Properties\Mapped
-							&& $row->getProperty()->isSettable()
-						) || $row->getProperty() instanceof DevicesDocuments\Channels\Properties\Variable
-					) {
-						$this->queue->append(
-							$this->messageBuilder->create(
-								Queue\Messages\StoreChannelPropertyState::class,
-								[
-									'connector' => $connectorId,
-									'device' => $row->getService()->getChannel()?->getDevice(),
-									'channel' => $row->getService()->getChannel()?->getId(),
-									'property' => $row->getProperty()->getId(),
-									'value' => MetadataUtilities\Value::flattenValue($row->getValue()),
-								],
-							),
-						);
-					}
+				$this->storeCharacteristic($connectorId, $characteristic);
+
+				if ($characteristic->isAlwaysNull()) {
+					$characteristic->setActualValue(null);
+					$characteristic->setExpectedValue(null);
+
+					$characteristic->getService()->recalculateCharacteristics($characteristic);
+
+					$this->storeCharacteristic($connectorId, $characteristic);
 				}
 
-				$this->logger->debug(
-					'Apple client requested to set expected value to device channel property',
-					[
-						'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
-						'type' => 'characteristics-controller',
-						'characteristic' => [
-							'type' => $characteristic->getTypeId()->toString(),
-							'name' => $characteristic->getName(),
-						],
-						'device' => [
-							'id' => $characteristic->getService()->getChannel()?->getDevice()->toString(),
-						],
-						'channel' => [
-							'id' => $characteristic->getService()->getChannel()?->getId()->toString(),
-						],
-						'property' => [
-							'id' => $characteristic->getProperty()?->getId()->toString(),
-						],
-					],
-				);
+				foreach ($characteristic->getService()->getCharacteristics() as $row) {
+					if (!$row->getTypeId()->equals($characteristic->getTypeId())) {
+						$this->storeCharacteristic($connectorId, $row);
+					}
+				}
 			}
 
 			if ($includeValue === true) {
@@ -681,22 +657,26 @@ final class CharacteristicsController extends BaseController
 				);
 			}
 
-			$this->subscriber->publish(
-				$aid,
-				$iid,
-				Protocol\Transformer::toClient(
-					$characteristic->getProperty(),
-					$characteristic->getDataType(),
-					$characteristic->getValidValues(),
-					$characteristic->getMaxLength(),
-					$characteristic->getMinValue(),
-					$characteristic->getMaxValue(),
-					$characteristic->getMinStep(),
-					$characteristic->isValid() ? $characteristic->getValue() : $characteristic->getDefault(),
-				),
-				$characteristic->immediateNotify(),
-				$clientAddress,
-			);
+			foreach ($characteristic->getService()->getCharacteristics() as $row) {
+				if (!$row->getTypeId()->equals($characteristic->getTypeId())) {
+					$this->subscriber->publish(
+						$aid,
+						$iid,
+						Protocol\Transformer::toClient(
+							$row->getProperty(),
+							$row->getDataType(),
+							$row->getValidValues(),
+							$row->getMaxLength(),
+							$row->getMinValue(),
+							$row->getMaxValue(),
+							$row->getMinStep(),
+							$row->isValid() ? $row->getValue() : $row->getDefault(),
+						),
+						$row->immediateNotify(),
+						$clientAddress,
+					);
+				}
+			}
 		}
 
 		if ($events !== null) {
@@ -753,6 +733,9 @@ final class CharacteristicsController extends BaseController
 		if ($aid === Constants::STANDALONE_AID) {
 			$characteristic = $bridge->getIidManager()->getObject($iid);
 
+			if ($characteristic instanceof Protocol\Characteristics\Characteristic) {
+				return $characteristic;
+			}
 		} else {
 			$accessory = $bridge->getAccessory($aid);
 
@@ -760,14 +743,63 @@ final class CharacteristicsController extends BaseController
 				return null;
 			}
 
-			$characteristic = $accessory->getIidManager()->getObject($iid);
+			$unmanagedCharacteristic = $accessory->getIidManager()->getObject($iid);
+
+			if (!$unmanagedCharacteristic instanceof Protocol\Characteristics\Characteristic) {
+				return null;
+			}
+
+			foreach ($accessory->getServices() as $service) {
+				if (!$service->getTypeId()->equals($unmanagedCharacteristic->getService()->getTypeId())) {
+					continue;
+				}
+
+				foreach ($service->getCharacteristics() as $characteristic) {
+					if ($characteristic->getTypeId()->equals($unmanagedCharacteristic->getTypeId())) {
+						return $characteristic;
+					}
+				}
+			}
 		}
 
-		if (!$characteristic instanceof Protocol\Characteristics\Characteristic) {
-			return null;
-		}
+		return null;
+	}
 
-		return $characteristic;
+	/**
+	 * @throws Exceptions\Runtime
+	 */
+	private function storeCharacteristic(
+		Uuid\UuidInterface $connectorId,
+		Protocol\Characteristics\Characteristic $characteristic,
+	): void
+	{
+		if (
+			(
+				(
+					$characteristic->getProperty() instanceof DevicesDocuments\Channels\Properties\Dynamic
+					&& $characteristic->getProperty()->isSettable()
+				) || (
+					$characteristic->getProperty() instanceof DevicesDocuments\Channels\Properties\Mapped
+					&& $characteristic->getProperty()->isSettable()
+				) || (
+					$characteristic->getProperty() instanceof DevicesDocuments\Channels\Properties\Variable
+				)
+			)
+			&& $characteristic->getExpectedValue() !== null
+		) {
+			$this->queue->append(
+				$this->messageBuilder->create(
+					Queue\Messages\StoreChannelPropertyState::class,
+					[
+						'connector' => $connectorId,
+						'device' => $characteristic->getService()->getChannel()?->getDevice(),
+						'channel' => $characteristic->getService()->getChannel()?->getId(),
+						'property' => $characteristic->getProperty()->getId(),
+						'value' => MetadataUtilities\Value::flattenValue($characteristic->getValue()),
+					],
+				),
+			);
+		}
 	}
 
 }

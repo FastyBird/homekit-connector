@@ -182,55 +182,28 @@ final class WriteDevicePropertyState implements Queue\Consumer
 			return true;
 		}
 
+		$characteristicService = $updatedCharacteristic = null;
+
 		foreach ($accessory->getServices() as $service) {
 			foreach ($service->getCharacteristics() as $characteristic) {
 				if (
-					$characteristic->getProperty() !== null
-					&& $characteristic->getProperty()->getId()->equals($property->getId())
+					$characteristic->getProperty() === null
+					|| !$characteristic->getProperty()->getId()->equals($property->getId())
 				) {
-					if ($property instanceof DevicesDocuments\Devices\Properties\Mapped) {
-						$parent = $this->devicesPropertiesConfigurationRepository->find($property->getParent());
+					continue;
+				}
 
-						if ($parent instanceof DevicesDocuments\Devices\Properties\Dynamic) {
-							if ($message->getState() !== null) {
-								if ($message->getState()->getExpectedValue() !== null) {
-									$characteristic->setActualValue($message->getState()->getExpectedValue());
-									$characteristic->setValid($message->getState()->isValid());
-								} elseif ($message->getState()->getActualValue() !== null) {
-									$characteristic->setActualValue($message->getState()->getActualValue());
-									$characteristic->setValid($message->getState()->isValid());
-								}
-							} else {
-								$this->logger->warning(
-									'State entity is missing in event entity',
-									[
-										'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
-										'type' => 'write-device-property-state-message-consumer',
-										'connector' => [
-											'id' => $connector->getId()->toString(),
-										],
-										'device' => [
-											'id' => $device->getId()->toString(),
-										],
-										'property' => [
-											'id' => $property->getId()->toString(),
-										],
-										'hap' => $accessory->toHap(),
-									],
-								);
+				$characteristicService = $service;
+				$updatedCharacteristic = $characteristic;
 
-								return true;
-							}
-						} elseif ($parent instanceof DevicesDocuments\Devices\Properties\Variable) {
-							$characteristic->setActualValue($parent->getValue());
-							$characteristic->setValid(true);
-						}
-					} elseif ($property instanceof DevicesDocuments\Devices\Properties\Dynamic) {
+				if ($property instanceof DevicesDocuments\Devices\Properties\Mapped) {
+					$parent = $this->devicesPropertiesConfigurationRepository->find($property->getParent());
+
+					if ($parent instanceof DevicesDocuments\Devices\Properties\Dynamic) {
 						if ($message->getState() !== null) {
-							if ($message->getState()->getExpectedValue() !== null) {
-								$characteristic->setActualValue($message->getState()->getExpectedValue());
-								$characteristic->setValid($message->getState()->isValid());
-							}
+							$characteristic->setActualValue($message->getState()->getActualValue());
+							$characteristic->setExpectedValue($message->getState()->getExpectedValue());
+							$characteristic->setValid($message->getState()->isValid());
 						} else {
 							$this->logger->warning(
 								'State entity is missing in event entity',
@@ -250,50 +223,65 @@ final class WriteDevicePropertyState implements Queue\Consumer
 								],
 							);
 
-							continue;
+							return true;
 						}
-					} elseif ($property instanceof DevicesDocuments\Devices\Properties\Variable) {
-						$characteristic->setActualValue($property->getValue());
+					} elseif ($parent instanceof DevicesDocuments\Devices\Properties\Variable) {
+						$characteristic->setActualValue($parent->getValue());
 						$characteristic->setValid(true);
 					}
-
-					if (!$characteristic->isVirtual()) {
-						$this->subscriber->publish(
-							intval($accessory->getAid()),
-							intval($accessory->getIidManager()->getIid($characteristic)),
-							Protocol\Transformer::toClient(
-								$characteristic->getProperty(),
-								$characteristic->getDataType(),
-								$characteristic->getValidValues(),
-								$characteristic->getMaxLength(),
-								$characteristic->getMinValue(),
-								$characteristic->getMaxValue(),
-								$characteristic->getMinStep(),
-								$characteristic->isValid() ? $characteristic->getValue() : $characteristic->getDefault(),
-							),
-							$characteristic->immediateNotify(),
-						);
+				} elseif ($property instanceof DevicesDocuments\Devices\Properties\Dynamic) {
+					if ($message->getState() !== null) {
+						$characteristic->setActualValue($message->getState()->getActualValue());
+						$characteristic->setExpectedValue($message->getState()->getExpectedValue());
+						$characteristic->setValid($message->getState()->isValid());
 					} else {
-						foreach ($service->getCharacteristics() as $serviceCharacteristic) {
-							$this->subscriber->publish(
-								intval($accessory->getAid()),
-								intval($accessory->getIidManager()->getIid($serviceCharacteristic)),
-								Protocol\Transformer::toClient(
-									$serviceCharacteristic->getProperty(),
-									$serviceCharacteristic->getDataType(),
-									$serviceCharacteristic->getValidValues(),
-									$serviceCharacteristic->getMaxLength(),
-									$serviceCharacteristic->getMinValue(),
-									$serviceCharacteristic->getMaxValue(),
-									$serviceCharacteristic->getMinStep(),
-									$serviceCharacteristic->isValid() ? $serviceCharacteristic->getValue() : $serviceCharacteristic->getDefault(),
-								),
-								$serviceCharacteristic->immediateNotify(),
-							);
-						}
+						$this->logger->warning(
+							'State entity is missing in event entity',
+							[
+								'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
+								'type' => 'write-device-property-state-message-consumer',
+								'connector' => [
+									'id' => $connector->getId()->toString(),
+								],
+								'device' => [
+									'id' => $device->getId()->toString(),
+								],
+								'property' => [
+									'id' => $property->getId()->toString(),
+								],
+								'hap' => $accessory->toHap(),
+							],
+						);
+
+						continue;
 					}
+				} elseif ($property instanceof DevicesDocuments\Devices\Properties\Variable) {
+					$characteristic->setActualValue($property->getValue());
+					$characteristic->setValid(true);
 				}
+
+				break 2;
 			}
+		}
+
+		$characteristicService?->recalculateCharacteristics($updatedCharacteristic);
+
+		foreach ($characteristicService?->getCharacteristics() ?? [] as $characteristic) {
+			$this->subscriber->publish(
+				intval($accessory->getAid()),
+				intval($accessory->getIidManager()->getIid($characteristic)),
+				Protocol\Transformer::toClient(
+					$characteristic->getProperty(),
+					$characteristic->getDataType(),
+					$characteristic->getValidValues(),
+					$characteristic->getMaxLength(),
+					$characteristic->getMinValue(),
+					$characteristic->getMaxValue(),
+					$characteristic->getMinStep(),
+					$characteristic->isValid() ? $characteristic->getValue() : $characteristic->getDefault(),
+				),
+				$characteristic->immediateNotify(),
+			);
 		}
 
 		$this->logger->debug(

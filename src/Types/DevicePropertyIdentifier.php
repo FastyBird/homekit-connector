@@ -42,4 +42,6 @@ enum DevicePropertyIdentifier: string
 
 	case MODEL = DevicesTypes\DevicePropertyIdentifier::HARDWARE_MODEL->value;
 
+	case STATE = DevicesTypes\DevicePropertyIdentifier::STATE->value;
+
 }

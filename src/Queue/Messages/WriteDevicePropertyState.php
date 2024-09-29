@@ -41,7 +41,7 @@ final readonly class WriteDevicePropertyState implements Message
 			new ObjectMapper\Rules\MappedObjectValue(class: State::class),
 			new ObjectMapper\Rules\NullValue(),
 		])]
-		private State|null $state,
+		private State|null $state = null,
 	)
 	{
 	}

@@ -33,6 +33,7 @@ class Router extends Routing\Router
 		Controllers\PairingController $pairingController,
 		Controllers\AccessoriesController $accessoriesController,
 		Controllers\CharacteristicsController $characteristicsController,
+		Controllers\DiagnosticsController $diagnosticsController,
 	)
 	{
 		parent::__construct();
@@ -59,6 +60,13 @@ class Router extends Routing\Router
 			},
 		);
 		$this->put('/prepare', [$characteristicsController, 'prepare']);
+
+		$this->group(
+			'/diagnostics',
+			static function (Routing\RouteCollector $group) use ($diagnosticsController): void {
+				$group->get('', [$diagnosticsController, 'index']);
+			},
+		);
 	}
 
 }

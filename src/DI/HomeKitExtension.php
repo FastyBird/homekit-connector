@@ -88,12 +88,18 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 		$builder->addFactoryDefinition($this->prefix('writers.event'))
 			->setImplement(Writers\EventFactory::class)
 			->getResultDefinition()
-			->setType(Writers\Event::class);
+			->setType(Writers\Event::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
 
 		$builder->addFactoryDefinition($this->prefix('writers.exchange'))
 			->setImplement(Writers\ExchangeFactory::class)
 			->getResultDefinition()
 			->setType(Writers\Exchange::class)
+			->setArguments([
+				'logger' => $logger,
+			])
 			->addTag(ExchangeDI\ExchangeExtension::CONSUMER_STATE, false);
 
 		/**
@@ -310,6 +316,11 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 			->addSetup('setLogger', [$logger])
 			->addTag('nette.inject');
 
+		$builder->addDefinition($this->prefix('http.controllers.diagnostics'), new DI\Definitions\ServiceDefinition())
+			->setType(Controllers\DiagnosticsController::class)
+			->addSetup('setLogger', [$logger])
+			->addTag('nette.inject');
+
 		/**
 		 * HOMEKIT
 		 */
@@ -347,6 +358,12 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 		$builder->addDefinition($this->prefix('protocol.tlv'), new DI\Definitions\ServiceDefinition())
 			->setType(Protocol\Tlv::class);
 
+		$builder->addDefinition($this->prefix('protocol.accessoryLoader'))
+			->setType(Protocol\Loader::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
+
 		$builder->addDefinition($this->prefix('protocol.accessoryDriver'))
 			->setType(Protocol\Driver::class);
 
@@ -371,7 +388,10 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 		 */
 
 		$builder->addDefinition($this->prefix('commands.execute'), new DI\Definitions\ServiceDefinition())
-			->setType(Commands\Execute::class);
+			->setType(Commands\Execute::class)
+			->setArguments([
+				'logger' => $logger,
+			]);
 
 		$builder->addDefinition($this->prefix('commands.install'), new DI\Definitions\ServiceDefinition())
 			->setType(Commands\Install::class)
@@ -473,11 +493,11 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 		 * HOMEKIT
 		 */
 
-		$httpServerServiceFactoryName = $builder->getByType(Servers\HttpFactory::class);
+		$protocolLoaderServiceName = $builder->getByType(Protocol\Loader::class);
 
-		if ($httpServerServiceFactoryName !== null) {
-			$httpServerServiceFactory = $builder->getDefinition($httpServerServiceFactoryName);
-			assert($httpServerServiceFactory instanceof DI\Definitions\FactoryDefinition);
+		if ($protocolLoaderServiceName !== null) {
+			$protocolLoaderService = $builder->getDefinition($protocolLoaderServiceName);
+			assert($protocolLoaderService instanceof DI\Definitions\ServiceDefinition);
 
 			$accessoriesFactories = $builder->findByType(
 				Protocol\Accessories\AccessoryFactory::class,
@@ -489,12 +509,9 @@ class HomeKitExtension extends DI\CompilerExtension implements Translation\DI\Tr
 				Protocol\Characteristics\CharacteristicFactory::class,
 			);
 
-			$httpServerServiceFactory->getResultDefinition()->setArgument('accessoryFactories', $accessoriesFactories);
-			$httpServerServiceFactory->getResultDefinition()->setArgument('serviceFactories', $servicesFactories);
-			$httpServerServiceFactory->getResultDefinition()->setArgument(
-				'characteristicsFactories',
-				$characteristicsFactories,
-			);
+			$protocolLoaderService->setArgument('accessoryFactories', $accessoriesFactories);
+			$protocolLoaderService->setArgument('serviceFactories', $servicesFactories);
+			$protocolLoaderService->setArgument('characteristicsFactories', $characteristicsFactories);
 		}
 	}
 

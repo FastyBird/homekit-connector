@@ -72,7 +72,13 @@ enum AccessoryCategory: int
 
 	case DEHUMIDIFIER = 23;
 
+	case APPLE_TV = 24;
+
+	case HOMEPOD = 25;
+
 	case SPEAKER = 26;
+
+	case AIRPORT = 27;
 
 	case SPRINKLER = 28;
 
@@ -83,5 +89,13 @@ enum AccessoryCategory: int
 	case TELEVISION = 31;
 
 	case TARGET_CONTROLLER = 32; // Remote Controller
+
+	case ROUTER = 33;
+
+	case AUDIO_RECEIVER = 34;
+
+	case TV_SET_TOP_BOX = 35;
+
+	case TV_STREAMING_STICK = 36;
 
 }

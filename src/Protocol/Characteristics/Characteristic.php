@@ -26,11 +26,13 @@ use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use Nette;
 use Ramsey\Uuid;
+use Throwable;
 use TypeError;
 use ValueError;
 use function array_map;
 use function array_merge;
 use function in_array;
+use function intval;
 use function sprintf;
 use function strval;
 
@@ -70,6 +72,10 @@ class Characteristic
 		];
 
 	private bool|float|int|string|DateTimeInterface|MetadataTypes\Payloads\Payload|null $actualValue = null;
+
+	private bool|float|int|string|DateTimeInterface|MetadataTypes\Payloads\Payload|null $expectedValue = null;
+
+	private DateTimeInterface|bool $pending = false;
 
 	private bool $valid = true;
 
@@ -168,30 +174,98 @@ class Characteristic
 
 	public function getValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\Payloads\Payload|null
 	{
-		return $this->actualValue;
+		return $this->expectedValue ?? $this->actualValue;
 	}
 
-	public function setValue(bool|float|int|string|DateTimeInterface|MetadataTypes\Payloads\Payload|null $value): void
+	public function getActualValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\Payloads\Payload|null
 	{
-		$this->actualValue = $value;
+		return $this->actualValue;
 	}
 
 	public function setActualValue(
 		bool|float|int|string|DateTimeInterface|MetadataTypes\Payloads\Payload|null $value,
 	): void
 	{
-		$this->setValue($value);
+		if ($value !== null) {
+			try {
+				$value = Protocol\Transformer::fromClient(
+					$this->property,
+					$this->dataType,
+					Protocol\Transformer::toClient(
+						$this->property,
+						$this->dataType,
+						$this->validValues,
+						$this->maxLength,
+						$this->minValue,
+						$this->maxValue,
+						$this->minStep,
+						$value,
+					),
+				);
+			} catch (Throwable) {
+				$value = null;
+			}
+		}
 
-		$this->service->recalculateValues($this, true);
+		$this->actualValue = $value;
+
+		if (
+			$this->getExpectedValue() === $this->actualValue
+			&& $this->getExpectedValue() !== null
+		) {
+			$this->setExpectedValue(null);
+		}
+	}
+
+	public function getExpectedValue(): bool|float|int|string|DateTimeInterface|MetadataTypes\Payloads\Payload|null
+	{
+		return $this->expectedValue;
 	}
 
 	public function setExpectedValue(
 		bool|float|int|string|DateTimeInterface|MetadataTypes\Payloads\Payload|null $value,
 	): void
 	{
-		$this->setValue($value);
+		if ($value !== null) {
+			try {
+				$value = Protocol\Transformer::fromClient(
+					$this->property,
+					$this->dataType,
+					Protocol\Transformer::toClient(
+						$this->property,
+						$this->dataType,
+						$this->validValues,
+						$this->maxLength,
+						$this->minValue,
+						$this->maxValue,
+						$this->minStep,
+						$value,
+					),
+				);
+			} catch (Throwable) {
+				$value = null;
+			}
+		}
 
-		$this->service->recalculateValues($this, false);
+		$this->expectedValue = $value;
+
+		if ($this->getActualValue() === $this->expectedValue) {
+			$this->expectedValue = null;
+		}
+
+		if ($this->expectedValue === null) {
+			$this->setPending(false);
+		}
+	}
+
+	public function setPending(DateTimeInterface|bool $pending): void
+	{
+		$this->pending = $pending;
+	}
+
+	public function isPending(): bool
+	{
+		return $this->pending instanceof DateTimeInterface || $this->pending === true;
 	}
 
 	public function isAlwaysNull(): bool
@@ -237,15 +311,15 @@ class Characteristic
 			|| $this->dataType === Types\DataType::FLOAT
 		) {
 			if ($this->maxValue !== null) {
-				$meta[Types\Representation::MAX_VALUE->value] = $this->maxValue;
+				$meta[Types\Representation::MAX_VALUE->value] = intval($this->maxValue);
 			}
 
 			if ($this->minValue !== null) {
-				$meta[Types\Representation::MIN_VALUE->value] = $this->minValue;
+				$meta[Types\Representation::MIN_VALUE->value] = intval($this->minValue);
 			}
 
 			if ($this->minStep !== null) {
-				$meta[Types\Representation::MIN_STEP->value] = $this->minStep;
+				$meta[Types\Representation::MIN_STEP->value] = intval($this->minStep);
 			}
 
 			if ($this->unit !== null) {

@@ -16,6 +16,7 @@
 namespace FastyBird\Connector\HomeKit\Commands;
 
 use Endroid\QrCode;
+use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Documents;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
@@ -38,6 +39,7 @@ use function array_search;
 use function array_values;
 use function assert;
 use function count;
+use function explode;
 use function is_string;
 use function sprintf;
 use function usort;
@@ -57,6 +59,7 @@ class Execute extends Console\Command\Command
 
 	public function __construct(
 		private readonly Helpers\Connector $connectorHelper,
+		private readonly HomeKit\Logger $logger,
 		private readonly DevicesModels\Configuration\Connectors\Repository $connectorsConfigurationRepository,
 		private readonly Localization\Translator $translator,
 		string|null $name = null,
@@ -79,7 +82,7 @@ class Execute extends Console\Command\Command
 						'connector',
 						'c',
 						Input\InputOption::VALUE_OPTIONAL,
-						'Run devices module connector',
+						'Connector ID or identifier',
 						true,
 					),
 				]),
@@ -110,9 +113,11 @@ class Execute extends Console\Command\Command
 
 		$io = new Style\SymfonyStyle($input, $output);
 
-		$io->title((string) $this->translator->translate('//homekit-connector.cmd.execute.title'));
+		if ($input->getOption('quiet') === false) {
+			$io->title((string) $this->translator->translate('//homekit-connector.cmd.execute.title'));
 
-		$io->note((string) $this->translator->translate('//homekit-connector.cmd.execute.subtitle'));
+			$io->note((string) $this->translator->translate('//homekit-connector.cmd.execute.subtitle'));
+		}
 
 		if ($input->getOption('no-interaction') === false) {
 			$question = new Console\Question\ConfirmationQuestion(
@@ -302,6 +307,14 @@ class Execute extends Console\Command\Command
 		$io->info((string) $this->translator->translate('//homekit-connector.cmd.execute.messages.scanCode'));
 
 		$io->writeln($qrCode->getString());
+
+		$lines = explode("\n", $qrCode->getString());
+
+		foreach ($lines as $line) {
+			if ($line !== '') {
+				$this->logger->info($line);
+			}
+		}
 
 		$serviceCmd = $symfonyApp->find(DevicesCommands\Connector::NAME);
 

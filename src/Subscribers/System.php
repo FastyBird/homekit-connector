@@ -125,16 +125,29 @@ final class System implements Common\EventSubscriber
 
 			$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
 			$findConnectorPropertyQuery->byConnectorId(Uuid\Uuid::fromString($connectorId));
-			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::CONFIG_VERSION);
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::PAIRED);
 
-			$property = $this->propertiesRepository->findOneBy(
+			$pairedProperty = $this->propertiesRepository->findOneBy(
 				$findConnectorPropertyQuery,
 				DevicesEntities\Connectors\Properties\Variable::class,
 			);
 
-			if ($property !== null) {
-				$this->propertiesManager->update($property, Utils\ArrayHash::from([
-					'value' => intval(MetadataUtilities\Value::flattenValue($property->getValue())) + 1,
+			if ($pairedProperty === null || $pairedProperty->getValue() !== true) {
+				continue;
+			}
+
+			$findConnectorPropertyQuery = new Queries\Entities\FindConnectorProperties();
+			$findConnectorPropertyQuery->byConnectorId(Uuid\Uuid::fromString($connectorId));
+			$findConnectorPropertyQuery->byIdentifier(Types\ConnectorPropertyIdentifier::CONFIG_VERSION);
+
+			$versionProperty = $this->propertiesRepository->findOneBy(
+				$findConnectorPropertyQuery,
+				DevicesEntities\Connectors\Properties\Variable::class,
+			);
+
+			if ($versionProperty !== null) {
+				$this->propertiesManager->update($versionProperty, Utils\ArrayHash::from([
+					'value' => intval(MetadataUtilities\Value::flattenValue($versionProperty->getValue())) + 1,
 				]));
 			}
 

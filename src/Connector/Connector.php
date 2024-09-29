@@ -15,12 +15,15 @@
 
 namespace FastyBird\Connector\HomeKit\Connector;
 
+use Doctrine\DBAL;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Documents;
 use FastyBird\Connector\HomeKit\Exceptions;
+use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Writers;
+use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
 use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
 use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
@@ -33,6 +36,7 @@ use React\EventLoop;
 use React\Promise;
 use TypeError;
 use ValueError;
+use z4kn4fein\SemVer;
 use function assert;
 use function React\Async\async;
 
@@ -51,6 +55,8 @@ final class Connector implements DevicesConnectors\Connector
 
 	private const QUEUE_PROCESSING_INTERVAL = 0.01;
 
+	private const DRIVER_RELOAD_INTERVAL = 60;
+
 	/** @var array<Servers\Server> */
 	private array $servers = [];
 
@@ -68,6 +74,7 @@ final class Connector implements DevicesConnectors\Connector
 		private readonly Queue\Queue $queue,
 		private readonly Queue\Consumers $consumers,
 		private readonly array $serversFactories,
+		private readonly Protocol\Loader $accessoriesLoader,
 		private readonly HomeKit\Logger $logger,
 		private readonly EventLoop\LoopInterface $eventLoop,
 	)
@@ -78,13 +85,21 @@ final class Connector implements DevicesConnectors\Connector
 	/**
 	 * @return Promise\PromiseInterface<bool>
 	 *
+	 * @throws ApplicationExceptions\InvalidState
+	 * @throws ApplicationExceptions\Runtime
+	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws Exceptions\InvalidArgument
+	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws ExchangeExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws MetadataExceptions\InvalidState
 	 * @throws MetadataExceptions\MalformedInput
+	 * @throws MetadataExceptions\Mapping
+	 * @throws Nette\IOException
+	 * @throws SemVer\SemverException
 	 * @throws ToolsExceptions\InvalidArgument
 	 * @throws TypeError
 	 * @throws ValueError
@@ -103,6 +118,8 @@ final class Connector implements DevicesConnectors\Connector
 				],
 			],
 		);
+
+		$this->accessoriesLoader->load($this->connector);
 
 		foreach ($this->serversFactories as $serverFactory) {
 			$server = $serverFactory->create($this->connector);
@@ -132,6 +149,14 @@ final class Connector implements DevicesConnectors\Connector
 			async(function (): void {
 				$this->consumers->consume();
 			}),
+		);
+
+		$this->consumersTimer = $this->eventLoop->addPeriodicTimer(
+			self::DRIVER_RELOAD_INTERVAL,
+			function (): void {
+				assert($this->connector instanceof Documents\Connectors\Connector);
+				$this->accessoriesLoader->load($this->connector);
+			},
 		);
 
 		$this->logger->info(

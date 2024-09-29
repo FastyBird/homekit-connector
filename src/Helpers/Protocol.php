@@ -60,9 +60,13 @@ final class Protocol
 	/**
 	 * Convert a UUID to a HAP type
 	 */
-	public static function uuidToHapType(Uuid\UuidInterface $uuid): string
+	public static function uuidToHapType(Uuid\UuidInterface $uuid, bool $short = false): string
 	{
 		$longType = Utils\Strings::upper($uuid->toString());
+
+		if (!$short) {
+			return $longType;
+		}
 
 		if (!str_ends_with($longType, HomeKit\Constants::BASE_UUID)) {
 			return $longType;
