@@ -1687,7 +1687,7 @@ final class PairingController extends BaseController
 		$client = $this->clientsRepository->findOneBy($findClientQuery);
 
 		if ($client === null) {
-			$this->logger->error(
+			$this->logger->debug(
 				'Pairing client instance is not created',
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
