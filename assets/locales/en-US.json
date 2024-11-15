@@ -1,0 +1,51 @@
+{
+	"messages": {
+		"connectors": {
+			"notEdited": "HomeKit connector {connector} could not be edited"
+		}
+	},
+	"texts": {
+		"connectors": {
+			"status": "Status",
+			"devices": "Devices",
+			"devicesCount": "No devices configured | One device configured | {count} devices configured",
+			"bridges": "Bridges",
+			"bridgesCount": "No bridges configured | One bridge configured | {count} bridges configured",
+			"alerts": "Alerts",
+			"alertsCount": "No alerts detected | One alert detected | {count} alerts detected",
+			"service": "Service",
+			"paired": "Paired with HomeKit",
+			"noDevices": "This connector does not have any mapped devices to be used with HomeKit"
+		}
+	},
+	"buttons": {
+		"addDevice": {
+			"title": "Map new device"
+		}
+	},
+	"misc": {
+		"paired": "Paired",
+		"missing": "Missing",
+		"state": {
+			"connected": "Connected",
+			"disconnected": "Disconnected",
+			"alert": "Alert",
+			"unknown": "Unknown"
+		},
+		"property": {
+			"active": "active",
+			"port": "Port",
+			"pin_code": "PIN code",
+			"mac_address": "MAC address",
+			"setup_id": "Setup ID",
+			"configuration_version": "Configuration version",
+			"paired": "Paired",
+			"server_secret": "Server secret",
+			"client_public_key": "Public key",
+			"shared_key": "Shared key",
+			"hashing_key": "Hashing key",
+			"xhm_uri": "XHM uri",
+			"state": "State"
+		}
+	}
+}

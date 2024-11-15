@@ -1,0 +1,58 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "declaration": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": "assets",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": [
+      "@fastybird/devices-module",
+      "@fastybird/metadata-library",
+      "@fastybird/web-ui-library",
+      "@fastybird/web-ui-icons",
+      "@intlify/unplugin-vue-i18n/messages",
+      "@types/lodash.get",
+      "@types/lodash.defaultsdeep",
+      "@types/lodash.omit",
+      "@types/uuid",
+      "ajv",
+      "ajv-formats",
+      "date-fns",
+      "jsona",
+      "node",
+      "pinia",
+      "vue",
+      "vue-i18n",
+      "vue-meta",
+      "vue-router",
+      "vite/client",
+    ],
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable"
+    ]
+  },
+  "include": [
+    "assets/**/*.ts",
+    "assets/**/*.d.ts",
+    "assets/**/*.vue",
+    "assets/locales/*.json",
+    "resources/schemas/*.json"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

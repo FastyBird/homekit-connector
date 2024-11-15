@@ -1,0 +1,179 @@
+name: "build"
+
+on:
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+  push:
+    branches:
+      - "main"
+    tags:
+      - v*
+  schedule:
+    - cron: "0 8 * * 1" # At 08:00 on Monday
+
+jobs:
+  build:
+    name: "Build code for distribution"
+    runs-on: "${{ matrix.operating-system }}"
+
+    strategy:
+      matrix:
+        node-version: [ "20" ]
+        operating-system: [ "ubuntu-latest" ]
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+
+      - name: "Install node"
+        uses: "actions/setup-node@v4"
+        with:
+          node-version: "${{ matrix.node-version }}"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: "Install package dependencies"
+        run: "yarn install"
+
+      - name: "Build the project"
+        run: "yarn build"
+
+      - name: "Upload build result"
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: js-dist
+          path: dist
+
+  publish-npmjs:
+    name: "Publish code distribution to NPM"
+    runs-on: "${{ matrix.operating-system }}"
+    needs: [ "build" ]
+
+    strategy:
+      matrix:
+        node-version: [ "20" ]
+        operating-system: [ "ubuntu-latest" ]
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+
+      - name: "Install node"
+        uses: "actions/setup-node@v4"
+        with:
+          node-version: "${{ matrix.node-version }}"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: "Extract version"
+        uses: "battila7/get-version-action@v2"
+        id: "get_version"
+
+      - name: "Set up git since we will later push to the repo"
+        run: |
+          git config --global user.name "GitHub CD bot"
+          git config --global user.email "code@fastybird.com"
+
+      - name: "Upgrade npm version in package.json to the tag used in the release"
+        if: contains(github.ref, 'refs/tags/')
+        run: npm version ${{ steps.get_version.outputs.version-without-v }} --allow-same-version
+
+      - name: "Download build result"
+        uses: "actions/download-artifact@v4"
+        with:
+          name: js-dist
+          path: dist
+
+      - name: "Publish to NPM"
+        uses: "JS-DevTools/npm-publish@v3"
+        id: "npm_publish"
+        if: contains(github.ref, 'refs/tags/')
+        with:
+          token: ${{ secrets.NPMJS_TOKEN }}
+          access: "public"
+
+      - name: "Publish to NPM result"
+        if: contains(github.ref, 'refs/tags/') && steps.npm_publish.outputs.type != 'none'
+        run: |
+          echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
+
+      - name: "Publish to NPM"
+        uses: "JS-DevTools/npm-publish@v3"
+        id: "npm_publish_dev"
+        if: contains(github.ref, 'refs/tags/') == false
+        with:
+          token: ${{ secrets.NPMJS_TOKEN }}
+          access: "public"
+          tag: "dev"
+
+      - name: "Publish to NPM result"
+        if: contains(github.ref, 'refs/tags/') == false && steps.npm_publish_dev.outputs.type != 'none'
+        run: |
+          echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
+
+  publish-github:
+    name: "Publish code distribution to Github packages"
+    runs-on: "${{ matrix.operating-system }}"
+    needs: [ "build" ]
+
+    strategy:
+      matrix:
+        node-version: [ "20" ]
+        operating-system: [ "ubuntu-latest" ]
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+
+      - name: "Install node"
+        uses: "actions/setup-node@v4"
+        with:
+          node-version: "${{ matrix.node-version }}"
+          registry-url: "https://npm.pkg.github.com"
+
+      - name: "Extract version"
+        uses: "battila7/get-version-action@v2"
+        id: "get_version"
+
+      - name: "Set up git since we will later push to the repo"
+        run: |
+          git config --global user.name "GitHub CD bot"
+          git config --global user.email "code@fastybird.com"
+
+      - name: "Upgrade npm version in package.json to the tag used in the release"
+        if: contains(github.ref, 'refs/tags/')
+        run: npm version ${{ steps.get_version.outputs.version-without-v }} --allow-same-version
+
+      - name: "Download build result"
+        uses: "actions/download-artifact@v4"
+        with:
+          name: js-dist
+          path: dist
+
+      - name: "Publish to NPM"
+        uses: "JS-DevTools/npm-publish@v3"
+        id: "npm_publish"
+        if: contains(github.ref, 'refs/tags/')
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          access: "public"
+          registry: "https://npm.pkg.github.com"
+
+      - name: "Publish to NPM result"
+        if: contains(github.ref, 'refs/tags/') && steps.npm_publish.outputs.type != 'none'
+        run: |
+          echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
+
+      - name: "Publish to NPM"
+        uses: "JS-DevTools/npm-publish@v3"
+        id: "npm_publish_dev"
+        if: contains(github.ref, 'refs/tags/') == false
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          access: "public"
+          tag: "dev"
+          registry: "https://npm.pkg.github.com"
+
+      - name: "Publish to NPM result"
+        if: contains(github.ref, 'refs/tags/') == false && steps.npm_publish_dev.outputs.type != 'none'
+        run: |
+          echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"

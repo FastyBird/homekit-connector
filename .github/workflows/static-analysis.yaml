@@ -29,3 +29,17 @@ jobs:
       matrix:
         php-version: [ "8.2" ]
         operating-system: [ "ubuntu-latest" ]
+
+  js:
+    name: "JS Lint"
+
+    uses: "fastybird/.github/.github/workflows/js-types.yaml@main"
+    secrets: inherit
+    with:
+      node: "${{ matrix.node-version }}"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [ "20" ]
+        operating-system: [ "ubuntu-latest" ]
