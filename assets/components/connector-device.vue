@@ -30,14 +30,14 @@
 			</div>
 		</div>
 		<el-tooltip
-			:content="title"
+			:content="props.deviceData.device.title"
 			placement="top"
 		>
 			<el-text
 				line-clamp="2"
 				class="font-500"
 			>
-				{{ title }}
+				{{ props.deviceData.device.title }}
 			</el-text>
 		</el-tooltip>
 	</div>
@@ -45,20 +45,20 @@
 
 <script setup lang="ts">
 import { type Component, computed } from 'vue';
+
 import { ElButton, ElIcon, ElText, ElTooltip } from 'element-plus';
 
+import { ConnectionState, IConnectorDeviceEmits, IConnectorDeviceProps, IDeviceProperty, useDeviceState } from '@fastybird/devices-module';
+import { useWampV1Client } from '@fastybird/vue-wamp-v1';
 import {
-	FasCircleExclamation,
-	FasCircleInfo,
 	FarCirclePause,
 	FarCirclePlay,
 	FarCircleQuestion,
 	FarCircleStop,
 	FarCircleUser,
+	FasCircleExclamation,
+	FasCircleInfo,
 } from '@fastybird/web-ui-icons';
-import { ConnectionState } from '@fastybird/metadata-library';
-import { useWampV1Client } from '@fastybird/vue-wamp-v1';
-import { IConnectorDeviceProps, IDeviceProperty, useEntityTitle, useDeviceState, IConnectorDeviceEmits } from '@fastybird/devices-module';
 
 import { DeviceIcon } from '../components';
 import { DeviceCategory, DevicePropertyIdentifier } from '../types';
@@ -72,8 +72,6 @@ defineOptions({
 const props = defineProps<IConnectorDeviceProps>();
 
 const emit = defineEmits<IConnectorDeviceEmits>();
-
-const title = useEntityTitle(props.deviceData.device);
 
 const { status: wsStatus } = useWampV1Client();
 

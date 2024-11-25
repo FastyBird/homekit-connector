@@ -1,13 +1,12 @@
 import { resolve } from 'path';
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import eslint from '@nabla/vite-plugin-eslint';
-import dts from 'vite-plugin-dts';
-import vueI18n from '@intlify/unplugin-vue-i18n/vite';
-import vueTypeImports from 'vite-plugin-vue-type-imports';
-import svgLoader from 'vite-svg-loader';
-import del from 'rollup-plugin-delete';
 import UnoCSS from 'unocss/vite';
+import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
+import vueTypeImports from 'vite-plugin-vue-type-imports';
+
+import vueI18n from '@intlify/unplugin-vue-i18n/vite';
+import eslint from '@nabla/vite-plugin-eslint';
+import vue from '@vitejs/plugin-vue';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -24,7 +23,6 @@ export default defineConfig({
 			insertTypesEntry: true,
 			rollupTypes: true,
 		}),
-		svgLoader(),
 		UnoCSS(),
 	],
 	build: {
@@ -34,24 +32,17 @@ export default defineConfig({
 			fileName: (format) => `homekit-connector.${format}.js`,
 		},
 		rollupOptions: {
-			plugins: [
-				// @ts-ignore
-				del({
-					targets: [
-						'dist/components',
-						'dist/composables',
-						'dist/errors',
-						'dist/jsonapi',
-						'dist/layouts',
-						'dist/models',
-						'dist/router',
-						'dist/types',
-						'dist/views',
-						'dist/entry.ts',
-						'dist/configuration.ts',
-					],
-					hook: 'generateBundle',
-				}),
+			external: [
+				'@fastybird/metadata-library',
+				'@fastybird/tools',
+				'@fastybird/vue-wamp-v1',
+				'@fastybird/web-ui-icons',
+				'@fastybird/web-ui-library',
+				'element-plus',
+				'pinia',
+				'unocss',
+				'vue',
+				'vue-i18n',
 			],
 			output: {
 				assetFileNames: (chunkInfo) => {

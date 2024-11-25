@@ -75,12 +75,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { orderBy } from 'natural-orderby';
-import { ElButton, ElResult, ElSkeleton, ElSkeletonItem, ElText } from 'element-plus';
 
+import { ElButton, ElResult, ElSkeleton, ElSkeletonItem, ElText } from 'element-plus';
+import { orderBy } from 'natural-orderby';
+
+import { IConnectorDevicesEmits, IConnectorDevicesProps, IDeviceData } from '@fastybird/devices-module';
 import { FasInfo, FasPlug, FasPlus } from '@fastybird/web-ui-icons';
 import { FbIconWithChild } from '@fastybird/web-ui-library';
-import { IConnectorDevicesEmits, IConnectorDevicesProps, IDeviceData } from '@fastybird/devices-module';
 
 import { ConnectorDevice } from '../components';
 

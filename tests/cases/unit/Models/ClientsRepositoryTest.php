@@ -8,7 +8,7 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Models;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Tests;
-use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Core\Application\Exceptions as ApplicationExceptions;
 use IPub\DoctrineOrmQuery;
 use Nette;
 use RuntimeException;

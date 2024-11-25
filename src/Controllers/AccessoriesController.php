@@ -20,7 +20,7 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
@@ -59,8 +59,8 @@ final class AccessoriesController extends BaseController
 	 *
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Utils\JsonException
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -105,7 +105,7 @@ final class AccessoriesController extends BaseController
 	 * @throws Exceptions\HapRequestError
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */

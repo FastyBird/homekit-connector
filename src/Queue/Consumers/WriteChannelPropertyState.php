@@ -22,7 +22,8 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Queue;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Core\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
@@ -59,12 +60,13 @@ final class WriteChannelPropertyState implements Queue\Consumer
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws RuntimeException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */

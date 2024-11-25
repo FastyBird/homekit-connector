@@ -18,7 +18,7 @@ namespace FastyBird\Connector\HomeKit\Servers;
 use Evenement;
 use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Documents;
-use FastyBird\Library\Application\Helpers as ApplicationHelpers;
+use FastyBird\Core\Tools\Helpers as ToolsHelpers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Nette;
 use React\Socket;
@@ -233,7 +233,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'secure-connection',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
@@ -285,7 +285,7 @@ final class SecureConnection extends Evenement\EventEmitter implements Socket\Co
 					[
 						'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 						'type' => 'secure-connection',
-						'exception' => ApplicationHelpers\Logger::buildException($ex),
+						'exception' => ToolsHelpers\Logger::buildException($ex),
 						'connector' => [
 							'id' => $this->connector->getId()->toString(),
 						],

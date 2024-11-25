@@ -15,9 +15,9 @@
 
 namespace FastyBird\Connector\HomeKit\Queue\Messages;
 
-use FastyBird\Library\Application\ObjectMapper as ApplicationObjectMapper;
+use FastyBird\Core\Application\ObjectMapper as ApplicationObjectMapper;
+use FastyBird\Core\Tools\Utilities as ToolsUtilities;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use Orisai\ObjectMapper;
 use Ramsey\Uuid;
 
@@ -91,7 +91,7 @@ final readonly class StoreChannelPropertyState implements Message
 			'device' => $this->getDevice()->toString(),
 			'channel' => $this->getChannel()->toString(),
 			'property' => $this->getProperty()->toString(),
-			'value' => MetadataUtilities\Value::flattenValue($this->getValue()),
+			'value' => ToolsUtilities\Value::flattenValue($this->getValue()),
 		];
 	}
 

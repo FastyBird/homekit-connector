@@ -27,9 +27,9 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
-use FastyBird\Library\Application\Helpers as ApplicationHelpers;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Core\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
+use FastyBird\Core\Tools\Helpers as ToolsHelpers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
@@ -177,7 +177,7 @@ final class PairingController extends BaseController
 		private readonly DevicesModels\Entities\Connectors\ConnectorsRepository $connectorsRepository,
 		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesRepository $propertiesRepository,
 		private readonly DevicesModels\Entities\Connectors\Properties\PropertiesManager $propertiesManagers,
-		private readonly ApplicationHelpers\Database $databaseHelper,
+		private readonly ToolsHelpers\Database $databaseHelper,
 	)
 	{
 		$this->edDsa = new EdDSA('ed25519');
@@ -186,14 +186,13 @@ final class PairingController extends BaseController
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws RuntimeException
 	 * @throws TypeError
 	 * @throws ValueError
@@ -311,14 +310,13 @@ final class PairingController extends BaseController
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
+	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
 	 * @throws InvalidArgumentException
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidData
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws RuntimeException
 	 * @throws TypeError
 	 * @throws ValueError
@@ -522,14 +520,15 @@ final class PairingController extends BaseController
 	/**
 	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
 	 * @throws Math\Exception\MathException
 	 * @throws Math\Exception\NegativeNumberException
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -896,14 +895,13 @@ final class PairingController extends BaseController
 	 *
 	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
-	 * @throws ApplicationExceptions\InvalidState
-	 * @throws ApplicationExceptions\Runtime
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
+	 * @throws ToolsExceptions\Runtime
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -961,7 +959,7 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 					'request' => [
 						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
 					],
@@ -1227,7 +1225,7 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 					'request' => [
 						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
 					],
@@ -1315,14 +1313,13 @@ final class PairingController extends BaseController
 	 *
 	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
-	 * @throws ApplicationExceptions\InvalidState
-	 * @throws ApplicationExceptions\Runtime
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
+	 * @throws ToolsExceptions\Runtime
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -1404,7 +1401,7 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 					'request' => [
 						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
 					],
@@ -1532,11 +1529,10 @@ final class PairingController extends BaseController
 	 *
 	 * @return array<int, array<int, (int|array<int>|string)>>
 	 *
-	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -1559,7 +1555,7 @@ final class PairingController extends BaseController
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'pairing-controller',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 					'request' => [
 						'client_address' => strval($request->getServerParams()['REMOTE_ADDR']),
 					],
@@ -2072,11 +2068,11 @@ final class PairingController extends BaseController
 	}
 
 	/**
-	 * @throws ApplicationExceptions\InvalidState
-	 * @throws ApplicationExceptions\Runtime
 	 * @throws DBAL\Exception
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidState
+	 * @throws ToolsExceptions\Runtime
 	 */
 	private function setConfiguration(
 		Documents\Connectors\Connector $connector,

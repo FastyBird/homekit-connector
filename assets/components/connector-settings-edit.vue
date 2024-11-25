@@ -31,26 +31,25 @@
 </template>
 
 <script setup lang="ts">
-import { flattenValue } from '@fastybird/metadata-library';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { ElDivider, ElForm, FormInstance } from 'element-plus';
 import get from 'lodash.get';
 import omit from 'lodash.omit';
-import { ElDivider, ElForm, FormInstance } from 'element-plus';
 
 import {
+	ConnectorDefaultConnectorSettingsRename,
+	FormResultTypes,
 	IConnectorForm,
 	IConnectorProperty,
-	IEditConnectorProps,
-	ConnectorDefaultConnectorSettingsRename,
-	PropertyDefaultVariablePropertiesEdit,
-	useConnectorForm,
-	useEntityTitle,
-	useFlashMessage,
-	FormResultTypes,
-	PropertyType,
 	IEditConnectorEmits,
+	IEditConnectorProps,
+	PropertyDefaultVariablePropertiesEdit,
+	PropertyType,
+	useConnectorForm,
 } from '@fastybird/devices-module';
+import { flattenValue, useFlashMessage } from '@fastybird/tools';
 
 import { ConnectorPropertyIdentifier } from '../types';
 
@@ -71,8 +70,6 @@ const { t } = useI18n();
 const flashMessage = useFlashMessage();
 
 const { submit, formResult } = useConnectorForm(props.connectorData.connector);
-
-const title = useEntityTitle(ref(props.connectorData.connector));
 
 const connectorFormEl = ref<FormInstance | undefined>(undefined);
 
@@ -121,7 +118,7 @@ watch(
 				}
 
 				const errorMessage = t('homeKitConnector.messages.connectors.notEdited', {
-					connector: title.value,
+					connector: props.connectorData.connector.title,
 				});
 
 				submit(omit(connectorForm, ['properties'])).catch((e: any) => {

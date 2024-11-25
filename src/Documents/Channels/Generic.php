@@ -16,10 +16,10 @@
 namespace FastyBird\Connector\HomeKit\Documents\Channels;
 
 use FastyBird\Connector\HomeKit\Entities;
-use FastyBird\Library\Metadata\Documents\Mapping as DOC;
+use FastyBird\Core\Application\Documents as ApplicationDocuments;
 
-#[DOC\Document(entity: Entities\Channels\Generic::class)]
-#[DOC\DiscriminatorEntry(name: Entities\Channels\Generic::TYPE)]
+#[ApplicationDocuments\Mapping\Document(entity: Entities\Channels\Generic::class)]
+#[ApplicationDocuments\Mapping\DiscriminatorEntry(name: Entities\Channels\Generic::TYPE)]
 class Generic extends Channel
 {
 

@@ -22,9 +22,8 @@ use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
+use FastyBird\Core\Tools\Utilities as ToolsUtilities;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use IPub\DoctrineCrud\Exceptions as DoctrineCrudExceptions;
@@ -106,13 +105,12 @@ final class System implements Common\EventSubscriber
 	}
 
 	/**
-	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception\UniqueConstraintViolationException
 	 * @throws DoctrineCrudExceptions\InvalidArgument
 	 * @throws DoctrineCrudExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -147,7 +145,7 @@ final class System implements Common\EventSubscriber
 
 			if ($versionProperty !== null) {
 				$this->propertiesManager->update($versionProperty, Utils\ArrayHash::from([
-					'value' => intval(MetadataUtilities\Value::flattenValue($versionProperty->getValue())) + 1,
+					'value' => intval(ToolsUtilities\Value::flattenValue($versionProperty->getValue())) + 1,
 				]));
 			}
 

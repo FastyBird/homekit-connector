@@ -11,10 +11,9 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Tests;
-use FastyBird\Library\Application\EventLoop\Wrapper;
-use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\Library\Tools\Exceptions as ToolsExceptions;
+use FastyBird\Core\Application\EventLoop\Wrapper;
+use FastyBird\Core\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
 use Fig\Http\Message\RequestMethodInterface;
@@ -40,14 +39,13 @@ final class CharacteristicsTest extends Tests\Cases\Unit\DbTestCase
 
 	/**
 	 * @throws ApplicationExceptions\InvalidArgument
+	 * @throws ApplicationExceptions\InvalidState
+	 * @throws ApplicationExceptions\MalformedInput
+	 * @throws ApplicationExceptions\Mapping
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
-	 * @throws MetadataExceptions\Mapping
 	 * @throws Nette\DI\MissingServiceException
 	 * @throws SemVer\SemverException
 	 * @throws RuntimeException

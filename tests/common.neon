@@ -27,8 +27,8 @@ extensions:
     fbDateTimeFactory                   : FastyBird\DateTimeFactory\DI\DateTimeFactoryExtension
     fbJsonApi                           : FastyBird\JsonApi\DI\JsonApiExtension
     fbSimpleAuth                        : FastyBird\SimpleAuth\DI\SimpleAuthExtension
-    fbMetadataLibrary                   : FastyBird\Library\Metadata\DI\MetadataExtension
-    fbExchangeLibrary                   : FastyBird\Library\Exchange\DI\ExchangeExtension
+    fbTools                             : FastyBird\Core\Tools\DI\ToolsExtension
+    fbExchange                          : FastyBird\Core\Exchange\DI\ExchangeExtension
     fbDevicesModule                     : FastyBird\Module\Devices\DI\DevicesExtension
 
 services:
@@ -82,10 +82,6 @@ nettrineOrm:
 nettrineOrmAttributes:
     mapping: []
 
-fbMetadataLibrary:
-    documents:
-        mapping: []
-
 fbSimpleAuth:
     token:
         issuer: com.fastybird.auth-module
@@ -105,3 +101,7 @@ fbJsonApi:
 
 fbDateTimeFactory:
     frozen: DateTimeImmutable('2020-04-01T12:00:00+00:00')
+
+fbApplication:
+    documents:
+        mapping: []

@@ -4,6 +4,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { Component } from 'vue';
+
 import {
 	FabApple,
 	FasBell,
@@ -32,8 +34,6 @@ import {
 import { DeviceCategory } from '../types';
 
 import { DeviceIconProps } from './device-icon.types';
-
-import type { Component } from 'vue';
 
 defineOptions({
 	name: 'DeviceIcon',

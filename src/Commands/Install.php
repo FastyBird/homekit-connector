@@ -25,12 +25,12 @@ use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
-use FastyBird\Library\Application\Helpers as ApplicationHelpers;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\Library\Metadata\Formats as MetadataFormats;
+use FastyBird\Core\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
+use FastyBird\Core\Tools\Formats as ToolsFormats;
+use FastyBird\Core\Tools\Helpers as ToolsHelpers;
+use FastyBird\Core\Tools\Utilities as ToolsUtilities;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
 use FastyBird\Module\Devices\Models as DevicesModels;
@@ -107,7 +107,7 @@ class Install extends Console\Command\Command
 		private readonly DevicesModels\Entities\Channels\ChannelsManager $channelsManager,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesManager $channelsPropertiesManager,
-		private readonly ApplicationHelpers\Database $databaseHelper,
+		private readonly ToolsHelpers\Database $databaseHelper,
 		private readonly Localization\Translator $translator,
 		string|null $name = null,
 	)
@@ -126,15 +126,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -152,15 +153,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -260,7 +262,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -291,15 +293,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -395,7 +398,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -428,8 +431,8 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidState
 	 */
 	private function deleteConnector(Style\SymfonyStyle $io): void
 	{
@@ -480,7 +483,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -495,15 +498,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -564,15 +568,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -671,7 +676,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -691,15 +696,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -772,7 +778,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -803,8 +809,8 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidState
 	 */
 	private function deleteDevice(Style\SymfonyStyle $io, Entities\Connectors\Connector $connector): void
 	{
@@ -855,7 +861,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -868,15 +874,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -895,8 +902,8 @@ class Install extends Console\Command\Command
 
 	/**
 	 * @throws DevicesExceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -936,15 +943,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -1043,7 +1051,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1074,15 +1082,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -1223,7 +1232,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1254,8 +1263,8 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidState
 	 */
 	private function deleteService(Style\SymfonyStyle $io, Entities\Devices\Device $device): void
 	{
@@ -1312,7 +1321,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1325,15 +1334,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -1415,13 +1425,12 @@ class Install extends Console\Command\Command
 	/**
 	 * @param array<string> $characteristics
 	 *
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exception
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
 	 * @throws TypeError
 	 * @throws ValueError
@@ -1601,11 +1610,11 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidState
 	 */
 	private function editCharacteristic(Style\SymfonyStyle $io, Entities\Channels\Channel $channel): void
 	{
@@ -1817,7 +1826,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1832,8 +1841,8 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DevicesExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidState
 	 */
 	private function deleteCharacteristic(Style\SymfonyStyle $io, Entities\Channels\Channel $channel): void
 	{
@@ -1892,7 +1901,7 @@ class Install extends Console\Command\Command
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'install-cmd',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 
@@ -1909,9 +1918,9 @@ class Install extends Console\Command\Command
 	/**
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -1951,7 +1960,7 @@ class Install extends Console\Command\Command
 				&& $metadata->offsetGet($type)->offsetGet('ValidValues') instanceof Utils\ArrayHash
 			) {
 				$enumValue = array_search(
-					intval(MetadataUtilities\Value::flattenValue($value)),
+					intval(ToolsUtilities\Value::flattenValue($value)),
 					(array) $metadata->offsetGet($type)->offsetGet('ValidValues'),
 					true,
 				);
@@ -1975,15 +1984,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -2061,15 +2071,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -2153,15 +2164,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -2245,15 +2257,16 @@ class Install extends Console\Command\Command
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -2336,8 +2349,8 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -2401,8 +2414,8 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -2488,12 +2501,11 @@ class Install extends Console\Command\Command
 	}
 
 	/**
-	 * @throws ApplicationExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -2522,15 +2534,15 @@ class Install extends Console\Command\Command
 		} else {
 			$metadata = $this->loader->loadAccessories();
 
-			if (!$metadata->offsetExists(MetadataUtilities\Value::toString($category->getValue(), true))) {
+			if (!$metadata->offsetExists(ToolsUtilities\Value::toString($category->getValue(), true))) {
 				throw new Exceptions\InvalidArgument(sprintf(
 					'Definition for accessory category: %s was not found',
-					MetadataUtilities\Value::toString($category->getValue()),
+					ToolsUtilities\Value::toString($category->getValue()),
 				));
 			}
 
 			$accessoryMetadata = $metadata->offsetGet(
-				MetadataUtilities\Value::toString($category->getValue(), true),
+				ToolsUtilities\Value::toString($category->getValue(), true),
 			);
 
 			if (
@@ -2996,9 +3008,9 @@ class Install extends Console\Command\Command
 	/**
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -3006,7 +3018,7 @@ class Install extends Console\Command\Command
 		Style\SymfonyStyle $io,
 		string $characteristic,
 		DevicesEntities\Channels\Properties\Dynamic|null $connectProperty = null,
-	): MetadataFormats\NumberRange|MetadataFormats\StringEnum|MetadataFormats\CombinedEnum|null
+	): ToolsFormats\NumberRange|ToolsFormats\StringEnum|ToolsFormats\CombinedEnum|null
 	{
 		$metadata = $this->loader->loadCharacteristics();
 
@@ -3051,7 +3063,7 @@ class Install extends Console\Command\Command
 			$characteristicMetadata->offsetExists('MinValue')
 			|| $characteristicMetadata->offsetExists('MaxValue')
 		) {
-			$format = new MetadataFormats\NumberRange([
+			$format = new ToolsFormats\NumberRange([
 				$characteristicMetadata->offsetExists('MinValue')
 					? floatval($characteristicMetadata->offsetGet('MinValue'))
 					: null,
@@ -3070,7 +3082,7 @@ class Install extends Console\Command\Command
 			&& $characteristicMetadata->offsetExists('ValidValues')
 			&& $characteristicMetadata->offsetGet('ValidValues') instanceof Utils\ArrayHash
 		) {
-			$format = new MetadataFormats\StringEnum(
+			$format = new ToolsFormats\StringEnum(
 				array_values((array) $characteristicMetadata->offsetGet('ValidValues')),
 			);
 
@@ -3081,14 +3093,14 @@ class Install extends Console\Command\Command
 					|| $connectProperty->getDataType() === MetadataTypes\DataType::SWITCH
 					|| $connectProperty->getDataType() === MetadataTypes\DataType::BUTTON
 				) && (
-					$connectProperty->getFormat() instanceof MetadataFormats\StringEnum
-					|| $connectProperty->getFormat() instanceof MetadataFormats\CombinedEnum
+					$connectProperty->getFormat() instanceof ToolsFormats\StringEnum
+					|| $connectProperty->getFormat() instanceof ToolsFormats\CombinedEnum
 				)
 			) {
 				$mappedFormat = [];
 
 				foreach ($characteristicMetadata->offsetGet('ValidValues') as $name => $item) {
-					$options = $connectProperty->getFormat() instanceof MetadataFormats\StringEnum
+					$options = $connectProperty->getFormat() instanceof ToolsFormats\StringEnum
 						? $connectProperty->getFormat()->toArray()
 						: array_map(
 							static function (array $items): array|null {
@@ -3098,7 +3110,7 @@ class Install extends Console\Command\Command
 
 								return [
 									$items[0]->getDataType(),
-									MetadataUtilities\Value::toString($items[0]->getValue()),
+									ToolsUtilities\Value::toString($items[0]->getValue()),
 								];
 							},
 							$connectProperty->getFormat()->getItems(),
@@ -3182,7 +3194,7 @@ class Install extends Console\Command\Command
 					];
 				}
 
-				$format = new MetadataFormats\CombinedEnum($mappedFormat);
+				$format = new ToolsFormats\CombinedEnum($mappedFormat);
 			}
 		}
 
@@ -3192,8 +3204,8 @@ class Install extends Console\Command\Command
 	/**
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -3251,7 +3263,7 @@ class Install extends Console\Command\Command
 				(string) $this->translator->translate('//homekit-connector.cmd.install.questions.select.device.value'),
 				$options,
 				$value !== null ? array_key_exists(
-					MetadataUtilities\Value::toString($value, true),
+					ToolsUtilities\Value::toString($value, true),
 					$options,
 				) : null,
 			);
@@ -3348,7 +3360,7 @@ class Install extends Console\Command\Command
 
 		$question = new Console\Question\Question(
 			(string) $this->translator->translate('//homekit-connector.cmd.install.questions.provide.value'),
-			is_object($value) ? MetadataUtilities\Value::toString($value) : $value,
+			is_object($value) ? ToolsUtilities\Value::toString($value) : $value,
 		);
 		$question->setValidator(
 			function (string|int|null $answer) use ($dataTypes, $minValue, $maxValue, $step): string|int|float {
@@ -3651,7 +3663,7 @@ class Install extends Console\Command\Command
 	/**
 	 * @param array<string, string> $channels
 	 *
-	 * @throws ApplicationExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidState
 	 */
 	private function askWhichService(
 		Style\SymfonyStyle $io,
@@ -3714,7 +3726,7 @@ class Install extends Console\Command\Command
 	/**
 	 * @param array<string, string> $properties
 	 *
-	 * @throws ApplicationExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidState
 	 */
 	private function askWhichCharacteristic(
 		Style\SymfonyStyle $io,

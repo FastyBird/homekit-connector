@@ -11,8 +11,9 @@
 				<el-text
 					size="large"
 					class="font-600"
-					>{{ pinCodeProperty?.value }}</el-text
 				>
+					{{ pinCodeProperty?.value }}
+				</el-text>
 			</div>
 		</el-col>
 		<el-col :span="14">
@@ -140,12 +141,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { I18nT, useI18n } from 'vue-i18n';
-import { ElText, ElRow, ElCol, ElTag } from 'element-plus';
+
+import { ElCol, ElRow, ElTag, ElText } from 'element-plus';
 
 import VueQrcode from '@chenfengyuan/vue-qrcode';
-import { ConnectionState } from '@fastybird/metadata-library';
+import { ConnectionState, IConnectorDetailProps, IConnectorProperty, useConnectorState } from '@fastybird/devices-module';
 import { useWampV1Client } from '@fastybird/vue-wamp-v1';
-import { IConnectorDetailProps, IConnectorProperty, useConnectorState } from '@fastybird/devices-module';
 
 import { ConnectorPropertyIdentifier } from '../types';
 

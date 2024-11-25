@@ -20,11 +20,10 @@ use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Documents;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Queue;
-use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
-use FastyBird\Library\Application\Helpers as ApplicationHelpers;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Core\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
+use FastyBird\Core\Tools\Helpers as ToolsHelpers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Library\Tools\Exceptions as ToolsExceptions;
 use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
@@ -59,21 +58,22 @@ final class StoreChannelPropertyState implements Queue\Consumer
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesRepository $channelsPropertiesRepository,
 		private readonly DevicesModels\Entities\Channels\Properties\PropertiesManager $channelsPropertiesManager,
 		private readonly DevicesModels\States\Async\ChannelPropertiesManager $channelPropertiesStatesManager,
-		private readonly ApplicationHelpers\Database $databaseHelper,
+		private readonly ToolsHelpers\Database $databaseHelper,
 	)
 	{
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
 	 * @throws ApplicationExceptions\Runtime
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws DevicesExceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
+	 * @throws ToolsExceptions\Runtime
 	 * @throws TypeError
 	 * @throws ValueError
 	 */

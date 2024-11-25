@@ -16,8 +16,8 @@
 namespace FastyBird\Connector\HomeKit\Queue\Messages;
 
 use DateTimeInterface;
+use FastyBird\Core\Tools\Utilities as ToolsUtilities;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Module\Devices\States as DevicesStates;
 use Orisai\ObjectMapper;
 use Ramsey\Uuid;
@@ -111,10 +111,10 @@ readonly class State implements Message
 	public function toArray(): array
 	{
 		return [
-			DevicesStates\Property::ACTUAL_VALUE_FIELD => MetadataUtilities\Value::flattenValue(
+			DevicesStates\Property::ACTUAL_VALUE_FIELD => ToolsUtilities\Value::flattenValue(
 				$this->getActualValue(),
 			),
-			DevicesStates\Property::EXPECTED_VALUE_FIELD => MetadataUtilities\Value::flattenValue(
+			DevicesStates\Property::EXPECTED_VALUE_FIELD => ToolsUtilities\Value::flattenValue(
 				$this->getExpectedValue(),
 			),
 			DevicesStates\Property::PENDING_FIELD => $this->getPending() instanceof DateTimeInterface

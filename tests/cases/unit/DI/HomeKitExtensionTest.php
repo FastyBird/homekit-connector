@@ -17,7 +17,7 @@ use FastyBird\Connector\HomeKit\Schemas;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Subscribers;
 use FastyBird\Connector\HomeKit\Tests;
-use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Core\Application\Exceptions as ApplicationExceptions;
 use Nette;
 use function in_array;
 

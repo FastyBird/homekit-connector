@@ -21,8 +21,8 @@ use FastyBird\Connector\HomeKit;
 use FastyBird\Connector\HomeKit\Entities;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Application\Entities\Mapping as ApplicationMapping;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Core\Application\Entities\Mapping as ApplicationMapping;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use IPub\DoctrineCrud\Mapping\Attribute as IPubDoctrine;
@@ -96,8 +96,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 	}
 
 	/**
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -122,8 +122,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 
 	/**
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -147,8 +147,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 	}
 
 	/**
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -173,8 +173,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 
 	/**
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -199,8 +199,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 
 	/**
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -225,8 +225,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 
 	/**
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -250,8 +250,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 	}
 
 	/**
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -276,8 +276,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 
 	/**
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -302,8 +302,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 
 	/**
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -328,8 +328,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 
 	/**
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -353,8 +353,8 @@ class Connector extends DevicesEntities\Connectors\Connector
 	}
 
 	/**
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */

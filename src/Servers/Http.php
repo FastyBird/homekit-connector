@@ -25,8 +25,8 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Subscribers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Application\Helpers as ApplicationHelpers;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
+use FastyBird\Core\Tools\Helpers as ToolsHelpers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Events as DevicesEvents;
@@ -126,7 +126,7 @@ final class Http implements Server
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'http-server',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
@@ -184,7 +184,7 @@ final class Http implements Server
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'http-server',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
@@ -231,7 +231,7 @@ final class Http implements Server
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'http-server',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 					'connector' => [
 						'id' => $this->connector->getId()->toString(),
 					],
@@ -298,8 +298,8 @@ final class Http implements Server
 	}
 
 	/**
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */

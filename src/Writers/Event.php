@@ -21,8 +21,8 @@ use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Core\Tools\Helpers as ToolsHelpers;
 use FastyBird\DateTimeFactory;
-use FastyBird\Library\Application\Helpers as ApplicationHelpers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
@@ -192,7 +192,7 @@ class Event extends Periodic implements Writer, EventDispatcher\EventSubscriberI
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'event-writer',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 		}

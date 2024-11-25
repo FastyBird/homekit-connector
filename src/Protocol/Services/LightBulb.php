@@ -17,7 +17,7 @@ namespace FastyBird\Connector\HomeKit\Protocol\Services;
 
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Tools\Transformers as ToolsTransformers;
+use FastyBird\Core\Tools\Transformers as ToolsTransformers;
 use FastyBird\Module\Devices\Types as DevicesTypes;
 use function is_float;
 use function is_int;

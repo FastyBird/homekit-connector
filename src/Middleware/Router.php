@@ -20,7 +20,7 @@ use FastyBird\Connector\HomeKit\Events;
 use FastyBird\Connector\HomeKit\Exceptions;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Application\Helpers as ApplicationHelpers;
+use FastyBird\Core\Tools\Helpers as ToolsHelpers;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
@@ -74,7 +74,7 @@ final class Router
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'router-middleware',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 					'request' => [
 						'method' => $request->getMethod(),
 						'path' => $request->getUri()->getPath(),
@@ -94,7 +94,7 @@ final class Router
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'router-middleware',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 					'request' => [
 						'method' => $request->getMethod(),
 						'path' => $request->getUri()->getPath(),
@@ -114,7 +114,7 @@ final class Router
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'router-middleware',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 

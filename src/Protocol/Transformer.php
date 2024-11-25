@@ -17,10 +17,10 @@ namespace FastyBird\Connector\HomeKit\Protocol;
 
 use DateTimeInterface;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\Library\Metadata\Formats as MetadataFormats;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
+use FastyBird\Core\Tools\Formats as ToolsFormats;
+use FastyBird\Core\Tools\Utilities as ToolsUtilities;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use Nette\Utils;
 use TypeError;
@@ -56,8 +56,8 @@ final class Transformer
 {
 
 	/**
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -135,7 +135,7 @@ final class Transformer
 			|| $property->getDataType() === MetadataTypes\DataType::COVER
 			|| $property->getDataType() === MetadataTypes\DataType::BUTTON
 		) {
-			if ($property->getFormat() instanceof MetadataFormats\StringEnum) {
+			if ($property->getFormat() instanceof ToolsFormats\StringEnum) {
 				$filtered = array_values(array_filter(
 					$property->getFormat()->getItems(),
 					static fn (string $item): bool => Utils\Strings::lower(strval($transformedValue)) === $item,
@@ -154,32 +154,32 @@ final class Transformer
 				}
 
 				return null;
-			} elseif ($property->getFormat() instanceof MetadataFormats\CombinedEnum) {
+			} elseif ($property->getFormat() instanceof ToolsFormats\CombinedEnum) {
 				$filtered = array_values(array_filter(
 					$property->getFormat()->getItems(),
 					static fn (array $item): bool => $item[1] !== null
-						&& Utils\Strings::lower(MetadataUtilities\Value::toString($item[1]->getValue(), true))
+						&& Utils\Strings::lower(ToolsUtilities\Value::toString($item[1]->getValue(), true))
 							=== Utils\Strings::lower(strval($transformedValue)),
 				));
 
 				if (
 					count($filtered) === 1
-					&& $filtered[0][0] instanceof MetadataFormats\CombinedEnumItem
+					&& $filtered[0][0] instanceof ToolsFormats\CombinedEnumItem
 				) {
 					if ($property->getDataType() === MetadataTypes\DataType::SWITCH) {
 						return MetadataTypes\Payloads\Switcher::from(
-							MetadataUtilities\Value::toString($filtered[0][0]->getValue(), true),
+							ToolsUtilities\Value::toString($filtered[0][0]->getValue(), true),
 						);
 					} elseif ($property->getDataType() === MetadataTypes\DataType::BUTTON) {
 						return MetadataTypes\Payloads\Button::from(
-							MetadataUtilities\Value::toString($filtered[0][0]->getValue(), true),
+							ToolsUtilities\Value::toString($filtered[0][0]->getValue(), true),
 						);
 					} elseif ($property->getDataType() === MetadataTypes\DataType::COVER) {
 						return MetadataTypes\Payloads\Cover::from(
-							MetadataUtilities\Value::toString($filtered[0][0]->getValue(), true),
+							ToolsUtilities\Value::toString($filtered[0][0]->getValue(), true),
 						);
 					} else {
-						return MetadataUtilities\Value::toString($filtered[0][0]->getValue(), true);
+						return ToolsUtilities\Value::toString($filtered[0][0]->getValue(), true);
 					}
 				}
 
@@ -193,8 +193,8 @@ final class Transformer
 	/**
 	 * @param array<int>|null $validValues
 	 *
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -220,35 +220,35 @@ final class Transformer
 				|| $property->getDataType() === MetadataTypes\DataType::COVER
 				|| $property->getDataType() === MetadataTypes\DataType::BUTTON
 			) {
-				if ($property->getFormat() instanceof MetadataFormats\StringEnum) {
+				if ($property->getFormat() instanceof ToolsFormats\StringEnum) {
 					$filtered = array_values(array_filter(
 						$property->getFormat()->getItems(),
 						static fn (string $item): bool => ($value !== null ? Utils\Strings::lower(
-							MetadataUtilities\Value::toString($value, true),
+							ToolsUtilities\Value::toString($value, true),
 						) : null) === $item,
 					));
 
 					if (count($filtered) === 1) {
-						$transformedValue = MetadataUtilities\Value::flattenValue($value);
+						$transformedValue = ToolsUtilities\Value::flattenValue($value);
 					}
-				} elseif ($property->getFormat() instanceof MetadataFormats\CombinedEnum) {
+				} elseif ($property->getFormat() instanceof ToolsFormats\CombinedEnum) {
 					$filtered = array_values(array_filter(
 						$property->getFormat()->getItems(),
 						static fn (array $item): bool => $item[0] !== null
 							&& Utils\Strings::lower(
-								MetadataUtilities\Value::toString($item[0]->getValue(), true),
+								ToolsUtilities\Value::toString($item[0]->getValue(), true),
 							) === ($value !== null ? Utils\Strings::lower(
-								MetadataUtilities\Value::toString($value, true),
+								ToolsUtilities\Value::toString($value, true),
 							) : null),
 					));
 
 					if (
 						count($filtered) === 1
-						&& $filtered[0][2] instanceof MetadataFormats\CombinedEnumItem
+						&& $filtered[0][2] instanceof ToolsFormats\CombinedEnumItem
 					) {
 						$transformedValue = is_scalar($filtered[0][2]->getValue())
 							? $filtered[0][2]->getValue()
-							: MetadataUtilities\Value::flattenValue($filtered[0][2]->getValue());
+							: ToolsUtilities\Value::flattenValue($filtered[0][2]->getValue());
 					}
 				} else {
 					if (
@@ -280,7 +280,7 @@ final class Transformer
 				$transformedValue = false;
 			} elseif (!is_bool($transformedValue)) {
 				$transformedValue = in_array(
-					Utils\Strings::lower(MetadataUtilities\Value::toString($transformedValue, true)),
+					Utils\Strings::lower(ToolsUtilities\Value::toString($transformedValue, true)),
 					[
 						'true',
 						't',
@@ -299,7 +299,7 @@ final class Transformer
 				$transformedValue = str_replace(
 					[' ', ','],
 					['', '.'],
-					MetadataUtilities\Value::toString($transformedValue, true),
+					ToolsUtilities\Value::toString($transformedValue, true),
 				);
 
 				if (!is_numeric($transformedValue)) {
@@ -332,7 +332,7 @@ final class Transformer
 				$transformedValue = preg_replace(
 					'~\s~',
 					'',
-					MetadataUtilities\Value::toString($transformedValue, true),
+					ToolsUtilities\Value::toString($transformedValue, true),
 				);
 
 				if (!is_numeric($transformedValue)) {
@@ -350,20 +350,20 @@ final class Transformer
 			$transformedValue = (int) max($minValue ?? $transformedValue, $transformedValue);
 		} elseif ($dataType === Types\DataType::STRING) {
 			$transformedValue = $value !== null ? substr(
-				MetadataUtilities\Value::toString($value, true),
+				ToolsUtilities\Value::toString($value, true),
 				0,
-				($maxLength ?? strlen(MetadataUtilities\Value::toString($value, true))),
+				($maxLength ?? strlen(ToolsUtilities\Value::toString($value, true))),
 			) : '';
 		}
 
 		if (
 			$validValues !== null
-			&& !in_array(intval(MetadataUtilities\Value::flattenValue($transformedValue)), $validValues, true)
+			&& !in_array(intval(ToolsUtilities\Value::flattenValue($transformedValue)), $validValues, true)
 		) {
 			$transformedValue = null;
 		}
 
-		return MetadataUtilities\Value::flattenValue($transformedValue);
+		return ToolsUtilities\Value::flattenValue($transformedValue);
 	}
 
 }

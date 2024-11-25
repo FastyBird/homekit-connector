@@ -18,7 +18,7 @@ namespace FastyBird\Connector\HomeKit\Protocol\Accessories;
 use FastyBird\Connector\HomeKit\Helpers;
 use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
 use Nette;
 use Ramsey\Uuid;
 use SplObjectStorage;
@@ -148,8 +148,8 @@ abstract class Accessory
 	 *
 	 * @return array<string, array<int, array<string, array<array<string, array<int|string>|bool|float|int|string|null>|int|null>|bool|int|string|null>>|int|null>
 	 *
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */

@@ -24,14 +24,14 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Core\Application\Documents as ApplicationDocuments;
+use FastyBird\Core\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Core\Exchange\Consumers as ExchangeConsumers;
+use FastyBird\Core\Exchange\Exceptions as ExchangeExceptions;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
+use FastyBird\Core\Tools\Helpers as ToolsHelpers;
 use FastyBird\DateTimeFactory;
-use FastyBird\Library\Application\Helpers as ApplicationHelpers;
-use FastyBird\Library\Exchange\Consumers as ExchangeConsumers;
-use FastyBird\Library\Exchange\Exceptions as ExchangeExceptions;
-use FastyBird\Library\Metadata\Documents as MetadataDocuments;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Library\Tools\Exceptions as ToolsExceptions;
 use FastyBird\Module\Devices\Constants as DevicesConstants;
 use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Events as DevicesEvents;
@@ -97,14 +97,15 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
+	 * @throws ApplicationExceptions\InvalidState
+	 * @throws ApplicationExceptions\MalformedInput
 	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws ExchangeExceptions\InvalidArgument
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
 	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -128,7 +129,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 	public function consume(
 		MetadataTypes\Sources\Source $source,
 		string $routingKey,
-		MetadataDocuments\Document|null $document,
+		ApplicationDocuments\Document|null $document,
 	): void
 	{
 		try {
@@ -393,7 +394,7 @@ class Exchange extends Periodic implements Writer, ExchangeConsumers\Consumer
 				[
 					'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 					'type' => 'exchange-writer',
-					'exception' => ApplicationHelpers\Logger::buildException($ex),
+					'exception' => ToolsHelpers\Logger::buildException($ex),
 				],
 			);
 		}

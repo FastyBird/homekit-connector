@@ -23,10 +23,10 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Servers;
 use FastyBird\Connector\HomeKit\Types;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
+use FastyBird\Core\Tools\Utilities as ToolsUtilities;
 use FastyBird\DateTimeFactory;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
 use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use Fig\Http\Message\StatusCodeInterface;
 use InvalidArgumentException;
@@ -74,8 +74,8 @@ final class CharacteristicsController extends BaseController
 	 * @throws Exceptions\HapRequestError
 	 * @throws Exceptions\InvalidState
 	 * @throws InvalidArgumentException
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Utils\JsonException
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -421,8 +421,8 @@ final class CharacteristicsController extends BaseController
 	/**
 	 * @return array<string, (bool|int|array<int>|float|string|array<string>|null)>
 	 *
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -509,8 +509,8 @@ final class CharacteristicsController extends BaseController
 	 * @return array<string, bool|float|int|string|null>
 	 *
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -611,8 +611,8 @@ final class CharacteristicsController extends BaseController
 							'name' => $characteristic->getName(),
 						],
 						'value' => [
-							'expected' => MetadataUtilities\Value::flattenValue($valueToWrite),
-							'transformed' => MetadataUtilities\Value::flattenValue($value),
+							'expected' => ToolsUtilities\Value::flattenValue($valueToWrite),
+							'transformed' => ToolsUtilities\Value::flattenValue($value),
 						],
 						'device' => [
 							'id' => $characteristic->getService()->getChannel()?->getDevice()->toString(),
@@ -795,7 +795,7 @@ final class CharacteristicsController extends BaseController
 						'device' => $characteristic->getService()->getChannel()?->getDevice(),
 						'channel' => $characteristic->getService()->getChannel()?->getId(),
 						'property' => $characteristic->getProperty()->getId(),
-						'value' => MetadataUtilities\Value::flattenValue($characteristic->getValue()),
+						'value' => ToolsUtilities\Value::flattenValue($characteristic->getValue()),
 					],
 				),
 			);

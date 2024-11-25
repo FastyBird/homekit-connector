@@ -26,13 +26,12 @@ use FastyBird\Connector\HomeKit\Protocol;
 use FastyBird\Connector\HomeKit\Queries;
 use FastyBird\Connector\HomeKit\Queue;
 use FastyBird\Connector\HomeKit\Types;
-use FastyBird\Library\Application\Exceptions as ApplicationExceptions;
-use FastyBird\Library\Application\Helpers as ApplicationHelpers;
-use FastyBird\Library\Metadata\Exceptions as MetadataExceptions;
-use FastyBird\Library\Metadata\Formats as MetadataFormats;
+use FastyBird\Core\Application\Exceptions as ApplicationExceptions;
+use FastyBird\Core\Tools\Exceptions as ToolsExceptions;
+use FastyBird\Core\Tools\Formats as ToolsFormats;
+use FastyBird\Core\Tools\Helpers as ToolsHelpers;
+use FastyBird\Core\Tools\Utilities as ToolsUtilities;
 use FastyBird\Library\Metadata\Types as MetadataTypes;
-use FastyBird\Library\Metadata\Utilities as MetadataUtilities;
-use FastyBird\Library\Tools\Exceptions as ToolsExceptions;
 use FastyBird\Module\Devices\Documents as DevicesDocuments;
 use FastyBird\Module\Devices\Entities as DevicesEntities;
 use FastyBird\Module\Devices\Exceptions as DevicesExceptions;
@@ -96,7 +95,7 @@ class Loader
 		private readonly Helpers\Loader $loader,
 		private readonly Queue\Queue $queue,
 		private readonly HomeKit\Logger $logger,
-		private readonly ApplicationHelpers\Database $databaseHelper,
+		private readonly ToolsHelpers\Database $databaseHelper,
 		private readonly DevicesModels\Entities\Devices\DevicesRepository $devicesRepository,
 		private readonly DevicesModels\Entities\Devices\Properties\PropertiesManager $devicesPropertiesManager,
 		private readonly DevicesModels\Configuration\Devices\Repository $devicesConfigurationRepository,
@@ -110,21 +109,21 @@ class Loader
 	}
 
 	/**
+	 * @throws ApplicationExceptions\InvalidArgument
 	 * @throws ApplicationExceptions\InvalidState
-	 * @throws ApplicationExceptions\Runtime
+	 * @throws ApplicationExceptions\MalformedInput
+	 * @throws ApplicationExceptions\Mapping
 	 * @throws DBAL\Exception
 	 * @throws DevicesExceptions\InvalidArgument
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Exceptions\Runtime
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
-	 * @throws MetadataExceptions\MalformedInput
-	 * @throws MetadataExceptions\Mapping
 	 * @throws Nette\IOException
 	 * @throws SemVer\SemverException
 	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
+	 * @throws ToolsExceptions\Runtime
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -163,7 +162,7 @@ class Loader
 			$aid = $aidProperty?->getValue() ?? null;
 
 			if ($aid !== null) {
-				$aid = intval(MetadataUtilities\Value::flattenValue($aid));
+				$aid = intval(ToolsUtilities\Value::flattenValue($aid));
 			}
 
 			$accessory = $this->buildAccessory(
@@ -200,12 +199,12 @@ class Loader
 						Types\ChannelPropertyIdentifier::from($property->getIdentifier()),
 						$service,
 						$property,
-						$format instanceof MetadataFormats\StringEnum
+						$format instanceof ToolsFormats\StringEnum
 							? array_map(static fn (string $item): int => intval($item), $format->toArray())
 							: null,
 						null,
-						$format instanceof MetadataFormats\NumberRange ? $format->getMin() : null,
-						$format instanceof MetadataFormats\NumberRange ? $format->getMax() : null,
+						$format instanceof ToolsFormats\NumberRange ? $format->getMin() : null,
+						$format instanceof ToolsFormats\NumberRange ? $format->getMax() : null,
 						$property->getStep(),
 						$property->getUnit() !== null && Types\CharacteristicUnit::tryFrom(
 							$property->getUnit(),
@@ -336,7 +335,7 @@ class Loader
 								[
 									'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 									'type' => 'http-server',
-									'exception' => ApplicationHelpers\Logger::buildException($ex),
+									'exception' => ToolsHelpers\Logger::buildException($ex),
 									'connector' => [
 										'id' => $connector->getId()->toString(),
 									],
@@ -378,7 +377,7 @@ class Loader
 									[
 										'source' => MetadataTypes\Sources\Connector::HOMEKIT->value,
 										'type' => 'http-server',
-										'exception' => ApplicationHelpers\Logger::buildException($ex),
+										'exception' => ToolsHelpers\Logger::buildException($ex),
 										'connector' => [
 											'id' => $connector->getId()->toString(),
 										],
@@ -419,7 +418,7 @@ class Loader
 									'device' => $accessory->getDevice()->getId(),
 									'channel' => $service->getChannel()->getId(),
 									'property' => $characteristic->getProperty()->getId(),
-									'value' => MetadataUtilities\Value::flattenValue($characteristic->getValue()),
+									'value' => ToolsUtilities\Value::flattenValue($characteristic->getValue()),
 								],
 							),
 						);
@@ -431,15 +430,14 @@ class Loader
 
 	/**
 	 * @throws DBAL\Exception
-	 * @throws ApplicationExceptions\InvalidState
-	 * @throws ApplicationExceptions\Runtime
 	 * @throws DevicesExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Nette\IOException
 	 * @throws SemVer\SemverException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
+	 * @throws ToolsExceptions\Runtime
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -781,11 +779,11 @@ class Loader
 	/**
 	 * @param array<int>|null $validValues
 	 *
-	 * @throws MetadataExceptions\InvalidArgument
-	 * @throws MetadataExceptions\InvalidState
 	 * @throws Exceptions\InvalidArgument
 	 * @throws Exceptions\InvalidState
 	 * @throws Nette\IOException
+	 * @throws ToolsExceptions\InvalidArgument
+	 * @throws ToolsExceptions\InvalidState
 	 * @throws TypeError
 	 * @throws ValueError
 	 */
@@ -873,12 +871,12 @@ class Loader
 
 		if ($property !== null) {
 			if (
-				$property->getFormat() instanceof MetadataFormats\StringEnum
-				|| $property->getFormat() instanceof MetadataFormats\CombinedEnum
+				$property->getFormat() instanceof ToolsFormats\StringEnum
+				|| $property->getFormat() instanceof ToolsFormats\CombinedEnum
 			) {
 				$validValues = [];
 
-				if ($property->getFormat() instanceof MetadataFormats\StringEnum) {
+				if ($property->getFormat() instanceof ToolsFormats\StringEnum) {
 					$validValues = array_map(
 						static fn (string $item): int => intval($item),
 						$property->getFormat()->toArray(),
@@ -886,12 +884,12 @@ class Loader
 
 				} else {
 					foreach ($property->getFormat()->getItems() as $item) {
-						if ($item[1] instanceof MetadataFormats\CombinedEnumItem) {
-							$validValues[] = intval(MetadataUtilities\Value::flattenValue($item[1]->getValue()));
+						if ($item[1] instanceof ToolsFormats\CombinedEnumItem) {
+							$validValues[] = intval(ToolsUtilities\Value::flattenValue($item[1]->getValue()));
 						}
 					}
 				}
-			} elseif ($property->getFormat() instanceof MetadataFormats\NumberRange) {
+			} elseif ($property->getFormat() instanceof ToolsFormats\NumberRange) {
 				$minValue = $property->getFormat()->getMin() ?? $minValue;
 				$maxValue = $property->getFormat()->getMax() ?? $maxValue;
 			}
@@ -936,7 +934,7 @@ class Loader
 					$minValue,
 					$maxValue,
 					$minStep,
-					MetadataUtilities\Value::flattenValue($property?->getDefault() ?? $default),
+					ToolsUtilities\Value::flattenValue($property?->getDefault() ?? $default),
 					$unit,
 				);
 			}
